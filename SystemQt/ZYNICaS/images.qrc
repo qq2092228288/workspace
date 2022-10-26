@@ -1,0 +1,8 @@
+<RCC>
+    <qresource prefix="/">
+        <file>images/waiting.gif</file>
+        <file>images/app.ico</file>
+        <file>images/logo.png</file>
+        <file>images/background.jpg</file>
+    </qresource>
+</RCC>
