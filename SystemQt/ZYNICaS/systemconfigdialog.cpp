@@ -34,6 +34,8 @@ SystemConfigDialog::SystemConfigDialog(QWidget *parent)
     getIdDialog = new GetIdDialog(this);
 
     serialPortComboBox->setFixedWidth(120*instance.wZoom());
+    printerRadio->setChecked(true);
+    generalModeRadio->setChecked(true);
 
     QVBoxLayout *mainLayout = new QVBoxLayout(this);
     QGridLayout *gLayout = new QGridLayout(hospitalInfoGroupBox);
