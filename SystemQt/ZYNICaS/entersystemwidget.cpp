@@ -494,7 +494,9 @@ void EnterSystemWidget::setData(const uchar &type, const double &value)
 //            svvQueue.dequeue();
 //        }
 //        svvQueue.enqueue(SVValue);
-        setCtrlValue(Type::EDI,(SIValue/efValue)*100);
+        if (efValue != 0) {
+            setCtrlValue(Type::EDI,(SIValue/efValue)*100);
+        }
         if(bodyValue.SBP != 0 && bodyValue.DBP != 0) {
             setCtrlValue(Type::LSW,0.0144*SVValue*(bodyValue.MAP()-bodyValue.LAP));
             double lswi = 0.0144*SIValue*(bodyValue.MAP()-bodyValue.LAP);
