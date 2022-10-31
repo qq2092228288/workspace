@@ -27,6 +27,7 @@ public:
     QString tempDir()     const {return appPath + "temp/";}
     QString baseInfo()    const {return initDir() + "baseInfo.ini";}
     QString showItems()   const {return initDir() + "showItems.ini";}
+    QString trendCharts() const {return initDir() + "trendCharts.ini";}
     QString single_dot()  const {return appPath + "dot/singlePositionTemplate.dot";}
     QString many_dot()    const {return appPath + "dot/manyPositionTemplate.dot";}
     QString xsingle_dot() const {return appPath + "dot/singlePositionXprinterTemplate.dot";}
@@ -48,47 +49,52 @@ typedef struct CheckedData
 
 struct Argument
 {
-    Argument(QString _cn, QString _en, QString _unit, qreal _min, qreal _max)
-        : cn(_cn),en(_en),unit(_unit),min(_min),max(_max){}
+    Argument(){}
+    Argument(QString _cn, QString _en, QString _unit, qreal _min, qreal _max, int _digit)
+        : cn(_cn),en(_en),unit(_unit),min(_min),max(_max),digit(_digit){}
+    Argument(QString _cn, QString _en, QString _unit, qreal _sbpmin, qreal _sbpmax, int _digit, qreal _dbpmin, qreal _dbpmax)
+        : cn(_cn),en(_en),unit(_unit),min(_sbpmin),max(_sbpmax),digit(_digit),dbpmin(_dbpmin),dbpmax(_dbpmax){}
     QString cn;
     QString en;
     QString unit;
-    qreal min;
-    qreal max;
+    qreal min = 0;
+    qreal max = 0;
+    int digit = 0;
+    qreal dbpmin = 0;
+    qreal dbpmax = 0;
 };
 
 typedef struct Arguments
 {
     qreal CVP = 4;
     qreal LAP = 9;
-    Argument CO = Argument("心输出量", "CO", "L/min", 3.5, 9.0);
-    Argument CI = Argument("心脏指数", "CI", "L/min·m²", 2.0, 5.0);
-    Argument SV = Argument("心搏量", "SV", "mL/beat", 50, 120);
-    Argument SI = Argument("心搏指数", "SI", "mL/beat·m²", 35, 65);
-    Argument HRV = Argument("心率变异性", "HRV", "%", -50, 50);
-    Argument TFC = Argument("胸液传导性", "TFC", "1/Ω", 0.025, 0.045);
-    Argument EDI = Argument("舒张末期指数", "EDI", "mL/beat·m²", 54, 130);
-    Argument Vol = Argument("血管容积", "Vol", "%", -50, 50);
-    Argument SVR = Argument("系统阻力", "SVR", "dyn·s·m²/cm^5", 489, 2262);
-    Argument SSVR = Argument("每搏外周阻力", "SSVR", "dyn·s/cm^5", 119.6, 429.2);
-    Argument SSVRI = Argument("每搏外周阻力指数", "SSVRI", "dyn·s/cm^5/beat/m²", 99.7, 185.1);
-    Argument SVRI = Argument("系统阻力指数", "SVRI", "dyn·s·m²/cm^5", 1056, 4000);
-    Argument Vas = Argument("血管顺应性", "Vas", "%", -50, 50);
-    Argument PEP = Argument("射血前期", "PEP", "ms", 50, 120);
-    Argument LVET = Argument("左室射血时间", "LVET", "ms", 250, 350);
-    Argument LSW = Argument("左心室每搏做功", "LSW", "g·m", 20, 90);
-    Argument LSWI = Argument("每搏做功指数", "LSWI", "g·m/beat/m²", 39.3, 73.0);
-    Argument LCW = Argument("左心室做功", "LCW", "kg·m", 5.4, 10.0);
-    Argument LCWI = Argument("左心室做功指数", "LCWI", "kg·m/m²", 1.81, 7.06);
-    Argument STR = Argument("收缩时间比", "STR", "-", 0, 0.4);
-    Argument EPCI = Argument("射血期收缩指数", "EPCI", "1/s", 0.038, 0.076);
-    Argument ISI = Argument("变力状态指数", "ISI", "1/s²", 0.90, 1.70);
-    Argument Ino = Argument("收缩变力性", "Ino", "%", -50, 50);
-    Argument HR = Argument("心率", "HR", "bpm", 60, 100);
-//    Argument SBP = Argument("收缩压", "SBP", "mmHg", 90, 140);
-    Argument BP = Argument("收缩压/舒张压", "SBP/DBP", "mmHg", 90, 140);
-    Argument DBP = Argument("舒张压", "DBP", "mmHg", 60, 90);
-    Argument MAP = Argument("平均动脉压", "MAP", "mmHg", 70, 105);
+    QList<Argument> arguments = QList<Argument>()
+    <<Argument("心输出量", "CO", "L/min", 3.5, 9.0, 1)
+    <<Argument("心脏指数", "CI", "L/min·m²", 2.0, 5.0, 1)
+    <<Argument("心搏量", "SV", "mL/beat", 50, 120, 1)
+    <<Argument("心搏指数", "SI", "mL/beat·m²", 35, 65, 0)
+    <<Argument("心率变异性", "HRV", "%", -50, 50, 0)
+    <<Argument("胸液传导性", "TFC", "1/Ω", 0.025, 0.045, 3)
+    <<Argument("舒张末期指数", "EDI", "mL/beat·m²", 54, 130, 0)
+    <<Argument("血管容积", "Vol", "%", -50, 50, 0)
+    <<Argument("系统阻力", "SVR", "dyn·s·m²/cm^5", 489, 2262, 0)
+    <<Argument("每搏外周阻力", "SSVR", "dyn·s/cm^5", 119.6, 429.2, 1)
+    <<Argument("每搏外周阻力指数", "SSVRI", "dyn·s/cm^5/beat/m²", 99.7, 185.1, 1)
+    <<Argument("系统阻力指数", "SVRI", "dyn·s·m²/cm^5", 1056, 4000, 0)
+    <<Argument("血管顺应性", "Vas", "%", -50, 50, 0)
+    <<Argument("射血前期", "PEP", "ms", 50, 120, 0)
+    <<Argument("左室射血时间", "LVET", "ms", 250, 350, 0)
+    <<Argument("左心室每搏做功", "LSW", "g·m", 20, 90, 0)
+    <<Argument("每搏做功指数", "LSWI", "g·m/beat/m²", 39.3, 73.0, 1)
+    <<Argument("左心室做功", "LCW", "kg·m", 5.4, 10.0, 1)
+    <<Argument("左心室做功指数", "LCWI", "kg·m/m²", 1.81, 7.06, 2)
+    <<Argument("收缩时间比", "STR", "-", 0, 0.4, 1)
+    <<Argument("射血期收缩指数", "EPCI", "1/s", 0.038, 0.076, 3)
+    <<Argument("变力状态指数", "ISI", "1/s²", 0.90, 1.70, 2)
+    <<Argument("收缩变力性", "Ino", "%", -50, 50, 0)
+    <<Argument("心率", "HR", "bpm", 60, 100, 0)
+    <<Argument("收缩压/舒张压", "SBP/DBP", "mmHg", 90, 140, 0, 60, 90)
+    <<Argument("平均动脉压", "MAP", "mmHg", 70, 105, 0);
 }Args;
 
 // 数据管理
@@ -123,6 +129,8 @@ public:
     bool isRecordPos() const;
     QString getNewReportName() const;
     Args &getArgs();
+    CustomCtrlRegulator *getRegulator() const;
+    HospitalInfo *getHospitalInfo() const;
 public:
     void setHospitalInfo(HospitalInfo *hospitalInfo);
     void setBodyValue(BodyValue *bodyValue);

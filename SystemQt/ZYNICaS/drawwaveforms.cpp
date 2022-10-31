@@ -24,7 +24,7 @@ DrawWaveforms::DrawWaveforms(bool setY, QObject *parent)
     m_pChart->addAxis(m_pAxisX,Qt::AlignBottom);
     m_pChart->addAxis(m_pAxisY,Qt::AlignLeft);
     // 刻度
-    m_pAxisX->setRange(0,m_tickCout);
+    m_pAxisX->setRange(0,m_tickCount);
     m_pAxisY->setRange(0,255);
     m_pAxisY->setTickCount(4);
     // 刻度不可见
@@ -61,8 +61,8 @@ void DrawWaveforms::addValue(uchar value)
     m_oldValues.enqueue(value);
     if (m_x%6 == 0) {
         m_pSeries->replace(m_values);
-        if(m_x >= m_tickCout+10) {
-            m_pAxisX->setRange(m_x-m_tickCout,m_x);
+        if(m_x >= m_tickCount+10) {
+            m_pAxisX->setRange(m_x-m_tickCount,m_x);
             m_values.removeFirst();
             m_oldValues.dequeue();
             if(autoSetY) {
@@ -79,7 +79,7 @@ void DrawWaveforms::clear()
     m_pSeries->clear();
     m_values.clear();
     m_oldValues.clear();
-    m_pAxisX->setRange(0,m_tickCout);
+    m_pAxisX->setRange(0,m_tickCount);
     m_pAxisY->setRange(0,255);
     m_x = 0;
 }

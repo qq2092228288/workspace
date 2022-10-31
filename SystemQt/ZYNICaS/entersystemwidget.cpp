@@ -95,15 +95,14 @@ EnterSystemWidget::EnterSystemWidget(const QString &portName, QWidget *parent)
     initBPModule();
     initPosModule();
     initOscModule();
-    initReportModule();
     initDataModule();
+    initReportModule();
     signalsAndSlots();
 
     mainLayout->setColumnStretch(0,3);
     mainLayout->setColumnStretch(1,7);
 
     instance.setBodyValue(&bodyValue);
-    instance.setRegulator(regulator);
     instance.setdZ(admitDraw->getView());
     instance.setSudoku(sudokuDraw);
 
@@ -125,6 +124,7 @@ EnterSystemWidget::~EnterSystemWidget()
     admitThread->wait();
     dataThread->wait();
     timer->stop();
+    delete regulator;
     delete ecgDraw;
     delete diffDraw;
     delete admitDraw;
@@ -134,9 +134,23 @@ EnterSystemWidget::~EnterSystemWidget()
     delete dataThread;
     delete infoDialog;
     delete bpDialog;
+    delete trendChartsDialog;
     delete auxArgDialog;
     delete sudokuDraw;
-//    qDebug()<<"~EnterSystemWidget()";
+    //    qDebug()<<"~EnterSystemWidget()";
+}
+
+void EnterSystemWidget::showEvent(QShowEvent *event)
+{
+    if (DataManagement::getInstance().getHospitalInfo()->professional) {
+        DataManagement::getInstance().getRegulator()->connectTrendChart(true);
+        trendChartBtn->show();
+    }
+    else {
+        DataManagement::getInstance().getRegulator()->connectTrendChart(false);
+        trendChartBtn->hide();
+    }
+    event->accept();
 }
 
 void EnterSystemWidget::closeEvent(QCloseEvent *event)
@@ -176,7 +190,6 @@ void EnterSystemWidget::initInfoModule()
     nameLineEdit->setFixedWidth(120*instance.wZoom());
     numLineEdit->setEnabled(false);
     numLineEdit->setFixedWidth(120*instance.wZoom());
-
 
 }
 
@@ -284,7 +297,7 @@ void EnterSystemWidget::initDataModule()
     dataGroupBox->setStyleSheet("QGroupBox::title{subcontrol-position: bottom center;}");
     secColLayout->addWidget(dataGroupBox);
 
-    QList<CustomCtrl *> customCtrls = regulator->getSaveCustomCtrls();
+    QList<CustomCtrl *> customCtrls = regulator->getSaveCustomCtrls(false);
     for (int num = 0; num < customCtrls.size(); ++num) {
         QHBoxLayout *hLayout = new QHBoxLayout;
         hLayouts.append(hLayout);
@@ -293,6 +306,7 @@ void EnterSystemWidget::initDataModule()
         customCtrls.at(num)->show();
     }
     regulator->moveToThread(dataThread);
+    DataManagement::getInstance().setRegulator(regulator);
 }
 
 void EnterSystemWidget::initReportModule()
@@ -300,8 +314,10 @@ void EnterSystemWidget::initReportModule()
     operationGroupBox = new QGroupBox(this);
     backBtn = new QPushButton(tr("返回"),this);
     reportBtn = new QPushButton(tr("生成报告"),this);
+    trendChartBtn = new QPushButton(tr("趋势图"),this);
     sudokuBtn = new QPushButton(tr("九宫格图"),this);
     auxArgBtn = new QPushButton(tr("辅助参数"),this);
+    trendChartsDialog = new TrendChartsDialog;
     auxArgDialog = new AuxArgDialog;
     sudokuDraw = new DrawSudoku;
 
@@ -312,6 +328,7 @@ void EnterSystemWidget::initReportModule()
     hLayout->addStretch();
     hLayout->addWidget(reportBtn);
     hLayout->addStretch();
+    hLayout->addWidget(trendChartBtn);
     hLayout->addWidget(sudokuBtn);
     hLayout->addWidget(auxArgBtn);
 }
@@ -359,6 +376,7 @@ void EnterSystemWidget::signalsAndSlots()
     // report
     connect(backBtn, &QPushButton::clicked, this, &EnterSystemWidget::close);
     connect(reportBtn, &QPushButton::clicked, this, &EnterSystemWidget::createReport);
+    connect(trendChartBtn, &QPushButton::clicked, trendChartsDialog, &TrendChartsDialog::exec);
     connect(auxArgBtn, &QPushButton::clicked, auxArgDialog, &AuxArgDialog::exec);
     connect(sudokuBtn, &QPushButton::clicked, sudokuDraw, &DrawSudoku::exec);
     connect(auxArgDialog, &AuxArgDialog::value, this, [=](int cvp, int lap){
@@ -384,7 +402,7 @@ void EnterSystemWidget::changeShow(const QString &current, const QString &change
             layout->removeWidget(cuCtrl);
             layout->addWidget(chCtrl);
             chCtrl->show();
-            regulator->changeCurrentNames(current,change);
+            regulator->changeCurrentNames(current,change,false);
             break;
         }
     }
@@ -415,19 +433,19 @@ void EnterSystemWidget::setData(const uchar &type, const double &value)
         if(LVETCtrl != nullptr) {
             double lvet = LVETCtrl->getCurrentValue();
             if(lvet != 0) {
-                setCtrlValue(Type::STR,value/LVETCtrl->getCurrentValue(),1);
+                setCtrlValue(Type::STR,value/LVETCtrl->getCurrentValue());
             }
         }
     }
         break;
     case Type::TFC:
-        setCtrlValue(Type::TFC,value/1000.0,3);
+        setCtrlValue(Type::TFC,value/1000.0);
         break;
     case Type::EPCI:
-        setCtrlValue(Type::EPCI,value/1000.0,3);
+        setCtrlValue(Type::EPCI,value/1000.0);
         break;
     case Type::ISI:
-        setCtrlValue(Type::ISI,value/100.0,2);
+        setCtrlValue(Type::ISI,value/100.0);
         if (bodyValue.age != 0) {
             double idealISI = 0;
             if (bodyValue.sex == 1) {
@@ -469,7 +487,7 @@ void EnterSystemWidget::setData(const uchar &type, const double &value)
         double SIValue = 2/bodyValue.BSA()*bodyValue.VEPT()/6800*value;
         double SVValue = SIValue*bodyValue.BSA();
         setCtrlValue(Type::SI,SIValue);
-        setCtrlValue(Type::SV,SVValue,1);
+        setCtrlValue(Type::SV,SVValue);
 //        if(svvQueue.size() == 10) {
 //            double avgSV = accumulate(svvQueue.begin(),svvQueue.end(),0)/svvQueue.size();
 //            setCtrlValue(Type::SVV,fabs(((SVValue-avgSV)/avgSV)),1);
@@ -480,7 +498,7 @@ void EnterSystemWidget::setData(const uchar &type, const double &value)
         if(bodyValue.SBP != 0 && bodyValue.DBP != 0) {
             setCtrlValue(Type::LSW,0.0144*SVValue*(bodyValue.MAP()-bodyValue.LAP));
             double lswi = 0.0144*SIValue*(bodyValue.MAP()-bodyValue.LAP);
-            setCtrlValue(Type::LSWI,lswi,1);
+            setCtrlValue(Type::LSWI,lswi);
             auto InoCtrl = regulator->getCustomCtrl(typeName(Type::Ino));
             if(InoCtrl != nullptr && bodyValue.age != 0) {
                 if (!InoCtrl->getValueStr().isEmpty()) {
@@ -494,9 +512,9 @@ void EnterSystemWidget::setData(const uchar &type, const double &value)
                     setCtrlValue(Type::Vol,con*100-InoCtrl->getCurrentValue());
                 }
             }
-            setCtrlValue(Type::SSVR,80*(bodyValue.MAP()-bodyValue.CVP)/SVValue,1);
+            setCtrlValue(Type::SSVR,80*(bodyValue.MAP()-bodyValue.CVP)/SVValue);
             double ssvri = 80*(bodyValue.MAP()-bodyValue.CVP)/SIValue;
-            setCtrlValue(Type::SSVRI,ssvri,1);
+            setCtrlValue(Type::SSVRI,ssvri);
             if(ssvri > 137.8) {
                 setCtrlValue(Type::Vas,fabs(ssvri/137.8-1)*100);
             }
@@ -509,9 +527,9 @@ void EnterSystemWidget::setData(const uchar &type, const double &value)
     case Type::CI:
     {
         double CIValue = 2/bodyValue.BSA()*bodyValue.VEPT()/6800*value/10;
-        setCtrlValue(Type::CI,CIValue,1);
+        setCtrlValue(Type::CI,CIValue);
         double COValue = CIValue*bodyValue.BSA();
-        setCtrlValue(Type::CO,COValue,1);
+        setCtrlValue(Type::CO,COValue);
         if(CIValue > 4.5) {
             setCtrlValue(Type::HRV,fabs(CIValue/4.5-1)*100);
         }
@@ -521,8 +539,8 @@ void EnterSystemWidget::setData(const uchar &type, const double &value)
         if(bodyValue.SBP != 0 && bodyValue.DBP != 0) {
             setCtrlValue(Type::SVR,(bodyValue.MAP()-bodyValue.CVP)/COValue*80);
             setCtrlValue(Type::SVRI,80*(bodyValue.MAP()-bodyValue.CVP)/CIValue);
-            setCtrlValue(Type::LCW,0.0144*(bodyValue.MAP()-bodyValue.LAP-2)*COValue,1);
-            setCtrlValue(Type::LCWI,0.0144*(bodyValue.MAP()-bodyValue.LAP)*CIValue,2);
+            setCtrlValue(Type::LCW,0.0144*(bodyValue.MAP()-bodyValue.LAP-2)*COValue);
+            setCtrlValue(Type::LCWI,0.0144*(bodyValue.MAP()-bodyValue.LAP)*CIValue);
         }
     }
         break;
@@ -636,12 +654,9 @@ void EnterSystemWidget::clearUiSlot()
     }
 }
 
-void EnterSystemWidget::setCtrlValue(const Type &type, const double &value, const int &digit)
+void EnterSystemWidget::setCtrlValue(const Type &type, const double &value)
 {
-    auto customCtrl = regulator->getCustomCtrl(typeName(type));
-    if(customCtrl != nullptr) {
-        customCtrl->setValue(value,digit);
-    }
+    regulator->getCustomCtrl(typeName(type))->setValue(value);
 }
 
 bool EnterSystemWidget::isStartCheck()

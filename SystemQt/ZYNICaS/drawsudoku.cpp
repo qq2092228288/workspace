@@ -90,10 +90,21 @@ void DrawSudoku::paintEvent(QPaintEvent *event)
 
     painter.setPen(QPen(QColor(Qt::black),1));
     // MAP SI
-    QLine minMap(point.x(),point.y()-(args.MAP.min-minY)*stepLenY,point.x()+len,point.y()-(args.MAP.min-minY)*stepLenY);
-    QLine maxMap(point.x(),point.y()-(args.MAP.max-minY)*stepLenY,point.x()+len,point.y()-(args.MAP.max-minY)*stepLenY);
-    QLine minSi(point.x()+(args.SI.min-minX)*stepLenX,point.y(),point.x()+(args.SI.min-minX)*stepLenX,point.y()-len);
-    QLine maxSi(point.x()+(args.SI.max-minX)*stepLenX,point.y(),point.x()+(args.SI.max-minX)*stepLenX,point.y()-len);
+    Argument mapArg, siArg, ssvriArg, lswiArg;
+    foreach (Argument argument, args.arguments) {
+        if ("Map" == argument.en)
+            mapArg = argument;
+        else if("SI" == argument.en)
+            siArg = argument;
+        else if("SSVRI" == argument.en)
+            ssvriArg = argument;
+        else if("LSWI" == argument.en)
+            lswiArg = argument;
+    }
+    QLine minMap(point.x(),point.y()-(mapArg.min-minY)*stepLenY,point.x()+len,point.y()-(mapArg.min-minY)*stepLenY);
+    QLine maxMap(point.x(),point.y()-(mapArg.max-minY)*stepLenY,point.x()+len,point.y()-(mapArg.max-minY)*stepLenY);
+    QLine minSi(point.x()+(siArg.min-minX)*stepLenX,point.y(),point.x()+(siArg.min-minX)*stepLenX,point.y()-len);
+    QLine maxSi(point.x()+(siArg.max-minX)*stepLenX,point.y(),point.x()+(siArg.max-minX)*stepLenX,point.y()-len);
     painter.drawLines(QVector<QLine>()<<minMap<<maxMap<<minSi<<maxSi);
     // SSVRI LSWI
     QList<QPointF> minSsvriPoints;
@@ -103,10 +114,10 @@ void DrawSudoku::paintEvent(QPaintEvent *event)
     for (int x = 0; x <= len; ++x) {
         qreal realX = x/stepLenX+minX;
         //计算y坐标值
-        qreal minSsvri = args.SSVRI.min*realX/80+args.CVP;
-        qreal maxSsvri = args.SSVRI.max*realX/80+args.CVP;
-        qreal minLswi = args.LSWI.min/0.0144/realX+args.LAP;
-        qreal maxLswi = args.LSWI.max/0.0144/realX+args.LAP;
+        qreal minSsvri = ssvriArg.min*realX/80+args.CVP;
+        qreal maxSsvri = ssvriArg.max*realX/80+args.CVP;
+        qreal minLswi = lswiArg.min/0.0144/realX+args.LAP;
+        qreal maxLswi = lswiArg.max/0.0144/realX+args.LAP;
         if(minSsvri >= minY && minSsvri <= maxY) {
             minSsvriPoints.append(QPointF(point.x()+x,point.y()+(minY-minSsvri)*stepLenY));
         }
@@ -128,10 +139,10 @@ void DrawSudoku::paintEvent(QPaintEvent *event)
     drawCurve(painter,maxLswiPoints,"LSWI");
 
     // 相交点X坐标
-    qreal minMin_X = (intersectAxisX(args.LSWI.min,args.SSVRI.min)-minX)*stepLenX+point.x();
-    qreal minMax_X = (intersectAxisX(args.LSWI.min,args.SSVRI.max)-minX)*stepLenX+point.x();
-    qreal maxMin_X = (intersectAxisX(args.LSWI.max,args.SSVRI.min)-minX)*stepLenX+point.x();
-    qreal maxMax_X = (intersectAxisX(args.LSWI.max,args.SSVRI.max)-minX)*stepLenX+point.x();
+    qreal minMin_X = (intersectAxisX(lswiArg.min,ssvriArg.min)-minX)*stepLenX+point.x();
+    qreal minMax_X = (intersectAxisX(lswiArg.min,ssvriArg.max)-minX)*stepLenX+point.x();
+    qreal maxMin_X = (intersectAxisX(lswiArg.max,ssvriArg.min)-minX)*stepLenX+point.x();
+    qreal maxMax_X = (intersectAxisX(lswiArg.max,ssvriArg.max)-minX)*stepLenX+point.x();
     // 去除交点外的点
     removePoints(minLswiPoints,minMax_X,minMin_X);
     removePoints(maxLswiPoints,maxMax_X,maxMin_X);

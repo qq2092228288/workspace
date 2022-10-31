@@ -101,6 +101,8 @@ void MainWidget::enterBtnSlot()
     }
     foreach (QSerialPortInfo info, QSerialPortInfo::availablePorts()) {
         if(enterSystemWidget->currentPortName() == info.portName() ) {
+            connect(&DataManagement::getInstance(),&DataManagement::startCheck,
+                    DataManagement::getInstance().getTebco(),&ZyTebco::startCheckSlot);
             connect(enterSystemWidget, &EnterSystemWidget::createdReport,
                     DataManagement::getInstance().getIdCheck(), &IdCheck::consumablesUsed);
             disconnect(enterSystemWidget, &EnterSystemWidget::startDemoMode,
@@ -116,6 +118,8 @@ void MainWidget::enterBtnSlot()
 
 void MainWidget::demoBtnSlot()
 {
+    disconnect(&DataManagement::getInstance(),&DataManagement::startCheck,
+            DataManagement::getInstance().getTebco(),&ZyTebco::startCheckSlot);
     disconnect(enterSystemWidget, &EnterSystemWidget::createdReport,
             DataManagement::getInstance().getIdCheck(), &IdCheck::consumablesUsed);
     connect(enterSystemWidget, &EnterSystemWidget::startDemoMode,

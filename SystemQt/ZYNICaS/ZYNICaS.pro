@@ -25,9 +25,13 @@ SOURCES += \
     main.cpp \
     mainwidget.cpp \
     personalinfodialog.cpp \
+    reportdatabase.cpp \
     reportword.cpp \
+    selectitemdialog.cpp \
     showreportdialog.cpp \
     systemconfigdialog.cpp \
+    trendchart.cpp \
+    trendchartsdialog.cpp \
     waitingdialog.cpp
 
 HEADERS += \
@@ -43,9 +47,13 @@ HEADERS += \
     infoeditdialog.h \
     mainwidget.h \
     personalinfodialog.h \
+    reportdatabase.h \
     reportword.h \
+    selectitemdialog.h \
     showreportdialog.h \
     systemconfigdialog.h \
+    trendchart.h \
+    trendchartsdialog.h \
     waitingdialog.h
 
 

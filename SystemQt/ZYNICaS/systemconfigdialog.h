@@ -28,6 +28,7 @@ struct HospitalInfo
     QString doctorName;
     bool xprinter;
     bool tip;
+    bool professional;
 };
 
 class SystemConfigDialog : public QDialog
@@ -53,6 +54,9 @@ private:
     QRadioButton *printerRadio;
     QRadioButton *xprinterRadio;
     QCheckBox *tipCheckBox;
+    QGroupBox *checkModeGroupBox;
+    QRadioButton *generalModeRadio;
+    QRadioButton *professionalModeRadio;
     QGroupBox *systemInfoGroupBox;
     QLabel *serialPortLabel;
     QComboBox *serialPortComboBox;
