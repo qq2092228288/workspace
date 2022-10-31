@@ -117,24 +117,24 @@ CustomCtrl::CustomCtrl(CustomCtrlRegulator *reg, Argument arg, QWidget *parent)
     auto &instance = DataManagement::getInstance();
 //    setFixedSize(280*instance.wZoom(),270*instance.hZoom());
 
-    dialog.setFixedSize(240*instance.wZoom(),120*instance.hZoom());
-    dialog.setWindowFlags(Qt::CustomizeWindowHint | Qt::WindowCloseButtonHint);
+//    dialog.setFixedSize(240*instance.wZoom(),120*instance.hZoom());
+//    dialog.setWindowFlags(Qt::CustomizeWindowHint | Qt::WindowCloseButtonHint);
     //样式表
-    dialog.setStyleSheet(instance.dialogQss());
+//    dialog.setStyleSheet(instance.dialogQss());
     timer = new QTimer(this);
-    comboBox = new QComboBox(&dialog);
-    confirmBtn = new QPushButton(tr("确定"),&dialog);
-    comboBox->setFixedWidth(100*instance.wZoom());
-    QHBoxLayout *layout = new QHBoxLayout(&dialog);
-    dialog.setWindowTitle(tr("选择参数"));
-    dialog.setWindowFlags(Qt::CustomizeWindowHint | Qt::WindowCloseButtonHint);
-    dialog.setLayout(layout);
-    layout->addWidget(comboBox);
-    layout->addStretch();
-    layout->addWidget(confirmBtn);
+//    comboBox = new QComboBox(&dialog);
+//    confirmBtn = new QPushButton(tr("确定"),&dialog);
+//    comboBox->setFixedWidth(100*instance.wZoom());
+//    QHBoxLayout *layout = new QHBoxLayout(&dialog);
+//    dialog.setWindowTitle(tr("选择参数"));
+//    dialog.setWindowFlags(Qt::CustomizeWindowHint | Qt::WindowCloseButtonHint);
+//    dialog.setLayout(layout);
+//    layout->addWidget(comboBox);
+//    layout->addStretch();
+//    layout->addWidget(confirmBtn);
 
     connect(timer,&QTimer::timeout,this,&CustomCtrl::timeoutSlot);
-    connect(confirmBtn,&QPushButton::clicked,this,&CustomCtrl::confirmSlot);
+//    connect(confirmBtn,&QPushButton::clicked,this,&CustomCtrl::confirmSlot);
 
     QVBoxLayout *vLayout = new QVBoxLayout(this);
     regulator = reg;
@@ -206,13 +206,13 @@ void CustomCtrl::stopTimer()
 
 void CustomCtrl::mouseDoubleClickEvent(QMouseEvent *)
 {
-    comboBox->clear();
-    foreach (const QString &name, regulator->getAllNames()) {
-        if(-1 == regulator->getSaveNames().indexOf(name)) {
-            comboBox->addItem(name);
-        }
-    }
-    dialog.exec();
+//    comboBox->clear();
+//    foreach (const QString &name, regulator->getAllNames()) {
+//        if(-1 == regulator->getSaveNames().indexOf(name)) {
+//            comboBox->addItem(name);
+//        }
+//    }
+//    dialog.exec();
 }
 
 AItems CustomCtrl::getArgItems()
@@ -301,12 +301,12 @@ void CustomCtrl::recordValueSlot()
 //    emit recordValue(aitems.recordValue);
 }
 
-void CustomCtrl::confirmSlot()
-{
-    emit changeName(aitems.dataName, comboBox->currentText());
-    regulator->saveNames();
-    dialog.hide();
-}
+//void CustomCtrl::confirmSlot()
+//{
+//    emit changeName(aitems.dataName, comboBox->currentText());
+//    regulator->saveNames();
+//    dialog.hide();
+//}
 
 void CustomCtrl::timeoutSlot()
 {
@@ -370,37 +370,51 @@ CustomCtrlRegulator::CustomCtrlRegulator(QObject *parent)
 {
     fileName = DataManagement::getInstance().getPaths().showItems();
     Args args = DataManagement::getInstance().getArgs();
-    CO_Widget = new CustomCtrl(this,args.CO);
-    CI_Widget = new CustomCtrl(this,args.CI);
-    SV_Widget = new CustomCtrl(this,args.SV);
-    SI_Widget = new CustomCtrl(this,args.SI);
-    HRV_Widget = new CustomCtrl(this,args.HRV);
 
-    TFC_Widget = new CustomCtrl(this,args.TFC);
-    EDI_Widget = new CustomCtrl(this,args.EDI);
-    Vol_Widget = new CustomCtrl(this,args.Vol);
+//    CO_Widget = new CustomCtrl(this,args.CO);
+//    CI_Widget = new CustomCtrl(this,args.CI);
+//    SV_Widget = new CustomCtrl(this,args.SV);
+//    SI_Widget = new CustomCtrl(this,args.SI);
+//    HRV_Widget = new CustomCtrl(this,args.HRV);
 
-    SVR_Widget = new CustomCtrl(this,args.SVR);
-    SSVR_Widget = new CustomCtrl(this,args.SSVR);
-    SSVRI_Widget = new CustomCtrl(this,args.SSVRI);
-    SVRI_Widget = new CustomCtrl(this,args.SVRI);
-    Vas_Widget = new CustomCtrl(this,args.Vas);
+//    TFC_Widget = new CustomCtrl(this,args.TFC);
+//    EDI_Widget = new CustomCtrl(this,args.EDI);
+//    Vol_Widget = new CustomCtrl(this,args.Vol);
 
-    PEP_Widget = new CustomCtrl(this,args.PEP);
-    LVET_Widget = new CustomCtrl(this,args.LVET);
-    LSW_Widget = new CustomCtrl(this,args.LSW);
-    LSWI_Widget = new CustomCtrl(this,args.LSWI);
-    LCW_Widget = new CustomCtrl(this,args.LCW);
-    LCWI_Widget = new CustomCtrl(this,args.LCWI);
-    STR_Widget = new CustomCtrl(this,args.STR);
-    EPCI_Widget = new CustomCtrl(this,args.EPCI);
-    ISI_Widget = new CustomCtrl(this,args.ISI);
-    Ino_Widget = new CustomCtrl(this,args.Ino);
+//    SVR_Widget = new CustomCtrl(this,args.SVR);
+//    SSVR_Widget = new CustomCtrl(this,args.SSVR);
+//    SSVRI_Widget = new CustomCtrl(this,args.SSVRI);
+//    SVRI_Widget = new CustomCtrl(this,args.SVRI);
+//    Vas_Widget = new CustomCtrl(this,args.Vas);
+
+//    EF_Widget = new CustomCtrl(this,args.EF);
+//    PEP_Widget = new CustomCtrl(this,args.PEP);
+//    LVET_Widget = new CustomCtrl(this,args.LVET);
+//    LSW_Widget = new CustomCtrl(this,args.LSW);
+//    LSWI_Widget = new CustomCtrl(this,args.LSWI);
+//    LCW_Widget = new CustomCtrl(this,args.LCW);
+//    LCWI_Widget = new CustomCtrl(this,args.LCWI);
+//    STR_Widget = new CustomCtrl(this,args.STR);
+//    EPCI_Widget = new CustomCtrl(this,args.EPCI);
+//    ISI_Widget = new CustomCtrl(this,args.ISI);
+//    Ino_Widget = new CustomCtrl(this,args.Ino);
+
+//    HR_Widget = new CustomCtrl(this,args.HR);
+//    BP_Widget = new BpCustomCtrl(this,args.BP);
+//    BP_Widget->setDoubleDataCtrl(args.DBP);
+//    MAP_Widget = new CustomCtrl(this,args.MAP);
 
     HR_Widget = new CustomCtrl(this,args.HR);
-    BP_Widget = new BpCustomCtrl(this,args.BP);
-    BP_Widget->setDoubleDataCtrl(args.DBP);
-    MAP_Widget = new CustomCtrl(this,args.MAP);
+    LVET_Widget = new CustomCtrl(this,args.LVET);
+    TFC_Widget = new CustomCtrl(this,args.TFC);
+    EPCI_Widget = new CustomCtrl(this,args.EPCI);
+    PEP_Widget = new CustomCtrl(this,args.PEP);
+    EF_Widget = new CustomCtrl(this,args.EF);
+    ISI_Widget = new CustomCtrl(this,args.ISI);
+    CI_Widget = new CustomCtrl(this,args.CI);
+    SI_Widget = new CustomCtrl(this,args.SI);
+    CO_Widget = new CustomCtrl(this,args.CO);
+    SV_Widget = new CustomCtrl(this,args.SV);
 }
 
 CustomCtrlRegulator::~CustomCtrlRegulator()
@@ -445,7 +459,7 @@ QStringList CustomCtrlRegulator::getSaveNames()
         QTextStream in(&file);
         in.setCodec(QTextCodec::codecForName("utf-8"));
         QStringList temp;
-        temp<<"HR"<<"TFC"<<"CO"<<"CI"<<"SV"<<"SI"<<"EDI"<<"HRV"<<"ISI"<<"Ino"<<"SSVRI"<<"SBP/DBP";
+        temp<<"HR"<<"VET"<<"TFC"<<"EPCI"<<"PEP"<<"EF"<<"ISI"<<"CI"<<"SI"<<"CO"<<"SV";
         foreach (QString str, temp) {
             in<<QString("%1\n").arg(str);
         }

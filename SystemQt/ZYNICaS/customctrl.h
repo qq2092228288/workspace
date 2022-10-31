@@ -66,7 +66,7 @@ public slots:
     void valueWarning(bool warning);
     virtual void recordValueSlot();
 protected slots:
-    void confirmSlot();
+//    void confirmSlot();
     void timeoutSlot();
 signals:
 //    void recordValue(qreal);
@@ -75,9 +75,9 @@ signals:
     void changeName(const QString &, const QString &);
 protected:
     QTimer *timer;
-    QDialog dialog;
-    QComboBox *comboBox;
-    QPushButton *confirmBtn;
+//    QDialog dialog;
+//    QComboBox *comboBox;
+//    QPushButton *confirmBtn;
     CustomCtrlRegulator *regulator;
     QFrame *frame;
     QVBoxLayout *mainLayout;
@@ -137,32 +137,33 @@ private:
     CustomCtrl *CI_Widget;
     CustomCtrl *SV_Widget;
     CustomCtrl *SI_Widget;
-    CustomCtrl *HRV_Widget;
+//    CustomCtrl *HRV_Widget;
     //前负荷容量
     CustomCtrl *TFC_Widget;
-    CustomCtrl *EDI_Widget;
-    CustomCtrl *Vol_Widget;
+//    CustomCtrl *EDI_Widget;
+//    CustomCtrl *Vol_Widget;
     //后负荷容量
-    CustomCtrl *SVR_Widget;
-    CustomCtrl *SSVR_Widget;
-    CustomCtrl *SSVRI_Widget;
-    CustomCtrl *SVRI_Widget;
-    CustomCtrl *Vas_Widget;
+//    CustomCtrl *SVR_Widget;
+//    CustomCtrl *SSVR_Widget;
+//    CustomCtrl *SSVRI_Widget;
+//    CustomCtrl *SVRI_Widget;
+//    CustomCtrl *Vas_Widget;
     //心肌收缩力动力
+    CustomCtrl *EF_Widget;
     CustomCtrl *PEP_Widget;
     CustomCtrl *LVET_Widget;
     CustomCtrl *EPCI_Widget;
     CustomCtrl *ISI_Widget;
-    CustomCtrl *LSW_Widget;
-    CustomCtrl *LSWI_Widget;
-    CustomCtrl *LCW_Widget;
-    CustomCtrl *LCWI_Widget;
-    CustomCtrl *STR_Widget;
-    CustomCtrl *Ino_Widget;
+//    CustomCtrl *LSW_Widget;
+//    CustomCtrl *LSWI_Widget;
+//    CustomCtrl *LCW_Widget;
+//    CustomCtrl *LCWI_Widget;
+//    CustomCtrl *STR_Widget;
+//    CustomCtrl *Ino_Widget;
     //常规
     CustomCtrl *HR_Widget;
-    CustomCtrl *BP_Widget;
-    CustomCtrl *MAP_Widget;
+//    CustomCtrl *BP_Widget;
+//    CustomCtrl *MAP_Widget;
 };
 
 #endif // CUSTOMCTRL_H

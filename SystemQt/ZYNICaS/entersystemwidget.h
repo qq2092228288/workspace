@@ -26,10 +26,10 @@
 
 
 #include "infoeditdialog.h"
-#include "bpeditdialog.h"
+//#include "bpeditdialog.h"
 #include "auxargdialog.h"
 #include "drawwaveforms.h"
-#include "drawsudoku.h"
+//#include "drawsudoku.h"
 #include "customctrl.h"
 
 class EnterSystemWidget : public QWidget
@@ -42,7 +42,7 @@ public:
     QString currentPortName() const;
     //初始化
     void initInfoModule();
-    void initBPModule();
+//    void initBPModule();
     void initPosModule();
     void initOscModule();
     void initDataModule();
@@ -53,7 +53,7 @@ public slots:
     void timeoutSlot();
     void changeShow(const QString &current, const QString &change);
     void setData(const uchar &type, const double &value);
-    void setBPValue(const QString &sbp,const QString &dbp);
+//    void setBPValue(const QString &sbp,const QString &dbp);
     void changeMode(const int &id);
     void recordPosition();
     void changePosition(int id);
@@ -85,13 +85,13 @@ private:
     InfoEditDialog *infoDialog;
 
     //血压模块
-    QGroupBox *bpGroupBox;
-    QLabel *sbpLabel;               //收缩压
-    QLabel *dbpLabel;               //舒张压
-    QLineEdit *sbpLineEdit;
-    QLineEdit *dbpLineEdit;
-    QPushButton *mdiBtn;            //手动输入
-    BPEditDialog *bpDialog;
+//    QGroupBox *bpGroupBox;
+//    QLabel *sbpLabel;               //收缩压
+//    QLabel *dbpLabel;               //舒张压
+//    QLineEdit *sbpLineEdit;
+//    QLineEdit *dbpLineEdit;
+//    QPushButton *mdiBtn;            //手动输入
+//    BPEditDialog *bpDialog;
 
     //体位模块
     QGroupBox *pldGroupBox;
@@ -129,10 +129,10 @@ private:
     QGroupBox *operationGroupBox;
     QPushButton *backBtn;
     QPushButton *reportBtn;
-    QPushButton *sudokuBtn;
+//    QPushButton *sudokuBtn;
     QPushButton *auxArgBtn;
     AuxArgDialog *auxArgDialog;
-    DrawSudoku *sudokuDraw;
+//    DrawSudoku *sudokuDraw;
 };
 
 #endif // ENTERSYSTEMWIDGET_H

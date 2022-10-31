@@ -185,10 +185,10 @@ void DataManagement::setdZ(QChartView *dZ)
     this->m_pdZ = dZ;
 }
 
-void DataManagement::setSudoku(DrawSudoku *sudoku)
-{
-    this->m_pSudoku = sudoku;
-}
+//void DataManagement::setSudoku(DrawSudoku *sudoku)
+//{
+//    this->m_pSudoku = sudoku;
+//}
 
 void DataManagement::recordPosition(QString position)
 {
@@ -205,7 +205,7 @@ void DataManagement::saveReport(QString position, bool record)
     m_currentInfo.pos = position;
     saveInfo(m_currentInfo,record);
     m_pdZ->grab().scaled(300,120,Qt::IgnoreAspectRatio,Qt::SmoothTransformation).save(m_filePath.current_dz());
-    m_pSudoku->grab().save(m_filePath.sudoku());
+//    m_pSudoku->grab().save(m_filePath.sudoku());
     reportThread->init();
     connect(reportThread,&CreateReportThread::finished,this,&DataManagement::clear);
         //当前时间
@@ -218,7 +218,7 @@ void DataManagement::saveReport(QString position, bool record)
                 reportThread->setOpenArg(m_filePath.many_dot(),false);
                 // 记录体位
                 QStringList rList;
-                for (int i = 0; i < 27; ++i) {
+                for (int i = 0; i < 11; ++i) {
                     rList<<QString("r%1").arg(i,2,10,QLatin1Char('0'));
                 }
                 reportThread->addBatchMarks(rList, m_recordInfo.values);
@@ -281,7 +281,7 @@ void DataManagement::saveReport(QString position, bool record)
         reportThread->addMarks("cpos", m_currentInfo.pos);
         if (!m_pHospitalInfo->xprinter) {
             QStringList cList;
-            for (int i = 0; i < 27; ++i) {
+            for (int i = 0; i < 11; ++i) {
                 cList<<QString("c%1").arg(i,2,10,QLatin1Char('0'));
             }
             reportThread->addBatchMarks(cList, m_currentInfo.values);
@@ -299,8 +299,8 @@ void DataManagement::saveReport(QString position, bool record)
                  <<m_currentInfo.values.mid(20,6);
             reportThread->addBatchMarks(rList, values);
         }
-        reportThread->addMarks("sname", tr("九宫分析图"));
-        reportThread->addPic("simage",m_filePath.sudoku());
+//        reportThread->addMarks("sname", tr("九宫分析图"));
+//        reportThread->addPic("simage",m_filePath.sudoku());
         // 医院、时间、检查人员
         reportThread->addMarks("hospital" , m_pHospitalInfo->hospitalName);
         reportThread->addMarks("time" , curTime.toString("yyyy-MM-dd hh:mm"));

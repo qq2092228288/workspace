@@ -54,4 +54,15 @@ deploy/
 *.pb.cc
 
 # local file
-bin_x86_win32/debug
+*.ini
+*.txt
+*.xml
+*.doc
+*.docx
+*.zip
+*.exp
+*.db
+*.png
+*.jpg
+*.qm
+~$*

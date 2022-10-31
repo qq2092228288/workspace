@@ -92,7 +92,7 @@ EnterSystemWidget::EnterSystemWidget(const QString &portName, QWidget *parent)
     timer->start(1000);
 
     initInfoModule();
-    initBPModule();
+//    initBPModule();
     initPosModule();
     initOscModule();
     initReportModule();
@@ -105,7 +105,7 @@ EnterSystemWidget::EnterSystemWidget(const QString &portName, QWidget *parent)
     instance.setBodyValue(&bodyValue);
     instance.setRegulator(regulator);
     instance.setdZ(admitDraw->getView());
-    instance.setSudoku(sudokuDraw);
+//    instance.setSudoku(sudokuDraw);
 
     ecgThread->start();
     diffThread->start();
@@ -133,9 +133,9 @@ EnterSystemWidget::~EnterSystemWidget()
     delete admitThread;
     delete dataThread;
     delete infoDialog;
-    delete bpDialog;
+//    delete bpDialog;
     delete auxArgDialog;
-    delete sudokuDraw;
+//    delete sudokuDraw;
 //    qDebug()<<"~EnterSystemWidget()";
 }
 
@@ -180,35 +180,35 @@ void EnterSystemWidget::initInfoModule()
 
 }
 
-void EnterSystemWidget::initBPModule()
-{
-    bpGroupBox = new QGroupBox(tr("血压检测"),this);
-    sbpLabel = new QLabel(tr("收缩压"),this);
-    dbpLabel = new QLabel(tr("舒张压"),this);
-    sbpLineEdit = new QLineEdit(this);
-    dbpLineEdit = new QLineEdit(this);
-    mdiBtn = new QPushButton(tr("手动输入"),this);
-    bpDialog = new BPEditDialog;
+//void EnterSystemWidget::initBPModule()
+//{
+//    bpGroupBox = new QGroupBox(tr("血压检测"),this);
+//    sbpLabel = new QLabel(tr("收缩压"),this);
+//    dbpLabel = new QLabel(tr("舒张压"),this);
+//    sbpLineEdit = new QLineEdit(this);
+//    dbpLineEdit = new QLineEdit(this);
+//    mdiBtn = new QPushButton(tr("手动输入"),this);
+//    bpDialog = new BPEditDialog;
 
-    QVBoxLayout *vLayout = new QVBoxLayout(bpGroupBox);
-    QHBoxLayout *hLayout = new QHBoxLayout;
+//    QVBoxLayout *vLayout = new QVBoxLayout(bpGroupBox);
+//    QHBoxLayout *hLayout = new QHBoxLayout;
 
-    firstColLayout->addWidget(bpGroupBox);
-    vLayout->addLayout(hLayout);
-    hLayout->addWidget(sbpLabel);
-    hLayout->addWidget(sbpLineEdit);
-    hLayout->addWidget(dbpLabel);
-    hLayout->addWidget(dbpLineEdit);
-    hLayout->addStretch();
-    hLayout->addWidget(mdiBtn);
-    auto &instance = DataManagement::getInstance();
-//    bpGroupBox->setFixedHeight(sbpLineEdit->height()*2*instance.hZoom());
+//    firstColLayout->addWidget(bpGroupBox);
+//    vLayout->addLayout(hLayout);
+//    hLayout->addWidget(sbpLabel);
+//    hLayout->addWidget(sbpLineEdit);
+//    hLayout->addWidget(dbpLabel);
+//    hLayout->addWidget(dbpLineEdit);
+//    hLayout->addStretch();
+//    hLayout->addWidget(mdiBtn);
+//    auto &instance = DataManagement::getInstance();
+////    bpGroupBox->setFixedHeight(sbpLineEdit->height()*2*instance.hZoom());
 
-    sbpLineEdit->setEnabled(false);
-    sbpLineEdit->setFixedWidth(100*instance.wZoom());
-    dbpLineEdit->setEnabled(false);
-    dbpLineEdit->setFixedWidth(100*instance.wZoom());
-}
+//    sbpLineEdit->setEnabled(false);
+//    sbpLineEdit->setFixedWidth(100*instance.wZoom());
+//    dbpLineEdit->setEnabled(false);
+//    dbpLineEdit->setFixedWidth(100*instance.wZoom());
+//}
 
 void EnterSystemWidget::initPosModule()
 {
@@ -300,10 +300,10 @@ void EnterSystemWidget::initReportModule()
     operationGroupBox = new QGroupBox(this);
     backBtn = new QPushButton(tr("返回"),this);
     reportBtn = new QPushButton(tr("生成报告"),this);
-    sudokuBtn = new QPushButton(tr("九宫格图"),this);
+//    sudokuBtn = new QPushButton(tr("九宫格图"),this);
     auxArgBtn = new QPushButton(tr("辅助参数"),this);
     auxArgDialog = new AuxArgDialog;
-    sudokuDraw = new DrawSudoku;
+//    sudokuDraw = new DrawSudoku;
 
     QHBoxLayout *hLayout = new QHBoxLayout(operationGroupBox);
 
@@ -312,7 +312,7 @@ void EnterSystemWidget::initReportModule()
     hLayout->addStretch();
     hLayout->addWidget(reportBtn);
     hLayout->addStretch();
-    hLayout->addWidget(sudokuBtn);
+//    hLayout->addWidget(sudokuBtn);
     hLayout->addWidget(auxArgBtn);
 }
 
@@ -331,8 +331,8 @@ void EnterSystemWidget::signalsAndSlots()
         numLineEdit->setText(bodyValue.id);
     });
     // bp
-    connect(mdiBtn, &QPushButton::clicked, bpDialog, &BPEditDialog::exec);
-    connect(bpDialog, &BPEditDialog::value, this, &EnterSystemWidget::setBPValue);
+//    connect(mdiBtn, &QPushButton::clicked, bpDialog, &BPEditDialog::exec);
+//    connect(bpDialog, &BPEditDialog::value, this, &EnterSystemWidget::setBPValue);
     // position
     connect(&patternGroup, &QButtonGroup::idClicked, this, &EnterSystemWidget::changeMode);
     connect(&posGroup, &QButtonGroup::idClicked, this, &EnterSystemWidget::changePosition);
@@ -341,16 +341,16 @@ void EnterSystemWidget::signalsAndSlots()
     foreach (auto customCtrl, regulator->getAllCustomCtrls()) {
         connect(customCtrl, &CustomCtrl::changeName, this, &EnterSystemWidget::changeShow);
         connect(this, &EnterSystemWidget::recordValue, customCtrl, &CustomCtrl::recordValueSlot);
-        if (customCtrl->getName() == "SI") {
-            connect(customCtrl, &CustomCtrl::currentValue, sudokuDraw, [=](qreal si){
-                sudokuDraw->setSi(posGroup.checkedId(),si,!rPos.isEmpty());
-            });
-        }
-        if (customCtrl->getName() == "MAP") {
-            connect(customCtrl, &CustomCtrl::currentValue, sudokuDraw, [=](qreal map){
-                sudokuDraw->setMap(posGroup.checkedId(),map,!rPos.isEmpty());
-            });
-        }
+//        if (customCtrl->getName() == "SI") {
+//            connect(customCtrl, &CustomCtrl::currentValue, sudokuDraw, [=](qreal si){
+//                sudokuDraw->setSi(posGroup.checkedId(),si,!rPos.isEmpty());
+//            });
+//        }
+//        if (customCtrl->getName() == "MAP") {
+//            connect(customCtrl, &CustomCtrl::currentValue, sudokuDraw, [=](qreal map){
+//                sudokuDraw->setMap(posGroup.checkedId(),map,!rPos.isEmpty());
+//            });
+//        }
     }
     // osc
     connect(instance.getTebco(), &ZyTebco::ecgValue, ecgDraw, &DrawWaveforms::addValue);
@@ -360,7 +360,7 @@ void EnterSystemWidget::signalsAndSlots()
     connect(backBtn, &QPushButton::clicked, this, &EnterSystemWidget::close);
     connect(reportBtn, &QPushButton::clicked, this, &EnterSystemWidget::createReport);
     connect(auxArgBtn, &QPushButton::clicked, auxArgDialog, &AuxArgDialog::exec);
-    connect(sudokuBtn, &QPushButton::clicked, sudokuDraw, &DrawSudoku::exec);
+//    connect(sudokuBtn, &QPushButton::clicked, sudokuDraw, &DrawSudoku::exec);
     connect(auxArgDialog, &AuxArgDialog::value, this, [=](int cvp, int lap){
         bodyValue.CVP = cvp;
         bodyValue.LAP = lap;
@@ -398,7 +398,7 @@ void EnterSystemWidget::setData(const uchar &type, const double &value)
         break;
     case Type::VET:
     {
-        setCtrlValue(Type::LVET,value);
+        setCtrlValue(Type::VET,value);
 //        auto PEPCtrl = regulator->getCustomCtrl(typeName(Type::PEP));
 //        if(PEPCtrl != nullptr) {
 //            double pep = PEPCtrl->getCurrentValue();
@@ -411,7 +411,7 @@ void EnterSystemWidget::setData(const uchar &type, const double &value)
     case Type::PEP:
     {
         setCtrlValue(Type::PEP,value);
-        auto LVETCtrl = regulator->getCustomCtrl(typeName(Type::LVET));
+        auto LVETCtrl = regulator->getCustomCtrl(typeName(Type::VET));
         if(LVETCtrl != nullptr) {
             double lvet = LVETCtrl->getCurrentValue();
             if(lvet != 0) {
@@ -456,7 +456,7 @@ void EnterSystemWidget::setData(const uchar &type, const double &value)
         break;
     case Type::EF:
 //    {
-//        setCtrlValue(Type::EF,value);
+        setCtrlValue(Type::EF,value);
         efValue = value;
 //        auto SICtrl = regulator->getCustomCtrl(typeName(Type::SI));
 //        if(SICtrl != nullptr && !SICtrl->getValueStr().isEmpty()) {
@@ -535,25 +535,25 @@ void EnterSystemWidget::setData(const uchar &type, const double &value)
     }
 }
 
-void EnterSystemWidget::setBPValue(const QString &sbp, const QString &dbp)
-{
-    sbpLineEdit->setText(sbp);
-    dbpLineEdit->setText(dbp);
-    auto BPCtrl = regulator->getCustomCtrl("SBP/DBP");
-    auto MAPCtrl = regulator->getCustomCtrl("MAP");
-    if(BPCtrl != nullptr && MAPCtrl != nullptr) {
-        if(!sbp.isEmpty() && !dbp.isEmpty()) {
-            bodyValue.SBP = sbp.toInt();
-            bodyValue.DBP = dbp.toInt();
-            BPCtrl->setValues(bodyValue.SBP,bodyValue.DBP);
-            MAPCtrl->setValue(bodyValue.MAP());
-        }
-        else {
-            BPCtrl->clear();
-            MAPCtrl->clear();
-        }
-    }
-}
+//void EnterSystemWidget::setBPValue(const QString &sbp, const QString &dbp)
+//{
+//    sbpLineEdit->setText(sbp);
+//    dbpLineEdit->setText(dbp);
+//    auto BPCtrl = regulator->getCustomCtrl("SBP/DBP");
+//    auto MAPCtrl = regulator->getCustomCtrl("MAP");
+//    if(BPCtrl != nullptr && MAPCtrl != nullptr) {
+//        if(!sbp.isEmpty() && !dbp.isEmpty()) {
+//            bodyValue.SBP = sbp.toInt();
+//            bodyValue.DBP = dbp.toInt();
+//            BPCtrl->setValues(bodyValue.SBP,bodyValue.DBP);
+//            MAPCtrl->setValue(bodyValue.MAP());
+//        }
+//        else {
+//            BPCtrl->clear();
+//            MAPCtrl->clear();
+//        }
+//    }
+//}
 
 void EnterSystemWidget::changeMode(const int &id)
 {
@@ -617,17 +617,17 @@ void EnterSystemWidget::clearUiSlot()
     // 清空界面个人信息
     nameLineEdit->clear();
     numLineEdit->clear();
-    sbpLineEdit->clear();
-    dbpLineEdit->clear();
+//    sbpLineEdit->clear();
+//    dbpLineEdit->clear();
     infoDialog->clear();
     // 清空血压对话窗
-    bpDialog->clear();
+//    bpDialog->clear();
     // 清空波形图
     ecgDraw->clear();
     diffDraw->clear();
     admitDraw->clear();
     // 清空九宫格
-    sudokuDraw->clear();
+//    sudokuDraw->clear();
     // 重置人体信息
     bodyValue = BodyValue();
     // 清空检测的数据
