@@ -31,6 +31,7 @@
 #include "drawwaveforms.h"
 #include "drawsudoku.h"
 #include "customctrl.h"
+#include "trendchartsdialog.h"
 
 class EnterSystemWidget : public QWidget
 {
@@ -38,6 +39,7 @@ class EnterSystemWidget : public QWidget
 public:
     explicit EnterSystemWidget(const QString &portName, QWidget *parent = nullptr);
     virtual ~EnterSystemWidget();
+    void showEvent(QShowEvent *event);
     void closeEvent(QCloseEvent *event);
     QString currentPortName() const;
     //初始化
@@ -60,7 +62,7 @@ public slots:
     void createReport();
     void clearUiSlot();
 private:
-    void setCtrlValue(const Type &type,const double &value, const int &digit = 0);
+    void setCtrlValue(const Type &type,const double &value);
     bool isStartCheck();
 signals:
     void recordValue();
@@ -129,8 +131,10 @@ private:
     QGroupBox *operationGroupBox;
     QPushButton *backBtn;
     QPushButton *reportBtn;
+    QPushButton *trendChartBtn;
     QPushButton *sudokuBtn;
     QPushButton *auxArgBtn;
+    TrendChartsDialog *trendChartsDialog;
     AuxArgDialog *auxArgDialog;
     DrawSudoku *sudokuDraw;
 };

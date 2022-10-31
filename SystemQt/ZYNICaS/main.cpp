@@ -14,7 +14,7 @@ int main(int argc, char *argv[])
     auto &ins = DataManagement::getInstance();
     ins.startThread();
     QObject::connect(&ins,&DataManagement::clear,&ins,&DataManagement::clearSlot);
-    QObject::connect(&ins,&DataManagement::startCheck,ins.getTebco(),&ZyTebco::startCheckSlot);
+
     ins.setSize(QApplication::primaryScreen()->availableSize());
     ins.initCurrentPath();
     QDir initDir(ins.getPaths().initDir());

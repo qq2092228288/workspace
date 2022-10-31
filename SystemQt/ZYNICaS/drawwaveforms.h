@@ -24,7 +24,7 @@ signals:
 
 private:
     bool autoSetY;
-    uint m_tickCout = 120;
+    uint m_tickCount = 120;
     QList<QPointF> m_values;
     QQueue<uchar> m_oldValues;
     uint m_x = 0;

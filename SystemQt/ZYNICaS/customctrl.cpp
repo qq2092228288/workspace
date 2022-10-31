@@ -110,35 +110,19 @@ QString typeName(const Type &type)
     return typeName((uchar)type);
 }
 
-CustomCtrl::CustomCtrl(CustomCtrlRegulator *reg, Argument arg, QWidget *parent)
-    :QWidget{parent}
+CustomCtrl::CustomCtrl(Argument arg, QWidget *parent)
+    : QWidget{parent}
 {
     this->close();
     auto &instance = DataManagement::getInstance();
-//    setFixedSize(280*instance.wZoom(),270*instance.hZoom());
 
-    dialog.setFixedSize(240*instance.wZoom(),120*instance.hZoom());
-    dialog.setWindowFlags(Qt::CustomizeWindowHint | Qt::WindowCloseButtonHint);
-    //样式表
-    dialog.setStyleSheet(instance.dialogQss());
+    m_pDialog = new SelectItemDialog(false);
+
     timer = new QTimer(this);
-    comboBox = new QComboBox(&dialog);
-    confirmBtn = new QPushButton(tr("确定"),&dialog);
-    comboBox->setFixedWidth(100*instance.wZoom());
-    QHBoxLayout *layout = new QHBoxLayout(&dialog);
-    dialog.setWindowTitle(tr("选择参数"));
-    dialog.setWindowFlags(Qt::CustomizeWindowHint | Qt::WindowCloseButtonHint);
-    dialog.setLayout(layout);
-    layout->addWidget(comboBox);
-    layout->addStretch();
-    layout->addWidget(confirmBtn);
 
     connect(timer,&QTimer::timeout,this,&CustomCtrl::timeoutSlot);
-    connect(confirmBtn,&QPushButton::clicked,this,&CustomCtrl::confirmSlot);
 
     QVBoxLayout *vLayout = new QVBoxLayout(this);
-    regulator = reg;
-    regulator->addCustomCtrl(this);
     frame = new QFrame(this);
     vLayout->addWidget(frame);
 
@@ -167,6 +151,13 @@ CustomCtrl::CustomCtrl(CustomCtrlRegulator *reg, Argument arg, QWidget *parent)
     aitems.maxValue = arg.max;
     aitems.dataName = arg.en;
     aitems.dataUnit = arg.unit;
+    digit = arg.digit;
+    if (arg.dbpmin != 0 && arg.dbpmax != 0) {
+        dbpaitems.minValue = arg.dbpmin;
+        dbpaitems.maxValue = arg.dbpmax;
+        scopeLabel->setText(QString("%1~%2/%3~%4").arg(aitems.minValue).arg(aitems.maxValue)
+                            .arg(dbpaitems.minValue).arg(dbpaitems.maxValue));
+    }
 
     //样式表
     int fsize = 10*instance.zoom();
@@ -182,11 +173,19 @@ CustomCtrl::CustomCtrl(CustomCtrlRegulator *reg, Argument arg, QWidget *parent)
                              "background:transparent;border-style:outset;}").arg(vsize));
     scopeLabel->setStyleSheet(QString("QLabel{font-size: %1px;color: #ffffff;font-weight:normal;}").arg(scsize));
     unitLabel->setStyleSheet(QString("QLabel{font-size: %1px;color: #ffffff;font-weight:normal;}").arg(usize));
+
+    connect(m_pDialog, &SelectItemDialog::currentText, this, &CustomCtrl::getChangeText);
+    m_pTrendChart = new TrendChart(this);
 }
 
-void CustomCtrl::setDoubleDataCtrl(Argument arg)
+CustomCtrl::~CustomCtrl()
 {
-    Q_UNUSED(arg);
+    if (timer->isActive()){
+        timer->stop();
+    }
+    delete m_pTrendChart;
+    delete m_pDialog;
+//    qDebug()<<aitems.dataName<<"~CustomCtrl()";
 }
 
 void CustomCtrl::startTimer(qreal accuracy)
@@ -206,13 +205,7 @@ void CustomCtrl::stopTimer()
 
 void CustomCtrl::mouseDoubleClickEvent(QMouseEvent *)
 {
-    comboBox->clear();
-    foreach (const QString &name, regulator->getAllNames()) {
-        if(-1 == regulator->getSaveNames().indexOf(name)) {
-            comboBox->addItem(name);
-        }
-    }
-    dialog.exec();
+    m_pDialog->exec();
 }
 
 AItems CustomCtrl::getArgItems()
@@ -222,7 +215,7 @@ AItems CustomCtrl::getArgItems()
 
 AItems CustomCtrl::getDbpArgItems()
 {
-    return AItems();
+    return dbpaitems;
 }
 
 double CustomCtrl::getRecordValue()
@@ -255,15 +248,28 @@ QString CustomCtrl::getValueStr() const
     return valueEdit->text();
 }
 
+TrendChart *CustomCtrl::getTrendChart()
+{
+    return m_pTrendChart;
+}
+
+int CustomCtrl::getDigit() const
+{
+    return digit;
+}
+
 void CustomCtrl::clear()
 {
     aitems.recordValue = 0;
     aitems.currentValue = 0;
+    dbpaitems.recordValue = 0;
+    dbpaitems.currentValue = 0;
     valueEdit->clear();
+    m_pTrendChart->clear();
     valueWarning(false);
 }
 
-void CustomCtrl::setValue(const double &value, int digit)
+void CustomCtrl::setValue(const double &value)
 {
     double aboutValue = (int)(value*std::pow(10,digit))/(double)std::pow(10,digit);
     valueEdit->setText(QString::number(aboutValue,'f',digit));
@@ -274,8 +280,11 @@ void CustomCtrl::setValue(const double &value, int digit)
 
 void CustomCtrl::setValues(const double &value, const double &value1)
 {
-    Q_UNUSED(value);
-    Q_UNUSED(value1);
+    valueEdit->setText(QString("%1/%2").arg(value).arg(value1));
+    aitems.currentValue = value;
+    dbpaitems.currentValue = value1;
+    valueWarning(aitems.currentValue < aitems.minValue || aitems.currentValue > aitems.maxValue ||
+                 dbpaitems.currentValue < dbpaitems.minValue || dbpaitems.currentValue > dbpaitems.maxValue);
 }
 
 void CustomCtrl::valueWarning(bool warning)
@@ -298,14 +307,16 @@ void CustomCtrl::valueWarning(bool warning)
 void CustomCtrl::recordValueSlot()
 {
     aitems.recordValue = aitems.currentValue;
-//    emit recordValue(aitems.recordValue);
+    dbpaitems.recordValue = dbpaitems.currentValue;
+    //    emit recordValue(aitems.recordValue);
 }
 
-void CustomCtrl::confirmSlot()
+void CustomCtrl::getChangeText(const QString &text)
 {
-    emit changeName(aitems.dataName, comboBox->currentText());
-    regulator->saveNames();
-    dialog.hide();
+    emit changeName(aitems.dataName, text);
+    auto &instance = DataManagement::getInstance();
+    instance.getRegulator()->saveNames(DataManagement::getInstance().getPaths().showItems(),
+                                       instance.getRegulator()->getCurrentNames(false));
 }
 
 void CustomCtrl::timeoutSlot()
@@ -317,95 +328,19 @@ void CustomCtrl::timeoutSlot()
     }
 }
 
-BpCustomCtrl::BpCustomCtrl(CustomCtrlRegulator *reg, Argument arg, QWidget *parent)
-    : CustomCtrl{reg,arg,parent}
-{
-
-}
-
-void BpCustomCtrl::setDoubleDataCtrl(Argument arg)
-{
-    dbpaitems.minValue = arg.min;
-    dbpaitems.maxValue = arg.max;
-    scopeLabel->setText(QString("%1~%2/%3~%4")
-                        .arg(aitems.minValue)
-                        .arg(aitems.maxValue)
-                        .arg(dbpaitems.minValue)
-                        .arg(dbpaitems.maxValue));
-}
-
-AItems BpCustomCtrl::getDbpArgItems()
-{
-    return dbpaitems;
-}
-
-void BpCustomCtrl::setValues(const double &value, const double &value1)
-{
-    valueEdit->setText(QString("%1/%2").arg(value).arg(value1));
-    aitems.currentValue = value;
-    dbpaitems.currentValue = value1;
-    valueWarning(aitems.currentValue < aitems.minValue || aitems.currentValue > aitems.maxValue ||
-                 dbpaitems.currentValue < dbpaitems.minValue || dbpaitems.currentValue > dbpaitems.maxValue);
-}
-
-void BpCustomCtrl::clear()
-{
-    aitems.recordValue = 0;
-    aitems.currentValue = 0;
-    dbpaitems.recordValue = 0;
-    dbpaitems.currentValue = 0;
-    valueEdit->clear();
-    valueWarning(false);
-}
-
-void BpCustomCtrl::recordValueSlot()
-{
-    aitems.recordValue = aitems.currentValue;
-    dbpaitems.recordValue = dbpaitems.currentValue;
-//    emit recordValue(aitems.recordValue);
-}
-
 CustomCtrlRegulator::CustomCtrlRegulator(QObject *parent)
     : QObject{parent}
 {
-    fileName = DataManagement::getInstance().getPaths().showItems();
-    Args args = DataManagement::getInstance().getArgs();
-    CO_Widget = new CustomCtrl(this,args.CO);
-    CI_Widget = new CustomCtrl(this,args.CI);
-    SV_Widget = new CustomCtrl(this,args.SV);
-    SI_Widget = new CustomCtrl(this,args.SI);
-    HRV_Widget = new CustomCtrl(this,args.HRV);
-
-    TFC_Widget = new CustomCtrl(this,args.TFC);
-    EDI_Widget = new CustomCtrl(this,args.EDI);
-    Vol_Widget = new CustomCtrl(this,args.Vol);
-
-    SVR_Widget = new CustomCtrl(this,args.SVR);
-    SSVR_Widget = new CustomCtrl(this,args.SSVR);
-    SSVRI_Widget = new CustomCtrl(this,args.SSVRI);
-    SVRI_Widget = new CustomCtrl(this,args.SVRI);
-    Vas_Widget = new CustomCtrl(this,args.Vas);
-
-    PEP_Widget = new CustomCtrl(this,args.PEP);
-    LVET_Widget = new CustomCtrl(this,args.LVET);
-    LSW_Widget = new CustomCtrl(this,args.LSW);
-    LSWI_Widget = new CustomCtrl(this,args.LSWI);
-    LCW_Widget = new CustomCtrl(this,args.LCW);
-    LCWI_Widget = new CustomCtrl(this,args.LCWI);
-    STR_Widget = new CustomCtrl(this,args.STR);
-    EPCI_Widget = new CustomCtrl(this,args.EPCI);
-    ISI_Widget = new CustomCtrl(this,args.ISI);
-    Ino_Widget = new CustomCtrl(this,args.Ino);
-
-    HR_Widget = new CustomCtrl(this,args.HR);
-    BP_Widget = new BpCustomCtrl(this,args.BP);
-    BP_Widget->setDoubleDataCtrl(args.DBP);
-    MAP_Widget = new CustomCtrl(this,args.MAP);
+    QList<Argument> args = DataManagement::getInstance().getArgs().arguments;
+    foreach (Argument argument, args) {
+        CustomCtrl *widget = new CustomCtrl(argument);
+        this->addCustomCtrl(widget);
+    }
 }
 
 CustomCtrlRegulator::~CustomCtrlRegulator()
 {
-    qDeleteAll(allCustomCtrls.begin(),allCustomCtrls.end());
+    qDeleteAll(allCustomCtrls.begin(), allCustomCtrls.end());
 //    qDebug()<<"~CustomCtrlRegulator()";
 }
 
@@ -434,18 +369,30 @@ QList<CustomCtrl *> CustomCtrlRegulator::getAllCustomCtrls()
     return allCustomCtrls;
 }
 
-QStringList CustomCtrlRegulator::getSaveNames()
+QStringList CustomCtrlRegulator::getSaveNames(bool trendChart)
 {
     QStringList list;
+    QString fileName;
+    if (trendChart) {
+        fileName = DataManagement::getInstance().getPaths().trendCharts();
+    }
+    else {
+        fileName = DataManagement::getInstance().getPaths().showItems();
+    }
     QFile file(fileName);
-    QFileInfo fileInfo(fileName);
+    QFileInfo fileInfo(file);
     if(!fileInfo.isFile())
     {
         file.open(QFile::WriteOnly);
         QTextStream in(&file);
         in.setCodec(QTextCodec::codecForName("utf-8"));
         QStringList temp;
-        temp<<"HR"<<"TFC"<<"CO"<<"CI"<<"SV"<<"SI"<<"EDI"<<"HRV"<<"ISI"<<"Ino"<<"SSVRI"<<"SBP/DBP";
+        if (trendChart) {
+            temp<<"CO"<<"CI"<<"SV"<<"SI"<<"HRV"<<"Vol"<<"SSVRI"<<"Vas"<<"ISI"<<"Ino"<<"HR";
+        }
+        else {
+            temp<<"HR"<<"TFC"<<"CO"<<"CI"<<"SV"<<"SI"<<"EDI"<<"HRV"<<"ISI"<<"Ino"<<"SSVRI"<<"SBP/DBP";
+        }
         foreach (QString str, temp) {
             in<<QString("%1\n").arg(str);
         }
@@ -461,9 +408,15 @@ QStringList CustomCtrlRegulator::getSaveNames()
         list<<out.readLine();
     }
     file.close();
-    currentNames = list;
+    if (trendChart) {
+        currentTrendChartNames = list;
+    }
+    else {
+        currentNames = list;
+    }
     return list;
 }
+
 
 QStringList CustomCtrlRegulator::getAllNames()
 {
@@ -474,28 +427,31 @@ QStringList CustomCtrlRegulator::getAllNames()
     return list;
 }
 
-QStringList CustomCtrlRegulator::getCurrentNames()
+QStringList CustomCtrlRegulator::getCurrentNames(bool trendChart)
 {
+    if (trendChart) {
+        return currentTrendChartNames;
+    }
     return currentNames;
 }
 
-void CustomCtrlRegulator::saveNames()
+void CustomCtrlRegulator::saveNames(const QString &fileName, const QStringList &list)
 {
     QFile file(fileName);
     if(!file.open(QFile::WriteOnly)){
         emit openError(file.fileName());
     }
     QTextStream in(&file);
-    foreach (auto name, currentNames) {
+    foreach (auto name, list) {
         in<<QString("%1\n").arg(name);
     }
     file.close();
 }
 
-QList<CustomCtrl *> CustomCtrlRegulator::getSaveCustomCtrls()
+QList<CustomCtrl *> CustomCtrlRegulator::getSaveCustomCtrls(bool trendChart)
 {
     QList<CustomCtrl *> customCtrls;
-    QStringList list = getSaveNames();
+    QStringList list = getSaveNames(trendChart);
     foreach (const QString &name, list) {
         foreach (auto customCtrl, allCustomCtrls) {
             if(name == customCtrl->getName()) {
@@ -507,9 +463,15 @@ QList<CustomCtrl *> CustomCtrlRegulator::getSaveCustomCtrls()
     return customCtrls;
 }
 
-void CustomCtrlRegulator::changeCurrentNames(const QString &current, const QString &change)
+void CustomCtrlRegulator::changeCurrentNames(const QString &current, const QString &change, bool trendChart)
 {
-    currentNames[currentNames.indexOf(current)] = change;
+    if (trendChart) {
+        currentTrendChartNames[currentTrendChartNames.indexOf(current)] = change;
+    }
+    else {
+        currentNames[currentNames.indexOf(current)] = change;
+    }
+
 }
 
 QList<qreal> CustomCtrlRegulator::getRecordValues()
@@ -540,4 +502,16 @@ QList<qreal> CustomCtrlRegulator::getCurrentValues()
         }
     }
     return list;
+}
+
+void CustomCtrlRegulator::connectTrendChart(bool con)
+{
+    foreach (auto customCtrl, allCustomCtrls) {
+        if (con) {
+            connect(customCtrl, &CustomCtrl::currentValue, customCtrl->getTrendChart(), &TrendChart::addValue);
+        }
+        else {
+            disconnect(customCtrl, &CustomCtrl::currentValue, customCtrl->getTrendChart(), &TrendChart::addValue);
+        }
+    }
 }

@@ -142,7 +142,7 @@ QString DataManagement::dialogQss() const
 
 void DataManagement::initCurrentPath()
 {
-    m_filePath = MyFilePath(QCoreApplication::applicationDirPath()+"/");
+    m_filePath = MyFilePath(QApplication::applicationDirPath()+"/");
 }
 
 MyFilePath DataManagement::getPaths() const
@@ -163,6 +163,16 @@ QString DataManagement::getNewReportName() const
 Args &DataManagement::getArgs()
 {
     return args;
+}
+
+CustomCtrlRegulator *DataManagement::getRegulator() const
+{
+    return m_pRegulator;
+}
+
+HospitalInfo *DataManagement::getHospitalInfo() const
+{
+    return m_pHospitalInfo;
 }
 
 void DataManagement::setHospitalInfo(HospitalInfo *hospitalInfo)
