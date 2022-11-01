@@ -92,7 +92,7 @@ void DrawSudoku::paintEvent(QPaintEvent *event)
     // MAP SI
     Argument mapArg, siArg, ssvriArg, lswiArg;
     foreach (Argument argument, args.arguments) {
-        if ("Map" == argument.en)
+        if ("MAP" == argument.en)
             mapArg = argument;
         else if("SI" == argument.en)
             siArg = argument;

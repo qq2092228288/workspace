@@ -101,12 +101,18 @@ void MainWidget::enterBtnSlot()
     }
     foreach (QSerialPortInfo info, QSerialPortInfo::availablePorts()) {
         if(enterSystemWidget->currentPortName() == info.portName() ) {
+            emit enterSystemWidget->startDemoMode(false);
+            if(disconnect(enterSystemWidget, &EnterSystemWidget::startDemoMode,
+                    DataManagement::getInstance().getTebco(), &ZyTebco::startDemoMode)) {
+                DataManagement::getInstance().clearSlot();
+                enterSystemWidget->clearUiSlot();
+            }
             connect(&DataManagement::getInstance(),&DataManagement::startCheck,
-                    DataManagement::getInstance().getTebco(),&ZyTebco::startCheckSlot);
+                    DataManagement::getInstance().getTebco(),&ZyTebco::startCheckSlot,
+                    Qt::ConnectionType(Qt::AutoConnection|Qt::UniqueConnection));
             connect(enterSystemWidget, &EnterSystemWidget::createdReport,
-                    DataManagement::getInstance().getIdCheck(), &IdCheck::consumablesUsed);
-            disconnect(enterSystemWidget, &EnterSystemWidget::startDemoMode,
-                    DataManagement::getInstance().getTebco(), &ZyTebco::startDemoMode);
+                    DataManagement::getInstance().getIdCheck(), &IdCheck::consumablesUsed,
+                    Qt::ConnectionType(Qt::AutoConnection|Qt::UniqueConnection));
             this->close();
             enterSystemWidget->show();
             return;
@@ -118,12 +124,17 @@ void MainWidget::enterBtnSlot()
 
 void MainWidget::demoBtnSlot()
 {
-    disconnect(&DataManagement::getInstance(),&DataManagement::startCheck,
-            DataManagement::getInstance().getTebco(),&ZyTebco::startCheckSlot);
+    connect(enterSystemWidget, &EnterSystemWidget::startDemoMode,
+            DataManagement::getInstance().getTebco(), &ZyTebco::startDemoMode,
+            Qt::ConnectionType(Qt::AutoConnection|Qt::UniqueConnection));
+    if (disconnect(&DataManagement::getInstance(),&DataManagement::startCheck,
+            DataManagement::getInstance().getTebco(),&ZyTebco::startCheckSlot)) {
+        DataManagement::getInstance().getTebco()->startCheckSlot(false);
+        DataManagement::getInstance().clearSlot();
+        enterSystemWidget->clearUiSlot();
+    }
     disconnect(enterSystemWidget, &EnterSystemWidget::createdReport,
             DataManagement::getInstance().getIdCheck(), &IdCheck::consumablesUsed);
-    connect(enterSystemWidget, &EnterSystemWidget::startDemoMode,
-            DataManagement::getInstance().getTebco(), &ZyTebco::startDemoMode);
     this->close();
     enterSystemWidget->show();
 }

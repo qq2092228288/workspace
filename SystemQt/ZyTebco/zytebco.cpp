@@ -80,11 +80,13 @@ void ZyTebco::startDemoMode(bool start)
         if (!m_pDemoDataTimer->isActive()) {
             m_pDemoDataTimer->start(20);
         }
+        working = true;
     }
     else {
         if (m_pDemoDataTimer->isActive()) {
             m_pDemoDataTimer->stop();
         }
+        working = false;
     }
 }
 
