@@ -41,6 +41,7 @@ public slots:
     void confirmSlot();
 protected:
     void updateHospitalInfo();
+    void testFunc();
 private:
     HospitalInfo hospitalInfo;
     QGroupBox *hospitalInfoGroupBox;

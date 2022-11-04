@@ -8,6 +8,7 @@
 #include <QFileInfo>
 #include <windows.h>
 #include <QDateTime>
+#include <QJsonArray>
 
 #include "systemconfigdialog.h"
 #include "customctrl.h"
@@ -16,6 +17,9 @@
 #include "zytebco.h"
 #include "createreportthread.h"
 #include "idcheck.h"
+#include "MyStruct.h"
+
+QString ArgsNameToHttp(const QString &argsName);
 
 // 文件路径
 class MyFilePath
@@ -138,6 +142,7 @@ public:
     // 心阻抗图
     void setdZ(QChartView *dZ);
     void setSudoku(DrawSudoku *sudoku);
+    BaseData &getBaseData();
 public slots:
     void recordPosition(QString position);
     void saveReport(QString position, bool record);
@@ -145,6 +150,7 @@ public slots:
     void reportPreview(const QString &path);
     void reportPrintOut(const QString &path);
     void customCtrlTimer(bool start);
+    void setJsonArray(bool many);
 private:
     void saveInfo(Cdata &cdata, bool second = false);
     QString flag(CustomCtrl *customCtrl, bool second);
@@ -173,6 +179,8 @@ private:
     QImage m_pSudokuImage;
     QString m_newReportName;
     Args args;
+    BaseData m_baseData;
+    QJsonArray m_jsonArray;
 private:
     // 串口
     QThread *m_pThread;

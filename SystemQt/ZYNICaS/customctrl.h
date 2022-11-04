@@ -36,6 +36,7 @@ typedef struct ArgItems
     double recordValue = 0;
     double currentValue = 0;
     QString dataName;
+    QString dataName_cn;
     QString dataUnit;
 }AItems;
 

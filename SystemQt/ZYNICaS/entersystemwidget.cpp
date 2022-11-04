@@ -410,21 +410,13 @@ void EnterSystemWidget::changeShow(const QString &current, const QString &change
 
 void EnterSystemWidget::setData(const uchar &type, const double &value)
 {
+
     switch (type) {
     case Type::HR:
         setCtrlValue(Type::HR,value);
         break;
     case Type::VET:
-    {
         setCtrlValue(Type::LVET,value);
-//        auto PEPCtrl = regulator->getCustomCtrl(typeName(Type::PEP));
-//        if(PEPCtrl != nullptr) {
-//            double pep = PEPCtrl->getCurrentValue();
-//            if(pep != 0) {
-//                setCtrlValue(Type::STR,PEPCtrl->getCurrentValue()/value,1);
-//            }
-//        }
-    }
         break;
     case Type::PEP:
     {

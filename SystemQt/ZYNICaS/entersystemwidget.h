@@ -33,6 +33,7 @@
 #include "customctrl.h"
 #include "trendchartsdialog.h"
 
+
 class EnterSystemWidget : public QWidget
 {
     Q_OBJECT

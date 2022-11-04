@@ -17,10 +17,12 @@ SOURCES += \
     createreportthread.cpp \
     customctrl.cpp \
     datamanagement.cpp \
+    deviceparameters.cpp \
     drawsudoku.cpp \
     drawwaveforms.cpp \
     entersystemwidget.cpp \
     getiddialog.cpp \
+    httppost.cpp \
     infoeditdialog.cpp \
     main.cpp \
     mainwidget.cpp \
@@ -35,15 +37,18 @@ SOURCES += \
     waitingdialog.cpp
 
 HEADERS += \
+    MyStruct.h \
     auxargdialog.h \
     bpeditdialog.h \
     createreportthread.h \
     customctrl.h \
     datamanagement.h \
+    deviceparameters.h \
     drawsudoku.h \
     drawwaveforms.h \
     entersystemwidget.h \
     getiddialog.h \
+    httppost.h \
     infoeditdialog.h \
     mainwidget.h \
     personalinfodialog.h \

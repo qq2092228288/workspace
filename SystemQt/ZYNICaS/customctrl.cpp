@@ -150,9 +150,11 @@ CustomCtrl::CustomCtrl(Argument arg, QWidget *parent)
     aitems.minValue = arg.min;
     aitems.maxValue = arg.max;
     aitems.dataName = arg.en;
+    aitems.dataName_cn = arg.cn;
     aitems.dataUnit = arg.unit;
     digit = arg.digit;
     if (arg.dbpmin != 0 && arg.dbpmax != 0) {
+        dbpaitems = aitems;
         dbpaitems.minValue = arg.dbpmin;
         dbpaitems.maxValue = arg.dbpmax;
         scopeLabel->setText(QString("%1~%2/%3~%4").arg(aitems.minValue).arg(aitems.maxValue)

@@ -1,4 +1,41 @@
 ﻿#include "datamanagement.h"
+#include "deviceparameters.h"
+using namespace DeviceParameters;
+
+QString ArgsNameToHttp(const QString &argsName)
+{
+    if (argsName == "CO")           return "cCo";
+    else if (argsName == "CI")      return "cCi";
+    else if (argsName == "SV")      return "cSv";
+    else if (argsName == "SI")      return "cSi";
+    else if (argsName == "HRV")     return "cHrv";
+
+    else if (argsName == "TFC")     return "bTfc";
+    else if (argsName == "EDI")     return "bEdi";
+    else if (argsName == "Vol")     return "bVol";
+    else if (argsName == "SVR")     return "bSvr";
+    else if (argsName == "SSVR")    return "bSsvr";
+    else if (argsName == "SSVRI")   return "bSsvri";
+    else if (argsName == "SVRI")    return "bSvri";
+    else if (argsName == "Vas")     return "bVas";
+
+    else if (argsName == "PEP")     return "mPep";
+    else if (argsName == "LVET")    return "mLvet";
+    else if (argsName == "LSW")     return "mLsw";
+    else if (argsName == "LSWI")    return "mLswi";
+    else if (argsName == "LCW")     return "mLcw";
+    else if (argsName == "LCWI")    return "mLcwi";
+    else if (argsName == "STR")     return "mStr";
+    else if (argsName == "EPCI")    return "mEpci";
+    else if (argsName == "ISI")     return "mIsi";
+    else if (argsName == "Ino")     return "mIno";
+
+    else if (argsName == "HR")      return "rHr";
+    else if (argsName == "SBP")     return "rSbp";
+    else if (argsName == "DBP")     return "rDbp";
+    else if (argsName == "MAP")     return "rMap";
+    return nullptr;
+}
 
 DataManagement::DataManagement()
 {
@@ -200,6 +237,11 @@ void DataManagement::setSudoku(DrawSudoku *sudoku)
     this->m_pSudoku = sudoku;
 }
 
+BaseData &DataManagement::getBaseData()
+{
+    return m_baseData;
+}
+
 void DataManagement::recordPosition(QString position)
 {
     m_recordInfo.pos = position;
@@ -212,10 +254,14 @@ void DataManagement::saveReport(QString position, bool record)
 {
     emit startCheck(false);
     m_newReportName.clear();
+    while (m_jsonArray.size()) {
+        m_jsonArray.removeFirst();
+    }
     m_currentInfo.pos = position;
     saveInfo(m_currentInfo,record);
     m_pdZ->grab().scaled(300,120,Qt::IgnoreAspectRatio,Qt::SmoothTransformation).save(m_filePath.current_dz());
     m_pSudoku->grab().save(m_filePath.sudoku());
+    setJsonArray(record);
     reportThread->init();
     connect(reportThread,&CreateReportThread::finished,this,&DataManagement::clear);
         //当前时间
@@ -332,6 +378,9 @@ void DataManagement::saveReport(QString position, bool record)
         m_newReportName = QString("%1/%2-%3-%4.docx").arg(m_filePath.reports(),
                             curTime.toString("yyyyMMddhhmm"),m_pBodyValue->id,m_pBodyValue->name);
         reportThread->setSaveAs(m_newReportName);
+
+        qDebug()<<QJsonDocument(m_jsonArray);
+
         reportThread->start();
 }
 
@@ -381,24 +430,96 @@ void DataManagement::customCtrlTimer(bool start)
     }
 }
 
+void DataManagement::setJsonArray(bool many)
+{
+    // hospital data
+//    m_jsonArray.append(JsonObject("place1Id"));
+    // checked data
+    if (many) {
+        foreach (CustomCtrl *customCtrl, m_pRegulator->getAllCustomCtrls()) {
+            if (customCtrl->getName() != "SBP/DBP") {
+                auto argItems = customCtrl->getArgItems();
+                m_jsonArray.append(JsonObject(ArgsNameToHttp(customCtrl->getName()),
+                    DoublePos(QString("%1/%2").arg(argItems.dataName_cn, argItems.dataName),
+                              m_recordInfo.pos,
+                              m_currentInfo.pos,
+                              QString("%1~%2").arg(argItems.minValue).arg(argItems.maxValue),
+                              argItems.dataUnit,
+                              flag(customCtrl, false),
+                              flag(customCtrl, true))));
+            }
+            else {
+                auto sbpItems = customCtrl->getArgItems();
+                auto dbpItems = customCtrl->getDbpArgItems();
+                m_jsonArray.append(JsonObject(ArgsNameToHttp("SBP"),
+                    DoublePos(tr("收缩压/SBP"),
+                              m_recordInfo.pos,
+                              m_currentInfo.pos,
+                              QString("%1~%2").arg(sbpItems.minValue).arg(sbpItems.maxValue),
+                              sbpItems.dataUnit,
+                              tip(sbpItems.minValue,sbpItems.maxValue,sbpItems.recordValue),
+                              tip(sbpItems.recordValue,sbpItems.currentValue))));
+                m_jsonArray.append(JsonObject(ArgsNameToHttp("DBP"),
+                    DoublePos(tr("舒张压/DBP"),
+                              m_recordInfo.pos,
+                              m_currentInfo.pos,
+                              QString("%1~%2").arg(dbpItems.minValue).arg(dbpItems.maxValue),
+                              dbpItems.dataUnit,
+                              tip(dbpItems.minValue,dbpItems.maxValue,dbpItems.recordValue),
+                              tip(dbpItems.recordValue,dbpItems.currentValue))));
+            }
+        }
+    }
+    else {
+        foreach (CustomCtrl *customCtrl, m_pRegulator->getAllCustomCtrls()) {
+            if (customCtrl->getName() != "SBP/DBP") {
+                auto argItems = customCtrl->getArgItems();
+                m_jsonArray.append(JsonObject(ArgsNameToHttp(customCtrl->getName()),
+                    SinglePos(QString("%1/%2").arg(argItems.dataName_cn, argItems.dataName),
+                              m_currentInfo.pos,
+                              QString("%1~%2").arg(argItems.minValue).arg(argItems.maxValue),
+                              argItems.dataUnit,
+                              flag(customCtrl, false))));
+            }
+            else {
+                auto sbpItems = customCtrl->getArgItems();
+                auto dbpItems = customCtrl->getDbpArgItems();
+                m_jsonArray.append(JsonObject(ArgsNameToHttp("SBP"),
+                    SinglePos(tr("收缩压/SBP"),
+                              m_currentInfo.pos,
+                              QString("%1~%2").arg(sbpItems.minValue).arg(sbpItems.maxValue),
+                              sbpItems.dataUnit,
+                              tip(sbpItems.minValue,sbpItems.maxValue,sbpItems.currentValue))));
+                m_jsonArray.append(JsonObject(ArgsNameToHttp("DBP"),
+                    SinglePos(tr("舒张压/DBP"),
+                              m_currentInfo.pos,
+                              QString("%1~%2").arg(dbpItems.minValue).arg(dbpItems.maxValue),
+                              dbpItems.dataUnit,
+                              tip(dbpItems.minValue,dbpItems.maxValue,dbpItems.currentValue))));
+            }
+        }
+    }
+}
+
 void DataManagement::saveInfo(Cdata &cdata, bool second)
 {
     cdata.values.clear();
     auto customCtrls = m_pRegulator->getAllCustomCtrls();
     foreach (CustomCtrl *customCtrl, customCtrls) {
         if (customCtrl->getName() != "SBP/DBP") {
-            cdata.values<<flag(customCtrl,second);
+            cdata.values<<flag(customCtrl, second);
+            auto args = customCtrl->getArgItems();
         }
         else {
             auto sbp = customCtrl->getArgItems();
             auto dbp = customCtrl->getDbpArgItems();
             if (!second) {
                 cdata.values<<tip(sbp.minValue,sbp.maxValue,sbp.currentValue)
-                           <<tip(dbp.minValue,dbp.maxValue,dbp.currentValue);
+                            <<tip(dbp.minValue,dbp.maxValue,dbp.currentValue);
             }
             else {
                 cdata.values<<tip(sbp.recordValue,sbp.currentValue)
-                           <<tip(dbp.recordValue,dbp.currentValue);
+                            <<tip(dbp.recordValue,dbp.currentValue);
             }
         }
     }
@@ -576,4 +697,3 @@ QString DataManagement::riskTip(bool many)
     }
     return tr("心源性猝死风险%1。").arg(str);
 }
-
