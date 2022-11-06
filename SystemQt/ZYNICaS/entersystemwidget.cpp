@@ -620,6 +620,9 @@ void EnterSystemWidget::createReport()
         waiting.exec();
         emit createdReport();
         instance.reportPreview(instance.getNewReportName());
+        if (manyBtn->isChecked()) {
+            recordBtn->show();
+        }
     }
 }
 
