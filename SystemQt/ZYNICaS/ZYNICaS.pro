@@ -31,6 +31,7 @@ SOURCES += \
     reportword.cpp \
     selectitemdialog.cpp \
     showreportdialog.cpp \
+    singleapplication.cpp \
     systemconfigdialog.cpp \
     trendchart.cpp \
     trendchartsdialog.cpp \
@@ -56,6 +57,7 @@ HEADERS += \
     reportword.h \
     selectitemdialog.h \
     showreportdialog.h \
+    singleapplication.h \
     systemconfigdialog.h \
     trendchart.h \
     trendchartsdialog.h \
