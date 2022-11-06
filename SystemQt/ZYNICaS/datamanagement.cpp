@@ -211,10 +211,10 @@ void DataManagement::saveReport(QString position, bool record)
         //当前时间
         QDateTime curTime = QDateTime::currentDateTime();
         // 打开模板
-        QString result = tr("无创血流动力学检测系统评价，心脏动力，血管阻力，血液容量，血压等循环系统情况结论如下：\n");
+//        QString result = tr("无创血流动力学检测系统评价，心脏动力，血管阻力，血液容量，血压等循环系统情况结论如下：\n");
         if (record) {       // 多体位
             reportThread->addMarks("rpos", m_recordInfo.pos);
-            if (!m_pHospitalInfo->xprinter) {
+//            if (!m_pHospitalInfo->xprinter) {
                 reportThread->setOpenArg(m_filePath.many_dot(),false);
                 // 记录体位
                 QStringList rList;
@@ -225,61 +225,61 @@ void DataManagement::saveReport(QString position, bool record)
                 reportThread->addMarks("rname", (m_recordInfo.pos + tr(" 心阻抗图(dZ)")));
                 // 插入图片
                 reportThread->addPic("rimage",m_filePath.record_dz());
-                result += tr("1.第一体位：心输出量(CO)%1，心脏指数(CI)%2，心搏量(SV)%3，心搏指数(SI)%4，心率(HR)%5，血管顺应性(Vas)%6，"
-                    "血管容量(Vol)%7，收缩变力性(Ino)%8，收缩压(SBP)%9，舒张压(DBP)%10，胸液传导性(TFC)%11；\n"
-                    "2.第二体位增加容量负荷实验后：心搏量(SV)%12，变力状态指数(ISI)%13，%14。")
-                        .arg(pevl(Type::CO),pevl(Type::CI),pevl(Type::SV),pevl(Type::SI),pevl(Type::HR),
-                             pevl(Type::Vas),pevl(Type::Vol),pevl(Type::Ino),pevl(Type::SBP))
-                        .arg(pevl(Type::DBP),pevl(Type::TFC),compare(Type::SV),compare(Type::ISI),preload());
-            }
-            else {
-                reportThread->setOpenArg(m_filePath.xmany_dot(),false);
-                QStringList rList;
-                for (int i = 0; i < 12; ++i) {
-                    rList<<QString("r%1").arg(i,2,10,QLatin1Char('0'));
-                }
-                QStringList values = m_recordInfo.values.mid(0,4);
-                values<<m_recordInfo.values.at(7)<<m_recordInfo.values.at(12)
-                     <<m_recordInfo.values.mid(20,6);
-                reportThread->addBatchMarks(rList, values);
-                result += tr("1.第一体位：CO%1，CI%2，SV%3，SI%4，HR%5，Vas%6，Vol%7，Ino%8，SBP%9，DBP%10，TFC%11；\n"
-                    "2.第二体位增加容量负荷实验后：SV%12，ISI%13，%14。")
-                        .arg(pevl(Type::CO),pevl(Type::CI),pevl(Type::SV),pevl(Type::SI),pevl(Type::HR),
-                             pevl(Type::Vas),pevl(Type::Vol),pevl(Type::Ino),pevl(Type::SBP))
-                        .arg(pevl(Type::DBP),pevl(Type::TFC),compare(Type::SV),compare(Type::ISI),preload());
-            }
+//                result += tr("1.第一体位：心输出量(CO)%1，心脏指数(CI)%2，心搏量(SV)%3，心搏指数(SI)%4，心率(HR)%5，血管顺应性(Vas)%6，"
+//                    "血管容量(Vol)%7，收缩变力性(Ino)%8，收缩压(SBP)%9，舒张压(DBP)%10，胸液传导性(TFC)%11；\n"
+//                    "2.第二体位增加容量负荷实验后：心搏量(SV)%12，变力状态指数(ISI)%13，%14。")
+//                        .arg(pevl(Type::CO),pevl(Type::CI),pevl(Type::SV),pevl(Type::SI),pevl(Type::HR),
+//                             pevl(Type::Vas),pevl(Type::Vol),pevl(Type::Ino),pevl(Type::SBP))
+//                        .arg(pevl(Type::DBP),pevl(Type::TFC),compare(Type::SV),compare(Type::ISI),preload());
+//            }
+//            else {
+//                reportThread->setOpenArg(m_filePath.xmany_dot(),false);
+//                QStringList rList;
+//                for (int i = 0; i < 12; ++i) {
+//                    rList<<QString("r%1").arg(i,2,10,QLatin1Char('0'));
+//                }
+//                QStringList values = m_recordInfo.values.mid(0,4);
+//                values<<m_recordInfo.values.at(7)<<m_recordInfo.values.at(12)
+//                     <<m_recordInfo.values.mid(20,6);
+//                reportThread->addBatchMarks(rList, values);
+//                result += tr("1.第一体位：CO%1，CI%2，SV%3，SI%4，HR%5，Vas%6，Vol%7，Ino%8，SBP%9，DBP%10，TFC%11；\n"
+//                    "2.第二体位增加容量负荷实验后：SV%12，ISI%13，%14。")
+//                        .arg(pevl(Type::CO),pevl(Type::CI),pevl(Type::SV),pevl(Type::SI),pevl(Type::HR),
+//                             pevl(Type::Vas),pevl(Type::Vol),pevl(Type::Ino),pevl(Type::SBP))
+//                        .arg(pevl(Type::DBP),pevl(Type::TFC),compare(Type::SV),compare(Type::ISI),preload());
+//            }
             // 多体位结果分析
-            reportThread->addMarks("result", result);
+//            reportThread->addMarks("result", result);
         }
         else {      // 单体位
-            if (!m_pHospitalInfo->xprinter) {
+//            if (!m_pHospitalInfo->xprinter) {
                 reportThread->setOpenArg(m_filePath.single_dot(),false);
-                result += tr("1.心脏功能：心输出量(CO)%1，心搏量(SV)%2，心搏指数(SI)%3，心脏指数(CI)%4，血管容量(Vol)%5，血管顺应性(Vas)%6，收缩变力性(Ino)%7；\n"
-                    "2.血压管理：收缩压(SBP)%8，舒张压(DBP)%9，心率(HR)%10；")
-                        .arg(pevl(Type::CO,false),pevl(Type::SV,false),pevl(Type::SI,false),pevl(Type::CI,false),pevl(Type::Vol,false),
-                             pevl(Type::Vas,false),pevl(Type::Ino,false),pevl(Type::SBP,false),pevl(Type::DBP,false))
-                        .arg(pevl(Type::HR,false));
-            }
-            else {
-                reportThread->setOpenArg(m_filePath.xsingle_dot(),false);
-                result += tr("1.心脏功能：CO%1，SV%2，SI%3，CI%4，Vol%5，Vas%6，Ino%7；\n"
-                    "2.血压管理：SBP%8，DBP%9，HR%10；")
-                        .arg(pevl(Type::CO,false),pevl(Type::SV,false),pevl(Type::SI,false),pevl(Type::CI,false),pevl(Type::Vol,false),
-                             pevl(Type::Vas,false),pevl(Type::Ino,false),pevl(Type::SBP,false),pevl(Type::DBP,false))
-                        .arg(pevl(Type::HR,false));
-            }
+//                result += tr("1.心脏功能：心输出量(CO)%1，心搏量(SV)%2，心搏指数(SI)%3，心脏指数(CI)%4，血管容量(Vol)%5，血管顺应性(Vas)%6，收缩变力性(Ino)%7；\n"
+//                    "2.血压管理：收缩压(SBP)%8，舒张压(DBP)%9，心率(HR)%10；")
+//                        .arg(pevl(Type::CO,false),pevl(Type::SV,false),pevl(Type::SI,false),pevl(Type::CI,false),pevl(Type::Vol,false),
+//                             pevl(Type::Vas,false),pevl(Type::Ino,false),pevl(Type::SBP,false),pevl(Type::DBP,false))
+//                        .arg(pevl(Type::HR,false));
+//            }
+//            else {
+//                reportThread->setOpenArg(m_filePath.xsingle_dot(),false);
+//                result += tr("1.心脏功能：CO%1，SV%2，SI%3，CI%4，Vol%5，Vas%6，Ino%7；\n"
+//                    "2.血压管理：SBP%8，DBP%9，HR%10；")
+//                        .arg(pevl(Type::CO,false),pevl(Type::SV,false),pevl(Type::SI,false),pevl(Type::CI,false),pevl(Type::Vol,false),
+//                             pevl(Type::Vas,false),pevl(Type::Ino,false),pevl(Type::SBP,false),pevl(Type::DBP,false))
+//                        .arg(pevl(Type::HR,false));
+//            }
             // 单体位结果分析
-            reportThread->addMarks("result", result);
+//            reportThread->addMarks("result", result);
         }
-        QString tip = tr("提示：血流动力学检测异常会增加心源性猝死的风险，请结合临床相关检查。");
-        if (m_pHospitalInfo->tip) {
-            tip = QString("%1(%2)").arg(riskTip(record),tip);
-            reportThread->addMarks("tick", tr("血流动力学检测： 未见明显异常 [  ]    异常 [  ]"));
-        }
-        reportThread->addMarks("tip", tip);
+//        QString tip = tr("提示：血流动力学检测异常会增加心源性猝死的风险，请结合临床相关检查。");
+//        if (m_pHospitalInfo->tip) {
+//            tip = QString("%1(%2)").arg(riskTip(record),tip);
+//            reportThread->addMarks("tick", tr("血流动力学检测： 未见明显异常 [  ]    异常 [  ]"));
+//        }
+//        reportThread->addMarks("tip", tip);
         // 当前体位
         reportThread->addMarks("cpos", m_currentInfo.pos);
-        if (!m_pHospitalInfo->xprinter) {
+//        if (!m_pHospitalInfo->xprinter) {
             QStringList cList;
             for (int i = 0; i < 11; ++i) {
                 cList<<QString("c%1").arg(i,2,10,QLatin1Char('0'));
@@ -288,17 +288,17 @@ void DataManagement::saveReport(QString position, bool record)
             reportThread->addMarks("cname", (m_currentInfo.pos + tr(" 心阻抗图(dZ)")));
             reportThread->addPic("cimage",m_filePath.current_dz());
             reportThread->addMarks("room" , m_pHospitalInfo->roomName);
-        }
-        else {
-            QStringList rList;
-            for (int i = 0; i < 12; ++i) {
-                rList<<QString("c%1").arg(i,2,10,QLatin1Char('0'));
-            }
-            QStringList values = m_currentInfo.values.mid(0,4);
-            values<<m_currentInfo.values.at(7)<<m_currentInfo.values.at(12)
-                 <<m_currentInfo.values.mid(20,6);
-            reportThread->addBatchMarks(rList, values);
-        }
+//        }
+//        else {
+//            QStringList rList;
+//            for (int i = 0; i < 12; ++i) {
+//                rList<<QString("c%1").arg(i,2,10,QLatin1Char('0'));
+//            }
+//            QStringList values = m_currentInfo.values.mid(0,4);
+//            values<<m_currentInfo.values.at(7)<<m_currentInfo.values.at(12)
+//                 <<m_currentInfo.values.mid(20,6);
+//            reportThread->addBatchMarks(rList, values);
+//        }
 //        reportThread->addMarks("sname", tr("九宫分析图"));
 //        reportThread->addPic("simage",m_filePath.sudoku());
         // 医院、时间、检查人员

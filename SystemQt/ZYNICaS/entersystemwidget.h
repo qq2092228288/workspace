@@ -130,8 +130,8 @@ private:
     QPushButton *backBtn;
     QPushButton *reportBtn;
 //    QPushButton *sudokuBtn;
-    QPushButton *auxArgBtn;
-    AuxArgDialog *auxArgDialog;
+//    QPushButton *auxArgBtn;
+//    AuxArgDialog *auxArgDialog;
 //    DrawSudoku *sudokuDraw;
 };
 

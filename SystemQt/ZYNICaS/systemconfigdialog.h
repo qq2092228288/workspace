@@ -26,7 +26,7 @@ struct HospitalInfo
     QString hospitalName;
     QString roomName;
     QString doctorName;
-    bool xprinter;
+    bool xprinter = false;
     bool tip;
 };
 
@@ -49,10 +49,10 @@ private:
     QLineEdit *hospitalNameLineEdit;
     QLineEdit *roomNameLineEdit;
     QLineEdit *doctorNameLineEdit;
-    QGroupBox *reportGroupBox;
-    QRadioButton *printerRadio;
-    QRadioButton *xprinterRadio;
-    QCheckBox *tipCheckBox;
+//    QGroupBox *reportGroupBox;
+//    QRadioButton *printerRadio;
+//    QRadioButton *xprinterRadio;
+//    QCheckBox *tipCheckBox;
     QGroupBox *systemInfoGroupBox;
     QLabel *serialPortLabel;
     QComboBox *serialPortComboBox;

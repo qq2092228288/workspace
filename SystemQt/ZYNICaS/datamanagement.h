@@ -29,8 +29,8 @@ public:
     QString showItems()   const {return initDir() + "showItems.ini";}
     QString single_dot()  const {return appPath + "dot/singlePositionTemplate.dot";}
     QString many_dot()    const {return appPath + "dot/manyPositionTemplate.dot";}
-    QString xsingle_dot() const {return appPath + "dot/singlePositionXprinterTemplate.dot";}
-    QString xmany_dot()   const {return appPath + "dot/manyPositionXprinterTemplate.dot";}
+//    QString xsingle_dot() const {return appPath + "dot/singlePositionXprinterTemplate.dot";}
+//    QString xmany_dot()   const {return appPath + "dot/manyPositionXprinterTemplate.dot";}
     QString record_dz()   const {return tempDir() + "record.png";}
     QString current_dz()  const {return tempDir() + "current.png";}
 //    QString sudoku()      const {return tempDir() + "sudoku.png";}

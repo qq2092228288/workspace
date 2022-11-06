@@ -134,7 +134,7 @@ EnterSystemWidget::~EnterSystemWidget()
     delete dataThread;
     delete infoDialog;
 //    delete bpDialog;
-    delete auxArgDialog;
+//    delete auxArgDialog;
 //    delete sudokuDraw;
 //    qDebug()<<"~EnterSystemWidget()";
 }
@@ -301,8 +301,8 @@ void EnterSystemWidget::initReportModule()
     backBtn = new QPushButton(tr("返回"),this);
     reportBtn = new QPushButton(tr("生成报告"),this);
 //    sudokuBtn = new QPushButton(tr("九宫格图"),this);
-    auxArgBtn = new QPushButton(tr("辅助参数"),this);
-    auxArgDialog = new AuxArgDialog;
+//    auxArgBtn = new QPushButton(tr("辅助参数"),this);
+//    auxArgDialog = new AuxArgDialog;
 //    sudokuDraw = new DrawSudoku;
 
     QHBoxLayout *hLayout = new QHBoxLayout(operationGroupBox);
@@ -313,7 +313,7 @@ void EnterSystemWidget::initReportModule()
     hLayout->addWidget(reportBtn);
     hLayout->addStretch();
 //    hLayout->addWidget(sudokuBtn);
-    hLayout->addWidget(auxArgBtn);
+//    hLayout->addWidget(auxArgBtn);
 }
 
 void EnterSystemWidget::signalsAndSlots()
@@ -359,14 +359,14 @@ void EnterSystemWidget::signalsAndSlots()
     // report
     connect(backBtn, &QPushButton::clicked, this, &EnterSystemWidget::close);
     connect(reportBtn, &QPushButton::clicked, this, &EnterSystemWidget::createReport);
-    connect(auxArgBtn, &QPushButton::clicked, auxArgDialog, &AuxArgDialog::exec);
+//    connect(auxArgBtn, &QPushButton::clicked, auxArgDialog, &AuxArgDialog::exec);
 //    connect(sudokuBtn, &QPushButton::clicked, sudokuDraw, &DrawSudoku::exec);
-    connect(auxArgDialog, &AuxArgDialog::value, this, [=](int cvp, int lap){
-        bodyValue.CVP = cvp;
-        bodyValue.LAP = lap;
-        DataManagement::getInstance().getArgs().CVP = cvp;
-        DataManagement::getInstance().getArgs().LAP = lap;
-    });
+//    connect(auxArgDialog, &AuxArgDialog::value, this, [=](int cvp, int lap){
+//        bodyValue.CVP = cvp;
+//        bodyValue.LAP = lap;
+//        DataManagement::getInstance().getArgs().CVP = cvp;
+//        DataManagement::getInstance().getArgs().LAP = lap;
+//    });
 }
 
 void EnterSystemWidget::timeoutSlot()
@@ -608,6 +608,9 @@ void EnterSystemWidget::createReport()
         waiting.exec();
         emit createdReport();
         instance.reportPreview(instance.getNewReportName());
+        if (manyBtn->isChecked()) {
+            recordBtn->show();
+        }
     }
 }
 

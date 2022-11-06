@@ -19,10 +19,10 @@ SystemConfigDialog::SystemConfigDialog(QWidget *parent)
     hospitalNameLineEdit = new QLineEdit(this);
     roomNameLineEdit = new QLineEdit(this);
     doctorNameLineEdit = new QLineEdit(this);
-    reportGroupBox = new QGroupBox(tr("报告配置"),this);
-    printerRadio = new QRadioButton(tr("常规打印机报告"),this);
-    xprinterRadio = new QRadioButton(tr("热敏打印机报告"),this);
-    tipCheckBox = new QCheckBox(tr("心源性猝死提示"),this);
+//    reportGroupBox = new QGroupBox(tr("报告配置"),this);
+//    printerRadio = new QRadioButton(tr("常规打印机报告"),this);
+//    xprinterRadio = new QRadioButton(tr("热敏打印机报告"),this);
+//    tipCheckBox = new QCheckBox(tr("心源性猝死提示"),this);
     systemInfoGroupBox = new QGroupBox(tr("系统配置"),this);
     serialPortLabel = new QLabel(tr("串口设置"),this);
     serialPortComboBox = new QComboBox(this);
@@ -34,18 +34,18 @@ SystemConfigDialog::SystemConfigDialog(QWidget *parent)
 
     QVBoxLayout *mainLayout = new QVBoxLayout(this);
     QGridLayout *gLayout = new QGridLayout(hospitalInfoGroupBox);
-    QVBoxLayout *rLayout = new QVBoxLayout(reportGroupBox);
+//    QVBoxLayout *rLayout = new QVBoxLayout(reportGroupBox);
     QHBoxLayout *hLayout = new QHBoxLayout(systemInfoGroupBox);
-    QHBoxLayout *pLayout = new QHBoxLayout;
+//    QHBoxLayout *pLayout = new QHBoxLayout;
     QHBoxLayout *btnLayout = new QHBoxLayout;
 
     hospitalInfoGroupBox->setFixedHeight(250*instance.hZoom());
     mainLayout->addWidget(hospitalInfoGroupBox);
-    mainLayout->addWidget(reportGroupBox);
+//    mainLayout->addWidget(reportGroupBox);
     mainLayout->addWidget(systemInfoGroupBox);
     mainLayout->addLayout(btnLayout);
     hospitalInfoGroupBox->setLayout(gLayout);
-    reportGroupBox->setLayout(rLayout);
+//    reportGroupBox->setLayout(rLayout);
     systemInfoGroupBox->setLayout(hLayout);
     gLayout->addWidget(hospitalNameLabel,0,0);
     gLayout->addWidget(hospitalNameLineEdit,0,1);
@@ -53,10 +53,10 @@ SystemConfigDialog::SystemConfigDialog(QWidget *parent)
     gLayout->addWidget(roomNameLineEdit,1,1);
     gLayout->addWidget(doctorNameLabel,2,0);
     gLayout->addWidget(doctorNameLineEdit,2,1);
-    rLayout->addLayout(pLayout);
-    pLayout->addWidget(printerRadio);
-    pLayout->addWidget(xprinterRadio);
-    rLayout->addWidget(tipCheckBox);
+//    rLayout->addLayout(pLayout);
+//    pLayout->addWidget(printerRadio);
+//    pLayout->addWidget(xprinterRadio);
+//    rLayout->addWidget(tipCheckBox);
     hLayout->addWidget(serialPortLabel);
     hLayout->addWidget(serialPortComboBox);
     hLayout->addStretch();
@@ -108,22 +108,22 @@ SystemConfigDialog::SystemConfigDialog(QWidget *parent)
                 else if (name == "doctor") {
                     doctorNameLineEdit->setText(value);
                 }
-                else if (name == "printer") {
-                    if (value == "1") {
-                        xprinterRadio->setChecked(true);
-                    }
-                    else {
-                        printerRadio->setChecked(true);
-                    }
-                }
-                else if (name == "tip") {
-                    if (value == "1") {
-                        tipCheckBox->setChecked(true);
-                    }
-                    else {
-                        tipCheckBox->setChecked(false);
-                    }
-                }
+//                else if (name == "printer") {
+//                    if (value == "1") {
+//                        xprinterRadio->setChecked(true);
+//                    }
+//                    else {
+//                        printerRadio->setChecked(true);
+//                    }
+//                }
+//                else if (name == "tip") {
+//                    if (value == "1") {
+//                        tipCheckBox->setChecked(true);
+//                    }
+//                    else {
+//                        tipCheckBox->setChecked(false);
+//                    }
+//                }
                 else if (name == "serialport") {
                     if(-1 != serialPortComboBox->findText(value)) {
                         serialPortComboBox->setCurrentIndex(serialPortComboBox->findText(value));
@@ -152,8 +152,8 @@ void SystemConfigDialog::confirmSlot()
         in<<QString("hospital=\"%1\"\n").arg(hospitalNameLineEdit->text());
         in<<QString("department=\"%1\"\n").arg(roomNameLineEdit->text());
         in<<QString("doctor=\"%1\"\n").arg(doctorNameLineEdit->text());
-        in<<QString("printer=\"%1\"\n").arg(xprinterRadio->isChecked());
-        in<<QString("tip=\"%1\"\n").arg(tipCheckBox->isChecked());
+//        in<<QString("printer=\"%1\"\n").arg(xprinterRadio->isChecked());
+//        in<<QString("tip=\"%1\"\n").arg(tipCheckBox->isChecked());
         in<<QString("serialport=\"%1\"\n").arg(serialPortComboBox->currentText());
         file.close();
     }
@@ -165,7 +165,7 @@ void SystemConfigDialog::updateHospitalInfo()
     hospitalInfo.hospitalName = hospitalNameLineEdit->text();
     hospitalInfo.roomName = roomNameLineEdit->text();
     hospitalInfo.doctorName = doctorNameLineEdit->text();
-    hospitalInfo.xprinter = xprinterRadio->isChecked();
-    hospitalInfo.tip = tipCheckBox->isChecked();
+//    hospitalInfo.xprinter = xprinterRadio->isChecked();
+//    hospitalInfo.tip = tipCheckBox->isChecked();
     DataManagement::getInstance().setHospitalInfo(&hospitalInfo);
 }
