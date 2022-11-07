@@ -27,7 +27,7 @@
 
 #include "infoeditdialog.h"
 //#include "bpeditdialog.h"
-#include "auxargdialog.h"
+//#include "auxargdialog.h"
 #include "drawwaveforms.h"
 //#include "drawsudoku.h"
 #include "customctrl.h"
@@ -54,9 +54,9 @@ public slots:
     void changeShow(const QString &current, const QString &change);
     void setData(const uchar &type, const double &value);
 //    void setBPValue(const QString &sbp,const QString &dbp);
-    void changeMode(const int &id);
+//    void changeMode(const int &id);
     void recordPosition();
-    void changePosition(int id);
+//    void changePosition(int id);
     void createReport();
     void clearUiSlot();
 private:
@@ -95,14 +95,14 @@ private:
 
     //体位模块
     QGroupBox *pldGroupBox;
-    QButtonGroup patternGroup;
-    QRadioButton *manyBtn;          //多体位
-    QRadioButton *singleBtn;        //单体位
+//    QButtonGroup patternGroup;
+//    QRadioButton *manyBtn;          //多体位
+//    QRadioButton *singleBtn;        //单体位
     QButtonGroup posGroup;
     QRadioButton *halfLieBtn;       //半卧
     QRadioButton *lieBtn;           //平躺
     QRadioButton *legLiftBtn;       //抬腿
-    QPushButton *recordBtn;         //记录体位
+//    QPushButton *recordBtn;         //记录体位
     QString rPos;
 
     //图形模块

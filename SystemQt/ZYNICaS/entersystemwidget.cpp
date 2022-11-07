@@ -213,12 +213,12 @@ void EnterSystemWidget::initInfoModule()
 void EnterSystemWidget::initPosModule()
 {
     pldGroupBox = new QGroupBox(tr("PLD-被动抬腿实验"),this);
-    manyBtn = new QRadioButton(tr("多体位"),this);
-    singleBtn = new QRadioButton(tr("单体位"),this);
+//    manyBtn = new QRadioButton(tr("多体位"),this);
+//    singleBtn = new QRadioButton(tr("单体位"),this);
     halfLieBtn = new QRadioButton(tr("半卧"),this);
     lieBtn = new QRadioButton(tr("平躺"),this);
     legLiftBtn = new QRadioButton(tr("抬腿"),this);
-    recordBtn = new QPushButton(tr("记录体位"),this);
+//    recordBtn = new QPushButton(tr("记录体位"),this);
 
     QVBoxLayout *vLayout = new QVBoxLayout(pldGroupBox);
     QHBoxLayout *hLayout = new QHBoxLayout;
@@ -228,23 +228,23 @@ void EnterSystemWidget::initPosModule()
     firstColLayout->addWidget(pldGroupBox);
     vLayout->addLayout(hLayout);
     vLayout->addLayout(posLayout);
-    hLayout->addWidget(manyBtn);
-    hLayout->addWidget(singleBtn);
+//    hLayout->addWidget(manyBtn);
+//    hLayout->addWidget(singleBtn);
     hLayout->addStretch();
     posLayout->addWidget(halfLieBtn);
     posLayout->addWidget(lieBtn);
     posLayout->addWidget(legLiftBtn);
     posLayout->addLayout(btnLayout);
-    btnLayout->addWidget(recordBtn);
+//    btnLayout->addWidget(reportBtn);
     btnLayout->addStretch();
 
-    patternGroup.addButton(manyBtn,0);
-    patternGroup.addButton(singleBtn,1);
+//    patternGroup.addButton(manyBtn,0);
+//    patternGroup.addButton(singleBtn,1);
     posGroup.addButton(halfLieBtn,0);
     posGroup.addButton(lieBtn,1);
     posGroup.addButton(legLiftBtn,2);
 
-    manyBtn->setChecked(true);
+//    manyBtn->setChecked(true);
     halfLieBtn->setChecked(true);
 }
 
@@ -334,9 +334,9 @@ void EnterSystemWidget::signalsAndSlots()
 //    connect(mdiBtn, &QPushButton::clicked, bpDialog, &BPEditDialog::exec);
 //    connect(bpDialog, &BPEditDialog::value, this, &EnterSystemWidget::setBPValue);
     // position
-    connect(&patternGroup, &QButtonGroup::idClicked, this, &EnterSystemWidget::changeMode);
-    connect(&posGroup, &QButtonGroup::idClicked, this, &EnterSystemWidget::changePosition);
-    connect(recordBtn, &QPushButton::clicked, this, &EnterSystemWidget::recordPosition);
+//    connect(&patternGroup, &QButtonGroup::idClicked, this, &EnterSystemWidget::changeMode);
+//    connect(&posGroup, &QButtonGroup::idClicked, this, &EnterSystemWidget::changePosition);
+//    connect(recordBtn, &QPushButton::clicked, this, &EnterSystemWidget::recordPosition);
     // data
     foreach (auto customCtrl, regulator->getAllCustomCtrls()) {
         connect(customCtrl, &CustomCtrl::changeName, this, &EnterSystemWidget::changeShow);
@@ -555,21 +555,21 @@ void EnterSystemWidget::setData(const uchar &type, const double &value)
 //    }
 //}
 
-void EnterSystemWidget::changeMode(const int &id)
-{
-    if(id == 0) {
-        recordBtn->setVisible(true);
-    }
-    else if(id == 1) {
-        if (!rPos.isEmpty() && QMessageBox::question(this,tr("提示"),
-                         tr("已记录体位，确定切换为单体位吗？")) == QMessageBox::No){
-            manyBtn->setChecked(true);
-            return;
-        }
-        rPos.clear();
-        recordBtn->setVisible(false);
-    }
-}
+//void EnterSystemWidget::changeMode(const int &id)
+//{
+//    if(id == 0) {
+//        recordBtn->setVisible(true);
+//    }
+//    else if(id == 1) {
+//        if (!rPos.isEmpty() && QMessageBox::question(this,tr("提示"),
+//                         tr("已记录体位，确定切换为单体位吗？")) == QMessageBox::No){
+//            manyBtn->setChecked(true);
+//            return;
+//        }
+//        rPos.clear();
+//        recordBtn->setVisible(false);
+//    }
+//}
 
 void EnterSystemWidget::recordPosition()
 {
@@ -580,15 +580,15 @@ void EnterSystemWidget::recordPosition()
     }
 }
 
-void EnterSystemWidget::changePosition(int id)
-{
-    if (!rPos.isEmpty() && posGroup.button(id)->text() != rPos) {
-        recordBtn->hide();
-    }
-    else if(posGroup.button(id)->text() == rPos) {
-        recordBtn->show();
-    }
-}
+//void EnterSystemWidget::changePosition(int id)
+//{
+//    if (!rPos.isEmpty() && posGroup.button(id)->text() != rPos) {
+//        recordBtn->hide();
+//    }
+//    else if(posGroup.button(id)->text() == rPos) {
+//        recordBtn->show();
+//    }
+//}
 
 void EnterSystemWidget::createReport()
 {
@@ -598,19 +598,19 @@ void EnterSystemWidget::createReport()
             QMessageBox::warning(this,tr("警告！"),tr("有效验证码已使用完，请联系厂家！"));
             return;
         }
-        if (patternGroup.checkedId() == 0 && !instance.isRecordPos()) {
-            QMessageBox::information(this,tr("提示"),tr("多体位模式需要记录体位！"));
-            return;
-        }
+//        if (patternGroup.checkedId() == 0 && !instance.isRecordPos()) {
+//            QMessageBox::information(this,tr("提示"),tr("多体位模式需要记录体位！"));
+//            return;
+//        }
         WaitingDialog waiting = WaitingDialog(tr("报告生成中···"), this);
         connect(&instance,&DataManagement::clear,&waiting,&WaitingDialog::close);
         instance.saveReport(posGroup.checkedButton()->text(),!rPos.isEmpty());
         waiting.exec();
         emit createdReport();
         instance.reportPreview(instance.getNewReportName());
-        if (manyBtn->isChecked()) {
-            recordBtn->show();
-        }
+//        if (manyBtn->isChecked()) {
+//            recordBtn->show();
+//        }
     }
 }
 
