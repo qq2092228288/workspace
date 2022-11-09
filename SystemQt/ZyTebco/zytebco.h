@@ -1,4 +1,4 @@
-﻿#ifndef ZYTEBCO_H
+#ifndef ZYTEBCO_H
 #define ZYTEBCO_H
 
 #include <QtCore/qglobal.h>
@@ -37,7 +37,7 @@ public slots:
     bool isWorking();
     void startDemoMode(bool start);
 signals:
-    void data(uchar, double);
+    void data(uchar, short);
     void ecgValue(uchar);   // ECG
     void diffValue(uchar);  // dZ/dT
     void admitValue(uchar); // dZ

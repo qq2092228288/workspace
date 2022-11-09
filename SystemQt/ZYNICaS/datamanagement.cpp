@@ -1,5 +1,8 @@
-﻿#include "datamanagement.h"
+#include "datamanagement.h"
+#include "httppost.h"
 #include "deviceparameters.h"
+#include <iostream>
+using namespace std;
 using namespace DeviceParameters;
 
 QString ArgsNameToHttp(const QString &argsName)
@@ -10,14 +13,15 @@ QString ArgsNameToHttp(const QString &argsName)
     else if (argsName == "SI")      return "cSi";
     else if (argsName == "HRV")     return "cHrv";
 
-    else if (argsName == "TFC")     return "bTfc";
-    else if (argsName == "EDI")     return "bEdi";
-    else if (argsName == "Vol")     return "bVol";
     else if (argsName == "SVR")     return "bSvr";
     else if (argsName == "SSVR")    return "bSsvr";
     else if (argsName == "SSVRI")   return "bSsvri";
     else if (argsName == "SVRI")    return "bSvri";
     else if (argsName == "Vas")     return "bVas";
+
+    else if (argsName == "TFC")     return "fTfc";
+    else if (argsName == "EDI")     return "fEdi";
+    else if (argsName == "Vol")     return "fVol";
 
     else if (argsName == "PEP")     return "mPep";
     else if (argsName == "LVET")    return "mLvet";
@@ -237,14 +241,10 @@ void DataManagement::setSudoku(DrawSudoku *sudoku)
     this->m_pSudoku = sudoku;
 }
 
-BaseData &DataManagement::getBaseData()
-{
-    return m_baseData;
-}
-
 void DataManagement::recordPosition(QString position)
 {
     m_recordInfo.pos = position;
+    m_recordInfo.posture = position == tr("半卧") ? "1" : (position == tr("平躺") ? "2" : "3");
     saveInfo(m_recordInfo);
     m_pdZ->grab().scaled(300,120,Qt::IgnoreAspectRatio,Qt::SmoothTransformation).save(m_filePath.record_dz());
     isRecord = true;
@@ -254,14 +254,12 @@ void DataManagement::saveReport(QString position, bool record)
 {
     emit startCheck(false);
     m_newReportName.clear();
-    while (m_jsonArray.size()) {
-        m_jsonArray.removeFirst();
-    }
+    m_urlQuery.clear();
     m_currentInfo.pos = position;
     saveInfo(m_currentInfo,record);
     m_pdZ->grab().scaled(300,120,Qt::IgnoreAspectRatio,Qt::SmoothTransformation).save(m_filePath.current_dz());
     m_pSudoku->grab().save(m_filePath.sudoku());
-    setJsonArray(record);
+
     reportThread->init();
     connect(reportThread,&CreateReportThread::finished,this,&DataManagement::clear);
         //当前时间
@@ -363,12 +361,7 @@ void DataManagement::saveReport(QString position, bool record)
         reportThread->addMarks("doctor" , m_pHospitalInfo->doctorName);
         // 患者基本信息
         reportThread->addMarks("name" , m_pBodyValue->name);
-        if (m_pBodyValue->sex == 0) {
-            reportThread->addMarks("sex",tr("男"));
-        }
-        else {
-            reportThread->addMarks("sex",tr("女"));
-        }
+        reportThread->addMarks("sex", (0 == m_pBodyValue->sex) ? tr("男") : tr("女"));
         reportThread->addMarks("age" , QString::number(m_pBodyValue->age)+tr(" 岁"));
         reportThread->addMarks("height" , QString::number(m_pBodyValue->height)+" cm");
         reportThread->addMarks("weight" , QString::number(m_pBodyValue->weight)+" kg");
@@ -376,11 +369,18 @@ void DataManagement::saveReport(QString position, bool record)
         reportThread->addMarks("area" , QString::number(m_pBodyValue->BSA(),'f',1)+" m²");
         // 保存
         m_newReportName = QString("%1/%2-%3-%4.docx").arg(m_filePath.reports(),
-                            curTime.toString("yyyyMMddhhmm"),m_pBodyValue->id,m_pBodyValue->name);
+                          curTime.toString("yyyyMMddhhmm"),m_pBodyValue->id,m_pBodyValue->name);
         reportThread->setSaveAs(m_newReportName);
+        // 设置上传参数
+        m_urlQuery.addQueryItem("reportConclusion", result);
+        m_urlQuery.addQueryItem("reportTime", curTime.toString("yyyyMMddhhmmss"));
 
-        qDebug()<<QJsonDocument(m_jsonArray);
-
+        setJsonArray(record);
+//        string headers = string(m_urlQuery.toString().toUtf8());
+//        cout<<QByteArray(headers.c_str(), headers.length()).toStdString()<<endl;
+//        HttpPost *httpPost = new HttpPost(this);
+//        httpPost->dataUpload(QByteArray(headers.c_str(), int(headers.length())));
+//        connect(httpPost, &HttpPost::finished, httpPost, &HttpPost::deleteLater);
         reportThread->start();
 }
 
@@ -432,72 +432,100 @@ void DataManagement::customCtrlTimer(bool start)
 
 void DataManagement::setJsonArray(bool many)
 {
-    // hospital data
-//    m_jsonArray.append(JsonObject("place1Id"));
+    // base data
+    m_urlQuery.addQueryItem("place1Id", m_pHospitalInfo->place1Id);
+    m_urlQuery.addQueryItem("place2Id", m_pHospitalInfo->place2Id);
+    m_urlQuery.addQueryItem("deviceId", m_pHospitalInfo->deviceId);
+    m_urlQuery.addQueryItem("placeId", m_pHospitalInfo->roomName);
+    m_urlQuery.addQueryItem("inspector", m_pHospitalInfo->doctorName);
+    // patient data
+    m_urlQuery.addQueryItem("medicalRecordNumber", m_pBodyValue->id);
+    m_urlQuery.addQueryItem("patientName", m_pBodyValue->name);
+    m_urlQuery.addQueryItem("age", QString::number(m_pBodyValue->age));
+    m_urlQuery.addQueryItem("height", QString::number(m_pBodyValue->height));
+    m_urlQuery.addQueryItem("weight", QString::number(m_pBodyValue->weight));
+    m_urlQuery.addQueryItem("sex", (0 == m_pBodyValue->sex ? tr("男") : tr("女")));
+    m_urlQuery.addQueryItem("bodySurfaceArea", QString::number(m_pBodyValue->BSA()));
+    // sudoku picture
+    m_urlQuery.addQueryItem("pAnalyse", "network address");
     // checked data
     if (many) {
         foreach (CustomCtrl *customCtrl, m_pRegulator->getAllCustomCtrls()) {
             if (customCtrl->getName() != "SBP/DBP") {
                 auto argItems = customCtrl->getArgItems();
-                m_jsonArray.append(JsonObject(ArgsNameToHttp(customCtrl->getName()),
+                m_urlQuery.addQueryItem(ArgsNameToHttp(customCtrl->getName()),
                     DoublePos(QString("%1/%2").arg(argItems.dataName_cn, argItems.dataName),
-                              m_recordInfo.pos,
-                              m_currentInfo.pos,
+                              m_recordInfo.posture,
+                              m_currentInfo.posture,
                               QString("%1~%2").arg(argItems.minValue).arg(argItems.maxValue),
                               argItems.dataUnit,
                               flag(customCtrl, false),
-                              flag(customCtrl, true))));
+                              flag(customCtrl, true)));
             }
             else {
                 auto sbpItems = customCtrl->getArgItems();
                 auto dbpItems = customCtrl->getDbpArgItems();
-                m_jsonArray.append(JsonObject(ArgsNameToHttp("SBP"),
+                m_urlQuery.addQueryItem(ArgsNameToHttp("SBP"),
                     DoublePos(tr("收缩压/SBP"),
-                              m_recordInfo.pos,
-                              m_currentInfo.pos,
+                              m_recordInfo.posture,
+                              m_currentInfo.posture,
                               QString("%1~%2").arg(sbpItems.minValue).arg(sbpItems.maxValue),
                               sbpItems.dataUnit,
                               tip(sbpItems.minValue,sbpItems.maxValue,sbpItems.recordValue),
-                              tip(sbpItems.recordValue,sbpItems.currentValue))));
-                m_jsonArray.append(JsonObject(ArgsNameToHttp("DBP"),
+                              tip(sbpItems.recordValue,sbpItems.currentValue)));
+                m_urlQuery.addQueryItem(ArgsNameToHttp("DBP"),
                     DoublePos(tr("舒张压/DBP"),
-                              m_recordInfo.pos,
-                              m_currentInfo.pos,
+                              m_recordInfo.posture,
+                              m_currentInfo.posture,
                               QString("%1~%2").arg(dbpItems.minValue).arg(dbpItems.maxValue),
                               dbpItems.dataUnit,
                               tip(dbpItems.minValue,dbpItems.maxValue,dbpItems.recordValue),
-                              tip(dbpItems.recordValue,dbpItems.currentValue))));
+                              tip(dbpItems.recordValue,dbpItems.currentValue)));
             }
         }
+        m_urlQuery.addQueryItem("pDz",
+            DoublePos("心阻抗图(dZ)",
+                m_recordInfo.posture,
+                m_currentInfo.posture,
+                "NULL",
+                "NULL",
+                "network address 1",
+                "network address 2"));
     }
     else {
         foreach (CustomCtrl *customCtrl, m_pRegulator->getAllCustomCtrls()) {
             if (customCtrl->getName() != "SBP/DBP") {
                 auto argItems = customCtrl->getArgItems();
-                m_jsonArray.append(JsonObject(ArgsNameToHttp(customCtrl->getName()),
+                m_urlQuery.addQueryItem(ArgsNameToHttp(customCtrl->getName()),
                     SinglePos(QString("%1/%2").arg(argItems.dataName_cn, argItems.dataName),
                               m_currentInfo.pos,
                               QString("%1~%2").arg(argItems.minValue).arg(argItems.maxValue),
                               argItems.dataUnit,
-                              flag(customCtrl, false))));
+                              flag(customCtrl, false)));
             }
             else {
                 auto sbpItems = customCtrl->getArgItems();
                 auto dbpItems = customCtrl->getDbpArgItems();
-                m_jsonArray.append(JsonObject(ArgsNameToHttp("SBP"),
+                m_urlQuery.addQueryItem(ArgsNameToHttp("SBP"),
                     SinglePos(tr("收缩压/SBP"),
-                              m_currentInfo.pos,
+                              m_currentInfo.posture,
                               QString("%1~%2").arg(sbpItems.minValue).arg(sbpItems.maxValue),
                               sbpItems.dataUnit,
-                              tip(sbpItems.minValue,sbpItems.maxValue,sbpItems.currentValue))));
-                m_jsonArray.append(JsonObject(ArgsNameToHttp("DBP"),
+                              tip(sbpItems.minValue,sbpItems.maxValue,sbpItems.currentValue)));
+                m_urlQuery.addQueryItem(ArgsNameToHttp("DBP"),
                     SinglePos(tr("舒张压/DBP"),
-                              m_currentInfo.pos,
+                              m_currentInfo.posture,
                               QString("%1~%2").arg(dbpItems.minValue).arg(dbpItems.maxValue),
                               dbpItems.dataUnit,
-                              tip(dbpItems.minValue,dbpItems.maxValue,dbpItems.currentValue))));
+                              tip(dbpItems.minValue,dbpItems.maxValue,dbpItems.currentValue)));
             }
         }
+        m_urlQuery.addQueryItem("pDz",
+            SinglePos("心阻抗图(dZ)",
+                      m_currentInfo.posture,
+                      "NULL",
+                      "NULL",
+                      "network address 1"));
     }
 }
 

@@ -1,4 +1,4 @@
-﻿#include "auxargdialog.h"
+#include "auxargdialog.h"
 #include "datamanagement.h"
 
 AuxArgDialog::AuxArgDialog(QWidget *parent)

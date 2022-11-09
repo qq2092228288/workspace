@@ -1,4 +1,4 @@
-﻿#ifndef BPEDITDIALOG_H
+#ifndef BPEDITDIALOG_H
 #define BPEDITDIALOG_H
 
 #include <QDialog>

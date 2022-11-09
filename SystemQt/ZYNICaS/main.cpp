@@ -1,5 +1,6 @@
 ﻿#include "mainwidget.h"
 #include <QApplication>
+#include <QTextCodec>
 #include "datamanagement.h"
 #include "singleapplication.h"
 

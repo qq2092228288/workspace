@@ -1,4 +1,4 @@
-﻿#include "bpeditdialog.h"
+#include "bpeditdialog.h"
 #include "datamanagement.h"
 
 BPEditDialog::BPEditDialog(QWidget *parent)

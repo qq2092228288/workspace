@@ -1,4 +1,4 @@
-﻿#include "entersystemwidget.h"
+#include "entersystemwidget.h"
 #include "datamanagement.h"
 #include "waitingdialog.h"
 #include <iostream>
@@ -408,9 +408,9 @@ void EnterSystemWidget::changeShow(const QString &current, const QString &change
     }
 }
 
-void EnterSystemWidget::setData(const uchar &type, const double &value)
+void EnterSystemWidget::setData(const uchar &type, const short &value)
 {
-
+    recordDataMap.insert(type, value);
     switch (type) {
     case Type::HR:
         setCtrlValue(Type::HR,value);
@@ -576,6 +576,7 @@ void EnterSystemWidget::changeMode(const int &id)
         if (!rPos.isEmpty() && QMessageBox::question(this,tr("提示"),
                          tr("已记录体位，确定切换为单体位吗？")) == QMessageBox::No){
             manyBtn->setChecked(true);
+            baseData = BaseData();
             return;
         }
         rPos.clear();
@@ -588,7 +589,9 @@ void EnterSystemWidget::recordPosition()
     if (isStartCheck()) {
         emit recordValue();
         rPos = posGroup.checkedButton()->text();
-        DataManagement::getInstance().recordPosition(rPos);
+        auto &instance = DataManagement::getInstance();
+        instance.recordPosition(rPos);
+        setBaseData();
     }
 }
 
@@ -614,6 +617,10 @@ void EnterSystemWidget::createReport()
             QMessageBox::information(this,tr("提示"),tr("多体位模式需要记录体位！"));
             return;
         }
+        // 存入数据库
+        setBaseData();
+        reportDataBase.insert(QDateTime::currentMSecsSinceEpoch(), 0, baseData.structToJson());
+        reportDataBase.ergodic();
         WaitingDialog waiting = WaitingDialog(tr("报告生成中···"), this);
         connect(&instance,&DataManagement::clear,&waiting,&WaitingDialog::close);
         instance.saveReport(posGroup.checkedButton()->text(),!rPos.isEmpty());
@@ -629,9 +636,11 @@ void EnterSystemWidget::createReport()
 void EnterSystemWidget::clearUiSlot()
 {
     rPos.clear();
+    recordDataMap.clear();
+    baseData = BaseData();
     // 清空界面个人信息
-    nameLineEdit->clear();
     numLineEdit->clear();
+    nameLineEdit->clear();
     sbpLineEdit->clear();
     dbpLineEdit->clear();
     infoDialog->clear();
@@ -663,4 +672,46 @@ bool EnterSystemWidget::isStartCheck()
         return false;
     }
     return true;
+}
+
+void EnterSystemWidget::setBaseData()
+{
+    // 原始数据
+    if (-1 == baseData.firstPosture.posture) {
+        setTebcoData(baseData.firstPosture);
+    }
+    else {
+        setTebcoData(baseData.secondPosture);
+    }
+    // 个人信息
+    baseData.patient.name = bodyValue.name;
+    baseData.patient.medicalRecordNumber = bodyValue.id;
+    baseData.patient.sex = bodyValue.sex;
+    baseData.patient.age = bodyValue.age;
+    baseData.patient.height = bodyValue.height;
+    baseData.patient.weight = bodyValue.weight;
+    // 场所信息
+    auto hospitalInfo = DataManagement::getInstance().getHospitalInfo();
+    baseData.place.placeId = hospitalInfo->roomName;
+    baseData.place.place1Id = hospitalInfo->place1Id;
+    baseData.place.place2Id = hospitalInfo->place2Id;
+    baseData.place.deviceId = hospitalInfo->deviceId;
+    baseData.sudokuPix = sudokuDraw->grab().scaled(300,300,Qt::IgnoreAspectRatio,Qt::SmoothTransformation);
+}
+
+void EnterSystemWidget::setTebcoData(TebcoData &tebcoData)
+{
+    // 体位
+    tebcoData.posture = posGroup.checkedId() + 1;
+    // 原始的数据
+    tebcoData.data = recordDataMap;
+    // 输入的数据
+    tebcoData.bpAuxArgs.sbp = bodyValue.SBP;
+    tebcoData.bpAuxArgs.dbp = bodyValue.DBP;
+    tebcoData.bpAuxArgs.cvp = bodyValue.CVP;
+    tebcoData.bpAuxArgs.lap = bodyValue.LAP;
+    // 保存时间
+    tebcoData.cTime = QDateTime::currentDateTime();
+    // 心阻抗图
+    tebcoData.dzPix = admitDraw->getView()->grab().scaled(300,120,Qt::IgnoreAspectRatio,Qt::SmoothTransformation);
 }

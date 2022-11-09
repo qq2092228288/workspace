@@ -1,8 +1,6 @@
 ﻿#include "systemconfigdialog.h"
 #include "datamanagement.h"
-#include "httppost.h"
-#include "deviceparameters.h"
-using namespace DeviceParameters;
+
 
 SystemConfigDialog::SystemConfigDialog(QWidget *parent)
     : QDialog{parent}
@@ -188,6 +186,7 @@ void SystemConfigDialog::updateHospitalInfo()
     hospitalInfo.hospitalName = hospitalNameLineEdit->text();
     hospitalInfo.roomName = roomNameLineEdit->text();
     hospitalInfo.doctorName = doctorNameLineEdit->text();
+    hospitalInfo.mac = getIdDialog->getMac();
     hospitalInfo.xprinter = xprinterRadio->isChecked();
     hospitalInfo.tip = tipCheckBox->isChecked();
     hospitalInfo.professional = professionalModeRadio->isChecked();

@@ -1,4 +1,4 @@
-﻿#ifndef DATAMANAGEMENT_H
+#ifndef DATAMANAGEMENT_H
 #define DATAMANAGEMENT_H
 
 #include <QObject>
@@ -8,7 +8,7 @@
 #include <QFileInfo>
 #include <windows.h>
 #include <QDateTime>
-#include <QJsonArray>
+#include <QUrlQuery>
 
 #include "systemconfigdialog.h"
 #include "customctrl.h"
@@ -17,7 +17,7 @@
 #include "zytebco.h"
 #include "createreportthread.h"
 #include "idcheck.h"
-#include "MyStruct.h"
+
 
 QString ArgsNameToHttp(const QString &argsName);
 
@@ -48,6 +48,7 @@ private:
 typedef struct CheckedData
 {
     QString pos;        //体位
+    QString posture;        // 1半卧,2平躺,3抬腿
     QStringList values; //检查获取的数据
 }Cdata, *p_Cdata;
 
@@ -142,7 +143,6 @@ public:
     // 心阻抗图
     void setdZ(QChartView *dZ);
     void setSudoku(DrawSudoku *sudoku);
-    BaseData &getBaseData();
 public slots:
     void recordPosition(QString position);
     void saveReport(QString position, bool record);
@@ -171,7 +171,7 @@ private:
     BodyValue *m_pBodyValue;
     CustomCtrlRegulator *m_pRegulator;
     QChartView *m_pdZ;       //阻抗图
-    DrawSudoku *m_pSudoku;      //九宫格图
+    DrawSudoku *m_pSudoku;   //九宫格图
     //当前、记录的信息
     bool isRecord;
     Cdata m_recordInfo;
@@ -179,8 +179,7 @@ private:
     QImage m_pSudokuImage;
     QString m_newReportName;
     Args args;
-    BaseData m_baseData;
-    QJsonArray m_jsonArray;
+    QUrlQuery m_urlQuery;
 private:
     // 串口
     QThread *m_pThread;

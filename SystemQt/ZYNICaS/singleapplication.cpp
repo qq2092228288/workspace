@@ -39,25 +39,25 @@ void SingleApplication::newLocalConnection()
 void SingleApplication::initLocalConnection()
 {
     running = false;
-       QLocalSocket socket;
-       socket.connectToServer(serverName);
-       if(socket.waitForConnected(500))
-       {
-           running = true;
-           // 其他处理，如：将启动参数发送到服务端
-           QTextStream stream(&socket);
-           QStringList args = QCoreApplication::arguments();
-           if (args.count() > 1)
-               stream << args.last();
-           else
-               stream << QString();
-           stream.flush();
-           socket.waitForBytesWritten();
+    QLocalSocket socket;
+    socket.connectToServer(serverName);
+    if(socket.waitForConnected(500))
+    {
+        running = true;
+        // 其他处理，如：将启动参数发送到服务端
+        QTextStream stream(&socket);
+        QStringList args = QCoreApplication::arguments();
+        if (args.count() > 1)
+            stream << args.last();
+        else
+            stream << QString();
+        stream.flush();
+        socket.waitForBytesWritten();
 
-           return;
-       }
-       //连接不上服务器，就创建一个
-       newLocalServer();
+        return;
+    }
+    //连接不上服务器，就创建一个
+    newLocalServer();
 }
 
 void SingleApplication::newLocalServer()

@@ -1,4 +1,4 @@
-﻿#ifndef AUXARGDIALOG_H
+#ifndef AUXARGDIALOG_H
 #define AUXARGDIALOG_H
 
 #include <QDialog>
