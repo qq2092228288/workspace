@@ -27,6 +27,7 @@ SOURCES += \
     personalinfodialog.cpp \
     reportword.cpp \
     showreportdialog.cpp \
+    singleapplication.cpp \
     systemconfigdialog.cpp \
     waitingdialog.cpp
 
@@ -45,6 +46,7 @@ HEADERS += \
     personalinfodialog.h \
     reportword.h \
     showreportdialog.h \
+    singleapplication.h \
     systemconfigdialog.h \
     waitingdialog.h
 

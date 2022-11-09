@@ -1,4 +1,4 @@
-﻿#include "datamanagement.h"
+#include "datamanagement.h"
 
 DataManagement::DataManagement()
 {
@@ -354,21 +354,21 @@ void DataManagement::reportPrintOut(const QString &path)
 
 void DataManagement::customCtrlTimer(bool start)
 {
-    auto hrCtrl = m_pRegulator->getCustomCtrl(typeName(Type::HR));
-    auto svCtrl = m_pRegulator->getCustomCtrl(typeName(Type::SV));
-    auto isiCtrl = m_pRegulator->getCustomCtrl(typeName(Type::ISI));
-    if (hrCtrl == nullptr || svCtrl == nullptr || isiCtrl == nullptr)
-        return;
-    if (start) {
-        hrCtrl->startTimer(1);
-        svCtrl->startTimer(10);
-        isiCtrl->startTimer(100);
-    }
-    else {
-        hrCtrl->stopTimer();
-        svCtrl->stopTimer();
-        isiCtrl->stopTimer();
-    }
+//    auto hrCtrl = m_pRegulator->getCustomCtrl(typeName(Type::HR));
+//    auto svCtrl = m_pRegulator->getCustomCtrl(typeName(Type::SV));
+//    auto isiCtrl = m_pRegulator->getCustomCtrl(typeName(Type::ISI));
+//    if (hrCtrl == nullptr || svCtrl == nullptr || isiCtrl == nullptr)
+//        return;
+//    if (start) {
+//        hrCtrl->startTimer(1);
+//        svCtrl->startTimer(10);
+//        isiCtrl->startTimer(100);
+//    }
+//    else {
+//        hrCtrl->stopTimer();
+//        svCtrl->stopTimer();
+//        isiCtrl->stopTimer();
+//    }
 }
 
 void DataManagement::saveInfo(Cdata &cdata, bool second)

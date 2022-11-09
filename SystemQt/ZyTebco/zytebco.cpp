@@ -1,4 +1,4 @@
-﻿#include "zytebco.h"
+#include "zytebco.h"
 #include "DemoModeData.h"
 
 

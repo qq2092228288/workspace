@@ -1,4 +1,4 @@
-﻿#include "entersystemwidget.h"
+#include "entersystemwidget.h"
 #include "datamanagement.h"
 #include "waitingdialog.h"
 #include <iostream>
@@ -390,7 +390,7 @@ void EnterSystemWidget::changeShow(const QString &current, const QString &change
     }
 }
 
-void EnterSystemWidget::setData(const uchar &type, const double &value)
+void EnterSystemWidget::setData(const uchar &type, const short &value)
 {
     switch (type) {
     case Type::HR:
