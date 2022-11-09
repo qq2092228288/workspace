@@ -1,6 +1,7 @@
 #include "singleapplication.h"
 #include "mainwidget.h"
-
+#include <QMessageBox>
+#include <QEventLoop>
 
 SingleApplication::SingleApplication(int argc, char *argv[])
     : QApplication{argc, argv},
@@ -8,7 +9,7 @@ SingleApplication::SingleApplication(int argc, char *argv[])
       running{false},
       localServer{nullptr}
 {
-    serverName = QFileInfo(QCoreApplication::applicationFilePath()).fileName();
+    serverName = QFileInfo(QCoreApplication::applicationFilePath()).absoluteFilePath();
     initLocalConnection();
 }
 
@@ -31,8 +32,8 @@ void SingleApplication::newLocalConnection()
         //激活窗口
         mainWidget->raise();
         mainWidget->activateWindow();
-        mainWidget->setWindowState((mainWidget->windowState() & ~Qt::WindowMinimized) | Qt::WindowActive);
-        mainWidget->show();
+//        mainWidget->setWindowState((mainWidget->windowState() & ~Qt::WindowMinimized) | Qt::WindowActive);
+        QMessageBox::warning(mainWidget, tr("提示"), tr("程序正在运行中！！！"));
     }
 }
 
