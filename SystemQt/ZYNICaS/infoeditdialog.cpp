@@ -1,4 +1,4 @@
-﻿#include "infoeditdialog.h"
+#include "infoeditdialog.h"
 #include "datamanagement.h"
 
 double BodyValue::idealWeight() const
@@ -6,10 +6,7 @@ double BodyValue::idealWeight() const
     if(sex == 0) {
         return (0.524*height-16.58);
     }
-    else if(sex == 1) {
-        return (0.524*height-26.58);
-    }
-    return 0;
+    return (0.524*height-26.58);
 }
 
 double BodyValue::BSA() const

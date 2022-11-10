@@ -39,11 +39,10 @@ class EnterSystemWidget : public QWidget
 {
     Q_OBJECT
 public:
-    explicit EnterSystemWidget(const QString &portName, QWidget *parent = nullptr);
+    explicit EnterSystemWidget(QWidget *parent = nullptr);
     virtual ~EnterSystemWidget();
     void showEvent(QShowEvent *event);
     void closeEvent(QCloseEvent *event);
-    QString currentPortName() const;
     //初始化
     void initInfoModule();
     void initBPModule();
@@ -74,7 +73,6 @@ signals:
     void createdReport();
     void startDemoMode(bool);
 private:
-    QString portName;
     QTimer *timer;
     QGridLayout *mainLayout;
     QVBoxLayout *firstColLayout;

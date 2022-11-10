@@ -4,8 +4,9 @@ QT       += printsupport sql network
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 CONFIG += c++17
+#版本信息、图标
+RC_FILE = resource.rc
 
-RC_ICONS = images/app.ico
 
 # You can make your code fail to compile if it uses deprecated APIs.
 # In order to do so, uncomment the following line.
@@ -16,6 +17,7 @@ SOURCES += \
     bpeditdialog.cpp \
     createreportthread.cpp \
     customctrl.cpp \
+    datacalculation.cpp \
     datamanagement.cpp \
     deviceparameters.cpp \
     drawsudoku.cpp \
@@ -43,6 +45,7 @@ HEADERS += \
     bpeditdialog.h \
     createreportthread.h \
     customctrl.h \
+    datacalculation.h \
     datamanagement.h \
     deviceparameters.h \
     drawsudoku.h \

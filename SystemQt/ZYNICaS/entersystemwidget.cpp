@@ -1,21 +1,18 @@
 #include "entersystemwidget.h"
 #include "datamanagement.h"
 #include "waitingdialog.h"
+#include "datacalculation.h"
 #include <iostream>
 #include <numeric>
 #include <math.h>
 using namespace std;
 
-EnterSystemWidget::EnterSystemWidget(const QString &portName, QWidget *parent)
+EnterSystemWidget::EnterSystemWidget(QWidget *parent)
     : QWidget{parent}
 {
     DataManagement &instance = DataManagement::getInstance();
     setMinimumSize(1600*instance.wZoom(),900*instance.hZoom());
     setWindowTitle(tr("泽耀无创血流动力学检测"));
-    this->portName = portName;
-
-    auto tebco = instance.getTebco();
-    tebco->openSerial(portName);    //打开串口
 
     //样式表
     int fsize = 16*instance.zoom()+1;         //字体大小
@@ -157,11 +154,6 @@ void EnterSystemWidget::closeEvent(QCloseEvent *event)
 {
     event->accept();
     emit widgetClose();
-}
-
-QString EnterSystemWidget::currentPortName() const
-{
-    return portName;
 }
 
 void EnterSystemWidget::initInfoModule()
@@ -413,133 +405,64 @@ void EnterSystemWidget::setData(const uchar &type, const short &value)
     recordDataMap.insert(type, value);
     switch (type) {
     case Type::HR:
-        setCtrlValue(Type::HR,value);
+        setCtrlValue(Type::HR, DatCa::cHr(value));
         break;
     case Type::VET:
-        setCtrlValue(Type::LVET,value);
+        setCtrlValue(Type::LVET, DatCa::cVet(value));
         break;
     case Type::PEP:
-    {
-        setCtrlValue(Type::PEP,value);
-        auto LVETCtrl = regulator->getCustomCtrl(typeName(Type::LVET));
-        if(LVETCtrl != nullptr) {
-            double lvet = LVETCtrl->getCurrentValue();
-            if(lvet != 0) {
-                setCtrlValue(Type::STR,value/LVETCtrl->getCurrentValue());
-            }
-        }
-    }
+        setCtrlValue(Type::PEP, DatCa::cPep(value));
+        setCtrlValue(Type::STR, DatCa::cStr(value, regulator->getCustomCtrl(typeName(Type::LVET))->getCurrentValue()));
         break;
     case Type::TFC:
-        setCtrlValue(Type::TFC,value/1000.0);
+        setCtrlValue(Type::TFC, DatCa::cTfc(value));
         break;
     case Type::EPCI:
-        setCtrlValue(Type::EPCI,value/1000.0);
+        setCtrlValue(Type::EPCI, DatCa::cEpci(value));
         break;
     case Type::ISI:
-        setCtrlValue(Type::ISI,value/100.0);
-        if (bodyValue.age != 0) {
-            double idealISI = 0;
-            if (bodyValue.sex == 1) {
-                if (bodyValue.age < 55) {
-                    idealISI = 1.35;
-                }
-                else {
-                    idealISI = 1.20;
-                }
-            }
-            else {
-                if (bodyValue.age < 55) {
-                    idealISI = 1.15;
-                }
-                else {
-                    idealISI = 1.10;
-                }
-            }
-            if (value/100.0 > idealISI) {
-                setCtrlValue(Type::Ino,fabs((value/100.0)/idealISI-1)*100);
-            }
-            else {
-                setCtrlValue(Type::Ino,-fabs(idealISI/(value/100.0)-1)*100);
-            }
-        }
+        setCtrlValue(Type::ISI, DatCa::cIsi(value));
+        setCtrlValue(Type::Ino, DatCa::cIno(DatCa::cIsi(value), bodyValue.sex, bodyValue.age));
         break;
     case Type::EF:
-//    {
-//        setCtrlValue(Type::EF,value);
-        efValue = value;
-//        auto SICtrl = regulator->getCustomCtrl(typeName(Type::SI));
-//        if(SICtrl != nullptr && !SICtrl->getValueStr().isEmpty()) {
-//            setCtrlValue(Type::EDI,(SICtrl->getCurrentValue()/value)*100);
-//        }
-//    }
+        efValue = DatCa::cEf(value);
         break;
     case Type::SI:
     {
-        double SIValue = 2/bodyValue.BSA()*bodyValue.VEPT()/6800*value;
-        double SVValue = SIValue*bodyValue.BSA();
-        setCtrlValue(Type::SI,SIValue);
-        setCtrlValue(Type::SV,SVValue);
-//        if(svvQueue.size() == 10) {
-//            double avgSV = accumulate(svvQueue.begin(),svvQueue.end(),0)/svvQueue.size();
-//            setCtrlValue(Type::SVV,fabs(((SVValue-avgSV)/avgSV)),1);
-//            svvQueue.dequeue();
-//        }
-//        svvQueue.enqueue(SVValue);
-        if (efValue != 0) {
-            setCtrlValue(Type::EDI,(SIValue/efValue)*100);
-        }
+        double si = DatCa::cSi(value, bodyValue.BSA(), bodyValue.VEPT());
+        double sv = DatCa::cSv(si, bodyValue.BSA());
+        setCtrlValue(Type::SI, si);
+        setCtrlValue(Type::SV, sv);
+        setCtrlValue(Type::EDI, DatCa::cEdi(si, efValue));
         if(bodyValue.SBP != 0 && bodyValue.DBP != 0) {
-            setCtrlValue(Type::LSW,0.0144*SVValue*(bodyValue.MAP()-bodyValue.LAP));
-            double lswi = 0.0144*SIValue*(bodyValue.MAP()-bodyValue.LAP);
-            setCtrlValue(Type::LSWI,lswi);
-            auto InoCtrl = regulator->getCustomCtrl(typeName(Type::Ino));
-            if(InoCtrl != nullptr && bodyValue.age != 0) {
-                if (!InoCtrl->getValueStr().isEmpty()) {
-                    double con = 0;
-                    if(lswi > 52.8) {
-                        con = fabs(lswi/52.8-1);
-                    }
-                    else {
-                        con = -fabs(52.8/lswi-1);
-                    }
-                    setCtrlValue(Type::Vol,con*100-InoCtrl->getCurrentValue());
-                }
-            }
-            setCtrlValue(Type::SSVR,80*(bodyValue.MAP()-bodyValue.CVP)/SVValue);
-            double ssvri = 80*(bodyValue.MAP()-bodyValue.CVP)/SIValue;
-            setCtrlValue(Type::SSVRI,ssvri);
-            if(ssvri > 137.8) {
-                setCtrlValue(Type::Vas,fabs(ssvri/137.8-1)*100);
-            }
-            else {
-                setCtrlValue(Type::Vas,-fabs(137.8/ssvri-1)*100);
-            }
+            setCtrlValue(Type::LSW, DatCa::cLsw(sv, bodyValue.MAP(), bodyValue.LAP));
+            double lswi = DatCa::cLswi(si, bodyValue.MAP(), bodyValue.LAP);
+            setCtrlValue(Type::LSWI, lswi);
+            setCtrlValue(Type::Vol, DatCa::cVol(lswi, regulator->getCustomCtrl(typeName(Type::Ino))->getCurrentValue()));
+            setCtrlValue(Type::SSVR, DatCa::cSsvr(sv, bodyValue.MAP(), bodyValue.CVP));
+            double ssvri = DatCa::cSsvri(si, bodyValue.MAP(), bodyValue.CVP);
+            setCtrlValue(Type::SSVRI, ssvri);
+            setCtrlValue(Type::Vas, DatCa::cVas(ssvri));
         }
     }
         break;
     case Type::CI:
     {
-        double CIValue = 2/bodyValue.BSA()*bodyValue.VEPT()/6800*value/10;
-        setCtrlValue(Type::CI,CIValue);
-        double COValue = CIValue*bodyValue.BSA();
-        setCtrlValue(Type::CO,COValue);
-        if(CIValue > 4.5) {
-            setCtrlValue(Type::HRV,fabs(CIValue/4.5-1)*100);
-        }
-        else {
-            setCtrlValue(Type::HRV,-fabs(4.5/CIValue-1)*100);
-        }
+        double ci = DatCa::cCi(value, bodyValue.BSA(), bodyValue.VEPT());
+        setCtrlValue(Type::CI, ci);
+        double co = DatCa::cCo(ci, bodyValue.BSA());
+        setCtrlValue(Type::CO, co);
+        setCtrlValue(Type::HRV, DatCa::cHrv(ci));
         if(bodyValue.SBP != 0 && bodyValue.DBP != 0) {
-            setCtrlValue(Type::SVR,(bodyValue.MAP()-bodyValue.CVP)/COValue*80);
-            setCtrlValue(Type::SVRI,80*(bodyValue.MAP()-bodyValue.CVP)/CIValue);
-            setCtrlValue(Type::LCW,0.0144*(bodyValue.MAP()-bodyValue.LAP-2)*COValue);
-            setCtrlValue(Type::LCWI,0.0144*(bodyValue.MAP()-bodyValue.LAP)*CIValue);
+            setCtrlValue(Type::SVR, DatCa::cSvr(co, bodyValue.MAP(), bodyValue.CVP));
+            setCtrlValue(Type::SVRI, DatCa::cSvri(ci, bodyValue.MAP(), bodyValue.CVP));
+            setCtrlValue(Type::LCW, DatCa::cLcw(co, bodyValue.MAP(), bodyValue.LAP));
+            setCtrlValue(Type::LCWI, DatCa::cLcwi(ci, bodyValue.MAP(), bodyValue.LAP));
         }
     }
         break;
     case Type::RR:
-//        setCtrlValue(Type::RR,value/10);
+//        setCtrlValue(Type::RR,DatCa::cRr(value));
         break;
     case Type::BEEP:
 //        QApplication::beep();

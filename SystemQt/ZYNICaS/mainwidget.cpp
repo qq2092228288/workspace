@@ -1,11 +1,10 @@
-﻿#include "mainwidget.h"
+#include "mainwidget.h"
 #include "datamanagement.h"
 
 MainWidget::MainWidget(QWidget *parent)
     : QWidget{parent}
 {
     setWindowTitle(tr("泽耀无创血流动力学检测系统"));
-//    setStyleSheet("background-color:white;");
     auto &instance = DataManagement::getInstance();
     setMinimumSize(1600*instance.wZoom(),900*instance.hZoom());
     mainLayout = new QVBoxLayout(this);
@@ -19,7 +18,7 @@ MainWidget::MainWidget(QWidget *parent)
 
     reportDialog = new ShowReportDialog;
     configDialog = new SystemConfigDialog;
-    enterSystemWidget = new EnterSystemWidget(configDialog->getPortName());
+    enterSystemWidget = new EnterSystemWidget;
     QObject::connect(enterSystemWidget,&EnterSystemWidget::widgetClose,this,&EnterSystemWidget::show);
 
     btnGroup->addButton(enterBtn);
@@ -100,7 +99,7 @@ void MainWidget::enterBtnSlot()
         return;
     }
     foreach (QSerialPortInfo info, QSerialPortInfo::availablePorts()) {
-        if(enterSystemWidget->currentPortName() == info.portName() ) {
+        if(configDialog->getPortName() == info.portName()) {
             emit enterSystemWidget->startDemoMode(false);
             if(disconnect(enterSystemWidget, &EnterSystemWidget::startDemoMode,
                     DataManagement::getInstance().getTebco(), &ZyTebco::startDemoMode)) {
@@ -115,11 +114,13 @@ void MainWidget::enterBtnSlot()
                     Qt::ConnectionType(Qt::AutoConnection|Qt::UniqueConnection));
             this->close();
             enterSystemWidget->show();
+            // 打开串口
+            emit DataManagement::getInstance().sendSerialName(info.portName());
             return;
         }
     }
-    QMessageBox::warning(this,tr("警告！"),tr("串口'%1'打开失败，请检查配置并重启程序！！！")
-                         .arg(enterSystemWidget->currentPortName()));
+    QMessageBox::warning(this,tr("警告！"),tr("串口“%1”打开失败，请检查装置接入的串口是否和“系统配置”一致！")
+                         .arg(configDialog->getPortName()));
 }
 
 void MainWidget::demoBtnSlot()

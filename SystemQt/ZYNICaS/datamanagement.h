@@ -118,6 +118,7 @@ public:
 signals:
     void clear();
     void startCheck(bool);
+    void sendSerialName(const QString &portName);
 public:
     void startThread();
     ZyTebco *getTebco() const;

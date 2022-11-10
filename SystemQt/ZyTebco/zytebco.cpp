@@ -1,4 +1,4 @@
-﻿#include "zytebco.h"
+#include "zytebco.h"
 #include "DemoModeData.h"
 
 
@@ -43,21 +43,23 @@ QSerialPort *ZyTebco::getSerial()
 
 void ZyTebco::openSerial(const QString &portName)
 {
+    if (m_pSerial->portName() == portName && m_pSerial->isOpen()) {
+        return;
+    }
     m_pSerial->setPortName(portName);
-    //若串口已打开，则关闭
     m_pSerial->open(QIODevice::ReadWrite);
     qRegisterMetaType<QSerialPort::SerialPortError>("SerialThread");
-    connect(m_pSerial,&QSerialPort::errorOccurred,this,&ZyTebco::handleSerialError);
+    connect(m_pSerial, &QSerialPort::errorOccurred, this, &ZyTebco::handleSerialError, Qt::UniqueConnection);
 }
 
 void ZyTebco::startCheckSlot(bool check)
 {
     if(check) {
-        connect(m_pSerial,&QSerialPort::readyRead,this,&ZyTebco::recvInfoSlot,Qt::UniqueConnection);
+        connect(m_pSerial, &QSerialPort::readyRead, this, &ZyTebco::recvInfoSlot, Qt::UniqueConnection);
         working = true;
     }
     else {
-        disconnect(m_pSerial,&QSerialPort::readyRead,this,&ZyTebco::recvInfoSlot);
+        disconnect(m_pSerial, &QSerialPort::readyRead, this, &ZyTebco::recvInfoSlot);
         working = false;
     }
 }
@@ -108,7 +110,7 @@ void ZyTebco::reConnect()
         }
     }
 }
-//#include <QDateTime>
+
 void ZyTebco::recvInfoSlot()
 {
     QByteArray array = m_pSerial->readAll();

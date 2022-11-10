@@ -1,4 +1,4 @@
-﻿#include "mainwidget.h"
+#include "mainwidget.h"
 #include <QApplication>
 #include <QTextCodec>
 #include "datamanagement.h"
@@ -15,7 +15,8 @@ int main(int argc, char *argv[])
 
         auto &ins = DataManagement::getInstance();
         ins.startThread();
-        QObject::connect(&ins,&DataManagement::clear,&ins,&DataManagement::clearSlot);
+        QObject::connect(&ins, &DataManagement::clear, &ins, &DataManagement::clearSlot);
+        QObject::connect(&ins, &DataManagement::sendSerialName, ins.getTebco(), &ZyTebco::openSerial);
 
         ins.setSize(QApplication::primaryScreen()->availableSize());
         ins.initCurrentPath();
