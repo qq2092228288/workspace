@@ -619,7 +619,7 @@ void EnterSystemWidget::setBaseData()
     baseData.place.place1Id = hospitalInfo->place1Id;
     baseData.place.place2Id = hospitalInfo->place2Id;
     baseData.place.deviceId = hospitalInfo->deviceId;
-    baseData.sudokuPix = sudokuDraw->grab().scaled(300,300,Qt::IgnoreAspectRatio,Qt::SmoothTransformation);
+    baseData.sudokuPix = sudokuDraw->grab();
 }
 
 void EnterSystemWidget::setTebcoData(TebcoData &tebcoData)
@@ -636,5 +636,5 @@ void EnterSystemWidget::setTebcoData(TebcoData &tebcoData)
     // 保存时间
     tebcoData.cTime = QDateTime::currentDateTime();
     // 心阻抗图
-    tebcoData.dzPix = admitDraw->getView()->grab().scaled(300,120,Qt::IgnoreAspectRatio,Qt::SmoothTransformation);
+    tebcoData.dzPix = admitDraw->getView()->grab();
 }
