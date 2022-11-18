@@ -12,7 +12,7 @@ SelectItemDialog::SelectItemDialog(bool trendChart, QWidget *parent)
     setStyleSheet(instance.dialogQss());
     comboBox = new QComboBox(this);
     confirmBtn = new QPushButton(tr("确定"),this);
-    comboBox->setFixedWidth(100*instance.wZoom());
+    comboBox->setFixedWidth(120*instance.wZoom());
     QHBoxLayout *layout = new QHBoxLayout(this);
     setWindowTitle(tr("选择参数"));
     setWindowFlags(Qt::CustomizeWindowHint | Qt::WindowCloseButtonHint);

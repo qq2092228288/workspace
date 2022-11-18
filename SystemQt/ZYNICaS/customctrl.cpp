@@ -1,4 +1,4 @@
-﻿#include "customctrl.h"
+#include "customctrl.h"
 #include <math.h>
 #include <QRandomGenerator>
 #include "datamanagement.h"
@@ -102,6 +102,17 @@ QString typeName(const uchar &type)
     case Type::MAP:
         return "MAP";
         break;
+    case Type::CVP:
+        return "CVP";
+        break;
+    case Type::LAP:
+        return "LAP";
+        break;
+    case Type::Dz:
+        return "Dz";
+        break;
+    default:
+        break;
     }
     return nullptr;
 }
@@ -143,20 +154,24 @@ CustomCtrl::CustomCtrl(Argument arg, QWidget *parent)
     mainLayout->addWidget(scopeLabel,0,Qt::AlignCenter);
     mainLayout->addWidget(unitLabel,0,Qt::AlignCenter);
 
-    mainLabel->setText(arg.en);
-    secondaryLabel->setText(arg.cn);
-    scopeLabel->setText(QString("%1~%2").arg(arg.min).arg(arg.max));
-    unitLabel->setText(arg.unit);
+
     aitems.minValue = arg.min;
     aitems.maxValue = arg.max;
-    aitems.dataName = arg.en;
-    aitems.dataName_cn = arg.cn;
+    aitems.dataName = (arg.dbpen.isEmpty() ? arg.en : arg.en + "/" + arg.dbpen);
+    aitems.dataName_cn = (arg.dbpcn.isEmpty() ? arg.cn : arg.cn + "/" +arg.dbpcn);
     aitems.dataUnit = arg.unit;
     digit = arg.digit;
+
+    mainLabel->setText(aitems.dataName);
+    secondaryLabel->setText(aitems.dataName_cn);
+    scopeLabel->setText(QString("%1~%2").arg(arg.min).arg(arg.max));
+    unitLabel->setText(arg.unit);
+
     if (arg.dbpmin != 0 && arg.dbpmax != 0) {
         dbpaitems = aitems;
         dbpaitems.minValue = arg.dbpmin;
         dbpaitems.maxValue = arg.dbpmax;
+
         scopeLabel->setText(QString("%1~%2/%3~%4").arg(aitems.minValue).arg(aitems.maxValue)
                             .arg(dbpaitems.minValue).arg(dbpaitems.maxValue));
     }

@@ -1,6 +1,5 @@
 #include "reportdatabase.h"
 #include "httppost.h"
-#include "MyStruct.h"
 
 ReportDataBase::ReportDataBase(QObject *parent)
     : QObject{parent}
@@ -46,17 +45,21 @@ void ReportDataBase::insert(qint64 time, int upload, QString dataString)
     sqlQuery.exec();
 }
 
-void ReportDataBase::ergodic()
+void ReportDataBase::dataUpload()
 {
     QSqlQuery sqlQuery;
     sqlQuery.exec("SELECT * FROM reports");
     while (sqlQuery.next()) {
-        qDebug()<<sqlQuery.value(0).toLongLong()
-               <<sqlQuery.value(1).toInt()
-              <<sqlQuery.value(2).toString().size();
-        qDebug()<<BaseData::strToJson(sqlQuery.value(2).toString());
-//        HttpPost *httpPost = new HttpPost(this);
-//        httpPost->reportUpload(sqlQuery.value(2).toString());
-//        connect(httpPost, &HttpPost::finished, httpPost, &HttpPost::deleteLater);
+        if (sqlQuery.value(1).toInt() == 0) {
+            HttpPost *httpPost = new HttpPost(this);
+            httpPost->reportUpload(sqlQuery.value(0).toLongLong(), sqlQuery.value(2).toString());
+            connect(httpPost, &HttpPost::finished, this, &ReportDataBase::dataUploaded);
+            connect(httpPost, &HttpPost::finished, httpPost, &HttpPost::deleteLater);
+        }
     }
+}
+
+void ReportDataBase::dataUploaded(const qint64 &time)
+{
+    // 删除已上传数据
 }

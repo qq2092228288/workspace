@@ -376,6 +376,9 @@ void EnterSystemWidget::signalsAndSlots()
         bodyValue.LAP = lap;
         DataManagement::getInstance().getArgs().CVP = cvp;
         DataManagement::getInstance().getArgs().LAP = lap;
+
+        recordDataMap.insert(Type::CVP, bodyValue.CVP);
+        recordDataMap.insert(Type::LAP, bodyValue.LAP);
     });
 }
 
@@ -482,6 +485,9 @@ void EnterSystemWidget::setBPValue(const QString &sbp, const QString &dbp)
             bodyValue.DBP = dbp.toInt();
             BPCtrl->setValues(bodyValue.SBP,bodyValue.DBP);
             MAPCtrl->setValue(bodyValue.MAP());
+
+            recordDataMap.insert(Type::SBP, bodyValue.SBP);
+            recordDataMap.insert(Type::DBP, bodyValue.DBP);
         }
         else {
             BPCtrl->clear();
@@ -526,6 +532,7 @@ void EnterSystemWidget::changePosition(int id)
     else if(posGroup.button(id)->text() == rPos) {
         recordBtn->show();
     }
+    reportDataBase.dataUpload();
 }
 
 void EnterSystemWidget::createReport()
@@ -542,8 +549,7 @@ void EnterSystemWidget::createReport()
         }
         // 存入数据库
         setBaseData();
-        reportDataBase.insert(QDateTime::currentMSecsSinceEpoch(), 0, baseData.structToJson());
-        reportDataBase.ergodic();
+        reportDataBase.insert(QDateTime::currentMSecsSinceEpoch(), 0, baseData.structToJsonString());
         WaitingDialog waiting = WaitingDialog(tr("报告生成中···"), this);
         connect(&instance,&DataManagement::clear,&waiting,&WaitingDialog::close);
         instance.saveReport(posGroup.checkedButton()->text(),!rPos.isEmpty());
@@ -600,39 +606,35 @@ bool EnterSystemWidget::isStartCheck()
 void EnterSystemWidget::setBaseData()
 {
     // 原始数据
-    if (-1 == baseData.firstPosture.posture) {
+    if (patternGroup.checkedId() == 1 || !recordBtn->isHidden()) {
         setTebcoData(baseData.firstPosture);
     }
     else {
         setTebcoData(baseData.secondPosture);
     }
     // 个人信息
-    baseData.patient.name = bodyValue.name;
+    baseData.patient.patientName = bodyValue.name;
     baseData.patient.medicalRecordNumber = bodyValue.id;
-    baseData.patient.sex = bodyValue.sex;
-    baseData.patient.age = bodyValue.age;
-    baseData.patient.height = bodyValue.height;
-    baseData.patient.weight = bodyValue.weight;
+    baseData.patient.sex = (bodyValue.sex == 0 ? QString("男") : QString("女"));
+    baseData.patient.age = QString::number(bodyValue.age);
+    baseData.patient.height = QString::number(bodyValue.height);
+    baseData.patient.weight = QString::number(bodyValue.weight);
     // 场所信息
     auto hospitalInfo = DataManagement::getInstance().getHospitalInfo();
     baseData.place.placeId = hospitalInfo->roomName;
     baseData.place.place1Id = hospitalInfo->place1Id;
     baseData.place.place2Id = hospitalInfo->place2Id;
     baseData.place.deviceId = hospitalInfo->deviceId;
+    baseData.place.inspector = hospitalInfo->doctorName;
     baseData.sudokuPix = sudokuDraw->grab();
 }
 
 void EnterSystemWidget::setTebcoData(TebcoData &tebcoData)
 {
     // 体位
-    tebcoData.posture = posGroup.checkedId() + 1;
+    recordDataMap.insert(Type::Pos, posGroup.checkedId() + 1);
     // 原始的数据
     tebcoData.data = recordDataMap;
-    // 输入的数据
-    tebcoData.bpAuxArgs.sbp = bodyValue.SBP;
-    tebcoData.bpAuxArgs.dbp = bodyValue.DBP;
-    tebcoData.bpAuxArgs.cvp = bodyValue.CVP;
-    tebcoData.bpAuxArgs.lap = bodyValue.LAP;
     // 保存时间
     tebcoData.cTime = QDateTime::currentDateTime();
     // 心阻抗图

@@ -14,6 +14,9 @@
 #include <QBuffer>
 #include <QTimer>
 #include <QEventLoop>
+#include "customctrl.h"
+
+QString ArgsNameToHttp(const QString &argsName);
 
 class PostHttpMultiPart : public QHttpMultiPart
 {
@@ -36,19 +39,36 @@ public:
 public:
     static QPixmap jsonToPixmap(const QJsonValue &value);
 public slots:
-    void reportUpload(const QString &jsonStr);
-    void dataUpload(QByteArray data);
+    void reportUpload(const qint64 &dtime, const QString &jsonStr);
+private slots:
     void picUpload(const QString &filePath);
     // return image url path
     QString picUpload(const QPixmap &pixmap, const QString &fileName);
-private slots:
-    void requestFinished(QNetworkReply *reply);
+private:
+    QUrlQuery addJsonObject(const QJsonObject &jsonObject);
+    QUrlQuery addJsonArray(const QJsonArray &jsonArray, const QString &fpDzUrl, const QString &spDzUrl);
+    QUrlQuery addDeviceString(const Type &type, QString fValue, QString sValue);
+    QUrlQuery addDeviceString(const Type &type, qreal fValue, qreal sValue, int digit = 0);
+    QUrlQuery addDeviceString(const char &index, const QJsonObject &fObject, const QJsonObject &sObject);
+    int getData(const QJsonObject &data, const Type &type);
 signals:
-    void finished();
+    void finished(qint64);
 private:
     QNetworkAccessManager *m_pManager;
     QNetworkRequest m_dataRequest;
     QNetworkRequest m_picRequest;
+    QUrlQuery m_urlQuery;
+private:
+    int sex;                    // 性别: 0男,1女
+    int age;                    // 年龄
+    int height;                 // 身高
+    int weight;                 // 体重
+    int fposture;
+    int fCvp;
+    int fLap;
+    int sposture;
+    int sCvp;
+    int sLap;
 };
 
 #endif // HTTPPOST_H

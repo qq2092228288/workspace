@@ -16,7 +16,9 @@ public:
     virtual ~ReportDataBase();
 public slots:
     void insert(qint64 time, int upload, QString dataString);
-    void ergodic();
+    void dataUpload();
+private slots:
+    void dataUploaded(const qint64 &time);
 signals:
 private:
     QSqlDatabase m_database;

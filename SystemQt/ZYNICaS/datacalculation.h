@@ -7,6 +7,7 @@
 class DataCalculation
 {
 public:
+    // device data
     static qreal cHr     (const qreal &value);
     static qreal cVet    (const qreal &value);
     static qreal cPep    (const qreal &value);
@@ -29,10 +30,14 @@ public:
     static qreal cCo     (const qreal &ci, const qreal &bsa);
     static qreal cHrv    (const qreal &ci);
     static qreal cSvr    (const qreal &co, const qreal &map, const qreal &cvp);
-    static qreal cSvri   (const qreal &ci, const qreal &map, const qreal &lap);
+    static qreal cSvri   (const qreal &ci, const qreal &map, const qreal &cvp);
     static qreal cLcw    (const qreal &co, const qreal &map, const qreal &lap);
     static qreal cLcwi   (const qreal &ci, const qreal &map, const qreal &lap);
     static qreal cRr     (const qreal &value);
+    // body data
+    static qreal cBsa    (const qreal &height, const qreal &weight);
+    static qreal cVept   (const qreal &height, const qreal &weight, const qreal &sex);
+    static qreal cMap    (const qreal &sbp, const qreal &dbp);
 private:
     static qreal percent(const qreal &value, const qreal &ideal);
 };

@@ -5,41 +5,6 @@
 using namespace std;
 using namespace DeviceParameters;
 
-QString ArgsNameToHttp(const QString &argsName)
-{
-    if (argsName == "CO")           return "cCo";
-    else if (argsName == "CI")      return "cCi";
-    else if (argsName == "SV")      return "cSv";
-    else if (argsName == "SI")      return "cSi";
-    else if (argsName == "HRV")     return "cHrv";
-
-    else if (argsName == "SVR")     return "bSvr";
-    else if (argsName == "SSVR")    return "bSsvr";
-    else if (argsName == "SSVRI")   return "bSsvri";
-    else if (argsName == "SVRI")    return "bSvri";
-    else if (argsName == "Vas")     return "bVas";
-
-    else if (argsName == "TFC")     return "fTfc";
-    else if (argsName == "EDI")     return "fEdi";
-    else if (argsName == "Vol")     return "fVol";
-
-    else if (argsName == "PEP")     return "mPep";
-    else if (argsName == "LVET")    return "mLvet";
-    else if (argsName == "LSW")     return "mLsw";
-    else if (argsName == "LSWI")    return "mLswi";
-    else if (argsName == "LCW")     return "mLcw";
-    else if (argsName == "LCWI")    return "mLcwi";
-    else if (argsName == "STR")     return "mStr";
-    else if (argsName == "EPCI")    return "mEpci";
-    else if (argsName == "ISI")     return "mIsi";
-    else if (argsName == "Ino")     return "mIno";
-
-    else if (argsName == "HR")      return "rHr";
-    else if (argsName == "SBP")     return "rSbp";
-    else if (argsName == "DBP")     return "rDbp";
-    else if (argsName == "MAP")     return "rMap";
-    return nullptr;
-}
 
 DataManagement::DataManagement()
 {

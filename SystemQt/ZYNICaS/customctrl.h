@@ -1,4 +1,4 @@
-﻿#ifndef CUSTOMCTRL_H
+#ifndef CUSTOMCTRL_H
 #define CUSTOMCTRL_H
 
 #include <QWidget>
@@ -23,7 +23,7 @@
 enum Type {
     HR = 0, VET, PEP, TFC, EPCI, ISI, EF, SI, CI, RR, BEEP, Reserved = 15,
     CO, SV, HRV, EDI, Vol, SVR, SSVR, SSVRI, SVRI, Vas, LVET, LSW, LSWI,
-    LCW, LCWI, STR, Ino, SBP, DBP, MAP
+    LCW, LCWI, STR, Ino, SBP, DBP, MAP, CVP, LAP, Dz, Pos
 };
 QString typeName(const uchar &type);
 QString typeName(const Type &type);

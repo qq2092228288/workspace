@@ -56,14 +56,14 @@ public slots:
     void timeoutSlot();
     void changeShow(const QString &current, const QString &change);
     void setData(const uchar &type, const short &value);
-    void setBPValue(const QString &sbp,const QString &dbp);
+    void setBPValue(const QString &sbp, const QString &dbp);
     void changeMode(const int &id);
     void recordPosition();
     void changePosition(int id);
     void createReport();
     void clearUiSlot();
 private:
-    void setCtrlValue(const Type &type,const double &value);
+    void setCtrlValue(const Type &type, const double &value);
     bool isStartCheck();
     void setBaseData();
     void setTebcoData(TebcoData &tebcoData);

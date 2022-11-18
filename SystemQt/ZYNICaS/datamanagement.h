@@ -19,7 +19,6 @@
 #include "idcheck.h"
 
 
-QString ArgsNameToHttp(const QString &argsName);
 
 // 文件路径
 class MyFilePath
@@ -48,7 +47,7 @@ private:
 typedef struct CheckedData
 {
     QString pos;        //体位
-    QString posture;        // 1半卧,2平躺,3抬腿
+    QString posture;    // 1半卧,2平躺,3抬腿
     QStringList values; //检查获取的数据
 }Cdata, *p_Cdata;
 
@@ -57,14 +56,18 @@ struct Argument
     Argument(){}
     Argument(QString _cn, QString _en, QString _unit, qreal _min, qreal _max, int _digit)
         : cn(_cn),en(_en),unit(_unit),min(_min),max(_max),digit(_digit){}
-    Argument(QString _cn, QString _en, QString _unit, qreal _sbpmin, qreal _sbpmax, int _digit, qreal _dbpmin, qreal _dbpmax)
-        : cn(_cn),en(_en),unit(_unit),min(_sbpmin),max(_sbpmax),digit(_digit),dbpmin(_dbpmin),dbpmax(_dbpmax){}
+    Argument(QString _cn, QString _en, QString _unit, qreal _sbpmin, qreal _sbpmax,
+             int _digit, QString _dbpcn, QString _dbpen, qreal _dbpmin, qreal _dbpmax)
+        : cn(_cn),en(_en),unit(_unit),min(_sbpmin),max(_sbpmax),
+          digit(_digit),dbpcn(_dbpcn),dbpen(_dbpen),dbpmin(_dbpmin),dbpmax(_dbpmax){}
     QString cn;
     QString en;
     QString unit;
     qreal min = 0;
     qreal max = 0;
     int digit = 0;
+    QString dbpcn;
+    QString dbpen;
     qreal dbpmin = 0;
     qreal dbpmax = 0;
 };
@@ -98,8 +101,19 @@ typedef struct Arguments
     <<Argument("变力状态指数", "ISI", "1/s²", 0.90, 1.70, 2)
     <<Argument("收缩变力性", "Ino", "%", -50, 50, 0)
     <<Argument("心率", "HR", "bpm", 60, 100, 0)
-    <<Argument("收缩压/舒张压", "SBP/DBP", "mmHg", 90, 140, 0, 60, 90)
+    <<Argument("收缩压", "SBP", "mmHg", 90, 140, 0, "舒张压", "DBP", 60, 90)
     <<Argument("平均动脉压", "MAP", "mmHg", 70, 105, 0);
+    Argument findArgument(const QString &en)
+    {
+        if (en.isEmpty())
+            return Argument();
+        foreach (auto argument, arguments) {
+            if (en == argument.en || en == argument.dbpen) {
+                return argument;
+            }
+        }
+        return Argument();
+    }
 }Args;
 
 // 数据管理
