@@ -1,10 +1,10 @@
-﻿#include "mainwidget.h"
+#include "mainwidget.h"
 #include "datamanagement.h"
 
 MainWidget::MainWidget(QWidget *parent)
     : QWidget{parent}
 {
-    setWindowTitle(tr("泽耀无创血流动力学检测系统"));
+    setWindowTitle(tr("无创血流动力学检测系统"));
 //    setStyleSheet("background-color:white;");
     auto &instance = DataManagement::getInstance();
     setMinimumSize(1600*instance.wZoom(),900*instance.hZoom());

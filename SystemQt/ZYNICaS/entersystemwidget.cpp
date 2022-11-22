@@ -11,7 +11,7 @@ EnterSystemWidget::EnterSystemWidget(const QString &portName, QWidget *parent)
 {
     DataManagement &instance = DataManagement::getInstance();
     setMinimumSize(1600*instance.wZoom(),900*instance.hZoom());
-    setWindowTitle(tr("泽耀无创血流动力学检测"));
+    setWindowTitle(tr("无创血流动力学检测"));
     this->portName = portName;
 
     auto tebco = instance.getTebco();
