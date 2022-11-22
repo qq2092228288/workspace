@@ -23,7 +23,7 @@ VS_VERSION_INFO VERSIONINFO
 				VALUE "FileDescription", "\0"
 				VALUE "FileVersion", "1.0.0.1\0"
 				VALUE "LegalCopyright", "Copyright(C) 2022\0"
-				VALUE "OriginalFilename", "ZYNICaS.exe\0"
+				VALUE "OriginalFilename", "YZNICaS.exe\0"
 				VALUE "ProductName", "无创血流动力学检测系统\0"
 				VALUE "ProductVersion", "1.0.0.1\0"
 			END
