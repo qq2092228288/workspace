@@ -175,11 +175,13 @@ void HttpPost::reportUpload(const qint64 &dtime, const QString &jsonStr)
             else if (it.key() == "pAnalyse") {      // 九宫格图
                 m_urlQuery.addQueryItem(it.key(), sudokuUrl);
             }
+            else if (it.key() == "reportConclusion") {      // 九宫格图
+                m_urlQuery.addQueryItem(it.key(), it.value().toString());
+            }
         }
-        m_urlQuery.addQueryItem("reportConclusion", "test");
-        foreach (auto test, m_urlQuery.queryItems()) {
-            qDebug()<<test.first<<test.second;
-        }
+//        foreach (auto test, m_urlQuery.queryItems()) {
+//            qDebug()<<test.first<<test.second;
+//        }
         // 超时处理定时器
         QTimer timer;
         timer.setInterval(5000);    // 超时时间
@@ -202,8 +204,8 @@ void HttpPost::reportUpload(const qint64 &dtime, const QString &jsonStr)
                 if (reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt() == 200) {
                     QString retData = QString(reply->readAll());
                     qDebug()<<QJsonDocument::fromJson(retData.toUtf8());
-                    if (QJsonDocument::fromJson(retData.toUtf8()).object().find("code").value().toInt(1) != 0) {    // 上传失败
-                        emit finished(-1);
+                    if (QJsonDocument::fromJson(retData.toUtf8()).object().find("code").value().toInt() != 0) {    // 上传失败
+                        emit finished(0);
                         return;
                     }
                 }
@@ -317,11 +319,11 @@ QUrlQuery HttpPost::addJsonArray(const QJsonArray &jsonArray, const QString &fpD
     m_urlQuery.addQueryItem("bodySurfaceArea", QString::number(DatCa::cBsa(height, weight), 'f', 2));
     m_urlQuery.addQueryItem("reportTime", reportTime);
     addDeviceString(Type::Dz, fpDzUrl, spDzUrl);
-    addDeviceString(Type::SBP, getData(fPos, Type::SBP), getData(sPos, Type::SBP));
-    addDeviceString(Type::DBP, getData(fPos, Type::DBP), getData(sPos, Type::DBP));
+    addDeviceString(Type::SBP, getData(fPos, Type::SBP), getData(sPos, Type::SBP), 0);
+    addDeviceString(Type::DBP, getData(fPos, Type::DBP), getData(sPos, Type::DBP), 0);
     addDeviceString(Type::MAP,
                     DatCa::cMap(getData(fPos, Type::SBP), getData(fPos, Type::DBP)),
-                    DatCa::cMap(getData(sPos, Type::SBP), getData(sPos, Type::DBP)));
+                    DatCa::cMap(getData(sPos, Type::SBP), getData(sPos, Type::DBP)), 0);
     for (char index = 0; index < 10; ++index) {
         addDeviceString(index, fPos, sPos);
     }
@@ -362,6 +364,9 @@ QUrlQuery HttpPost::addDeviceString(const Type &type, QString fValue, QString sV
 
 QUrlQuery HttpPost::addDeviceString(const Type &type, qreal fValue, qreal sValue, int digit)
 {
+    qDebug()<<typeName(type)<<fValue<<sValue
+           <<QString::number(fValue, 'f', digit)
+           <<QString::number(sValue, 'f', digit);
     return addDeviceString(type, QString::number(fValue, 'f', digit), QString::number(sValue, 'f', digit));
 }
 
@@ -373,32 +378,32 @@ QUrlQuery HttpPost::addDeviceString(const char &index, const QJsonObject &fObjec
     qreal sMap = DatCa::cMap(getData(sObject, Type::SBP), getData(sObject, Type::DBP));
     switch (index) {
     case Type::HR:
-        addDeviceString(Type::HR, DatCa::cHr(getData(fObject, Type::HR)), DatCa::cHr(getData(sObject, Type::HR)));
+        addDeviceString(Type::HR, DatCa::cHr(getData(fObject, Type::HR)), DatCa::cHr(getData(sObject, Type::HR)), 0);
         break;
     case Type::VET:
-        addDeviceString(Type::LVET, DatCa::cVet(getData(fObject, Type::VET)), DatCa::cVet(getData(sObject, Type::VET)));
+        addDeviceString(Type::LVET, DatCa::cVet(getData(fObject, Type::VET)), DatCa::cVet(getData(sObject, Type::VET)), 0);
         break;
     case Type::PEP:
     {
         qreal fPep = DatCa::cPep(getData(fObject, Type::PEP));
         qreal sPep = DatCa::cPep(getData(sObject, Type::PEP));
-        addDeviceString(Type::PEP, fPep, sPep);
+        addDeviceString(Type::PEP, fPep, sPep, 0);
         addDeviceString(Type::STR, DatCa::cStr(fPep, DatCa::cVet(getData(fObject, Type::VET))),
-                        DatCa::cStr(sPep, DatCa::cVet(getData(sObject, Type::VET))));
+                        DatCa::cStr(sPep, DatCa::cVet(getData(sObject, Type::VET))), 1);
     }
         break;
     case Type::TFC:
         addDeviceString(Type::TFC, DatCa::cTfc(getData(fObject, Type::TFC)), DatCa::cTfc(getData(sObject, Type::TFC)), 3);
         break;
     case Type::EPCI:
-        addDeviceString(Type::EPCI, DatCa::cEpci(getData(fObject, Type::EPCI)), DatCa::cEpci(getData(sObject, Type::EPCI)), 2);
+        addDeviceString(Type::EPCI, DatCa::cEpci(getData(fObject, Type::EPCI)), DatCa::cEpci(getData(sObject, Type::EPCI)), 3);
         break;
     case Type::ISI:
     {
         qreal fIsi = DatCa::cIsi(getData(fObject, Type::ISI));
         qreal sIsi = DatCa::cIsi(getData(sObject, Type::ISI));
         addDeviceString(Type::ISI, fIsi, sIsi, 2);
-        addDeviceString(Type::Ino, DatCa::cIno(fIsi, sex, age), DatCa::cIno(sIsi, sex, age));
+        addDeviceString(Type::Ino, DatCa::cIno(fIsi, sex, age), DatCa::cIno(sIsi, sex, age), 0);
     }
         break;
 //    case Type::EF:
@@ -413,17 +418,17 @@ QUrlQuery HttpPost::addDeviceString(const char &index, const QJsonObject &fObjec
         qreal sLswi = DatCa::cLswi(sSi, sMap, sLap);
         qreal fSsvri = DatCa::cSsvri(fSi, fMap, fCvp);
         qreal sSsvri = DatCa::cSsvri(sSi, sMap, sCvp);
-        addDeviceString(Type::SI, fSi, sSi);
+        addDeviceString(Type::SI, fSi, sSi, 0);
         addDeviceString(Type::SV, fSv, sSv, 1);
         addDeviceString(Type::EDI, DatCa::cEdi(fSi, DatCa::cEf(getData(fObject, Type::EF))),
-                        DatCa::cEdi(sSi, DatCa::cEf(getData(sObject, Type::EF))));
-        addDeviceString(Type::LSW, DatCa::cLsw(fSv, fMap, fLap), DatCa::cLsw(sSv, sMap, sLap));
+                        DatCa::cEdi(sSi, DatCa::cEf(getData(sObject, Type::EF))), 0);
+        addDeviceString(Type::LSW, DatCa::cLsw(fSv, fMap, fLap), DatCa::cLsw(sSv, sMap, sLap), 0);
         addDeviceString(Type::LSWI, fLswi, sLswi, 1);
         addDeviceString(Type::Vol, DatCa::cVol(fLswi, DatCa::cIno(DatCa::cIsi(getData(fObject, Type::ISI)), sex, age)),
-                        DatCa::cVol(sLswi, DatCa::cIno(DatCa::cIsi(getData(sObject, Type::ISI)), sex, age)));
+                        DatCa::cVol(sLswi, DatCa::cIno(DatCa::cIsi(getData(sObject, Type::ISI)), sex, age)), 0);
         addDeviceString(Type::SSVR, DatCa::cSsvr(fSv, fMap, fCvp), DatCa::cSsvr(sSv, sMap, sCvp), 1);
         addDeviceString(Type::SSVRI, fSsvri, sSsvri, 1);
-        addDeviceString(Type::Vas, DatCa::cVas(fSsvri), DatCa::cVas(sSsvri));
+        addDeviceString(Type::Vas, DatCa::cVas(fSsvri), DatCa::cVas(sSsvri), 0);
     }
         break;
     case Type::CI:
@@ -434,9 +439,9 @@ QUrlQuery HttpPost::addDeviceString(const char &index, const QJsonObject &fObjec
         qreal sCo = DatCa::cCo(sCi, bsa);
         addDeviceString(Type::CI, fCi, sCi, 1);
         addDeviceString(Type::CO, fCo, sCo, 1);
-        addDeviceString(Type::HRV, DatCa::cHrv(fCi), DatCa::cHrv(sCi));
-        addDeviceString(Type::SVR, DatCa::cSvr(fCo, fMap, fCvp), DatCa::cSvr(sCo, sMap, sCvp));
-        addDeviceString(Type::SVRI, DatCa::cSvri(fCi, fMap, fCvp), DatCa::cSvri(sCi, sMap, sCvp));
+        addDeviceString(Type::HRV, DatCa::cHrv(fCi), DatCa::cHrv(sCi), 0);
+        addDeviceString(Type::SVR, DatCa::cSvr(fCo, fMap, fCvp), DatCa::cSvr(sCo, sMap, sCvp), 0);
+        addDeviceString(Type::SVRI, DatCa::cSvri(fCi, fMap, fCvp), DatCa::cSvri(sCi, sMap, sCvp), 0);
         addDeviceString(Type::LCW, DatCa::cLcw(fCo, fMap, fLap), DatCa::cLcw(sCo, sMap, sLap), 1);
         addDeviceString(Type::LCWI, DatCa::cLcwi(fCi, fMap, fLap), DatCa::cLcwi(sCi, sMap, sLap), 2);
     }

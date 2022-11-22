@@ -26,6 +26,8 @@ ReportDataBase::ReportDataBase(QObject *parent)
     else {
         qWarning("数据库打开失败！");
     }
+    httpPost = new HttpPost(this);
+    connect(httpPost, &HttpPost::finished, this, &ReportDataBase::dataUploaded);
 }
 
 ReportDataBase::~ReportDataBase()
@@ -42,7 +44,9 @@ void ReportDataBase::insert(qint64 time, int upload, QString dataString)
     sqlQuery.bindValue(":time", time);
     sqlQuery.bindValue(":upload", upload);
     sqlQuery.bindValue(":data", dataString);
-    sqlQuery.exec();
+    if (!sqlQuery.exec()) {
+        qWarning("数据插入失败！");
+    }
 }
 
 void ReportDataBase::dataUpload()
@@ -51,15 +55,23 @@ void ReportDataBase::dataUpload()
     sqlQuery.exec("SELECT * FROM reports");
     while (sqlQuery.next()) {
         if (sqlQuery.value(1).toInt() == 0) {
-            HttpPost *httpPost = new HttpPost(this);
             httpPost->reportUpload(sqlQuery.value(0).toLongLong(), sqlQuery.value(2).toString());
-            connect(httpPost, &HttpPost::finished, this, &ReportDataBase::dataUploaded);
-            connect(httpPost, &HttpPost::finished, httpPost, &HttpPost::deleteLater);
         }
     }
 }
 
 void ReportDataBase::dataUploaded(const qint64 &time)
 {
-    // 删除已上传数据
+    QSqlQuery sqlQuery;
+    if (!sqlQuery.exec(QString("UPDATE reports SET upload=1 WHERE time=%1").arg(time))) {
+        qWarning("数据更新失败！");
+    }
+}
+
+void ReportDataBase::deleteUploaded()
+{
+    QSqlQuery sqlQuery;
+    sqlQuery.prepare(QString("DELETE FROM reports WHERE time<%1 and upload=1")
+                     .arg(QDateTime::currentSecsSinceEpoch() - 360*24*60*60));
+    sqlQuery.exec();
 }

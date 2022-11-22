@@ -288,11 +288,10 @@ void CustomCtrl::clear()
 
 void CustomCtrl::setValue(const double &value)
 {
-    double aboutValue = (int)(value*std::pow(10,digit))/(double)std::pow(10,digit);
-    valueEdit->setText(QString::number(aboutValue,'f',digit));
+    valueEdit->setText(QString::number(value, 'f', digit));
     aitems.currentValue = valueEdit->text().toDouble();
     valueWarning(aitems.currentValue < aitems.minValue || aitems.currentValue > aitems.maxValue);
-    emit currentValue(aboutValue);
+    emit currentValue(value);
 }
 
 void CustomCtrl::setValues(const double &value, const double &value1)

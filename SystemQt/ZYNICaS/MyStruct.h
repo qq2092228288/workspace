@@ -55,6 +55,7 @@ struct BaseData
     TebcoData firstPosture;     // 第一体位数据
     TebcoData secondPosture;    // 第二体位数据
     QPixmap sudokuPix;          // 九宫格图
+    QString reportConclusion;   // 报告结论
     QList<QPixmap> trendCharts; // 趋势图
     QString structToJsonString()
     {
@@ -83,6 +84,7 @@ struct BaseData
         jBaseData.insert("position", jPosition);
 
         jBaseData.insert("pAnalyse", pixmapToJson(sudokuPix));
+        jBaseData.insert("reportConclusion", reportConclusion);
 
         if (!trendCharts.isEmpty()) {
             QJsonObject jTrendCharts;

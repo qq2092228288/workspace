@@ -23,7 +23,8 @@
 #include <QApplication>
 #include <QThread>
 #include <QQueue>
-
+#include <QFuture>
+#include <QtConcurrent/QtConcurrentRun>
 
 #include "infoeditdialog.h"
 #include "bpeditdialog.h"

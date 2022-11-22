@@ -48,11 +48,11 @@ private:
     QUrlQuery addJsonObject(const QJsonObject &jsonObject);
     QUrlQuery addJsonArray(const QJsonArray &jsonArray, const QString &fpDzUrl, const QString &spDzUrl);
     QUrlQuery addDeviceString(const Type &type, QString fValue, QString sValue);
-    QUrlQuery addDeviceString(const Type &type, qreal fValue, qreal sValue, int digit = 0);
+    QUrlQuery addDeviceString(const Type &type, qreal fValue, qreal sValue, int digit);
     QUrlQuery addDeviceString(const char &index, const QJsonObject &fObject, const QJsonObject &sObject);
     int getData(const QJsonObject &data, const Type &type);
 signals:
-    void finished(qint64);
+    void finished(const qint64 &time);
 private:
     QNetworkAccessManager *m_pManager;
     QNetworkRequest m_dataRequest;

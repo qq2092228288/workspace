@@ -532,7 +532,6 @@ void EnterSystemWidget::changePosition(int id)
     else if(posGroup.button(id)->text() == rPos) {
         recordBtn->show();
     }
-    reportDataBase.dataUpload();
 }
 
 void EnterSystemWidget::createReport()
@@ -547,12 +546,14 @@ void EnterSystemWidget::createReport()
             QMessageBox::information(this,tr("提示"),tr("多体位模式需要记录体位！"));
             return;
         }
-        // 存入数据库
-        setBaseData();
-        reportDataBase.insert(QDateTime::currentMSecsSinceEpoch(), 0, baseData.structToJsonString());
         WaitingDialog waiting = WaitingDialog(tr("报告生成中···"), this);
         connect(&instance,&DataManagement::clear,&waiting,&WaitingDialog::close);
-        instance.saveReport(posGroup.checkedButton()->text(),!rPos.isEmpty());
+
+        baseData.reportConclusion = instance.saveReport(posGroup.checkedButton()->text(),!rPos.isEmpty());
+        setBaseData();
+        reportDataBase.insert(QDateTime::currentMSecsSinceEpoch(), 0, baseData.structToJsonString());
+
+
         waiting.exec();
         emit createdReport();
         instance.reportPreview(instance.getNewReportName());

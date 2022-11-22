@@ -8,7 +8,7 @@
 #include <QFileInfo>
 #include <windows.h>
 #include <QDateTime>
-#include <QUrlQuery>
+
 
 #include "systemconfigdialog.h"
 #include "customctrl.h"
@@ -160,12 +160,11 @@ public:
     void setSudoku(DrawSudoku *sudoku);
 public slots:
     void recordPosition(QString position);
-    void saveReport(QString position, bool record);
+    QString saveReport(QString position, bool record);
     void clearSlot();
     void reportPreview(const QString &path);
     void reportPrintOut(const QString &path);
     void customCtrlTimer(bool start);
-    void setJsonArray(bool many);
 private:
     void saveInfo(Cdata &cdata, bool second = false);
     QString flag(CustomCtrl *customCtrl, bool second);
@@ -194,7 +193,6 @@ private:
     QImage m_pSudokuImage;
     QString m_newReportName;
     Args args;
-    QUrlQuery m_urlQuery;
 private:
     // 串口
     QThread *m_pThread;
