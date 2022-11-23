@@ -3,10 +3,10 @@
 
 #include <QObject>
 
-
 class DataCalculation
 {
 public:
+    static const qreal invalid();
     // device data
     static qreal cHr     (const qreal &value);
     static qreal cVet    (const qreal &value);
@@ -39,7 +39,8 @@ public:
     static qreal cVept   (const qreal &height, const qreal &weight, const qreal &sex);
     static qreal cMap    (const qreal &sbp, const qreal &dbp);
 private:
-    static qreal percent(const qreal &value, const qreal &ideal);
+    static qreal percent (const qreal &value, const qreal &ideal);
+    static qreal checkValue(const qreal &value);
 };
 typedef DataCalculation DatCa;
 

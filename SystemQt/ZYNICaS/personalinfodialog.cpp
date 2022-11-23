@@ -50,7 +50,7 @@ PersonalInfoDialog::PersonalInfoDialog(QWidget *parent)
     }
     else {
         // 用于执行sql语句的对象
-        QSqlQuery sqlQuery;
+        QSqlQuery sqlQuery(database);
         // 构建创建数据库的sql语句字符串
         QString createSql = QString("CREATE TABLE patient (\
                               id TEXT PRIMARY KEY NOT NULL,\
@@ -87,14 +87,6 @@ PersonalInfoDialog::PersonalInfoDialog(QWidget *parent)
     connect(confirmBtn,&QPushButton::clicked,this,&PersonalInfoDialog::emitPatientInfo);
 }
 
-PersonalInfoDialog::~PersonalInfoDialog()
-{
-    if (database.isOpen()) {
-        database.close();
-    }
-    //    qDebug()<<"~PersonalInfoDialog()";
-}
-
 void PersonalInfoDialog::showEvent(QShowEvent *event)
 {
     searchEdit->clear();
@@ -114,7 +106,7 @@ void PersonalInfoDialog::keyPressEvent(QKeyEvent *event)
 
 void PersonalInfoDialog::insertData(BodyValue &bValue)
 {
-    QSqlQuery sqlQuery;
+    QSqlQuery sqlQuery(database);
     sqlQuery.prepare("REPLACE INTO patient(id, name, sex, age, height, weight) "
                      "VALUES(:id, :name, :sex, :age, :height, :weight)");
     sqlQuery.bindValue(":id", bValue.id);
@@ -159,7 +151,7 @@ void PersonalInfoDialog::deletePatientInfo()
         return;
     }
     QString id = m_model->data(m_model->index(tableView->currentIndex().row(),0)).toString();
-    QSqlQuery sqlQuery;
+    QSqlQuery sqlQuery(database);
     sqlQuery.prepare(QString("DELETE FROM patient WHERE id='%1'").arg(id));
     if(!sqlQuery.exec()) {
 //        qDebug()<<id<<sqlQuery.lastError();

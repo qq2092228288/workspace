@@ -16,7 +16,7 @@ ReportDataBase::ReportDataBase(QObject *parent)
     }
     if (m_database.open()) {
         // 用于执行sql语句的对象
-        QSqlQuery sqlQuery;
+        QSqlQuery sqlQuery(m_database);
         // 构建创建数据库的sql语句字符串
         QString createSql = QString("CREATE TABLE reports(time REAL PRIMARY KEY NOT NULL, upload INT, data TEXT)");
         sqlQuery.prepare(createSql);
@@ -26,20 +26,14 @@ ReportDataBase::ReportDataBase(QObject *parent)
     else {
         qWarning("数据库打开失败！");
     }
-    httpPost = new HttpPost(this);
-    connect(httpPost, &HttpPost::finished, this, &ReportDataBase::dataUploaded);
-}
-
-ReportDataBase::~ReportDataBase()
-{
-    if (m_database.isOpen()) {
-        m_database.close();
-    }
+    m_pHttpPost = new HttpPost(this);
+    connect(this, &ReportDataBase::unupload, m_pHttpPost, &HttpPost::reportUpload);
+    connect(m_pHttpPost, &HttpPost::finished, this, &ReportDataBase::dataUploaded);
 }
 
 void ReportDataBase::insert(qint64 time, int upload, QString dataString)
 {
-    QSqlQuery sqlQuery;
+    QSqlQuery sqlQuery(m_database);
     sqlQuery.prepare("INSERT INTO reports(time, upload, data) VALUES(:time, :upload, :data)");
     sqlQuery.bindValue(":time", time);
     sqlQuery.bindValue(":upload", upload);
@@ -51,27 +45,28 @@ void ReportDataBase::insert(qint64 time, int upload, QString dataString)
 
 void ReportDataBase::dataUpload()
 {
-    QSqlQuery sqlQuery;
+    QSqlQuery sqlQuery(m_database);
     sqlQuery.exec("SELECT * FROM reports");
     while (sqlQuery.next()) {
+        qDebug()<<sqlQuery.value(0).toLongLong()<<sqlQuery.value(1).toInt()<<sqlQuery.value(2).toString().size();
         if (sqlQuery.value(1).toInt() == 0) {
-            httpPost->reportUpload(sqlQuery.value(0).toLongLong(), sqlQuery.value(2).toString());
+            emit unupload(sqlQuery.value(0).toLongLong(), sqlQuery.value(2).toString());
         }
-    }
-}
-
-void ReportDataBase::dataUploaded(const qint64 &time)
-{
-    QSqlQuery sqlQuery;
-    if (!sqlQuery.exec(QString("UPDATE reports SET upload=1 WHERE time=%1").arg(time))) {
-        qWarning("数据更新失败！");
     }
 }
 
 void ReportDataBase::deleteUploaded()
 {
-    QSqlQuery sqlQuery;
+    QSqlQuery sqlQuery(m_database);
     sqlQuery.prepare(QString("DELETE FROM reports WHERE time<%1 and upload=1")
                      .arg(QDateTime::currentSecsSinceEpoch() - 360*24*60*60));
     sqlQuery.exec();
+}
+
+void ReportDataBase::dataUploaded(const qint64 &time)
+{
+    QSqlQuery sqlQuery(m_database);
+    if (!sqlQuery.exec(QString("UPDATE reports SET upload=1 WHERE time=%1").arg(time))) {
+        qWarning("数据更新失败！");
+    }
 }

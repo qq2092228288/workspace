@@ -12,14 +12,6 @@
 #include <QUrlQuery>
 
 
-//struct BpAndAuxArgs
-//{
-//    int sbp;                    // 收缩压
-//    int dbp;                    // 舒张压
-//    int cvp;                    // 中心静脉压
-//    int lap;                    // 左房压
-//};
-
 struct PatientInfo
 {
     QString sex;                // 性别
@@ -32,20 +24,18 @@ struct PatientInfo
 
 struct PlaceInfo
 {
-    QString placeId;            // 场所ID
-    QString place1Id;           // 一级场所
-    QString place2Id;           // 二级场所
-    QString deviceId;           // 设备ID
-    QString inspector;          // 检察人员
+    QString placeId = "placeId";    // 场所ID
+    QString place1Id;               // 一级场所
+    QString place2Id;               // 二级场所
+    QString deviceId;               // 设备ID
+    QString inspector = "inspector";// 检查人员
 };
 
 struct TebcoData
 {
-//    int posture = -1;           // (-1表示无数据)体位：1半卧，2平躺，3抬腿
     QMap<uchar, short> data;    // 原始数据
     QDateTime cTime;            // 记录数据时的时间
     QPixmap dzPix;              // 心阻抗图
-//    BpAndAuxArgs bpAuxArgs;     // 血压和辅助参数
 };
 
 struct BaseData

@@ -130,6 +130,7 @@ QPixmap HttpPost::jsonToPixmap(const QJsonValue &value) {
 
 void HttpPost::reportUpload(const qint64 &dtime, const QString &jsonStr)
 {
+    QMutexLocker locker(&mutex);
     m_urlQuery.clear();
     QString sudokuUrl, fpDzUrl, spDzUrl;
     bool spExists = false;
@@ -179,8 +180,8 @@ void HttpPost::reportUpload(const qint64 &dtime, const QString &jsonStr)
                 m_urlQuery.addQueryItem(it.key(), it.value().toString());
             }
         }
-//        foreach (auto test, m_urlQuery.queryItems()) {
-//            qDebug()<<test.first<<test.second;
+//        foreach (auto index, m_urlQuery.queryItems()) {
+//            qDebug()<<index.first<<index.second;
 //        }
         // 超时处理定时器
         QTimer timer;
@@ -261,7 +262,7 @@ QString HttpPost::picUpload(const QPixmap &pixmap, const QString &fileName)
         }
         else {
             if (reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt() == 200) {
-                QJsonObject object = QJsonDocument::fromJson(QString(reply->readAll()).toLocal8Bit()).object();
+                QJsonObject object = QJsonDocument::fromJson(QString(reply->readAll()).toUtf8()).object();
                 for (auto it = object.begin(); it != object.end(); ++it) {
                     if (it.key() == "data") {
                         QJsonObject dobject = it.value().toObject();
@@ -319,14 +320,15 @@ QUrlQuery HttpPost::addJsonArray(const QJsonArray &jsonArray, const QString &fpD
     m_urlQuery.addQueryItem("bodySurfaceArea", QString::number(DatCa::cBsa(height, weight), 'f', 2));
     m_urlQuery.addQueryItem("reportTime", reportTime);
     addDeviceString(Type::Dz, fpDzUrl, spDzUrl);
-    addDeviceString(Type::SBP, getData(fPos, Type::SBP), getData(sPos, Type::SBP), 0);
-    addDeviceString(Type::DBP, getData(fPos, Type::DBP), getData(sPos, Type::DBP), 0);
-    addDeviceString(Type::MAP,
+    addBpDeviceString(Type::SBP, getData(fPos, Type::SBP), getData(sPos, Type::SBP), 0);
+    addBpDeviceString(Type::DBP, getData(fPos, Type::DBP), getData(sPos, Type::DBP), 0);
+    addBpDeviceString(Type::MAP,
                     DatCa::cMap(getData(fPos, Type::SBP), getData(fPos, Type::DBP)),
                     DatCa::cMap(getData(sPos, Type::SBP), getData(sPos, Type::DBP)), 0);
     for (char index = 0; index < 10; ++index) {
         addDeviceString(index, fPos, sPos);
     }
+
     return m_urlQuery;
 }
 
@@ -364,10 +366,8 @@ QUrlQuery HttpPost::addDeviceString(const Type &type, QString fValue, QString sV
 
 QUrlQuery HttpPost::addDeviceString(const Type &type, qreal fValue, qreal sValue, int digit)
 {
-    qDebug()<<typeName(type)<<fValue<<sValue
-           <<QString::number(fValue, 'f', digit)
-           <<QString::number(sValue, 'f', digit);
-    return addDeviceString(type, QString::number(fValue, 'f', digit), QString::number(sValue, 'f', digit));
+    return addDeviceString(type, DatCa::invalid() != fValue ? QString::number(fValue, 'f', digit) : "-",
+                           DatCa::invalid() != sValue ? QString::number(sValue, 'f', digit) : "-");
 }
 
 QUrlQuery HttpPost::addDeviceString(const char &index, const QJsonObject &fObject, const QJsonObject &sObject)
@@ -452,6 +452,11 @@ QUrlQuery HttpPost::addDeviceString(const char &index, const QJsonObject &fObjec
         break;
     }
     return m_urlQuery;
+}
+
+QUrlQuery HttpPost::addBpDeviceString(const Type &type, qreal fValue, qreal sValue, int digit)
+{
+    return addDeviceString(type, 0 != fValue ? fValue : DatCa::invalid(), 0 != sValue ? sValue : DatCa::invalid(), digit);
 }
 
 int HttpPost::getData(const QJsonObject &data, const Type &type)

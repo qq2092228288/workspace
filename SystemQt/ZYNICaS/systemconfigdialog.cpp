@@ -1,6 +1,6 @@
-﻿#include "systemconfigdialog.h"
+#include "systemconfigdialog.h"
 #include "datamanagement.h"
-
+#include "reportdatabase.h"
 
 SystemConfigDialog::SystemConfigDialog(QWidget *parent)
     : QDialog{parent}
@@ -161,8 +161,8 @@ QString SystemConfigDialog::getPortName() const
 }
 
 void SystemConfigDialog::confirmSlot()
-{ 
-    testFunc();
+{
+    ReportDataBase().dataUpload();
     this->close();
     //保存配置
     QFile file(infoFileName);
@@ -191,57 +191,4 @@ void SystemConfigDialog::updateHospitalInfo()
     hospitalInfo.tip = tipCheckBox->isChecked();
     hospitalInfo.professional = professionalModeRadio->isChecked();
     DataManagement::getInstance().setHospitalInfo(&hospitalInfo);
-}
-
-void SystemConfigDialog::testFunc()
-{
-//    QJsonArray array;
-//    array.append(JsonObject("medicalRecordNumber", "12345"));
-//    array.append(JsonObject("placeId", "科室"));
-//    array.append(JsonObject("age", "55"));
-//    array.append(JsonObject("height", "166"));
-//    array.append(JsonObject("patientName", "张三"));
-//    array.append(JsonObject("sex", "男"));
-//    array.append(JsonObject("weight", "55"));
-//    array.append(JsonObject("bodySurfaceArea", "1.7"));
-//    array.append(JsonObject("bSsvr", DoublePos("SSVRI", "1", "2", "1~2", "mL/min", "1", "2")));
-//    array.append(JsonObject("bSsvri", DoublePos("SSVRI", "1", "2", "1~2", "mL/min", "1", "2")));
-//    array.append(JsonObject("bVas", DoublePos("SSVRI", "1", "2", "1~2", "mL/min", "1", "2")));
-//    array.append(JsonObject("bSvr", DoublePos("SSVRI", "1", "2", "1~2", "mL/min", "1", "2")));
-//    array.append(JsonObject("bSvri", DoublePos("SSVRI", "1", "2", "1~2", "mL/min", "1", "2")));
-//    array.append(JsonObject("cCi", DoublePos("SSVRI", "1", "2", "1~2", "mL/min", "1", "2")));
-//    array.append(JsonObject("cCo", DoublePos("SSVRI", "1", "2", "1~2", "mL/min", "1", "2")));
-//    array.append(JsonObject("cHrv", DoublePos("SSVRI", "1", "2", "1~2", "mL/min", "1", "2")));
-//    array.append(JsonObject("cSi", DoublePos("SSVRI", "1", "2", "1~2", "mL/min", "1", "2")));
-//    array.append(JsonObject("cSv", DoublePos("SSVRI", "1", "2", "1~2", "mL/min", "1", "2")));
-//    array.append(JsonObject("fEdi", DoublePos("SSVRI", "1", "2", "1~2", "mL/min", "1", "2")));
-//    array.append(JsonObject("fTfc", DoublePos("SSVRI", "1", "2", "1~2", "mL/min", "1", "2")));
-//    array.append(JsonObject("fVol", DoublePos("SSVRI", "1", "2", "1~2", "mL/min", "1", "2")));
-//    array.append(JsonObject("inspector", "12345"));
-//    array.append(JsonObject("mEpci", DoublePos("SSVRI", "1", "2", "1~2", "mL/min", "1", "2")));
-//    array.append(JsonObject("mIno", DoublePos("SSVRI", "1", "2", "1~2", "mL/min", "1", "2")));
-//    array.append(JsonObject("mIsi", DoublePos("SSVRI", "1", "2", "1~2", "mL/min", "1", "2")));
-//    array.append(JsonObject("mLcw", DoublePos("SSVRI", "1", "2", "1~2", "mL/min", "1", "2")));
-//    array.append(JsonObject("mLcwi", DoublePos("SSVRI", "1", "2", "1~2", "mL/min", "1", "2")));
-//    array.append(JsonObject("mLsw", DoublePos("SSVRI", "1", "2", "1~2", "mL/min", "1", "2")));
-//    array.append(JsonObject("mLswi", DoublePos("SSVRI", "1", "2", "1~2", "mL/min", "1", "2")));
-//    array.append(JsonObject("mLvet", DoublePos("SSVRI", "1", "2", "1~2", "mL/min", "1", "2")));
-//    array.append(JsonObject("mPep", DoublePos("SSVRI", "1", "2", "1~2", "mL/min", "1", "2")));
-//    array.append(JsonObject("mStr", DoublePos("SSVRI", "1", "2", "1~2", "mL/min", "1", "2")));
-//    array.append(JsonObject("pAnalyse", "12345"));
-//    array.append(JsonObject("pDz", DoublePos("SSVRI", "1", "2", "1~2", "mL/min", "1", "2")));
-//    array.append(JsonObject("rDbp", DoublePos("SSVRI", "1", "2", "1~2", "mL/min", "1", "2")));
-//    array.append(JsonObject("reportConclusion", "12345"));
-//    array.append(JsonObject("reportTime", "20221104114600"));
-//    array.append(JsonObject("rHr", DoublePos("SSVRI", "1", "2", "1~2", "mL/min", "1", "2")));
-//    array.append(JsonObject("rMap", DoublePos("SSVRI", "1", "2", "1~2", "mL/min", "1", "2")));
-//    array.append(JsonObject("rSbp", DoublePos("SSVRI", "1", "2", "1~2", "mL/min", "1", "2")));
-//    array.append(JsonObject("place1Id", "12345"));
-//    array.append(JsonObject("place2Id", "12345"));
-//    array.append(JsonObject("deviceId", "12345"));
-//    qDebug()<<QJsonDocument(array);
-//    HttpPost *httpPost = new HttpPost(this);
-////    httpPost->picUpload(DataManagement::getInstance().getPaths().sudoku());
-//    httpPost->dataUpload(QJsonDocument(array).toJson(QJsonDocument::Compact));
-//    connect(httpPost, &HttpPost::finished, httpPost, &HttpPost::deleteLater);
 }

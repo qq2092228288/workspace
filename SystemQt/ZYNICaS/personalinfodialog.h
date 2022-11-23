@@ -21,7 +21,6 @@ class PersonalInfoDialog : public QDialog
     Q_OBJECT
 public:
     explicit PersonalInfoDialog(QWidget *parent = nullptr);
-    virtual ~PersonalInfoDialog();
     void showEvent(QShowEvent *event);
     void keyPressEvent(QKeyEvent *event);
     // 插入数据

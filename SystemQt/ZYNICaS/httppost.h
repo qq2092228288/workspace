@@ -14,6 +14,8 @@
 #include <QBuffer>
 #include <QTimer>
 #include <QEventLoop>
+#include <QHostInfo>
+#include <QMutexLocker>
 #include "customctrl.h"
 
 QString ArgsNameToHttp(const QString &argsName);
@@ -50,10 +52,12 @@ private:
     QUrlQuery addDeviceString(const Type &type, QString fValue, QString sValue);
     QUrlQuery addDeviceString(const Type &type, qreal fValue, qreal sValue, int digit);
     QUrlQuery addDeviceString(const char &index, const QJsonObject &fObject, const QJsonObject &sObject);
+    QUrlQuery addBpDeviceString(const Type &type, qreal fValue, qreal sValue, int digit);
     int getData(const QJsonObject &data, const Type &type);
 signals:
     void finished(const qint64 &time);
 private:
+    QMutex mutex;
     QNetworkAccessManager *m_pManager;
     QNetworkRequest m_dataRequest;
     QNetworkRequest m_picRequest;
