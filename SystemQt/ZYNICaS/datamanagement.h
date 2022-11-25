@@ -140,6 +140,7 @@ private:
     QString preload();
     // 猝死风险提示
     QString riskTip(bool many);
+    QPixmap getQrCodeUrlPixmap(const QString &deviceId, const QString &reportTime);
 private:
     CreateReportThread *reportThread;
     MyFilePath m_filePath;

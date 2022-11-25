@@ -132,11 +132,6 @@ QPixmap HttpPost::jsonToPixmap(const QJsonValue &value) {
     return pixmap;
 }
 
-QString HttpPost::getQrCodeUrlString(const QString &deviceId, const QString &reportTime)
-{
-    return QString("https://s.zeyaotebco.com/tempAuth?type=bindDeviceReport&param=%1_%2").arg(deviceId, reportTime);
-}
-
 void HttpPost::deviceOnlineNotice(const QString &deviceId)
 {
     PostHttpMultiPart *multiPart = new PostHttpMultiPart(QHttpMultiPart::FormDataType);
@@ -230,11 +225,11 @@ void HttpPost::reportUpload(const qint64 &dtime, const QString &jsonStr)
                 if (retJson.find("code").value().toInt() != 0) {    // 上传失败
                     return;
                 }
-                else {
-                    QJsonObject qrCode = retJson.find("data").value().toObject();
-                    qDebug()<<qrCode.find("qrCodeValue").value().toString();
-                    emit qrCodeValue(qrCode.find("qrCodeValue").value().toString());
-                }
+//                else {
+//                    QJsonObject qrCode = retJson.find("data").value().toObject();
+//                    qDebug()<<qrCode.find("qrCodeValue").value().toString();
+//                    emit qrCodeValue(qrCode.find("qrCodeValue").value().toString());
+//                }
             }
         }
     }

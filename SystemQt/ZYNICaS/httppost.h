@@ -42,7 +42,7 @@ class HttpPost : public QObject
 public:
     explicit HttpPost(QObject *parent = nullptr);
     static QPixmap jsonToPixmap(const QJsonValue &value);
-    QString getQrCodeUrlString(const QString &deviceId, const QString &reportTime);
+
 public slots:
     // 获取有效验证码
 //    void getValidCode();
@@ -63,7 +63,7 @@ private:
     QUrlQuery addBpDeviceString(const Type &type, qreal fValue, qreal sValue, int digit);
     int getData(const QJsonObject &data, const Type &type);
 signals:
-    void qrCodeValue(const QString &url);
+//    void qrCodeValue(const QString &url);
     void finished(const qint64 &time);
 private:
     QMutex mutex;

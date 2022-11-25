@@ -1,4 +1,5 @@
 #include "datamanagement.h"
+#include "qrencode.h"
 
 MyFilePath::MyFilePath(const QString &path)
     : appPath{path}
@@ -78,7 +79,7 @@ QString MyFilePath::config_zip() const
 
 QString MyFilePath::qrCode() const
 {
-    return tempDir() + "qrCode.png";
+    return tempDir() + "qrcode.png";
 }
 
 Argument::Argument(){}
@@ -464,6 +465,9 @@ QString DataManagement::saveReport(QString position, bool record)
     reportThread->addMarks("weight" , QString::number(m_pBodyValue->weight)+" kg");
     reportThread->addMarks("number" , m_pBodyValue->id);
     reportThread->addMarks("area" , QString::number(m_pBodyValue->BSA(),'f',1)+" m²");
+    // 二维码
+    getQrCodeUrlPixmap(m_pHospitalInfo->deviceId, curTime.toString("yyyyMMddHHmmss")).save(m_filePath.qrCode());
+    reportThread->addPic("qrcode", m_filePath.qrCode());
     // 保存
     m_newReportName = QString("%1/%2-%3-%4.docx").arg(m_filePath.reports(),
                       curTime.toString("yyyyMMddhhmm"),m_pBodyValue->id,m_pBodyValue->name);
@@ -712,4 +716,40 @@ QString DataManagement::riskTip(bool many)
         break;
     }
     return tr("心源性猝死风险%1。").arg(str);
+}
+
+QPixmap DataManagement::getQrCodeUrlPixmap(const QString &deviceId, const QString &reportTime)
+{
+    QString url = QString("https://s.zeyaotebco.com/tempAuth?type=bindDeviceReport&param=%1_%2")
+            .arg(deviceId, reportTime);
+    QRcode *qrcode; //二维码数据
+    //QR_ECLEVEL_Q 容错等级
+    qrcode = QRcode_encodeString(url.toStdString().c_str(), 2, QR_ECLEVEL_Q, QR_MODE_8, 1);
+    qint32 temp_width = 65*zoom(); //二维码图片的大小
+    qint32 temp_height = 65*zoom();
+    qint32 qrcode_width = qrcode->width > 0 ? qrcode->width : 1;
+    double scale_x = (double)temp_width/(double)qrcode_width; //二维码图片的缩放比例
+    double scale_y = (double)temp_height/(double)qrcode_width;
+    QImage mainimg = QImage(temp_width,temp_height,QImage::Format_ARGB32);
+    QPainter painter(&mainimg);
+    QColor background(Qt::white);
+    painter.setBrush(background);
+    painter.setPen(Qt::NoPen);
+    painter.drawRect(0, 0, temp_width, temp_height);
+    QColor foreground(Qt::black);
+    painter.setBrush(foreground);
+    for( qint32 y = 0; y < qrcode_width; y ++)
+    {
+        for(qint32 x = 0; x < qrcode_width; x++)
+        {
+            unsigned char b = qrcode->data[y * qrcode_width + x];
+            if(b & 0x01)
+            {
+                QRectF r(x * scale_x, y * scale_y, scale_x, scale_y);
+                painter.drawRects(&r, 1);
+            }
+        }
+    }
+    QRcode_free(qrcode);
+    return QPixmap::fromImage(mainimg);
 }
