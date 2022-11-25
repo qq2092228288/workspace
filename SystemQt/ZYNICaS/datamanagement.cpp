@@ -76,6 +76,11 @@ QString MyFilePath::config_zip() const
     return initDir() + "config.zip";
 }
 
+QString MyFilePath::qrCode() const
+{
+    return tempDir() + "qrCode.png";
+}
+
 Argument::Argument(){}
 
 Argument::Argument(QString _cn, QString _en, QString _unit, qreal _min, qreal _max, int _digit)

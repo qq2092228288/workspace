@@ -2,7 +2,7 @@
 #define DATACALCULATION_H
 
 #include <QObject>
-
+#include <QDebug>
 class DataCalculation
 {
 public:
@@ -41,6 +41,8 @@ public:
 private:
     static qreal percent (const qreal &value, const qreal &ideal);
     static qreal checkValue(const qreal &value);
+    static bool  isInvalid(const qreal &value);
+    static bool  isInvalid(const qreal &value1, const qreal &value2);
 };
 typedef DataCalculation DatCa;
 

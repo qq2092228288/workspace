@@ -376,9 +376,6 @@ void EnterSystemWidget::signalsAndSlots()
         bodyValue.LAP = lap;
         DataManagement::getInstance().getArgs().CVP = cvp;
         DataManagement::getInstance().getArgs().LAP = lap;
-
-        recordDataMap.insert(Type::CVP, bodyValue.CVP);
-        recordDataMap.insert(Type::LAP, bodyValue.LAP);
     });
 }
 
@@ -485,9 +482,6 @@ void EnterSystemWidget::setBPValue(const QString &sbp, const QString &dbp)
             bodyValue.DBP = dbp.toInt();
             BPCtrl->setValues(bodyValue.SBP,bodyValue.DBP);
             MAPCtrl->setValue(bodyValue.MAP());
-
-            recordDataMap.insert(Type::SBP, bodyValue.SBP);
-            recordDataMap.insert(Type::DBP, bodyValue.DBP);
         }
         else {
             BPCtrl->clear();
@@ -553,10 +547,10 @@ void EnterSystemWidget::createReport()
         setBaseData();
         reportDataBase.insert(QDateTime::currentMSecsSinceEpoch(), 0, baseData.structToJsonString());
 
-
         waiting.exec();
         emit createdReport();
         instance.reportPreview(instance.getNewReportName());
+        reportDataBase.dataUpload();
         if (manyBtn->isChecked()) {
             recordBtn->show();
         }
@@ -632,6 +626,10 @@ void EnterSystemWidget::setBaseData()
 
 void EnterSystemWidget::setTebcoData(TebcoData &tebcoData)
 {
+    recordDataMap.insert(Type::SBP, bodyValue.SBP);
+    recordDataMap.insert(Type::DBP, bodyValue.DBP);
+    recordDataMap.insert(Type::CVP, bodyValue.CVP);
+    recordDataMap.insert(Type::LAP, bodyValue.LAP);
     // 体位
     recordDataMap.insert(Type::Pos, posGroup.checkedId() + 1);
     // 原始的数据

@@ -24,7 +24,7 @@
 #include <QThread>
 #include <QQueue>
 #include <QFuture>
-#include <QtConcurrent/QtConcurrentRun>
+#include <QtConcurrent>
 
 #include "infoeditdialog.h"
 #include "bpeditdialog.h"

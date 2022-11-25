@@ -23,7 +23,7 @@ qreal DataCalculation::cPep(const qreal &value)
 
 qreal DataCalculation::cStr(const qreal &pep, const qreal &vet)
 {
-    return (invalid() == pep || invalid() == vet ? invalid() : pep/vet);
+    return (isInvalid(pep, vet) ? invalid() : pep/vet);
 }
 
 qreal DataCalculation::cTfc(const qreal &value)
@@ -53,57 +53,57 @@ qreal DataCalculation::cEf(const qreal &value)
 
 qreal DataCalculation::cSi(const qreal &value, const qreal &bsa, const qreal &vept)
 {
-    return (invalid() == checkValue(value) || 0 == bsa ? invalid() : 2/bsa*vept/6800*value);
+    return (isInvalid(value, bsa) ? invalid() : 2/bsa*vept/6800*value);
 }
 
 qreal DataCalculation::cSv(const qreal &si, const qreal &bsa)
 {
-    return (invalid() == si || 0 == bsa ? invalid() : si*bsa);
+    return (isInvalid(si, bsa) ? invalid() : si*bsa);
 }
 
 qreal DataCalculation::cEdi(const qreal &si, const qreal &ef)
 {
-    return (invalid() == si || invalid() == checkValue(ef) ? invalid() : si/ef*100);
+    return (isInvalid(si, ef) ? invalid() : si/ef*100);
 }
 
 qreal DataCalculation::cLsw(const qreal &sv, const qreal &map, const qreal &lap)
 {
-    return (invalid() == sv || 0 == map ? invalid() : 0.0144*sv*(map - lap));
+    return (isInvalid(sv, map) ? invalid() : 0.0144*sv*(map - lap));
 }
 
 qreal DataCalculation::cLswi(const qreal &si, const qreal &map, const qreal &lap)
 {
-    return (invalid() == si || 0 == map ? invalid() : 0.0144*si*(map - lap));
+    return (isInvalid(si, map) ? invalid() : 0.0144*si*(map - lap));
 }
 
 qreal DataCalculation::cVol(const qreal &lswi, const qreal &ino)
 {
-    return (invalid() == lswi || invalid() == ino ? invalid() : percent(lswi, 52.8) - ino);
+    return (isInvalid(lswi) || invalid() == ino ? invalid() : percent(lswi, 52.8) - ino);
 }
 
 qreal DataCalculation::cSsvr(const qreal &sv, const qreal &map, const qreal &cvp)
 {
-    return (invalid() == sv || 0 == map ? invalid() : 80*(map - cvp)/sv);
+    return (isInvalid(sv, map) ? invalid() : 80*(map - cvp)/sv);
 }
 
 qreal DataCalculation::cSsvri(const qreal &si, const qreal &map, const qreal &cvp)
 {
-    return (invalid() == si || 0 == map ? invalid() : 80*(map - cvp)/si);
+    return (isInvalid(si, map) ? invalid() : 80*(map - cvp)/si);
 }
 
 qreal DataCalculation::cVas(const qreal &ssvri)
 {
-    return (invalid() == ssvri ? invalid() : percent(ssvri, 137.8));
+    return (isInvalid(ssvri) ? invalid() : percent(ssvri, 137.8));
 }
 
 qreal DataCalculation::cCi(const qreal &value, const qreal &bsa, const qreal &vept)
 {
-    return (invalid() == checkValue(value) || 0 == bsa ? invalid() : 2/bsa*vept/6800*(value/10.0));
+    return (isInvalid(value, bsa) ? invalid() : 2/bsa*vept/6800*(value/10.0));
 }
 
 qreal DataCalculation::cCo(const qreal &ci, const qreal &bsa)
 {
-    return (invalid() == ci || 0 == bsa ? invalid() : ci*bsa);
+    return (isInvalid(ci, bsa) ? invalid() : ci*bsa);
 }
 
 qreal DataCalculation::cHrv(const qreal &ci)
@@ -113,22 +113,22 @@ qreal DataCalculation::cHrv(const qreal &ci)
 
 qreal DataCalculation::cSvr(const qreal &co, const qreal &map, const qreal &cvp)
 {
-    return (invalid() == co || 0 == map ? invalid() : (map - cvp)/co*80);
+    return (isInvalid(co, map) ? invalid() : (map - cvp)/co*80);
 }
 
 qreal DataCalculation::cSvri(const qreal &ci, const qreal &map, const qreal &cvp)
 {
-    return (invalid() == ci || 0 == map ? invalid() : 80*(map - cvp)/ci);
+    return (isInvalid(ci, map) ? invalid() : 80*(map - cvp)/ci);
 }
 
 qreal DataCalculation::cLcw(const qreal &co, const qreal &map, const qreal &lap)
 {
-    return (invalid() == co || 0 == map ? invalid() : 0.0144*(map - lap - 2)*co);
+    return (isInvalid(co, map) ? invalid() : 0.0144*(map - lap - 2)*co);
 }
 
 qreal DataCalculation::cLcwi(const qreal &ci, const qreal &map, const qreal &lap)
 {
-    return (invalid() == ci || 0 == map ? invalid() : 0.0144*(map - lap)*ci);
+    return (isInvalid(ci, map) ? invalid() : 0.0144*(map - lap)*ci);
 }
 
 qreal DataCalculation::cRr(const qreal &value)
@@ -153,10 +153,20 @@ qreal DataCalculation::cMap(const qreal &sbp, const qreal &dbp)
 
 qreal DataCalculation::percent(const qreal &value, const qreal &ideal)
 {
-    return ((0 == value || invalid() == value) ? invalid() : (value >= ideal ? (value/ideal - 1)*100 : (1 - ideal/value)*100));
+    return (isInvalid(value) ? invalid() : (value >= ideal ? (value/ideal - 1)*100 : (1 - ideal/value)*100));
 }
 
 qreal DataCalculation::checkValue(const qreal &value)
 {
     return (0 != value ? value : invalid());
+}
+
+bool DataCalculation::isInvalid(const qreal &value)
+{
+    return ((0 == value || invalid() == value) ? true : false);
+}
+
+bool DataCalculation::isInvalid(const qreal &value1, const qreal &value2)
+{
+    return (isInvalid(value1) || isInvalid(value2));
 }

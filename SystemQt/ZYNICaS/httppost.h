@@ -19,6 +19,9 @@
 #include "customctrl.h"
 
 QString ArgsNameToHttp(const QString &argsName);
+namespace myUrl {
+
+}
 
 class PostHttpMultiPart : public QHttpMultiPart
 {
@@ -38,9 +41,14 @@ class HttpPost : public QObject
     Q_OBJECT
 public:
     explicit HttpPost(QObject *parent = nullptr);
-public:
     static QPixmap jsonToPixmap(const QJsonValue &value);
+    QString getQrCodeUrlString(const QString &deviceId, const QString &reportTime);
 public slots:
+    // 获取有效验证码
+//    void getValidCode();
+    // 设备在线通知
+    void deviceOnlineNotice(const QString &deviceId);
+    // 报告上传
     void reportUpload(const qint64 &dtime, const QString &jsonStr);
 private slots:
     void picUpload(const QString &filePath);
@@ -55,13 +63,21 @@ private:
     QUrlQuery addBpDeviceString(const Type &type, qreal fValue, qreal sValue, int digit);
     int getData(const QJsonObject &data, const Type &type);
 signals:
+    void qrCodeValue(const QString &url);
     void finished(const qint64 &time);
 private:
     QMutex mutex;
     QNetworkAccessManager *m_pManager;
-    QNetworkRequest m_dataRequest;
-    QNetworkRequest m_picRequest;
     QUrlQuery m_urlQuery;
+    const QString m_urlApiRequestHeader;    // api接口请求头
+    const QString m_urlFileServices;        // 文件服务
+    const QString m_urlActiveDevice;        // 激活设备
+    const QString m_urlDeviceOnlineNotice;  // 设备在线通知
+    const QString m_urlReceiveConsumable;   // 接收耗材
+    const QString m_urlUseConsumable;       // 使用耗材
+    const QString m_urlGetConsumableList;   // 获取耗材
+    const QString m_urlSendPationReport;    // 发送患者报告
+    const QString m_urlUploadFile;          // 上传文件
 private:
     int sex;                    // 性别: 0男,1女
     int age;                    // 年龄

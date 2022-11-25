@@ -3,6 +3,7 @@
 #include "datacalculation.h"
 #include <iostream>
 using namespace std;
+using namespace myUrl;
 
 QString ArgsNameToHttp(const QString &argsName)
 {
@@ -55,7 +56,7 @@ PostHttpMultiPart::PostHttpMultiPart(QObject *parent)
 
 PostHttpMultiPart::~PostHttpMultiPart()
 {
-    qDebug()<<"~PostHttpMultiPart()";
+//    qDebug()<<"~PostHttpMultiPart()";
 }
 
 void PostHttpMultiPart::appendTxt(const QString &key, const QString &value)
@@ -109,15 +110,18 @@ void PostHttpMultiPart::appendJson(QByteArray jsonData)
 }
 
 HttpPost::HttpPost(QObject *parent)
-    : QObject{parent}
+    : QObject{parent},
+      m_urlApiRequestHeader{"https://xldl.zeyaotebco.com"},
+      m_urlFileServices{"https://file.zeyaotebco.com:29101"},
+      m_urlActiveDevice{"/qk-wcxl-business/dDevice/activeDevice"},
+      m_urlDeviceOnlineNotice{"/qk-wcxl-business/dDevice/deviceOnlineNotice"},
+      m_urlReceiveConsumable{"/qk-wcxl-business/dDevice/receiveConsumable"},
+      m_urlUseConsumable{"/qk-wcxl-business/dDevice/useConsumable"},
+      m_urlGetConsumableList{"/qk-wcxl-business/dDevice/getConsumableList"},
+      m_urlSendPationReport{"/qk-wcxl-business/dDevice/sendPationReport"},
+      m_urlUploadFile{"/group1/upload"}
 {
     m_pManager = new QNetworkAccessManager(this);
-
-    m_dataRequest.setUrl(QUrl("https://xldl.zeyaotebco.com/qk-wcxl-business/dDevice/sendPationReport"));
-    m_dataRequest.setHeader(QNetworkRequest::ContentTypeHeader, QVariant("application/x-www-form-urlencoded"));
-    m_dataRequest.setRawHeader("Connection", "Keep-Alive");
-
-    m_picRequest.setUrl(QUrl("https://file.zeyaotebco.com:29101/group1/upload"));
 }
 
 QPixmap HttpPost::jsonToPixmap(const QJsonValue &value) {
@@ -126,6 +130,21 @@ QPixmap HttpPost::jsonToPixmap(const QJsonValue &value) {
     QPixmap pixmap;
     pixmap.loadFromData(QByteArray::fromBase64(encoded), "PNG");
     return pixmap;
+}
+
+QString HttpPost::getQrCodeUrlString(const QString &deviceId, const QString &reportTime)
+{
+    return QString("https://s.zeyaotebco.com/tempAuth?type=bindDeviceReport&param=%1_%2").arg(deviceId, reportTime);
+}
+
+void HttpPost::deviceOnlineNotice(const QString &deviceId)
+{
+    PostHttpMultiPart *multiPart = new PostHttpMultiPart(QHttpMultiPart::FormDataType);
+    multiPart->appendTxt("deviceId", deviceId);
+    QNetworkRequest request;
+    request.setUrl(QUrl(m_urlApiRequestHeader + m_urlDeviceOnlineNotice));
+    QNetworkReply *reply = m_pManager->post(request, multiPart);
+    multiPart->setParent(reply);
 }
 
 void HttpPost::reportUpload(const qint64 &dtime, const QString &jsonStr)
@@ -139,13 +158,13 @@ void HttpPost::reportUpload(const qint64 &dtime, const QString &jsonStr)
     for (auto it = object.begin(); it != object.end(); ++it) {
         if (it.key() == "pAnalyse") {
             QPixmap pixmap = jsonToPixmap(it.value());
-            sudokuUrl = picUpload(pixmap, QString("pAnalyse%1.png").arg(QDateTime::currentMSecsSinceEpoch()%60000));
+            sudokuUrl = picUpload(pixmap, QString("pAnalyse%1.png").arg(QDateTime::currentMSecsSinceEpoch()));
         }
         else if (it.key() == "position") {
             QJsonArray array = it.value().toArray();
             for (auto iterator = array.begin(); iterator != array.end(); ++iterator) {
                 QPixmap pixmap = jsonToPixmap(iterator->toObject().find("pDz").value());
-                QString fileName = picUpload(pixmap, QString("pDz%1.png").arg(QDateTime::currentMSecsSinceEpoch()%60000));
+                QString fileName = picUpload(pixmap, QString("pDz%1.png").arg(QDateTime::currentMSecsSinceEpoch()));
                 if (fpDzUrl.isEmpty()) {
                     fpDzUrl = fileName;
                 }
@@ -157,66 +176,73 @@ void HttpPost::reportUpload(const qint64 &dtime, const QString &jsonStr)
         }
     }
     // 上传数据
-    if (!(sudokuUrl.isEmpty() || fpDzUrl.isEmpty()) && (spExists ? !spDzUrl.isEmpty() : true)) {
-        for (auto it = object.begin(); it != object.end(); ++it) {
-            if (it.key() == "place") {  // 场所数据
-                addJsonObject(it.value().toObject());
-            }
-            else if (it.key() == "patientInfo") {  // 患者信息
-                QJsonObject temp = it.value().toObject();
-                sex = temp.find("sex")->toString().toInt();
-                age = temp.find("age")->toString().toInt();
-                height = temp.find("height")->toString().toInt();
-                weight = temp.find("weight")->toString().toInt();
-                addJsonObject(temp);
-            }
-            else if (it.key() == "position") {      // 数据
-                addJsonArray(it.value().toArray(), fpDzUrl, spDzUrl);
-            }
-            else if (it.key() == "pAnalyse") {      // 九宫格图
-                m_urlQuery.addQueryItem(it.key(), sudokuUrl);
-            }
-            else if (it.key() == "reportConclusion") {      // 九宫格图
-                m_urlQuery.addQueryItem(it.key(), it.value().toString());
-            }
+    if (sudokuUrl.isEmpty() || fpDzUrl.isEmpty() || (spExists ? spDzUrl.isEmpty() : false)) {
+        emit finished(0);
+        return;
+    }
+    for (auto it = object.begin(); it != object.end(); ++it) {
+        if (it.key() == "place") {  // 场所数据
+            addJsonObject(it.value().toObject());
         }
-//        foreach (auto index, m_urlQuery.queryItems()) {
-//            qDebug()<<index.first<<index.second;
-//        }
-        // 超时处理定时器
-        QTimer timer;
-        timer.setInterval(5000);    // 超时时间
-        timer.setSingleShot(true);  // 单次触发
-        // 开启事件循环
-        QEventLoop eventLoop;
-        connect(&timer, &QTimer::timeout, &eventLoop, &QEventLoop::quit);
-        connect(m_pManager, &QNetworkAccessManager::finished, &eventLoop, &QEventLoop::quit);
-        string headers = string(m_urlQuery.toString().toUtf8());
-        QNetworkReply *reply = m_pManager->post(m_dataRequest, QByteArray(headers.c_str(), int(headers.length())));
-        timer.start();
-        eventLoop.exec();
-        // 响应处理
-        if (timer.isActive()) {
-            timer.stop();
-            if (reply->error() != QNetworkReply::NoError) {
-                qDebug() << "Failed : " << reply->errorString();
-            }
-            else {
-                if (reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt() == 200) {
-                    QString retData = QString(reply->readAll());
-                    qDebug()<<QJsonDocument::fromJson(retData.toUtf8());
-                    if (QJsonDocument::fromJson(retData.toUtf8()).object().find("code").value().toInt() != 0) {    // 上传失败
-                        emit finished(0);
-                        return;
-                    }
+        else if (it.key() == "patientInfo") {  // 患者信息
+            QJsonObject temp = it.value().toObject();
+            sex = temp.find("sex")->toString().toInt();
+            age = temp.find("age")->toString().toInt();
+            height = temp.find("height")->toString().toInt();
+            weight = temp.find("weight")->toString().toInt();
+            addJsonObject(temp);
+        }
+        else if (it.key() == "position") {      // 数据
+            addJsonArray(it.value().toArray(), fpDzUrl, spDzUrl);
+        }
+        else if (it.key() == "pAnalyse") {      // 九宫格图
+            m_urlQuery.addQueryItem(it.key(), sudokuUrl);
+        }
+        else if (it.key() == "reportConclusion") {      // 九宫格图
+            m_urlQuery.addQueryItem(it.key(), it.value().toString());
+        }
+    }
+    // 超时处理定时器
+    QTimer timer;
+    timer.setInterval(5000);    // 超时时间
+    timer.setSingleShot(true);  // 单次触发
+    // 开启事件循环
+    QEventLoop eventLoop;
+    connect(&timer, &QTimer::timeout, &eventLoop, &QEventLoop::quit);
+    connect(m_pManager, &QNetworkAccessManager::finished, &eventLoop, &QEventLoop::quit);
+    QNetworkRequest request;
+    request.setUrl(QUrl(m_urlApiRequestHeader + m_urlSendPationReport));
+    request.setHeader(QNetworkRequest::ContentTypeHeader, QVariant("application/x-www-form-urlencoded"));
+    request.setRawHeader("Connection", "Keep-Alive");
+    string headers = string(m_urlQuery.toString().toUtf8());
+    QNetworkReply *reply = m_pManager->post(request, QByteArray(headers.c_str(), int(headers.length())));
+    timer.start();
+    eventLoop.exec();
+    // 响应处理
+    if (timer.isActive()) {
+        timer.stop();
+        if (reply->error() != QNetworkReply::NoError) {
+            qDebug() << "Failed : " << reply->errorString();
+        }
+        else {
+            if (reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt() == 200) {
+                QJsonObject retJson = QJsonDocument::fromJson(QString(reply->readAll()).toUtf8()).object();
+                if (retJson.find("code").value().toInt() != 0) {    // 上传失败
+                    return;
+                }
+                else {
+                    QJsonObject qrCode = retJson.find("data").value().toObject();
+                    qDebug()<<qrCode.find("qrCodeValue").value().toString();
+                    emit qrCodeValue(qrCode.find("qrCodeValue").value().toString());
                 }
             }
         }
-        else {
-            disconnect(m_pManager, &QNetworkAccessManager::finished, &eventLoop, &QEventLoop::quit);
-            reply->abort();
-            qDebug()<<"请求超时";
-        }
+    }
+    else {
+        disconnect(m_pManager, &QNetworkAccessManager::finished, &eventLoop, &QEventLoop::quit);
+        reply->abort();
+        qDebug()<<"请求超时";
+        return;
     }
     emit finished(dtime);
 }
@@ -227,8 +253,9 @@ void HttpPost::picUpload(const QString &filePath)
     multiPart->appendPic(filePath);
     multiPart->appendTxt("scene", "wcReport");
     multiPart->appendTxt("output", "json2");
-
-    QNetworkReply *reply = m_pManager->post(m_picRequest, multiPart);
+    QNetworkRequest request;
+    request.setUrl(QUrl(m_urlFileServices + m_urlUploadFile));
+    QNetworkReply *reply = m_pManager->post(request, multiPart);
     multiPart->setParent(reply);
 }
 
@@ -250,7 +277,9 @@ QString HttpPost::picUpload(const QPixmap &pixmap, const QString &fileName)
     connect(&timer, &QTimer::timeout, &eventLoop, &QEventLoop::quit);
     connect(m_pManager, &QNetworkAccessManager::finished, &eventLoop, &QEventLoop::quit);
     // POST 请求
-    QNetworkReply *reply = m_pManager->post(m_picRequest, multiPart);
+    QNetworkRequest request;
+    request.setUrl(QUrl(m_urlFileServices + m_urlUploadFile));
+    QNetworkReply *reply = m_pManager->post(request, multiPart);
     multiPart->setParent(reply);
     timer.start();
     eventLoop.exec();

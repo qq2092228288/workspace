@@ -6,6 +6,7 @@
 #include <QSqlError>
 #include <QSqlQuery>
 #include <QSqlRecord>
+#include <QThread>
 #include <QDebug>
 
 class HttpPost;
@@ -14,6 +15,7 @@ class ReportDataBase : public QObject
     Q_OBJECT
 public:
     explicit ReportDataBase(QObject *parent = nullptr);
+    virtual ~ReportDataBase();
 public slots:
     void insert(qint64 time, int upload, QString dataString);
     void dataUpload();
@@ -21,8 +23,9 @@ public slots:
 private slots:
     void dataUploaded(const qint64 &time);
 signals:
-    void unupload(const qint64 &time, const QString &data);
+    void upload(const qint64 &time, const QString &data);
 private:
+    QThread thread;
     QSqlDatabase m_database;
     HttpPost *m_pHttpPost;
 };

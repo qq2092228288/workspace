@@ -61,3 +61,13 @@ void AuxArgDialog::closeEvent(QCloseEvent *event)
         event->accept();
     }
 }
+
+int AuxArgDialog::getCvp()
+{
+    return cvpLineEdit->text().toInt();
+}
+
+int AuxArgDialog::getLap()
+{
+    return lapLineEdit->text().toInt();
+}

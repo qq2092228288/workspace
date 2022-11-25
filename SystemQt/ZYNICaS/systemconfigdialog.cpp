@@ -1,6 +1,6 @@
 #include "systemconfigdialog.h"
 #include "datamanagement.h"
-#include "reportdatabase.h"
+
 
 SystemConfigDialog::SystemConfigDialog(QWidget *parent)
     : QDialog{parent}
@@ -162,7 +162,6 @@ QString SystemConfigDialog::getPortName() const
 
 void SystemConfigDialog::confirmSlot()
 {
-    ReportDataBase().dataUpload();
     this->close();
     //保存配置
     QFile file(infoFileName);

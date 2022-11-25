@@ -39,6 +39,7 @@ public:
     QString sudoku()      const;
     QString reports()     const;
     QString config_zip()  const;
+    QString qrCode()      const;
 private:
     QString appPath;
 };

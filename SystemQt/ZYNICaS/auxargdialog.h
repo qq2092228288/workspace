@@ -18,6 +18,8 @@ public:
     explicit AuxArgDialog(QWidget *parent = nullptr);
     void keyPressEvent(QKeyEvent *event);
     void closeEvent(QCloseEvent *event);
+    int getCvp();
+    int getLap();
 signals:
     //CVP,LAP
     void value(int, int);
