@@ -27,16 +27,12 @@ ReportDataBase::ReportDataBase(QObject *parent)
         qWarning("数据库打开失败！");
     }
     m_pHttpPost = new HttpPost;
-    m_pHttpPost->moveToThread(&thread);
     connect(this, &ReportDataBase::upload, m_pHttpPost, &HttpPost::reportUpload);
     connect(m_pHttpPost, &HttpPost::finished, this, &ReportDataBase::dataUploaded);
-    thread.start();
 }
 
 ReportDataBase::~ReportDataBase()
 {
-    thread.quit();
-    thread.wait();
     delete m_pHttpPost;
 }
 

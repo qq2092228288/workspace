@@ -6,7 +6,6 @@
 #include <QSqlError>
 #include <QSqlQuery>
 #include <QSqlRecord>
-#include <QThread>
 #include <QDebug>
 
 class HttpPost;
@@ -25,7 +24,6 @@ private slots:
 signals:
     void upload(const qint64 &time, const QString &data);
 private:
-    QThread thread;
     QSqlDatabase m_database;
     HttpPost *m_pHttpPost;
 };

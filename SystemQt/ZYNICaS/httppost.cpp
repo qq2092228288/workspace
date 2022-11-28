@@ -3,7 +3,6 @@
 #include "datacalculation.h"
 #include <iostream>
 using namespace std;
-using namespace myUrl;
 
 QString ArgsNameToHttp(const QString &argsName)
 {
@@ -140,6 +139,36 @@ void HttpPost::deviceOnlineNotice(const QString &deviceId)
     request.setUrl(QUrl(m_urlApiRequestHeader + m_urlDeviceOnlineNotice));
     QNetworkReply *reply = m_pManager->post(request, multiPart);
     multiPart->setParent(reply);
+    // 超时处理定时器
+    QTimer timer;
+    timer.setInterval(1000);    // 超时时间
+    timer.setSingleShot(true);  // 单次触发
+    // 开启事件循环
+    QEventLoop eventLoop;
+    connect(&timer, &QTimer::timeout, &eventLoop, &QEventLoop::quit);
+    connect(m_pManager, &QNetworkAccessManager::finished, &eventLoop, &QEventLoop::quit);
+    timer.start();
+    eventLoop.exec();
+    // 响应处理
+    if (timer.isActive()) {
+        timer.stop();
+        if (reply->error() != QNetworkReply::NoError) {
+            qDebug() << "Failed : " << reply->errorString();
+        }
+        else {
+            if (reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt() == 200) {
+                QJsonObject object = QJsonDocument::fromJson(QString(reply->readAll()).toUtf8()).object();
+                if (object.find("code").value().toInt(-1) == 0) {
+                    emit online();
+                }
+            }
+        }
+    }
+    else {
+        disconnect(m_pManager, &QNetworkAccessManager::finished, &eventLoop, &QEventLoop::quit);
+        reply->abort();
+        qDebug()<<"请求超时";
+    }
 }
 
 void HttpPost::reportUpload(const qint64 &dtime, const QString &jsonStr)
@@ -199,7 +228,7 @@ void HttpPost::reportUpload(const qint64 &dtime, const QString &jsonStr)
     }
     // 超时处理定时器
     QTimer timer;
-    timer.setInterval(5000);    // 超时时间
+    timer.setInterval(1000);    // 超时时间
     timer.setSingleShot(true);  // 单次触发
     // 开启事件循环
     QEventLoop eventLoop;
@@ -222,6 +251,7 @@ void HttpPost::reportUpload(const qint64 &dtime, const QString &jsonStr)
         else {
             if (reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt() == 200) {
                 QJsonObject retJson = QJsonDocument::fromJson(QString(reply->readAll()).toUtf8()).object();
+                qDebug()<<QJsonDocument(retJson);
                 if (retJson.find("code").value().toInt() != 0) {    // 上传失败
                     return;
                 }
@@ -265,7 +295,7 @@ QString HttpPost::picUpload(const QPixmap &pixmap, const QString &fileName)
     multiPart->appendTxt("output", "json2");
     // 超时处理定时器
     QTimer timer;
-    timer.setInterval(5000);    // 超时时间
+    timer.setInterval(1000);    // 超时时间
     timer.setSingleShot(true);  // 单次触发
     // 开启事件循环
     QEventLoop eventLoop;

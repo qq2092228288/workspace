@@ -725,8 +725,8 @@ QPixmap DataManagement::getQrCodeUrlPixmap(const QString &deviceId, const QStrin
     QRcode *qrcode; //二维码数据
     //QR_ECLEVEL_Q 容错等级
     qrcode = QRcode_encodeString(url.toStdString().c_str(), 2, QR_ECLEVEL_Q, QR_MODE_8, 1);
-    qint32 temp_width = 65*zoom(); //二维码图片的大小
-    qint32 temp_height = 65*zoom();
+    qint32 temp_width = 100*zoom(); //二维码图片的大小
+    qint32 temp_height = 100*zoom();
     qint32 qrcode_width = qrcode->width > 0 ? qrcode->width : 1;
     double scale_x = (double)temp_width/(double)qrcode_width; //二维码图片的缩放比例
     double scale_y = (double)temp_height/(double)qrcode_width;

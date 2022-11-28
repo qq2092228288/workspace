@@ -19,9 +19,6 @@
 #include "customctrl.h"
 
 QString ArgsNameToHttp(const QString &argsName);
-namespace myUrl {
-
-}
 
 class PostHttpMultiPart : public QHttpMultiPart
 {
@@ -64,6 +61,7 @@ private:
     int getData(const QJsonObject &data, const Type &type);
 signals:
 //    void qrCodeValue(const QString &url);
+    void online();
     void finished(const qint64 &time);
 private:
     QMutex mutex;
