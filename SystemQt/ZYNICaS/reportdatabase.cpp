@@ -10,9 +10,9 @@ ReportDataBase::ReportDataBase(QObject *parent)
     }
     else {
         // 建立和SQlite数据库的连接
-        m_database = QSqlDatabase::addDatabase("QSQLITE");
+        m_database = QSqlDatabase::addDatabase("QSQLITE", "Report");
         // 设置数据库文件的名字
-        m_database.setDatabaseName("PersonalInfoDataBase.db");
+        m_database.setDatabaseName("ReportDataBase.db");
     }
     if (m_database.open()) {
         // 用于执行sql语句的对象

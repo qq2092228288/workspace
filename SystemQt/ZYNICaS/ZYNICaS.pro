@@ -19,6 +19,7 @@ SOURCES += \
     customctrl.cpp \
     datacalculation.cpp \
     datamanagement.cpp \
+    devicedatabase.cpp \
     deviceparameters.cpp \
     drawsudoku.cpp \
     drawwaveforms.cpp \
@@ -47,6 +48,7 @@ HEADERS += \
     customctrl.h \
     datacalculation.h \
     datamanagement.h \
+    devicedatabase.h \
     deviceparameters.h \
     drawsudoku.h \
     drawwaveforms.h \

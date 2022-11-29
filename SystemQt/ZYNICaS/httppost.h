@@ -18,6 +18,15 @@
 #include <QMutexLocker>
 #include "customctrl.h"
 
+struct DeviceInfo
+{
+    QString id;             // 设备ID
+    QString name;           // 设备名称
+    QString agentName;      // 代理商名称
+    QString hospitalName;   // 医院名称
+    QString secret;         // 登入密码（通过MD5加密）
+};
+
 QString ArgsNameToHttp(const QString &argsName);
 
 class PostHttpMultiPart : public QHttpMultiPart
@@ -41,10 +50,15 @@ public:
     static QPixmap jsonToPixmap(const QJsonValue &value);
 
 public slots:
-    // 获取有效验证码
-//    void getValidCode();
+    void activeDevice(const QString &mac);
     // 设备在线通知
     void deviceOnlineNotice(const QString &deviceId);
+    // 接收耗材
+    void receiveConsumable(const QString &id, const QString &deviceId);
+    // 使用耗材
+    void useConsumable(const QString &deviceId, const QString &consumableUsedData);
+    // 获取耗材
+    void getConsumableList(const QString &pageNum, const QString &pageSize);
     // 报告上传
     void reportUpload(const qint64 &dtime, const QString &jsonStr);
 private slots:
@@ -52,6 +66,7 @@ private slots:
     // return image url path
     QString picUpload(const QPixmap &pixmap, const QString &fileName);
 private:
+    QString returnValueProcessing(QNetworkReply *reply, QString(*func)(QJsonObject object));
     QUrlQuery addJsonObject(const QJsonObject &jsonObject);
     QUrlQuery addJsonArray(const QJsonArray &jsonArray, const QString &fpDzUrl, const QString &spDzUrl);
     QUrlQuery addDeviceString(const Type &type, QString fValue, QString sValue);
@@ -60,7 +75,7 @@ private:
     QUrlQuery addBpDeviceString(const Type &type, qreal fValue, qreal sValue, int digit);
     int getData(const QJsonObject &data, const Type &type);
 signals:
-//    void qrCodeValue(const QString &url);
+    void deviceInfo(DeviceInfo);
     void online();
     void finished(const qint64 &time);
 private:

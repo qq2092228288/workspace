@@ -41,7 +41,7 @@ PersonalInfoDialog::PersonalInfoDialog(QWidget *parent)
     }
     else {
         // 建立和SQlite数据库的连接
-        database = QSqlDatabase::addDatabase("QSQLITE");
+        database = QSqlDatabase::addDatabase("QSQLITE", "PersonalInfo");
         // 设置数据库文件的名字
         database.setDatabaseName("PersonalInfoDataBase.db");
     }
@@ -52,7 +52,7 @@ PersonalInfoDialog::PersonalInfoDialog(QWidget *parent)
         // 用于执行sql语句的对象
         QSqlQuery sqlQuery(database);
         // 构建创建数据库的sql语句字符串
-        QString createSql = QString("CREATE TABLE patient (\
+        QString createSql = QString("CREATE TABLE patientInfo (\
                               id TEXT PRIMARY KEY NOT NULL,\
                               name TEXT NOT NULL,\
                               sex TEXT NOT NULL,\
@@ -107,7 +107,7 @@ void PersonalInfoDialog::keyPressEvent(QKeyEvent *event)
 void PersonalInfoDialog::insertData(BodyValue &bValue)
 {
     QSqlQuery sqlQuery(database);
-    sqlQuery.prepare("REPLACE INTO patient(id, name, sex, age, height, weight) "
+    sqlQuery.prepare("REPLACE INTO patientInfo(id, name, sex, age, height, weight) "
                      "VALUES(:id, :name, :sex, :age, :height, :weight)");
     sqlQuery.bindValue(":id", bValue.id);
     sqlQuery.bindValue(":name", bValue.name);

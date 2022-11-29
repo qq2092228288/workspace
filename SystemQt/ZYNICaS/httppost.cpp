@@ -131,6 +131,32 @@ QPixmap HttpPost::jsonToPixmap(const QJsonValue &value) {
     return pixmap;
 }
 
+void HttpPost::activeDevice(const QString &mac)
+{
+    PostHttpMultiPart *multiPart = new PostHttpMultiPart(QHttpMultiPart::FormDataType);
+    multiPart->appendTxt("code", mac);
+    QNetworkRequest request;
+    request.setUrl(QUrl(m_urlApiRequestHeader + m_urlActiveDevice));
+    QNetworkReply *reply = m_pManager->post(request, multiPart);
+    multiPart->setParent(reply);
+
+    auto func = [](QJsonObject object) {
+        QJsonObject data = object.find("data").value().toObject();
+        return QString(QJsonDocument(data).toJson(QJsonDocument::Compact));
+    };
+    QString retStr = returnValueProcessing(reply, func);
+    if (QJsonDocument::fromJson(retStr.toUtf8()).isObject()) {
+        QJsonObject object = QJsonDocument::fromJson(retStr.toUtf8()).object();
+        DeviceInfo dInfo;
+        dInfo.id = object.find("id").value().toString();
+        dInfo.name = object.find("name").value().toString();
+        dInfo.agentName = object.find("agentName")->toString();
+        dInfo.hospitalName = object.find("hospitalName")->toString();
+        dInfo.secret = object.find("secret")->toString();
+        emit deviceInfo(dInfo);
+    }
+}
+
 void HttpPost::deviceOnlineNotice(const QString &deviceId)
 {
     PostHttpMultiPart *multiPart = new PostHttpMultiPart(QHttpMultiPart::FormDataType);
@@ -139,36 +165,29 @@ void HttpPost::deviceOnlineNotice(const QString &deviceId)
     request.setUrl(QUrl(m_urlApiRequestHeader + m_urlDeviceOnlineNotice));
     QNetworkReply *reply = m_pManager->post(request, multiPart);
     multiPart->setParent(reply);
-    // 超时处理定时器
-    QTimer timer;
-    timer.setInterval(1000);    // 超时时间
-    timer.setSingleShot(true);  // 单次触发
-    // 开启事件循环
-    QEventLoop eventLoop;
-    connect(&timer, &QTimer::timeout, &eventLoop, &QEventLoop::quit);
-    connect(m_pManager, &QNetworkAccessManager::finished, &eventLoop, &QEventLoop::quit);
-    timer.start();
-    eventLoop.exec();
-    // 响应处理
-    if (timer.isActive()) {
-        timer.stop();
-        if (reply->error() != QNetworkReply::NoError) {
-            qDebug() << "Failed : " << reply->errorString();
-        }
-        else {
-            if (reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt() == 200) {
-                QJsonObject object = QJsonDocument::fromJson(QString(reply->readAll()).toUtf8()).object();
-                if (object.find("code").value().toInt(-1) == 0) {
-                    emit online();
-                }
-            }
-        }
+
+    auto func = [](QJsonObject object) {
+        return QString::number(object.find("code").value().toInt(-1));
+    };
+    if (0 == returnValueProcessing(reply, func).toInt()) {
+        emit online();
     }
-    else {
-        disconnect(m_pManager, &QNetworkAccessManager::finished, &eventLoop, &QEventLoop::quit);
-        reply->abort();
-        qDebug()<<"请求超时";
-    }
+}
+
+void HttpPost::receiveConsumable(const QString &id, const QString &deviceId)
+{
+    Q_UNUSED(id);
+    Q_UNUSED(deviceId);
+}
+
+void HttpPost::useConsumable(const QString &deviceId, const QString &consumableUsedData)
+{
+
+}
+
+void HttpPost::getConsumableList(const QString &pageNum, const QString &pageSize)
+{
+
 }
 
 void HttpPost::reportUpload(const qint64 &dtime, const QString &jsonStr)
@@ -226,50 +245,19 @@ void HttpPost::reportUpload(const qint64 &dtime, const QString &jsonStr)
             m_urlQuery.addQueryItem(it.key(), it.value().toString());
         }
     }
-    // 超时处理定时器
-    QTimer timer;
-    timer.setInterval(1000);    // 超时时间
-    timer.setSingleShot(true);  // 单次触发
-    // 开启事件循环
-    QEventLoop eventLoop;
-    connect(&timer, &QTimer::timeout, &eventLoop, &QEventLoop::quit);
-    connect(m_pManager, &QNetworkAccessManager::finished, &eventLoop, &QEventLoop::quit);
     QNetworkRequest request;
     request.setUrl(QUrl(m_urlApiRequestHeader + m_urlSendPationReport));
     request.setHeader(QNetworkRequest::ContentTypeHeader, QVariant("application/x-www-form-urlencoded"));
     request.setRawHeader("Connection", "Keep-Alive");
     string headers = string(m_urlQuery.toString().toUtf8());
     QNetworkReply *reply = m_pManager->post(request, QByteArray(headers.c_str(), int(headers.length())));
-    timer.start();
-    eventLoop.exec();
-    // 响应处理
-    if (timer.isActive()) {
-        timer.stop();
-        if (reply->error() != QNetworkReply::NoError) {
-            qDebug() << "Failed : " << reply->errorString();
-        }
-        else {
-            if (reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt() == 200) {
-                QJsonObject retJson = QJsonDocument::fromJson(QString(reply->readAll()).toUtf8()).object();
-                qDebug()<<QJsonDocument(retJson);
-                if (retJson.find("code").value().toInt() != 0) {    // 上传失败
-                    return;
-                }
-//                else {
-//                    QJsonObject qrCode = retJson.find("data").value().toObject();
-//                    qDebug()<<qrCode.find("qrCodeValue").value().toString();
-//                    emit qrCodeValue(qrCode.find("qrCodeValue").value().toString());
-//                }
-            }
-        }
+    auto func = [](QJsonObject object) {
+        qDebug()<<QJsonDocument(object);
+        return QString::number(object.find("code").value().toInt(-1));
+    };
+    if (0 == returnValueProcessing(reply, func).toInt()) {
+        emit finished(dtime);
     }
-    else {
-        disconnect(m_pManager, &QNetworkAccessManager::finished, &eventLoop, &QEventLoop::quit);
-        reply->abort();
-        qDebug()<<"请求超时";
-        return;
-    }
-    emit finished(dtime);
 }
 
 void HttpPost::picUpload(const QString &filePath)
@@ -287,12 +275,26 @@ void HttpPost::picUpload(const QString &filePath)
 QString HttpPost::picUpload(const QPixmap &pixmap, const QString &fileName)
 {
     if (pixmap.isNull()) return nullptr;
-    QString picUrlPath;
     // 上传的图片信息
     PostHttpMultiPart *multiPart = new PostHttpMultiPart(QHttpMultiPart::FormDataType);
     multiPart->appendPic(pixmap, fileName);
     multiPart->appendTxt("scene", "wcReport");
     multiPart->appendTxt("output", "json2");
+    // POST 请求
+    QNetworkRequest request;
+    request.setUrl(QUrl(m_urlFileServices + m_urlUploadFile));
+    QNetworkReply *reply = m_pManager->post(request, multiPart);
+    multiPart->setParent(reply);
+    // processing function
+    auto func = [](QJsonObject object) {
+        QJsonObject data = object.find("data").value().toObject();
+        return data.find("path").value().toString();
+    };
+    return returnValueProcessing(reply, func);
+}
+
+QString HttpPost::returnValueProcessing(QNetworkReply *reply, QString (*func)(QJsonObject object))
+{
     // 超时处理定时器
     QTimer timer;
     timer.setInterval(1000);    // 超时时间
@@ -301,11 +303,6 @@ QString HttpPost::picUpload(const QPixmap &pixmap, const QString &fileName)
     QEventLoop eventLoop;
     connect(&timer, &QTimer::timeout, &eventLoop, &QEventLoop::quit);
     connect(m_pManager, &QNetworkAccessManager::finished, &eventLoop, &QEventLoop::quit);
-    // POST 请求
-    QNetworkRequest request;
-    request.setUrl(QUrl(m_urlFileServices + m_urlUploadFile));
-    QNetworkReply *reply = m_pManager->post(request, multiPart);
-    multiPart->setParent(reply);
     timer.start();
     eventLoop.exec();
     // 响应处理
@@ -316,19 +313,7 @@ QString HttpPost::picUpload(const QPixmap &pixmap, const QString &fileName)
         }
         else {
             if (reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt() == 200) {
-                QJsonObject object = QJsonDocument::fromJson(QString(reply->readAll()).toUtf8()).object();
-                for (auto it = object.begin(); it != object.end(); ++it) {
-                    if (it.key() == "data") {
-                        QJsonObject dobject = it.value().toObject();
-                        for (auto dit = dobject.begin(); dit != dobject.end(); ++dit){
-                            if (dit.key() == "path") {
-                                picUrlPath = dit.value().toString();
-                                break;
-                            }
-                        }
-                        break;
-                    }
-                }
+                return func(QJsonDocument::fromJson(QString(reply->readAll()).toUtf8()).object());
             }
         }
     }
@@ -337,7 +322,7 @@ QString HttpPost::picUpload(const QPixmap &pixmap, const QString &fileName)
         reply->abort();
         qDebug()<<"请求超时";
     }
-    return picUrlPath;
+    return QString();
 }
 
 QUrlQuery HttpPost::addJsonObject(const QJsonObject &jsonObject)
