@@ -148,7 +148,8 @@ DataManagement::DataManagement()
     m_pTebco = new ZyTebco;
     m_pTebco->moveToThread(m_pThread);
     reportThread = new CreateReportThread;
-    m_pIdCheck = new IdCheck;
+//    m_pIdCheck = new IdCheck;
+    m_pHttpPost = new HttpPost;
 }
 
 DataManagement::~DataManagement()
@@ -160,7 +161,8 @@ DataManagement::~DataManagement()
     delete reportThread;
     delete m_pTebco;
     delete m_pThread;
-    delete m_pIdCheck;
+//    delete m_pIdCheck;
+    delete m_pHttpPost;
     QDir dir(m_filePath.tempDir()); // delete temp dir
     dir.removeRecursively();
 //    qDebug()<<"~DataManagement()";
@@ -176,10 +178,10 @@ ZyTebco *DataManagement::getTebco() const
     return m_pTebco;
 }
 
-IdCheck *DataManagement::getIdCheck() const
-{
-    return m_pIdCheck;
-}
+//IdCheck *DataManagement::getIdCheck() const
+//{
+//    return m_pIdCheck;
+//}
 
 void DataManagement::setSize(const QSize &size)
 {
@@ -318,6 +320,30 @@ HospitalInfo *DataManagement::getHospitalInfo() const
     return m_pHospitalInfo;
 }
 
+HttpPost *DataManagement::getHttpPost() const
+{
+    return m_pHttpPost;
+}
+
+QString DataManagement::getMac() const
+{
+    QList<QNetworkInterface> nets = QNetworkInterface::allInterfaces();// 获取所有网络接口列表
+    for(int i = 0; i < nets.count(); i ++)
+    {
+        // 如果此网络接口不是回环地址，则就是我们需要找的Mac地址
+        if(!nets[i].flags().testFlag(QNetworkInterface::IsLoopBack)) {
+            return nets[i].hardwareAddress();
+            break;
+        }
+    }
+    return QString();
+}
+
+DeviceDatabase *DataManagement::getDeviceDatabase() const
+{
+    return m_pDeviceDatabase;
+}
+
 void DataManagement::setHospitalInfo(HospitalInfo *hospitalInfo)
 {
     this->m_pHospitalInfo = hospitalInfo;
@@ -341,6 +367,11 @@ void DataManagement::setdZ(QChartView *dZ)
 void DataManagement::setSudoku(DrawSudoku *sudoku)
 {
     this->m_pSudoku = sudoku;
+}
+
+void DataManagement::setDeviceDatabase(DeviceDatabase *deviceDatabase)
+{
+    this->m_pDeviceDatabase = deviceDatabase;
 }
 
 void DataManagement::recordPosition(QString position)

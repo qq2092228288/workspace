@@ -8,6 +8,7 @@
 #include <QSqlRecord>
 #include <QDebug>
 
+
 class HttpPost;
 class ReportDataBase : public QObject
 {
@@ -24,6 +25,8 @@ private slots:
 signals:
     void upload(const qint64 &time, const QString &data);
 private:
+    const QString m_databaseName;
+    const QString m_tableName;
     QSqlDatabase m_database;
     HttpPost *m_pHttpPost;
 };

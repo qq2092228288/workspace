@@ -33,6 +33,8 @@ private slots:
     void deletePatientInfo();
     void emitPatientInfo();
 private:
+    const QString m_databaseName;
+    const QString m_tableName;
     QSqlDatabase database;
     QComboBox *comboBox;
     QLineEdit *searchEdit;

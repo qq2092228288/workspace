@@ -16,8 +16,8 @@
 #include "drawsudoku.h"
 #include "zytebco.h"
 #include "createreportthread.h"
-#include "idcheck.h"
-
+//#include "idcheck.h"
+#include "httppost.h"
 
 
 // 文件路径
@@ -98,7 +98,7 @@ signals:
 public:
     void startThread();
     ZyTebco *getTebco() const;
-    IdCheck *getIdCheck() const;
+//    IdCheck *getIdCheck() const;
     void setSize(const QSize &size);
     qreal wZoom() const;
     qreal hZoom() const;
@@ -113,6 +113,9 @@ public:
     Args &getArgs();
     CustomCtrlRegulator *getRegulator() const;
     HospitalInfo *getHospitalInfo() const;
+    HttpPost *getHttpPost() const;
+    QString getMac() const;
+    DeviceDatabase *getDeviceDatabase() const;
 public:
     void setHospitalInfo(HospitalInfo *hospitalInfo);
     void setBodyValue(BodyValue *bodyValue);
@@ -120,6 +123,7 @@ public:
     // 心阻抗图
     void setdZ(QChartView *dZ);
     void setSudoku(DrawSudoku *sudoku);
+    void setDeviceDatabase(DeviceDatabase *deviceDatabase);
 public slots:
     void recordPosition(QString position);
     QString saveReport(QString position, bool record);
@@ -162,7 +166,9 @@ private:
     ZyTebco *m_pTebco;
     // 屏幕大小
     QSize m_winSize;
-    IdCheck *m_pIdCheck;
+//    IdCheck *m_pIdCheck;
+    HttpPost *m_pHttpPost;
+    DeviceDatabase *m_pDeviceDatabase;
 };
 
 #endif // DATAMANAGEMENT_H

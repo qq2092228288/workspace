@@ -182,10 +182,13 @@ void SystemConfigDialog::confirmSlot()
 
 void SystemConfigDialog::updateHospitalInfo()
 {
+    auto database = getIdDialog->getGeviceDatabase();
     hospitalInfo.hospitalName = hospitalNameLineEdit->text();
     hospitalInfo.roomName = roomNameLineEdit->text();
     hospitalInfo.doctorName = doctorNameLineEdit->text();
-    hospitalInfo.mac = getIdDialog->getMac();
+    hospitalInfo.place1Id = database->getDeviceInfo("place1Id");
+    hospitalInfo.place2Id = database->getDeviceInfo("place2Id");
+    hospitalInfo.deviceId = database->getDeviceInfo("deviceId");
     hospitalInfo.xprinter = xprinterRadio->isChecked();
     hospitalInfo.tip = tipCheckBox->isChecked();
     hospitalInfo.professional = professionalModeRadio->isChecked();

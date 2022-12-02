@@ -532,7 +532,7 @@ void EnterSystemWidget::createReport()
 {
     if (isStartCheck()) {
         auto &instance = DataManagement::getInstance();
-        if (IdCheck::getCurrentConsumables() <= 0) {
+        if (DataManagement::getInstance().getDeviceDatabase()->getConsumableSurplus() <= 0) {
             QMessageBox::warning(this,tr("警告！"),tr("有效验证码已使用完，请联系厂家！"));
             return;
         }

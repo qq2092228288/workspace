@@ -94,7 +94,7 @@ void MainWidget::paintEvent(QPaintEvent *event)
 
 void MainWidget::enterBtnSlot()
 {
-    if (IdCheck::getCurrentConsumables() <= 0) {
+    if (DataManagement::getInstance().getDeviceDatabase()->getConsumableSurplus() <= 0) {
         QMessageBox::warning(this,tr("警告！"),tr("有效验证码已使用完，请联系厂家！"));
         return;
     }
@@ -110,7 +110,7 @@ void MainWidget::enterBtnSlot()
                     DataManagement::getInstance().getTebco(),&ZyTebco::startCheckSlot,
                     Qt::ConnectionType(Qt::AutoConnection|Qt::UniqueConnection));
             connect(enterSystemWidget, &EnterSystemWidget::createdReport,
-                    DataManagement::getInstance().getIdCheck(), &IdCheck::consumablesUsed,
+                    DataManagement::getInstance().getDeviceDatabase(), &DeviceDatabase::usedConsumable,
                     Qt::ConnectionType(Qt::AutoConnection|Qt::UniqueConnection));
             this->close();
             enterSystemWidget->show();
@@ -135,7 +135,7 @@ void MainWidget::demoBtnSlot()
         enterSystemWidget->clearUiSlot();
     }
     disconnect(enterSystemWidget, &EnterSystemWidget::createdReport,
-            DataManagement::getInstance().getIdCheck(), &IdCheck::consumablesUsed);
+            DataManagement::getInstance().getDeviceDatabase(), &DeviceDatabase::usedConsumable);
     this->close();
     enterSystemWidget->show();
 }

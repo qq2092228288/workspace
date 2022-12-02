@@ -26,10 +26,9 @@ struct HospitalInfo
     QString hospitalName;
     QString roomName;
     QString doctorName;
-    QString mac;
-    QString place1Id = "383dd0778add4b848e03af84868930a1";
-    QString place2Id = "b1989c5c5548473f86253da574450362";
-    QString deviceId = "a18a028bca8b464b9006947d631b180a";
+    QString place1Id;
+    QString place2Id;
+    QString deviceId;
     bool xprinter;
     bool tip;
     bool professional;

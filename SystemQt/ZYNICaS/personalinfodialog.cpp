@@ -3,7 +3,9 @@
 #include "datamanagement.h"
 
 PersonalInfoDialog::PersonalInfoDialog(QWidget *parent)
-    : QDialog{parent}
+    : QDialog{parent},
+      m_databaseName{"PatientInfo.db"},
+      m_tableName{"patient"}
 {
     setWindowTitle(tr("患者信息导入"));
     auto &instance = DataManagement::getInstance();
@@ -35,16 +37,10 @@ PersonalInfoDialog::PersonalInfoDialog(QWidget *parent)
     tableView->setEditTriggers(QAbstractItemView::NoEditTriggers);
     tableView->setSelectionMode(QAbstractItemView::SingleSelection);
 
-    // 连接数据库
-    if (QSqlDatabase::contains("qt_sql_default_connection")) {
-        database = QSqlDatabase::database("qt_sql_default_connection");
-    }
-    else {
-        // 建立和SQlite数据库的连接
-        database = QSqlDatabase::addDatabase("QSQLITE", "PersonalInfo");
-        // 设置数据库文件的名字
-        database.setDatabaseName("PersonalInfoDataBase.db");
-    }
+    // 建立和SQlite数据库的连接
+    database = QSqlDatabase::addDatabase("QSQLITE", m_tableName);
+    // 设置数据库文件的名字
+    database.setDatabaseName(m_databaseName);
     if (!database.open()) {
 //        qDebug() << "Error: Failed to connect database." << database.lastError();
     }
@@ -52,13 +48,13 @@ PersonalInfoDialog::PersonalInfoDialog(QWidget *parent)
         // 用于执行sql语句的对象
         QSqlQuery sqlQuery(database);
         // 构建创建数据库的sql语句字符串
-        QString createSql = QString("CREATE TABLE patientInfo (\
+        QString createSql = QString("CREATE TABLE %1 (\
                               id TEXT PRIMARY KEY NOT NULL,\
                               name TEXT NOT NULL,\
                               sex TEXT NOT NULL,\
                               age INT NOT NULL,\
                               height INT NOT NULL,\
-                              weight INT NOT NULL)");
+                              weight INT NOT NULL)").arg(m_tableName);
         sqlQuery.prepare(createSql);
         // 执行sql语句
         if(!sqlQuery.exec()) {
@@ -67,7 +63,7 @@ PersonalInfoDialog::PersonalInfoDialog(QWidget *parent)
         else {
 //            qDebug() << "Table created!";
         }
-        m_model = new QSqlTableModel(this,database);
+        m_model = new QSqlTableModel(this, database);
         // 查表
         m_model->setTable("patient");
         m_model->select();
@@ -107,8 +103,8 @@ void PersonalInfoDialog::keyPressEvent(QKeyEvent *event)
 void PersonalInfoDialog::insertData(BodyValue &bValue)
 {
     QSqlQuery sqlQuery(database);
-    sqlQuery.prepare("REPLACE INTO patientInfo(id, name, sex, age, height, weight) "
-                     "VALUES(:id, :name, :sex, :age, :height, :weight)");
+    sqlQuery.prepare(QString("REPLACE INTO %1(id, name, sex, age, height, weight) "
+                     "VALUES(:id, :name, :sex, :age, :height, :weight)").arg(m_tableName));
     sqlQuery.bindValue(":id", bValue.id);
     sqlQuery.bindValue(":name", bValue.name);
     if (bValue.sex == 0) {
@@ -152,7 +148,7 @@ void PersonalInfoDialog::deletePatientInfo()
     }
     QString id = m_model->data(m_model->index(tableView->currentIndex().row(),0)).toString();
     QSqlQuery sqlQuery(database);
-    sqlQuery.prepare(QString("DELETE FROM patient WHERE id='%1'").arg(id));
+    sqlQuery.prepare(QString("DELETE FROM %1 WHERE id='%2'").arg(m_tableName, id));
     if(!sqlQuery.exec()) {
 //        qDebug()<<id<<sqlQuery.lastError();
     }
