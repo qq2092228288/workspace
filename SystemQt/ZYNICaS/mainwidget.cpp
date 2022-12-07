@@ -94,9 +94,13 @@ void MainWidget::paintEvent(QPaintEvent *event)
 
 void MainWidget::enterBtnSlot()
 {
-    if (DataManagement::getInstance().getDeviceDatabase()->getConsumableSurplus() <= 0) {
+    int surplus = DataManagement::getInstance().deviceDatabase()->getConsumableSurplus();
+    if (surplus <= 0) {
         QMessageBox::warning(this,tr("警告！"),tr("有效验证码已使用完，请联系厂家！"));
         return;
+    }
+    else if (surplus <= 20) {
+        QMessageBox::warning(this,tr("警告！"),tr("有效验证码剩余 %1 ！！！").arg(surplus));
     }
     foreach (QSerialPortInfo info, QSerialPortInfo::availablePorts()) {
         if(configDialog->getPortName() == info.portName()) {
@@ -109,8 +113,7 @@ void MainWidget::enterBtnSlot()
             connect(&DataManagement::getInstance(),&DataManagement::startCheck,
                     DataManagement::getInstance().getTebco(),&ZyTebco::startCheckSlot,
                     Qt::ConnectionType(Qt::AutoConnection|Qt::UniqueConnection));
-            connect(enterSystemWidget, &EnterSystemWidget::createdReport,
-                    DataManagement::getInstance().getDeviceDatabase(), &DeviceDatabase::usedConsumable,
+            connect(enterSystemWidget, &EnterSystemWidget::createdReport, this, &MainWidget::createdReportSlot,
                     Qt::ConnectionType(Qt::AutoConnection|Qt::UniqueConnection));
             this->close();
             enterSystemWidget->show();
@@ -134,8 +137,15 @@ void MainWidget::demoBtnSlot()
         DataManagement::getInstance().clearSlot();
         enterSystemWidget->clearUiSlot();
     }
-    disconnect(enterSystemWidget, &EnterSystemWidget::createdReport,
-            DataManagement::getInstance().getDeviceDatabase(), &DeviceDatabase::usedConsumable);
+    disconnect(enterSystemWidget, &EnterSystemWidget::createdReport, this, &MainWidget::createdReportSlot);
     this->close();
     enterSystemWidget->show();
+}
+
+void MainWidget::createdReportSlot(const QString &baseDataString)
+{
+    auto &instance = DataManagement::getInstance();
+    instance.reportDataBase()->insert(QDateTime::currentMSecsSinceEpoch(), 0, baseDataString);
+    instance.reportDataBase()->dataUpload();
+    instance.deviceDatabase()->offlineUsed();
 }

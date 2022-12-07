@@ -532,25 +532,27 @@ void EnterSystemWidget::createReport()
 {
     if (isStartCheck()) {
         auto &instance = DataManagement::getInstance();
-        if (DataManagement::getInstance().getDeviceDatabase()->getConsumableSurplus() <= 0) {
+        int surplus = instance.deviceDatabase()->getConsumableSurplus();
+        if (surplus <= 0) {
             QMessageBox::warning(this,tr("警告！"),tr("有效验证码已使用完，请联系厂家！"));
             return;
+        }
+        else if (surplus <= 20) {
+            QMessageBox::warning(this,tr("警告！"),tr("有效验证码剩余 %1，请注意！！！").arg(surplus));
         }
         if (patternGroup.checkedId() == 0 && !instance.isRecordPos()) {
             QMessageBox::information(this,tr("提示"),tr("多体位模式需要记录体位！"));
             return;
         }
         WaitingDialog waiting = WaitingDialog(tr("报告生成中···"), this);
-        connect(&instance,&DataManagement::clear,&waiting,&WaitingDialog::close);
-
-        baseData.reportConclusion = instance.saveReport(posGroup.checkedButton()->text(),!rPos.isEmpty());
+        connect(&instance, &DataManagement::clear, &waiting, &WaitingDialog::close);
         setBaseData();
-        reportDataBase.insert(QDateTime::currentMSecsSinceEpoch(), 0, baseData.structToJsonString());
-
+        BaseData temp = baseData;
+        temp.reportConclusion = instance.saveReport(posGroup.checkedButton()->text(),!rPos.isEmpty());
+        emit createdReport(temp.structToJsonString());
         waiting.exec();
-        emit createdReport();
+
         instance.reportPreview(instance.getNewReportName());
-        reportDataBase.dataUpload();
         if (manyBtn->isChecked()) {
             recordBtn->show();
         }

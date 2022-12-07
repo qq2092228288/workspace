@@ -12,7 +12,8 @@
 #include <QNetworkInterface>
 #include <QMap>
 
-struct DeviceInfo;
+class DeviceInfo;
+class DataList;
 class DeviceDatabase : public QObject
 {
     Q_OBJECT
@@ -23,25 +24,26 @@ public slots:
     void updateDeviceInfo(const DeviceInfo &deviceInfo);
     // 获取设备信息
     QString getDeviceInfo(const QString &infoName);
-    // 增加耗材
-    void addConsumable(const QString &id, const int &count);
+    // 更新耗材列表
+    void updateConsumableList(const DataList &dataList, int noUploadCount);
     // 材料剩余
     int getConsumableSurplus();
-    // 使用耗材
-    void usedConsumable();
+    // 离线使用一个耗材
+    void offlineUsed();
     // 获取离线未上传耗材数量
     int getNoUploadCount();
     // 尝试上传使用耗材数量
-    void tryToUpload(int used);
-
-    void updatebatchTable(const QString &consumableId, const int &usedCount);
+    void tryToUpload();
+    // 已上传
+    void uploaded();
 
 private:
-    // 值变化量
-    void updateListTable(const int &cTotalCount, const int &cUsedCount, const int &cNoUploadCount);
     // calculation md5
-    QString getMd5Str(const QString &mac, const int &totalCount, const int &usedCount,
-                      const int &noUploadCount, const QString &uuid);
+    QString md5Str(const DataList &dataList, const int &noUploadCount, const QString &uuid);
+
+    DataList getDataList(const QString &consumableId);
+    // 批次未上传
+    int batchNoUploadCount(const QString &consumableId);
     // 数据完整性检测，若合法，则返回剩余量
     int databaseIntegralityCheck();
     // 校验MAC
@@ -49,14 +51,12 @@ private:
     // 获取MAC地址
     QString getMac() const;
 signals:
-//    void currentCount(const int &totalCount, const int &usedCount);
-    void useConsumable(const QString &deviceId, const QString &consumableUsedData,
-                       const QString &consumableId, const int &usedCount);
+    void requestUseConsumable(const QString &deviceId, const QString &consumableUsedData);
+
     void error();
 private:
     const QString m_databaseName;
     const QString m_dataTable;
-    const QString m_listTable;
     const QString m_batchTable;
     QSqlDatabase m_database;
 };

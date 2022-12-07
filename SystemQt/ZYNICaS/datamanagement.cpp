@@ -320,7 +320,7 @@ HospitalInfo *DataManagement::getHospitalInfo() const
     return m_pHospitalInfo;
 }
 
-HttpPost *DataManagement::getHttpPost() const
+HttpPost *DataManagement::httpPost() const
 {
     return m_pHttpPost;
 }
@@ -339,7 +339,12 @@ QString DataManagement::getMac() const
     return QString();
 }
 
-DeviceDatabase *DataManagement::getDeviceDatabase() const
+ReportDataBase *DataManagement::reportDataBase() const
+{
+    return m_pReportDataBase;
+}
+
+DeviceDatabase *DataManagement::deviceDatabase() const
 {
     return m_pDeviceDatabase;
 }
@@ -367,6 +372,11 @@ void DataManagement::setdZ(QChartView *dZ)
 void DataManagement::setSudoku(DrawSudoku *sudoku)
 {
     this->m_pSudoku = sudoku;
+}
+
+void DataManagement::setReportDataBase(ReportDataBase *reportDataBase)
+{
+    this->m_pReportDataBase = reportDataBase;
 }
 
 void DataManagement::setDeviceDatabase(DeviceDatabase *deviceDatabase)
@@ -550,6 +560,13 @@ void DataManagement::customCtrlTimer(bool start)
         hrCtrl->stopTimer();
         svCtrl->stopTimer();
         isiCtrl->stopTimer();
+    }
+}
+
+void DataManagement::requestConsumableList()
+{
+    if (m_pHttpPost != nullptr && m_pDeviceDatabase != nullptr) {
+        m_pHttpPost->getConsumableList("1", "10000", m_pDeviceDatabase->getDeviceInfo("deviceId"));
     }
 }
 

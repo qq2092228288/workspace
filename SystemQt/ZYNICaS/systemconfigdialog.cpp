@@ -182,7 +182,7 @@ void SystemConfigDialog::confirmSlot()
 
 void SystemConfigDialog::updateHospitalInfo()
 {
-    auto database = getIdDialog->getGeviceDatabase();
+    auto database = DataManagement::getInstance().deviceDatabase();
     hospitalInfo.hospitalName = hospitalNameLineEdit->text();
     hospitalInfo.roomName = roomNameLineEdit->text();
     hospitalInfo.doctorName = doctorNameLineEdit->text();

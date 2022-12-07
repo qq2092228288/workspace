@@ -37,36 +37,32 @@ GetIdDialog::GetIdDialog(QWidget *parent)
     macEdit->setReadOnly(true);
     macEdit->setAlignment(Qt::AlignCenter);
 
-    consumablesEdit->setText(QString::number(m_deviceDatabase.getConsumableSurplus()));
     macEdit->setText(instance.getMac());
 
     connect(copyBtn, &QPushButton::clicked, this, &GetIdDialog::copySlot);
 //    connect(usedBtn, &QPushButton::clicked, this, &GetIdDialog::usedSlot);
     connect(createDeviceBtn, &QPushButton::clicked, this, &GetIdDialog::createDeviceSlot);
-    connect(onlineGetBtn, &QPushButton::clicked, this, &GetIdDialog::onlineGetSlot);
+    connect(onlineGetBtn, &QPushButton::clicked, &instance, &DataManagement::requestConsumableList);
 //    connect(instance.getIdCheck(), &IdCheck::currentConsumables, this, &GetIdDialog::setConsumables);
 
-    connect(instance.getHttpPost(), &HttpPost::deviceInfo, &m_deviceDatabase, &DeviceDatabase::updateDeviceInfo);
-    connect(instance.getHttpPost(), &HttpPost::deviceCreated, this, [=](const QString &tip){
+    connect(instance.httpPost(), &HttpPost::deviceCreated, this, [=](const QString &tip){
         QMessageBox::warning(this, tr("提示"), tip);
     });
-    connect(instance.getHttpPost(), &HttpPost::repeatedReceived, this, [=](){
-        QMessageBox::warning(this, tr("提示"),tr("有效验证码已经接收，请勿重复接收！！！"));
+//    connect(instance.httpPost(), &HttpPost::repeatedReceived, this, [=](){
+//        QMessageBox::warning(this, tr("提示"),tr("有效验证码已经接收，请勿重复接收！！！"));
+//    });
+    connect(instance.httpPost(), &HttpPost::getNewBatch, this, [=](const int &increase){
+        int surplus = DataManagement::getInstance().deviceDatabase()->getConsumableSurplus();
+        QMessageBox::information(this, tr("有效验证码"),tr("获取 %1，剩余 %2。")
+                                 .arg(increase).arg(surplus));
+        consumablesEdit->setText(QString::number(surplus));
     });
-    connect(instance.getHttpPost(), &HttpPost::quantitReceived, &m_deviceDatabase, &DeviceDatabase::addConsumable);
-    connect(instance.getHttpPost(), &HttpPost::used, &m_deviceDatabase, &DeviceDatabase::updatebatchTable);
-    connect(&m_deviceDatabase, &DeviceDatabase::useConsumable, instance.getHttpPost(), &HttpPost::useConsumable);
-
-    // update device info when starting software
-    if (m_deviceDatabase.getNoUploadCount() > 0) {
-        m_deviceDatabase.tryToUpload(m_deviceDatabase.getNoUploadCount());
-    }
-    instance.setDeviceDatabase(&m_deviceDatabase);
 }
 
-DeviceDatabase *GetIdDialog::getGeviceDatabase()
+void GetIdDialog::showEvent(QShowEvent *event)
 {
-    return &m_deviceDatabase;
+    consumablesEdit->setText(QString::number(DataManagement::getInstance().deviceDatabase()->getConsumableSurplus()));
+    event->accept();
 }
 
 void GetIdDialog::setConsumables(const int &count)
@@ -114,22 +110,12 @@ void GetIdDialog::copySlot()
 void GetIdDialog::createDeviceSlot()
 {
     auto &instance = DataManagement::getInstance();
-    instance.getHttpPost()->createDevice(instance.getMac(), QString("待激活"));
-    instance.getHttpPost()->activeDevice(instance.getMac());
+    instance.httpPost()->createDevice(instance.getMac(), QString("待激活"));
+    instance.httpPost()->activeDevice(instance.getMac());
 }
 
 void GetIdDialog::onlineGetSlot()
 {
     auto &instance = DataManagement::getInstance();
-    instance.getHttpPost()->getConsumableList("1", "10000", m_deviceDatabase.getDeviceInfo("deviceId"));
+    instance.httpPost()->getConsumableList("1", "10000", instance.deviceDatabase()->getDeviceInfo("deviceId"));
 }
-
-void GetIdDialog::receiveDeviceInfo(const DeviceInfo &deviceInfo)
-{
-    deviceInfo.print();
-}
-
-//void GetIdDialog::receiveConsumableCount(const QString &id, const int &totalCount)
-//{
-//    qDebug()<<__LINE__<<__FUNCTION__<<id<<totalCount;
-//}

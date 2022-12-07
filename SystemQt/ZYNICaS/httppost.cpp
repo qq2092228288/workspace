@@ -4,9 +4,31 @@
 #include <iostream>
 using namespace std;
 
+JsonObjectData::JsonObjectData(const QJsonObject &object)
+    : m_object{object}
+{
+
+}
+
+void JsonObjectData::print() const
+{
+    for (auto it = m_object.begin(); it != m_object.end(); ++it) {
+        qDebug()<<it.key()<<it.value();
+    }
+}
+
+QJsonObject JsonObjectData::object()
+{
+    return m_object;
+}
+
+QString JsonObjectData::find(const QString &key)
+{
+    return m_object.value(key).toString();
+}
 
 DeviceInfo::DeviceInfo(const QJsonObject &object)
-    : m_object{object}
+    : JsonObjectData{object}
 {
     id = find("id");
     name = find("name");
@@ -17,23 +39,6 @@ DeviceInfo::DeviceInfo(const QJsonObject &object)
     place1Name = find("place1Name");
     place2Id = find("place2Id");
     place2Name = find("place2Name");
-}
-
-QString DeviceInfo::find(const QString &key)
-{
-    return m_object.value(key).toString();
-}
-
-void DeviceInfo::print() const {
-    qDebug()<<"id"<<id;
-    qDebug()<<"name"<<name;
-    qDebug()<<"agentName"<<agentName;
-    qDebug()<<"hospitalName"<<hospitalName;
-    qDebug()<<"secret"<<secret;
-    qDebug()<<"place1Id"<<place1Id;
-    qDebug()<<"place1Name"<<place1Name;
-    qDebug()<<"place2Id"<<place2Id;
-    qDebug()<<"place2Name"<<place2Name;
 }
 
 void ConsumableUsedData::append(const QString &consumableId, const int &usedCount, const int &usedTag)
@@ -49,6 +54,36 @@ void ConsumableUsedData::append(const QString &consumableId, const int &usedCoun
 QString ConsumableUsedData::toJsonStr() const
 {
     return QString(QJsonDocument(m_array).toJson(QJsonDocument::Compact));
+}
+
+DataList::DataList(const QJsonObject &object)
+    : JsonObjectData{object}
+{
+    createTime = find("createTime");
+    typeName = find("typeName");
+    isReceived = object.value("isReceived").toInt();
+    id = find("id");
+    consumableTypeId = find("consumableTypeId");
+    descript = find("descript");
+    totalCount = object.value("totalCount").toInt();
+    usedCount = object.value("usedCount").toInt();
+    deviceId = find("deviceId");
+    deviceName = find("deviceName");
+}
+
+void DataList::print() const
+{
+    qDebug()<<createTime<<"createTime";
+    qDebug()<<typeName<<"typeName";
+    qDebug()<<isReceived<<"isReceived";
+    qDebug()<<id<<"id";
+    qDebug()<<consumableTypeId<<"consumableTypeId";
+    qDebug()<<descript<<"descript";
+    qDebug()<<totalCount<<"totalCount";
+    qDebug()<<usedCount<<"usedCount";
+    qDebug()<<deviceId<<"deviceId";
+    qDebug()<<deviceName<<"deviceName";
+//    qDebug()<<noUploadCount<<"noUploadCount";
 }
 
 QString ArgsNameToHttp(const QString &argsName)
@@ -208,7 +243,7 @@ bool HttpPost::deviceOnlineNotice(const QString &deviceId)
     QNetworkReply *reply = m_pManager->post(request, urlQueryToByteArray());
 
     auto func = [](QJsonObject object) {
-        return QString::number(object.find("code").value().toInt(-1));
+        return QString::number(object.value("code").toInt(-1));
     };
     if (0 == returnValueProcessing(reply, func).toInt()) {
         return true;
@@ -216,28 +251,31 @@ bool HttpPost::deviceOnlineNotice(const QString &deviceId)
     return false;
 }
 
-void HttpPost::receiveConsumable(const QString &id, const QString &deviceId, const int &totalCount)
+void HttpPost::receiveConsumable(const DataList &dataList)
 {
+    if (dataList.totalCount == dataList.usedCount) {
+        return;
+    }
     m_urlQuery.clear();
-
-    m_urlQuery.addQueryItem("id", id);
-    m_urlQuery.addQueryItem("deviceId", deviceId);
+    m_urlQuery.addQueryItem("id", dataList.id);
+    m_urlQuery.addQueryItem("deviceId", dataList.deviceId);
 
     QNetworkRequest request = getRequest(m_urlApiRequestHeader + m_urlReceiveConsumable);
     QNetworkReply *reply = m_pManager->post(request, urlQueryToByteArray());
 
     auto func = [](QJsonObject object) {
-        return QString::number(object.find("code").value().toInt(-1));
+        return QString::number(object.value("code").toInt(-1));
     };
     if (0 == returnValueProcessing(reply, func).toInt()) {
-        emit quantitReceived(id, totalCount);
+        emit quantitReceived(dataList);
+        if (1 == dataList.isReceived) {
+            emit getNewBatch(dataList.totalCount);
+        }
     }
 }
 
-void HttpPost::useConsumable(const QString &deviceId, const QString &consumableUsedData,
-                             const QString &consumableId, const int &usedCount)
+void HttpPost::useConsumable(const QString &deviceId, const QString &consumableUsedData)
 {
-    qDebug()<<consumableUsedData;
     m_urlQuery.clear();
 
     m_urlQuery.addQueryItem("deviceId", deviceId);
@@ -247,10 +285,10 @@ void HttpPost::useConsumable(const QString &deviceId, const QString &consumableU
     QNetworkReply *reply = m_pManager->post(request, urlQueryToByteArray());
 
     auto func = [](QJsonObject object) {
-        return QString::number(object.find("code").value().toInt(-1));
+        return QString::number(object.value("code").toInt(-1));
     };
     if (0 == returnValueProcessing(reply, func).toInt()) {
-        emit used(consumableId, usedCount);
+        emit used();
     }
 }
 
@@ -273,24 +311,17 @@ void HttpPost::getConsumableList(const QString &pageNum, const QString &pageSize
 
     auto func = [](QJsonObject object) {
         QJsonObject data = object.value("data").toObject();
-        QJsonArray list = data.value("list").toArray();
-        if (!list.isEmpty()) {
-            return QString(QJsonDocument(list.at(0).toObject()).toJson(QJsonDocument::Compact));
+        QJsonArray listArray = data.value("list").toArray();
+        if (!listArray.isEmpty()) {
+            return QString(QJsonDocument(listArray).toJson(QJsonDocument::Compact));
         }
         return QString();
     };
-    QString list = returnValueProcessing(reply, func);
-    if (QJsonDocument::fromJson(list.toUtf8()).isObject()) {
-        QJsonObject object = QJsonDocument::fromJson(list.toUtf8()).object();
-        int isReceived = object.value("isReceived").toInt();
-        if (isReceived == 1) {
-            QString id = object.value("id").toString();
-            QString deviceId = object.value("deviceId").toString();
-            int totalCount = object.value("totalCount").toInt();
-            receiveConsumable(id, deviceId, totalCount);
-        }
-        else if (isReceived == 2) {
-            emit repeatedReceived();
+    QString str = returnValueProcessing(reply, func);
+    if (QJsonDocument::fromJson(str.toUtf8()).isArray()) {
+        QJsonArray array = QJsonDocument::fromJson(str.toUtf8()).array();
+        for (auto it = array.begin(); it != array.end(); ++it) {
+            receiveConsumable(DataList(it->toObject()));
         }
     }
 }
@@ -442,7 +473,7 @@ QString HttpPost::returnValueProcessing(QNetworkReply *reply, QString (*func)(QJ
         else {
             if (reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt() == 200) {
                 QString ret = QString(reply->readAll());
-                qDebug()<<ret;
+//                qDebug()<<ret;
                 return func(QJsonDocument::fromJson(ret.toUtf8()).object());
             }
         }

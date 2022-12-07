@@ -15,15 +15,27 @@
 #include <QTimer>
 #include <QEventLoop>
 #include <QHostInfo>
+
 #include "customctrl.h"
 
-struct DeviceInfo
+class JsonObjectData
 {
-    DeviceInfo(){}
-    DeviceInfo(const QJsonObject &object);
+public:
+    JsonObjectData() {}
+    JsonObjectData(const QJsonObject &object);
+    virtual void print() const;
+    QJsonObject object();
+protected:
     QString find(const QString &key);
-    void print() const;
+private:
     const QJsonObject m_object;
+};
+
+class DeviceInfo : public JsonObjectData
+{
+public:
+    DeviceInfo() {}
+    DeviceInfo(const QJsonObject &object);
     QString id;             // 设备ID
     QString name;           // 设备名称
     QString agentName;      // 代理商名称
@@ -42,18 +54,25 @@ struct ConsumableUsedData
     QJsonArray m_array;
 };
 
-struct DataList
+class DataList : public JsonObjectData
 {
-    qint64 createTime;          // 创建时间
+public:
+    DataList() {}
+    DataList(const QJsonObject &object);
+    void print() const;
+    // HTTP获取
+    QString createTime;         // 创建时间
     QString typeName;           // 类型名称
-    int isReceived;             // 是否被接收：1未接收，2已接收
+    int isReceived = 0;         // 是否被接收：1未接收，2已接收
     QString id;                 // 耗材id
     QString consumableTypeId;   // 耗材类型id
     QString descript;           // 耗材描述
-    int totalCount;             // 总数量
-    int usedCount;              // 可用数量
+    int totalCount = 0;         // 总数量
+    int usedCount = 0;          // 可用数量
     QString deviceId;           // 设备id
     QString deviceName;         // 设备名称
+    // 非http获取
+//    int noUploadCount = 0;      // 未上传
 };
 
 QString ArgsNameToHttp(const QString &argsName);
@@ -71,6 +90,7 @@ public:
     void appendJson(QByteArray jsonData);
 };
 
+const int RequestGetConsumableList = -100;
 class HttpPost : public QObject
 {
     Q_OBJECT
@@ -84,10 +104,9 @@ public slots:
     // 设备在线通知
     bool deviceOnlineNotice(const QString &deviceId);
     // 接收耗材
-    void receiveConsumable(const QString &id, const QString &deviceId, const int &totalCount);
+    void receiveConsumable(const DataList &dataList);
     // 使用耗材
-    void useConsumable(const QString &deviceId, const QString &consumableUsedData,
-                       const QString &consumableId, const int &usedCount);
+    void useConsumable(const QString &deviceId, const QString &consumableUsedData);
     // 获取耗材
     void getConsumableList(const QString &pageNum, const QString &pageSize, const QString &deviceId,
                            const QString &id = nullptr, const QString &consumableTypeId = nullptr);
@@ -96,7 +115,7 @@ public slots:
     // 创建设备
     void createDevice(const QString &mac, const QString &deviceName);
 public:
-    // return image url path 图片文件上传
+    // return image url path
     QString picUpload(const QPixmap &pixmap, const QString &fileName);
 private:
     QNetworkRequest getRequest(const QString &url) const;
@@ -112,10 +131,12 @@ private:
 signals:
     // 激活设备获取的信息
     void deviceInfo(const DeviceInfo &deviceInfo);
-    // 接收的数量
-    void quantitReceived(const QString &id, const int &totalCount);
+    // 接收的耗材数据
+    void quantitReceived(const DataList &dataList, const int &noUploadCount = RequestGetConsumableList);
+    // 获取到新的批次
+    void getNewBatch(const int &increase);
     // 使用耗材
-    void used(const QString &consumableId, const int &usedCount);
+    void used();
     // 获取到耗材
     void acquired(const QString &id, const QString &deviceId, const int &totalCount);
     // 重复接收

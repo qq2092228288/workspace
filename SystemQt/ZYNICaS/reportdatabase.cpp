@@ -1,5 +1,5 @@
 #include "reportdatabase.h"
-#include "httppost.h"
+#include "datamanagement.h"
 
 ReportDataBase::ReportDataBase(QObject *parent)
     : QObject{parent},
@@ -23,14 +23,13 @@ ReportDataBase::ReportDataBase(QObject *parent)
     else {
         qWarning("数据库打开失败！");
     }
-    m_pHttpPost = new HttpPost;
-    connect(this, &ReportDataBase::upload, m_pHttpPost, &HttpPost::reportUpload);
-    connect(m_pHttpPost, &HttpPost::finished, this, &ReportDataBase::dataUploaded);
+
+    connect(DataManagement::getInstance().httpPost(), &HttpPost::finished, this, &ReportDataBase::dataUploaded);
 }
 
 ReportDataBase::~ReportDataBase()
 {
-    delete m_pHttpPost;
+
 }
 
 void ReportDataBase::insert(qint64 time, int upload, QString dataString)

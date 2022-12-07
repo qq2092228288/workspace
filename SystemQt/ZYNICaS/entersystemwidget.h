@@ -34,7 +34,7 @@
 #include "customctrl.h"
 #include "trendchartsdialog.h"
 #include "MyStruct.h"
-#include "reportdatabase.h"
+
 
 class EnterSystemWidget : public QWidget
 {
@@ -71,7 +71,7 @@ private:
 signals:
     void recordValue();
     void widgetClose();
-    void createdReport();
+    void createdReport(const QString &baseDataString);
     void startDemoMode(bool);
 private:
     QTimer *timer;
@@ -144,7 +144,6 @@ private:
     // 记录数据
     QMap<uchar, short> recordDataMap;
     BaseData baseData;
-    ReportDataBase reportDataBase;
 };
 
 #endif // ENTERSYSTEMWIDGET_H

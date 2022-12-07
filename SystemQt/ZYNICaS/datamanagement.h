@@ -18,7 +18,8 @@
 #include "createreportthread.h"
 //#include "idcheck.h"
 #include "httppost.h"
-
+#include "reportdatabase.h"
+#include "devicedatabase.h"
 
 // 文件路径
 class MyFilePath
@@ -113,9 +114,10 @@ public:
     Args &getArgs();
     CustomCtrlRegulator *getRegulator() const;
     HospitalInfo *getHospitalInfo() const;
-    HttpPost *getHttpPost() const;
+    HttpPost *httpPost() const;
     QString getMac() const;
-    DeviceDatabase *getDeviceDatabase() const;
+    ReportDataBase *reportDataBase() const;
+    DeviceDatabase *deviceDatabase() const;
 public:
     void setHospitalInfo(HospitalInfo *hospitalInfo);
     void setBodyValue(BodyValue *bodyValue);
@@ -123,6 +125,7 @@ public:
     // 心阻抗图
     void setdZ(QChartView *dZ);
     void setSudoku(DrawSudoku *sudoku);
+    void setReportDataBase(ReportDataBase *reportDataBase);
     void setDeviceDatabase(DeviceDatabase *deviceDatabase);
 public slots:
     void recordPosition(QString position);
@@ -131,6 +134,7 @@ public slots:
     void reportPreview(const QString &path);
     void reportPrintOut(const QString &path);
     void customCtrlTimer(bool start);
+    void requestConsumableList();
 private:
     void saveInfo(Cdata &cdata, bool second = false);
     QString flag(CustomCtrl *customCtrl, bool second);
@@ -168,6 +172,7 @@ private:
     QSize m_winSize;
 //    IdCheck *m_pIdCheck;
     HttpPost *m_pHttpPost;
+    ReportDataBase *m_pReportDataBase;
     DeviceDatabase *m_pDeviceDatabase;
 };
 

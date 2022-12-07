@@ -1,4 +1,4 @@
-﻿#ifndef MAINWIDGET_H
+#ifndef MAINWIDGET_H
 #define MAINWIDGET_H
 
 #include <QWidget>
@@ -27,6 +27,7 @@ signals:
 private slots:
     void enterBtnSlot();
     void demoBtnSlot();
+    void createdReportSlot(const QString &baseDataString);
 private:
     QVBoxLayout *mainLayout;
     QLabel *titleLabel;

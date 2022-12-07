@@ -9,7 +9,6 @@
 #include <QDebug>
 
 
-class HttpPost;
 class ReportDataBase : public QObject
 {
     Q_OBJECT
@@ -28,7 +27,6 @@ private:
     const QString m_databaseName;
     const QString m_tableName;
     QSqlDatabase m_database;
-    HttpPost *m_pHttpPost;
 };
 
 #endif // REPORTDATABASE_H
