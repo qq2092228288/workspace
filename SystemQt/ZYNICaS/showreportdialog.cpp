@@ -114,6 +114,7 @@ ShowReportDialog::ShowReportDialog(QWidget *parent)
     searchBtn = new QPushButton(tr("搜索"),this);
     printBtn = new QPushButton(tr("打印"),this);
     listView = new MyListView(this);
+    countLabel = new QLabel(this);
     model = new MyModel(fileNames,this);
 
     comboBox->setFixedWidth(100*instance.hZoom());
@@ -135,6 +136,7 @@ ShowReportDialog::ShowReportDialog(QWidget *parent)
     ctrlLayout->addWidget(searchBtn);
     ctrlLayout->addWidget(printBtn);
     mainLayout->addWidget(listView);
+    mainLayout->addWidget(countLabel, 0, Qt::AlignRight);
 
     comboBox->addItems(QStringList()<<tr("关键字")<<tr("时间"));
 
@@ -164,6 +166,7 @@ void ShowReportDialog::showEvent(QShowEvent *event)
     lineEdit->clear();
     fileNames = allReportNames();
     model->update();
+    countLabel->setText(tr("报告总计：%1 份").arg(fileNames.size()));
 }
 
 QStringList ShowReportDialog::allReportNames()

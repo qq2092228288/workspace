@@ -31,12 +31,14 @@ private slots:
 private:
     QLabel *consumablesLabel;
     QLabel *macLabel;
-    QLabel *codeLabel;
+//    QLabel *codeLabel;
     QLineEdit *consumablesEdit;
     QLineEdit *macEdit;
-    QLineEdit *codeEdit;
+//    QLineEdit *codeEdit;
     QPushButton *copyBtn;
-    QPushButton *usedBtn;
+//    QPushButton *usedBtn;
+    QLabel *deviceNameLabel;
+    QLineEdit *deviceNameLineEdit;
     QPushButton *createDeviceBtn;
     QPushButton *onlineGetBtn;
 };

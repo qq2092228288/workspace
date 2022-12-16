@@ -25,7 +25,8 @@ DeviceDatabase::DeviceDatabase(QObject *parent)
                                     "place1Id TEXT NOT NULL, "
                                     "place1Name TEXT, "
                                     "place2Id TEXT, "
-                                    "place2Name TEXT)")
+                                    "place2Name TEXT, "
+                                    "signSecret TEXT NOT NULL)")
                             .arg(m_dataTable);
         sqlQuery.prepare(dataTable);
         sqlQuery.exec();
@@ -51,13 +52,58 @@ DeviceDatabase::DeviceDatabase(QObject *parent)
     else {
         qWarning("数据库打开失败！");
     }
+//    QSqlQuery sqlQuery(m_database);
+//    sqlQuery.exec(QString("SELECT * FROM %1").arg(m_dataTable));
+//    QSqlRecord record = sqlQuery.record();
+//    while (sqlQuery.next()) {
+//        for (int index = 0; index < record.count(); ++index) {
+//            qDebug()<<record.fieldName(index)<<sqlQuery.value(index);
+//        }
+//    }
+}
+
+bool DeviceDatabase::databaseIntegralityCheck()
+{
+    QSqlQuery sqlQuery(m_database);
+    // 查找
+    sqlQuery.exec(QString("SELECT * FROM %1").arg(m_batchTable));
+    while (sqlQuery.next()) {
+        const QString consumableId = sqlQuery.value("id").toString();
+        DataList dataList = getDataList(consumableId);
+        int noUploadCount = sqlQuery.value("noUploadCount").toInt();
+        const QString uuid = sqlQuery.value("uuid").toString();
+        const QString md5 = sqlQuery.value("md5").toString();
+        if (md5 != md5Str(dataList, noUploadCount, uuid)) { // 数据库被非法修改
+            return false;
+        }
+    }
+    sqlQuery.exec(QString("SELECT * FROM %1").arg(m_dataTable));
+    if (sqlQuery.next()) {  // 有数据
+        const QString mac = sqlQuery.value("mac").toString();
+        if (mac != getMac()) {
+            return false;
+        }
+    }
+    return true;
+}
+
+DeviceInfo DeviceDatabase::deviceInfo()
+{
+    QJsonObject data;
+    QSqlQuery sqlQuery(m_database);
+    sqlQuery.exec(QString("SELECT * FROM %2").arg( m_dataTable));
+    QSqlRecord record = sqlQuery.record();
+    if (sqlQuery.next()) {
+        for (int index = 0; index < record.count(); ++index) {
+            auto value = sqlQuery.value(index);
+            data.insert(record.fieldName(index), value.toJsonValue());
+        }
+    }
+    return DeviceInfo(data);
 }
 
 void DeviceDatabase::updateDeviceInfo(const DeviceInfo &deviceInfo)
 {
-    if (!macIntegralityCheck(getMac(), m_dataTable)) {
-        return;
-    }
     QSqlQuery sqlQuery(m_database);
     sqlQuery.prepare(QString("REPLACE INTO %1("
                              "mac, "
@@ -69,7 +115,8 @@ void DeviceDatabase::updateDeviceInfo(const DeviceInfo &deviceInfo)
                              "place1Id, "
                              "place1Name, "
                              "place2Id, "
-                             "place2Name) "
+                             "place2Name, "
+                             "signSecret) "
                              "VALUES("
                              ":mac, "
                              ":deviceId, "
@@ -80,7 +127,8 @@ void DeviceDatabase::updateDeviceInfo(const DeviceInfo &deviceInfo)
                              ":place1Id, "
                              ":place1Name, "
                              ":place2Id, "
-                             ":place2Name)")
+                             ":place2Name, "
+                             ":signSecret)")
                      .arg(m_dataTable));
     sqlQuery.bindValue(":mac", getMac());
     sqlQuery.bindValue(":deviceId", deviceInfo.id);
@@ -92,6 +140,7 @@ void DeviceDatabase::updateDeviceInfo(const DeviceInfo &deviceInfo)
     sqlQuery.bindValue(":place1Name", deviceInfo.place1Name);
     sqlQuery.bindValue(":place2Id", deviceInfo.place2Id);
     sqlQuery.bindValue(":place2Name", deviceInfo.place2Name);
+    sqlQuery.bindValue(":signSecret", deviceInfo.signSecret);
     sqlQuery.exec();
 }
 
@@ -288,39 +337,6 @@ int DeviceDatabase::batchNoUploadCount(const QString &consumableId)
         return sqlQuery.value(0).toInt();
     }
     return 0;
-}
-
-int DeviceDatabase::databaseIntegralityCheck()
-{
-    QSqlQuery sqlQuery(m_database);
-    // 查找
-    sqlQuery.exec(QString("SELECT * FROM %1").arg(m_batchTable));
-    while (sqlQuery.next()) {
-        const QString consumableId = sqlQuery.value("id").toString();
-        DataList dataList = getDataList(consumableId);
-        int noUploadCount = sqlQuery.value("noUploadCount").toInt();
-        const QString uuid = sqlQuery.value("uuid").toString();
-        const QString md5 = sqlQuery.value("md5").toString();
-        if (md5 != md5Str(dataList, noUploadCount, uuid)) { // 数据库被非法修改
-            emit error();
-            return -1;
-        }
-    }
-    return getConsumableSurplus();
-}
-
-bool DeviceDatabase::macIntegralityCheck(const QString &mac, const QString &tableName)
-{
-    QSqlQuery sqlQuery(m_database);
-    // 查找
-    sqlQuery.exec(QString("SELECT * FROM %1").arg(tableName));
-    if (sqlQuery.next()) {  // 有数据
-        sqlQuery.exec(QString("SELECT * FROM %1 WHERE mac='%2'").arg(tableName, mac));
-        if (!sqlQuery.next()) { // mac改变
-            return false;
-        }
-    }
-    return true;    // 无数据或mac存在
 }
 
 QString DeviceDatabase::getMac() const

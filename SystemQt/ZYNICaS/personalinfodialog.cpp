@@ -160,7 +160,7 @@ void PersonalInfoDialog::deletePatientInfo()
 void PersonalInfoDialog::emitPatientInfo()
 {
     if (!tableView->currentIndex().isValid()) {
-        QMessageBox::warning(this,tr("警告！"),tr("请选择一条信息！！！"));
+        QMessageBox::warning(this,tr("警告！"),tr("请选择一条信息！"));
         return;
     }
     int row = tableView->currentIndex().row();

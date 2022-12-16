@@ -6,7 +6,7 @@ SystemConfigDialog::SystemConfigDialog(QWidget *parent)
     : QDialog{parent}
 {
     auto &instance = DataManagement::getInstance();
-    setFixedSize(500*instance.wZoom(),600*instance.hZoom());
+    setFixedSize(500*instance.wZoom(), 600*instance.hZoom());
     this->setWindowTitle(tr("系统配置"));
     setWindowFlags(Qt::CustomizeWindowHint | Qt::WindowCloseButtonHint);
     infoFileName = instance.getPaths().baseInfo();
@@ -14,26 +14,28 @@ SystemConfigDialog::SystemConfigDialog(QWidget *parent)
     this->setStyleSheet(instance.dialogQss());
 
     hospitalInfoGroupBox = new QGroupBox(tr("信息配置"),this);
-    hospitalNameLabel = new QLabel(tr("医院"),this);
-    roomNameLabel = new QLabel(tr("科室"),this);
-    doctorNameLabel = new QLabel(tr("医生"),this);
+    hospitalNameLabel = new QLabel(tr("医院"), this);
+    roomNameLabel = new QLabel(tr("科室"), this);
+    doctorNameLabel = new QLabel(tr("检查人员"), this);
     hospitalNameLineEdit = new QLineEdit(this);
     roomNameLineEdit = new QLineEdit(this);
     doctorNameLineEdit = new QLineEdit(this);
-    reportGroupBox = new QGroupBox(tr("报告配置"),this);
-    printerRadio = new QRadioButton(tr("常规打印机报告"),this);
-    xprinterRadio = new QRadioButton(tr("热敏打印机报告"),this);
-    tipCheckBox = new QCheckBox(tr("心源性猝死提示"),this);
-    checkModeGroupBox = new QGroupBox(tr("模式配置"),this);
-    generalModeRadio = new QRadioButton(tr("常规模式"),this);
-    professionalModeRadio = new QRadioButton(tr("专业模式"),this);
-    systemInfoGroupBox = new QGroupBox(tr("系统配置"),this);
-    serialPortLabel = new QLabel(tr("串口设置"),this);
+    reportGroupBox = new QGroupBox(tr("报告配置"), this);
+    printerRadio = new QRadioButton(tr("常规打印机报告"), this);
+    xprinterRadio = new QRadioButton(tr("热敏打印机报告"), this);
+    tipCheckBox = new QCheckBox(tr("心源性猝死提示"), this);
+    checkModeGroupBox = new QGroupBox(tr("模式配置"), this);
+    generalModeRadio = new QRadioButton(tr("常规模式"), this);
+    professionalModeRadio = new QRadioButton(tr("专业模式"), this);
+    systemInfoGroupBox = new QGroupBox(tr("系统配置"), this);
+    serialPortLabel = new QLabel(tr("串口设置"), this);
     serialPortComboBox = new QComboBox(this);
-    getIDBtn = new QPushButton(tr("有效验证码"),this);
-    confirmBtn = new QPushButton(tr("确定"),this);
+    getIDBtn = new QPushButton(tr("有效验证码"), this);
+    confirmBtn = new QPushButton(tr("确定"), this);
     getIdDialog = new GetIdDialog(this);
 
+    hospitalNameLineEdit->setReadOnly(true);
+    roomNameLineEdit->setReadOnly(true);
     serialPortComboBox->setFixedWidth(120*instance.wZoom());
     printerRadio->setChecked(true);
     generalModeRadio->setChecked(true);
@@ -55,12 +57,12 @@ SystemConfigDialog::SystemConfigDialog(QWidget *parent)
     hospitalInfoGroupBox->setLayout(gLayout);
     reportGroupBox->setLayout(rLayout);
     systemInfoGroupBox->setLayout(hLayout);
-    gLayout->addWidget(hospitalNameLabel,0,0);
-    gLayout->addWidget(hospitalNameLineEdit,0,1);
-    gLayout->addWidget(roomNameLabel,1,0);
-    gLayout->addWidget(roomNameLineEdit,1,1);
-    gLayout->addWidget(doctorNameLabel,2,0);
-    gLayout->addWidget(doctorNameLineEdit,2,1);
+    gLayout->addWidget(hospitalNameLabel, 0, 0);
+    gLayout->addWidget(hospitalNameLineEdit, 0, 1);
+    gLayout->addWidget(roomNameLabel, 1, 0);
+    gLayout->addWidget(roomNameLineEdit, 1, 1);
+    gLayout->addWidget(doctorNameLabel, 2, 0);
+    gLayout->addWidget(doctorNameLineEdit, 2, 1);
     rLayout->addLayout(pLayout);
     pLayout->addWidget(printerRadio);
     pLayout->addWidget(xprinterRadio);
@@ -90,8 +92,8 @@ SystemConfigDialog::SystemConfigDialog(QWidget *parent)
         file.open(QFile::WriteOnly);
         QTextStream in(&file);
         in.setCodec(QTextCodec::codecForName("utf-8"));
-        in<<QString("hospital=\"\"\n");
-        in<<QString("department=\"\"\n");
+//        in<<QString("hospital=\"\"\n");
+//        in<<QString("department=\"\"\n");
         in<<QString("doctor=\"\"\n");
         in<<QString("printer=\"0\"\n");
         in<<QString("tip=\"0\"\n");
@@ -110,13 +112,13 @@ SystemConfigDialog::SystemConfigDialog(QWidget *parent)
             if (strLine.indexOf(nameExp) >= 0 && strLine.indexOf(valueExp) >= 0) {
                 QString name = nameExp.cap(1);
                 QString value = valueExp.cap(1);
-                if (name == "hospital") {
-                    hospitalNameLineEdit->setText(value);
-                }
-                else if (name == "department") {
-                    roomNameLineEdit->setText(value);
-                }
-                else if (name == "doctor") {
+//                if (name == "hospital") {
+//                    hospitalNameLineEdit->setText(value);
+//                }
+//                else if (name == "department") {
+//                    roomNameLineEdit->setText(value);
+//                }
+                if (name == "doctor") {
                     doctorNameLineEdit->setText(value);
                 }
                 else if (name == "printer") {
@@ -168,8 +170,8 @@ void SystemConfigDialog::confirmSlot()
     if(file.open(QFile::WriteOnly)){
         QTextStream in(&file);
         in.setCodec(QTextCodec::codecForName("utf-8"));
-        in<<QString("hospital=\"%1\"\n").arg(hospitalNameLineEdit->text());
-        in<<QString("department=\"%1\"\n").arg(roomNameLineEdit->text());
+//        in<<QString("hospital=\"%1\"\n").arg(hospitalNameLineEdit->text());
+//        in<<QString("department=\"%1\"\n").arg(roomNameLineEdit->text());
         in<<QString("doctor=\"%1\"\n").arg(doctorNameLineEdit->text());
         in<<QString("printer=\"%1\"\n").arg(xprinterRadio->isChecked());
         in<<QString("tip=\"%1\"\n").arg(tipCheckBox->isChecked());
@@ -183,9 +185,14 @@ void SystemConfigDialog::confirmSlot()
 void SystemConfigDialog::updateHospitalInfo()
 {
     auto database = DataManagement::getInstance().deviceDatabase();
-    hospitalInfo.hospitalName = hospitalNameLineEdit->text();
-    hospitalInfo.roomName = roomNameLineEdit->text();
-    hospitalInfo.doctorName = doctorNameLineEdit->text();
+    QString place1Name = database->getDeviceInfo("place1Name");
+    QString place2Name = database->getDeviceInfo("place2Name");
+    QString doctorName = doctorNameLineEdit->text();
+    hospitalNameLineEdit->setText(place1Name);
+    roomNameLineEdit->setText(place2Name);
+    hospitalInfo.hospitalName = place1Name;
+    hospitalInfo.roomName = place2Name;
+    hospitalInfo.doctorName = doctorName.isEmpty() ? "unknown" : doctorName;
     hospitalInfo.place1Id = database->getDeviceInfo("place1Id");
     hospitalInfo.place2Id = database->getDeviceInfo("place2Id");
     hospitalInfo.deviceId = database->getDeviceInfo("deviceId");

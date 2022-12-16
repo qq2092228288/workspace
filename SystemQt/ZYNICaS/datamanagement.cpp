@@ -144,9 +144,7 @@ Argument Arguments::findArgument(const QString &en)
 DataManagement::DataManagement()
 {
     isRecord = false;
-    m_pThread = new QThread;
     m_pTebco = new ZyTebco;
-    m_pTebco->moveToThread(m_pThread);
     reportThread = new CreateReportThread;
 //    m_pIdCheck = new IdCheck;
     m_pHttpPost = new HttpPost;
@@ -156,21 +154,13 @@ DataManagement::~DataManagement()
 {
     reportThread->quit();
     reportThread->wait();
-    m_pThread->quit();
-    m_pThread->wait();
-    delete reportThread;
     delete m_pTebco;
-    delete m_pThread;
-//    delete m_pIdCheck;
     delete m_pHttpPost;
-    QDir dir(m_filePath.tempDir()); // delete temp dir
+    delete reportThread;
+    // delete temp dir
+    QDir dir(m_filePath.tempDir());
     dir.removeRecursively();
 //    qDebug()<<"~DataManagement()";
-}
-
-void DataManagement::startThread()
-{
-    m_pThread->start();
 }
 
 ZyTebco *DataManagement::getTebco() const
@@ -566,7 +556,7 @@ void DataManagement::customCtrlTimer(bool start)
 void DataManagement::requestConsumableList()
 {
     if (m_pHttpPost != nullptr && m_pDeviceDatabase != nullptr) {
-        m_pHttpPost->getConsumableList("1", "10000", m_pDeviceDatabase->getDeviceInfo("deviceId"));
+        emit onlineConsumableList("1", "10000", m_pDeviceDatabase->getDeviceInfo("deviceId"), nullptr, nullptr);
     }
 }
 

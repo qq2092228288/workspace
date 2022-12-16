@@ -100,7 +100,7 @@ void MainWidget::enterBtnSlot()
         return;
     }
     else if (surplus <= 20) {
-        QMessageBox::warning(this,tr("警告！"),tr("有效验证码剩余 %1 ！！！").arg(surplus));
+        QMessageBox::warning(this,tr("警告！"),tr("有效验证码剩余 %1 ，请注意！").arg(surplus));
     }
     foreach (QSerialPortInfo info, QSerialPortInfo::availablePorts()) {
         if(configDialog->getPortName() == info.portName()) {
@@ -148,4 +148,8 @@ void MainWidget::createdReportSlot(const QString &baseDataString)
     instance.reportDataBase()->insert(QDateTime::currentMSecsSinceEpoch(), 0, baseDataString);
     instance.reportDataBase()->dataUpload();
     instance.deviceDatabase()->offlineUsed();
+    int surplus = instance.deviceDatabase()->getConsumableSurplus();
+    if (surplus <= 20) {
+        QMessageBox::warning(this,tr("警告！"),tr("有效验证码剩余 %1 ，请注意！").arg(surplus));
+    }
 }

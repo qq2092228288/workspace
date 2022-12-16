@@ -36,8 +36,9 @@ SOURCES += \
     showreportdialog.cpp \
     singleapplication.cpp \
     systemconfigdialog.cpp \
+    threadserivce.cpp \
     trendchart.cpp \
-    trendchartsdialog.cpp \
+    trendchartswidget.cpp \
     waitingdialog.cpp
 
 HEADERS += \
@@ -64,8 +65,9 @@ HEADERS += \
     showreportdialog.h \
     singleapplication.h \
     systemconfigdialog.h \
+    threadserivce.h \
     trendchart.h \
-    trendchartsdialog.h \
+    trendchartswidget.h \
     waitingdialog.h
 
 

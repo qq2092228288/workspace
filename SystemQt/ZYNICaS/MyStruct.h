@@ -24,11 +24,11 @@ struct PatientInfo
 
 struct PlaceInfo
 {
-    QString placeId = "placeId";    // 场所ID
-    QString place1Id;               // 一级场所
-    QString place2Id;               // 二级场所
-    QString deviceId;               // 设备ID
-    QString inspector = "inspector";// 检查人员
+    QString placeId;            // 场所ID
+    QString place1Id;           // 一级场所
+    QString place2Id;           // 二级场所
+    QString deviceId;           // 设备ID
+    QString inspector;          // 检查人员
 };
 
 struct TebcoData
@@ -46,7 +46,7 @@ struct BaseData
     TebcoData secondPosture;    // 第二体位数据
     QPixmap sudokuPix;          // 九宫格图
     QString reportConclusion;   // 报告结论
-    QList<QPixmap> trendCharts; // 趋势图
+//    QList<QPixmap> trendCharts; // 趋势图
     QString structToJsonString()
     {
         QJsonObject jBaseData;
@@ -76,13 +76,13 @@ struct BaseData
         jBaseData.insert("pAnalyse", pixmapToJson(sudokuPix));
         jBaseData.insert("reportConclusion", reportConclusion);
 
-        if (!trendCharts.isEmpty()) {
-            QJsonObject jTrendCharts;
-            for (int index = 0; index < trendCharts.size(); ++index) {
-                jTrendCharts.insert("trendCharts" + QString::number(index), pixmapToJson(trendCharts.at(index)));
-            }
-            jBaseData.insert("trendCharts", jTrendCharts);
-        }
+//        if (!trendCharts.isEmpty()) {
+//            QJsonObject jTrendCharts;
+//            for (int index = 0; index < trendCharts.size(); ++index) {
+//                jTrendCharts.insert("trendCharts" + QString::number(index), pixmapToJson(trendCharts.at(index)));
+//            }
+//            jBaseData.insert("trendCharts", jTrendCharts);
+//        }
         return QString(QJsonDocument(jBaseData).toJson(QJsonDocument::Compact));
     }
     QJsonObject getPostureJsonObject(const TebcoData &tebcoData)

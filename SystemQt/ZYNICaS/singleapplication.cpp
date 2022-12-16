@@ -33,7 +33,7 @@ void SingleApplication::newLocalConnection()
         mainWidget->raise();
         mainWidget->activateWindow();
 //        mainWidget->setWindowState((mainWidget->windowState() & ~Qt::WindowMinimized) | Qt::WindowActive);
-        QMessageBox::warning(mainWidget, tr("提示"), tr("程序正在运行中！！！"));
+        QMessageBox::warning(mainWidget, tr("提示"), tr("程序正在运行中！"));
     }
 }
 

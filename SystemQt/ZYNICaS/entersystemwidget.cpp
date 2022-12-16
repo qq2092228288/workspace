@@ -1,5 +1,6 @@
 #include "entersystemwidget.h"
 #include "datamanagement.h"
+#include "threadserivce.h"
 #include "waitingdialog.h"
 #include "datacalculation.h"
 #include <iostream>
@@ -102,36 +103,19 @@ EnterSystemWidget::EnterSystemWidget(QWidget *parent)
     instance.setBodyValue(&bodyValue);
     instance.setdZ(admitDraw->getView());
     instance.setSudoku(sudokuDraw);
-
-    ecgThread->start();
-    diffThread->start();
-    admitThread->start();
-    dataThread->start();
 }
 
 EnterSystemWidget::~EnterSystemWidget()
 {
     emit startDemoMode(false);
-    ecgThread->quit();
-    diffThread->quit();
-    admitThread->quit();
-    dataThread->quit();
-    ecgThread->wait();
-    diffThread->wait();
-    admitThread->wait();
-    dataThread->wait();
     timer->stop();
     delete regulator;
     delete ecgDraw;
     delete diffDraw;
     delete admitDraw;
-    delete ecgThread;
-    delete diffThread;
-    delete admitThread;
-    delete dataThread;
     delete infoDialog;
     delete bpDialog;
-    delete trendChartsDialog;
+    delete trendChartsWidget;
     delete auxArgDialog;
     delete sudokuDraw;
     //    qDebug()<<"~EnterSystemWidget()";
@@ -255,9 +239,6 @@ void EnterSystemWidget::initPosModule()
 
 void EnterSystemWidget::initOscModule()
 {
-    ecgThread = new QThread;
-    diffThread = new QThread;
-    admitThread = new QThread;
     ecgGroupBox = new QGroupBox(tr("阻抗心电图"),this);
     diffGroupBox = new QGroupBox(tr("心血流图"),this);
     admitGroupBox = new QGroupBox(tr("心阻抗图"),this);
@@ -275,14 +256,13 @@ void EnterSystemWidget::initOscModule()
     diffLayout->addWidget(diffDraw->getView());
     admitLayout->addWidget(admitDraw->getView());
 
-    ecgDraw->moveToThread(ecgThread);
-    diffDraw->moveToThread(diffThread);
-    admitDraw->moveToThread(admitThread);
+    ThreadSerivce::getInstance().objectMoveToThread(ecgDraw);
+    ThreadSerivce::getInstance().objectMoveToThread(diffDraw);
+    ThreadSerivce::getInstance().objectMoveToThread(admitDraw);
 }
 
 void EnterSystemWidget::initDataModule()
 {
-    dataThread = new QThread;
     dataGroupBox = new QGroupBox(this);
     dataGLayout = new QGridLayout(dataGroupBox);
     regulator = new CustomCtrlRegulator;
@@ -294,10 +274,11 @@ void EnterSystemWidget::initDataModule()
         QHBoxLayout *hLayout = new QHBoxLayout;
         hLayouts.append(hLayout);
         hLayout->addWidget(customCtrls.at(num));
-        dataGLayout->addLayout(hLayout,num/4,num%4);
+        dataGLayout->addLayout(hLayout, num/4, num%4);
         customCtrls.at(num)->show();
     }
-    regulator->moveToThread(dataThread);
+
+    ThreadSerivce::getInstance().objectMoveToThread(regulator);
     DataManagement::getInstance().setRegulator(regulator);
 }
 
@@ -309,7 +290,7 @@ void EnterSystemWidget::initReportModule()
     trendChartBtn = new QPushButton(tr("趋势图"),this);
     sudokuBtn = new QPushButton(tr("九宫格图"),this);
     auxArgBtn = new QPushButton(tr("辅助参数"),this);
-    trendChartsDialog = new TrendChartsDialog;
+    trendChartsWidget = new TrendChartsWidget;
     auxArgDialog = new AuxArgDialog;
     sudokuDraw = new DrawSudoku;
 
@@ -368,7 +349,7 @@ void EnterSystemWidget::signalsAndSlots()
     // report
     connect(backBtn, &QPushButton::clicked, this, &EnterSystemWidget::close);
     connect(reportBtn, &QPushButton::clicked, this, &EnterSystemWidget::createReport);
-    connect(trendChartBtn, &QPushButton::clicked, trendChartsDialog, &TrendChartsDialog::exec);
+    connect(trendChartBtn, &QPushButton::clicked, trendChartsWidget, &TrendChartsWidget::widgetShow);
     connect(auxArgBtn, &QPushButton::clicked, auxArgDialog, &AuxArgDialog::exec);
     connect(sudokuBtn, &QPushButton::clicked, sudokuDraw, &DrawSudoku::exec);
     connect(auxArgDialog, &AuxArgDialog::value, this, [=](int cvp, int lap){
@@ -532,13 +513,9 @@ void EnterSystemWidget::createReport()
 {
     if (isStartCheck()) {
         auto &instance = DataManagement::getInstance();
-        int surplus = instance.deviceDatabase()->getConsumableSurplus();
-        if (surplus <= 0) {
+        if (instance.deviceDatabase()->getConsumableSurplus() <= 0) {
             QMessageBox::warning(this,tr("警告！"),tr("有效验证码已使用完，请联系厂家！"));
             return;
-        }
-        else if (surplus <= 20) {
-            QMessageBox::warning(this,tr("警告！"),tr("有效验证码剩余 %1，请注意！！！").arg(surplus));
         }
         if (patternGroup.checkedId() == 0 && !instance.isRecordPos()) {
             QMessageBox::information(this,tr("提示"),tr("多体位模式需要记录体位！"));
@@ -549,9 +526,8 @@ void EnterSystemWidget::createReport()
         setBaseData();
         BaseData temp = baseData;
         temp.reportConclusion = instance.saveReport(posGroup.checkedButton()->text(),!rPos.isEmpty());
-        emit createdReport(temp.structToJsonString());
         waiting.exec();
-
+        emit createdReport(temp.structToJsonString());
         instance.reportPreview(instance.getNewReportName());
         if (manyBtn->isChecked()) {
             recordBtn->show();

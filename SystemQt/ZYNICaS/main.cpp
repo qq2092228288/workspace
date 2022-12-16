@@ -3,10 +3,12 @@
 #include <QTextCodec>
 #include <QObject>
 #include "datamanagement.h"
+#include "threadserivce.h"
 #include "singleapplication.h"
 
 
 DataManagement DataManagement::instance;
+ThreadSerivce ThreadSerivce::instance;
 
 int main(int argc, char *argv[])
 {
@@ -16,10 +18,12 @@ int main(int argc, char *argv[])
         SetThreadExecutionState(ES_CONTINUOUS | ES_SYSTEM_REQUIRED | ES_DISPLAY_REQUIRED);
 
         auto &ins = DataManagement::getInstance();
-        ins.startThread();
+        ThreadSerivce::getInstance().objectMoveToThread(ins.getTebco());
+        ThreadSerivce::getInstance().objectMoveToThread(ins.httpPost());
+        qRegisterMetaType<DataList>("DataList");
         QObject::connect(&ins, &DataManagement::clear, &ins, &DataManagement::clearSlot);
         QObject::connect(&ins, &DataManagement::sendSerialName, ins.getTebco(), &ZyTebco::openSerial);
-
+        QObject::connect(&ins, &DataManagement::onlineConsumableList, ins.httpPost(), &HttpPost::getConsumableList);
         ins.setSize(QApplication::primaryScreen()->availableSize());
         ins.initCurrentPath();
         QDir initDir(ins.getPaths().initDir());
@@ -43,10 +47,13 @@ int main(int argc, char *argv[])
         QObject::connect(ins.httpPost(), &HttpPost::quantitReceived, &deviceDatabase, &DeviceDatabase::updateConsumableList);
         QObject::connect(ins.httpPost(), &HttpPost::used, &deviceDatabase, &DeviceDatabase::uploaded);
         QObject::connect(&deviceDatabase, &DeviceDatabase::requestUseConsumable, ins.httpPost(), &HttpPost::useConsumable);
+
+        // set deviceInfo for httpPost
+        ins.httpPost()->setDeviceInfo(deviceDatabase.deviceInfo());
+        // get device info
+        ins.httpPost()->activeDevice(ins.getMac());
         // update device info when starting software
         if (ins.httpPost()->deviceOnlineNotice(deviceDatabase.getDeviceInfo("deviceId"))) { // device online
-            // get device info
-            ins.httpPost()->activeDevice(ins.getMac());
             // upload reports
             reportDatabase.dataUpload();
             // upload offline used consumable

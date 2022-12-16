@@ -19,6 +19,10 @@ class DeviceDatabase : public QObject
     Q_OBJECT
 public:
     explicit DeviceDatabase(QObject *parent = nullptr);
+    // 数据完整性检测
+    bool databaseIntegralityCheck();
+    // 当前设备的所有信息
+    DeviceInfo deviceInfo();
 public slots:
     // 更新设备信息
     void updateDeviceInfo(const DeviceInfo &deviceInfo);
@@ -36,7 +40,6 @@ public slots:
     void tryToUpload();
     // 已上传
     void uploaded();
-
 private:
     // calculation md5
     QString md5Str(const DataList &dataList, const int &noUploadCount, const QString &uuid);
@@ -44,16 +47,10 @@ private:
     DataList getDataList(const QString &consumableId);
     // 批次未上传
     int batchNoUploadCount(const QString &consumableId);
-    // 数据完整性检测，若合法，则返回剩余量
-    int databaseIntegralityCheck();
-    // 校验MAC
-    bool macIntegralityCheck(const QString &mac, const QString &tableName);
     // 获取MAC地址
     QString getMac() const;
 signals:
     void requestUseConsumable(const QString &deviceId, const QString &consumableUsedData);
-
-    void error();
 private:
     const QString m_databaseName;
     const QString m_dataTable;

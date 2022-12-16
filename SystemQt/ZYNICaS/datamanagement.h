@@ -94,10 +94,12 @@ public:
     static DataManagement &getInstance(){return instance;}
 signals:
     void clear();
+    // 请求耗材列表
+    void onlineConsumableList(const QString &pageNum, const QString &pageSize, const QString &deviceId,
+                              const QString &id, const QString &consumableTypeId);
     void startCheck(bool);
     void sendSerialName(const QString &portName);
 public:
-    void startThread();
     ZyTebco *getTebco() const;
 //    IdCheck *getIdCheck() const;
     void setSize(const QSize &size);
@@ -166,7 +168,6 @@ private:
     Args args;
 private:
     // 串口
-    QThread *m_pThread;
     ZyTebco *m_pTebco;
     // 屏幕大小
     QSize m_winSize;

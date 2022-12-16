@@ -8,6 +8,7 @@ using namespace std;
 TrendChart::TrendChart(CustomCtrl *customCtrl, QWidget *parent)
     : QWidget{parent},m_pCustomCtrl{customCtrl}
 {
+    auto &instance = DataManagement::getInstance();
     digit = customCtrl->getDigit();
     m_pChartView = new QChartView(this);
     m_pLabel = new QLabel(this);
@@ -15,6 +16,9 @@ TrendChart::TrendChart(CustomCtrl *customCtrl, QWidget *parent)
     m_pAxisY = new QValueAxis(this);
     m_pSeries = new QLineSeries(this);
     dialog = new SelectItemDialog(true);
+
+    m_pLabel->setStyleSheet(QString("QLabel{color:#000000;font:bold %1px;font-family:Microsoft YaHei;}")
+                            .arg(20*instance.zoom() + 1));
 
     QVBoxLayout *mainLayout = new QVBoxLayout(this);
     mainLayout->addWidget(m_pChartView);
@@ -34,6 +38,7 @@ TrendChart::TrendChart(CustomCtrl *customCtrl, QWidget *parent)
     m_pChartView->chart()->addSeries(m_pSeries);
     m_pAxisX->setFormat("hh:mm:ss");
     m_pAxisX->setTickCount(2);
+    m_pAxisY->setTickCount(4);
 
     m_pChartView->chart()->addAxis(m_pAxisX, Qt::AlignBottom);
     m_pChartView->chart()->addAxis(m_pAxisY, Qt::AlignLeft);
@@ -45,6 +50,11 @@ TrendChart::TrendChart(CustomCtrl *customCtrl, QWidget *parent)
     m_pChartView->chart()->legend()->hide();
 
     connect(dialog, &SelectItemDialog::currentText, this, &TrendChart::getChangeText);
+    connect(&instance, &DataManagement::startCheck, this, [=](bool isStart){
+        if (isStart) {
+            m_pAxisX->setMin(QDateTime::currentDateTime());
+        }
+    });
 }
 
 TrendChart::~TrendChart()
@@ -60,26 +70,24 @@ void TrendChart::mouseDoubleClickEvent(QMouseEvent *event)
 
 void TrendChart::clear()
 {
-    setMinX = true;
     m_pSeries->clear();
-    m_pAxisX->setRange(QDateTime(),QDateTime());
+    m_pAxisX->setRange(QDateTime(), QDateTime());
     m_values.clear();
 }
 
 void TrendChart::addValue(double value)
 {
-    if (setMinX) {
-        m_pAxisX->setMin(QDateTime::currentDateTime());
-        setMinX = false;
-    }
     m_values.append(value);
     m_pSeries->append(QDateTime::currentMSecsSinceEpoch(),value);
     double min = *min_element(m_values.begin(),m_values.end());
     double max = *max_element(m_values.begin(),m_values.end());
-    m_pLabel->setText(QString("最大值：%1 最小值：%2 平均值：%3").arg(min).arg(max)
-                      .arg(QString::number(accumulate(m_values.begin(),m_values.end(),0)/m_values.size(),'f',digit)));
-    if (m_pAxisY->min() != min - 0.01 || m_pAxisY->max() != max + 0.01) {
-        m_pAxisY->setRange(min - 0.01, max + 0.01);
+    m_pLabel->setText(QString("MAX: %1 MIN: %2 AVG: %3")
+                      .arg(QString::number(min, 'f', digit),
+                           QString::number(max, 'f', digit),
+                           QString::number(accumulate(m_values.begin(), m_values.end(),0)/m_values.size(), 'f', digit)));
+    double offset = 10/qPow(10, digit);
+    if (m_pAxisY->min() != min - offset || m_pAxisY->max() != max + offset) {
+        m_pAxisY->setRange(min - offset, max + offset);
     }
     m_pAxisX->setMax(QDateTime::currentDateTime());
 //    m_pChartView->update();

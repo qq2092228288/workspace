@@ -39,6 +39,7 @@ DeviceInfo::DeviceInfo(const QJsonObject &object)
     place1Name = find("place1Name");
     place2Id = find("place2Id");
     place2Name = find("place2Name");
+    signSecret = find("signSecret");
 }
 
 void ConsumableUsedData::append(const QString &consumableId, const int &usedCount, const int &usedTag)
@@ -203,7 +204,12 @@ HttpPost::HttpPost(QObject *parent)
       m_urlUploadFile{"/group1/upload"},
       m_urlCreateDevice{"/qk-wcxl-business/dDevice/createDevice"}
 {
-    m_pManager = new QNetworkAccessManager(this);
+
+}
+
+HttpPost::~HttpPost()
+{
+
 }
 
 QPixmap HttpPost::jsonToPixmap(const QJsonValue &value) {
@@ -214,38 +220,44 @@ QPixmap HttpPost::jsonToPixmap(const QJsonValue &value) {
     return pixmap;
 }
 
+void HttpPost::setDeviceInfo(const DeviceInfo &dInfo)
+{
+    this->m_deviceInfo = dInfo;
+}
+
 void HttpPost::activeDevice(const QString &mac)
 {
-    m_urlQuery.clear();
+    QJsonObject target;
+    target.insert("code", mac);
 
-    m_urlQuery.addQueryItem("code", mac);
+    QScopedPointer<QNetworkAccessManager> manager_ptr(new QNetworkAccessManager);
+    auto manager = manager_ptr.data();
+    QNetworkRequest request = getRequest(target, m_urlApiRequestHeader + m_urlActiveDevice, false);
+    QNetworkReply *reply = manager->post(request, toPostData(target));
 
-    QNetworkRequest request = getRequest(m_urlApiRequestHeader + m_urlActiveDevice);
-    QNetworkReply *reply = m_pManager->post(request, urlQueryToByteArray());
-
-    auto func = [](QJsonObject object) {
-        QJsonObject data = object.find("data").value().toObject();
-        return QString(QJsonDocument(data).toJson(QJsonDocument::Compact));
-    };
-    QString retStr = returnValueProcessing(reply, func);
+    QJsonObject retValue = returnValueProcessing(manager, reply);
+    if (retValue.isEmpty())
+        return ;
+    QJsonObject data = retValue.find("data").value().toObject();
+    QString retStr = QString(QJsonDocument(data).toJson());
     if (QJsonDocument::fromJson(retStr.toUtf8()).isObject()) {
-        emit deviceInfo(DeviceInfo(QJsonDocument::fromJson(retStr.toUtf8()).object()));
+        m_deviceInfo = DeviceInfo(QJsonDocument::fromJson(retStr.toUtf8()).object());
+        emit deviceInfo(m_deviceInfo);
     }
 }
 
 bool HttpPost::deviceOnlineNotice(const QString &deviceId)
 {
-    m_urlQuery.clear();
+    QJsonObject target;
+    target.insert("deviceId", deviceId);
 
-    m_urlQuery.addQueryItem("deviceId", deviceId);
+    QScopedPointer<QNetworkAccessManager> manager_ptr(new QNetworkAccessManager);
+    auto manager = manager_ptr.data();
+    QNetworkRequest request = getRequest(target, m_urlApiRequestHeader + m_urlDeviceOnlineNotice);
+    QNetworkReply *reply = manager->post(request, toPostData(target));
 
-    QNetworkRequest request = getRequest(m_urlApiRequestHeader + m_urlDeviceOnlineNotice);
-    QNetworkReply *reply = m_pManager->post(request, urlQueryToByteArray());
-
-    auto func = [](QJsonObject object) {
-        return QString::number(object.value("code").toInt(-1));
-    };
-    if (0 == returnValueProcessing(reply, func).toInt()) {
+    QJsonObject retValue = returnValueProcessing(manager, reply);
+    if (0 == retValue.value("code").toInt(-1)) {
         return true;
     }
     return false;
@@ -253,41 +265,39 @@ bool HttpPost::deviceOnlineNotice(const QString &deviceId)
 
 void HttpPost::receiveConsumable(const DataList &dataList)
 {
-    if (dataList.totalCount == dataList.usedCount) {
+    QJsonObject target;
+    target.insert("id", dataList.id);
+    target.insert("deviceId", dataList.deviceId);
+
+    QScopedPointer<QNetworkAccessManager> manager_ptr(new QNetworkAccessManager);
+    auto manager = manager_ptr.data();
+    QNetworkRequest request = getRequest(target, m_urlApiRequestHeader + m_urlReceiveConsumable);
+    QNetworkReply *reply = manager->post(request, toPostData(target));
+
+    QJsonObject retValue = returnValueProcessing(manager, reply);
+    if (retValue.isEmpty())
         return;
-    }
-    m_urlQuery.clear();
-    m_urlQuery.addQueryItem("id", dataList.id);
-    m_urlQuery.addQueryItem("deviceId", dataList.deviceId);
-
-    QNetworkRequest request = getRequest(m_urlApiRequestHeader + m_urlReceiveConsumable);
-    QNetworkReply *reply = m_pManager->post(request, urlQueryToByteArray());
-
-    auto func = [](QJsonObject object) {
-        return QString::number(object.value("code").toInt(-1));
-    };
-    if (0 == returnValueProcessing(reply, func).toInt()) {
+    if (0 == retValue.value("code").toInt(-1)) {
         emit quantitReceived(dataList);
-        if (1 == dataList.isReceived) {
-            emit getNewBatch(dataList.totalCount);
-        }
+        emit getNewBatch(dataList.totalCount);
     }
 }
 
 void HttpPost::useConsumable(const QString &deviceId, const QString &consumableUsedData)
 {
-    m_urlQuery.clear();
+    QJsonObject target;
+    target.insert("deviceId", deviceId);
+    target.insert("consumableUsedData", consumableUsedData);
 
-    m_urlQuery.addQueryItem("deviceId", deviceId);
-    m_urlQuery.addQueryItem("consumableUsedData", consumableUsedData);
+    QScopedPointer<QNetworkAccessManager> manager_ptr(new QNetworkAccessManager);
+    auto manager = manager_ptr.data();
+    QNetworkRequest request = getRequest(target, m_urlApiRequestHeader + m_urlUseConsumable);
+    QNetworkReply *reply = manager->post(request, toPostData(target));
 
-    QNetworkRequest request = getRequest(m_urlApiRequestHeader + m_urlUseConsumable);
-    QNetworkReply *reply = m_pManager->post(request, urlQueryToByteArray());
-
-    auto func = [](QJsonObject object) {
-        return QString::number(object.value("code").toInt(-1));
-    };
-    if (0 == returnValueProcessing(reply, func).toInt()) {
+    QJsonObject retValue = returnValueProcessing(manager, reply);
+    if (retValue.isEmpty())
+        return;
+    if (0 == retValue.value("code").toInt(-1)) {
         emit used();
     }
 }
@@ -295,40 +305,42 @@ void HttpPost::useConsumable(const QString &deviceId, const QString &consumableU
 void HttpPost::getConsumableList(const QString &pageNum, const QString &pageSize, const QString &deviceId,
                                  const QString &id, const QString &consumableTypeId)
 {
-    m_urlQuery.clear();
-
-    m_urlQuery.addQueryItem("pageNum", pageNum);
-    m_urlQuery.addQueryItem("pageSize", pageSize);
-    if (!deviceId.isEmpty())
-        m_urlQuery.addQueryItem("deviceId", deviceId);
+    QJsonObject target;
+    target.insert("pageNum", pageNum);
+    target.insert("pageSize", pageSize);
+    target.insert("deviceId", deviceId);
     if (!id.isEmpty())
-        m_urlQuery.addQueryItem("id", id);
+        target.insert("id", id);
     if (!consumableTypeId.isEmpty())
-        m_urlQuery.addQueryItem("consumableTypeId", consumableTypeId);
+        target.insert("consumableTypeId", consumableTypeId);
 
-    QNetworkRequest request = getRequest(m_urlApiRequestHeader + m_urlGetConsumableList);
-    QNetworkReply *reply = m_pManager->post(request, urlQueryToByteArray());
+    QScopedPointer<QNetworkAccessManager> manager_ptr(new QNetworkAccessManager);
+    auto manager = manager_ptr.data();
+    QNetworkRequest request = getRequest(target, m_urlApiRequestHeader + m_urlGetConsumableList);
+    QNetworkReply *reply = manager->post(request, toPostData(target));
 
-    auto func = [](QJsonObject object) {
-        QJsonObject data = object.value("data").toObject();
-        QJsonArray listArray = data.value("list").toArray();
-        if (!listArray.isEmpty()) {
-            return QString(QJsonDocument(listArray).toJson(QJsonDocument::Compact));
-        }
-        return QString();
-    };
-    QString str = returnValueProcessing(reply, func);
+    QJsonObject retValue = returnValueProcessing(manager, reply);
+    if (retValue.isEmpty())
+        return;
+    QJsonObject data = retValue.value("data").toObject();
+    QJsonArray listArray = data.value("list").toArray();
+    QString str = QString(QJsonDocument(listArray).toJson());
     if (QJsonDocument::fromJson(str.toUtf8()).isArray()) {
         QJsonArray array = QJsonDocument::fromJson(str.toUtf8()).array();
         for (auto it = array.begin(); it != array.end(); ++it) {
-            receiveConsumable(DataList(it->toObject()));
+            DataList dataList(it->toObject());
+            if (dataList.isReceived == 2) {
+                emit quantitReceived(dataList);
+            }
+            else if (dataList.isReceived == 1) {
+                receiveConsumable(dataList);
+            }
         }
     }
 }
 
 void HttpPost::reportUpload(const qint64 &dtime, const QString &jsonStr)
 {
-    m_urlQuery.clear();
     QString sudokuUrl, fpDzUrl, spDzUrl;
     bool spExists = false;
     QJsonObject object = QJsonDocument::fromJson(jsonStr.toUtf8()).object();
@@ -358,9 +370,10 @@ void HttpPost::reportUpload(const qint64 &dtime, const QString &jsonStr)
         emit finished(0);
         return;
     }
+    QJsonObject target;
     for (auto it = object.begin(); it != object.end(); ++it) {
         if (it.key() == "place") {  // 场所数据
-            addJsonObject(it.value().toObject());
+            addJsonObject(target, it.value().toObject());
         }
         else if (it.key() == "patientInfo") {  // 患者信息
             QJsonObject temp = it.value().toObject();
@@ -368,52 +381,50 @@ void HttpPost::reportUpload(const qint64 &dtime, const QString &jsonStr)
             age = temp.find("age")->toString().toInt();
             height = temp.find("height")->toString().toInt();
             weight = temp.find("weight")->toString().toInt();
-            addJsonObject(temp);
+            addJsonObject(target, temp);
         }
         else if (it.key() == "position") {      // 数据
-            addJsonArray(it.value().toArray(), fpDzUrl, spDzUrl);
+            addJsonArray(target, it.value().toArray(), fpDzUrl, spDzUrl);
+
         }
         else if (it.key() == "pAnalyse") {      // 九宫格图
-            m_urlQuery.addQueryItem(it.key(), sudokuUrl);
+            target.insert(it.key(), sudokuUrl);
         }
         else if (it.key() == "reportConclusion") {      // 九宫格图
-            m_urlQuery.addQueryItem(it.key(), it.value().toString());
+            target.insert(it.key(), it.value().toString());
         }
     }
-    QNetworkRequest request = getRequest(m_urlApiRequestHeader + m_urlSendPationReport);
-    QNetworkReply *reply = m_pManager->post(request, urlQueryToByteArray());
+    QScopedPointer<QNetworkAccessManager> manager_ptr(new QNetworkAccessManager);
+    auto manager = manager_ptr.data();
+    QNetworkRequest request = getRequest(target, m_urlApiRequestHeader + m_urlSendPationReport);
+    QNetworkReply *reply = manager->post(request, toPostData(target));
 
-    auto func = [](QJsonObject object) {
-        return QString::number(object.value("code").toInt(-1));
-    };
-    if (0 == returnValueProcessing(reply, func).toInt()) {
+    QJsonObject retValue = returnValueProcessing(manager, reply);
+    if (retValue.isEmpty())
+        return;
+    int code = retValue.value("code").toInt(-1);
+    if (0 == code) {
         emit finished(dtime);
     }
 }
 
 void HttpPost::createDevice(const QString &mac, const QString &deviceName)
 {
-    m_urlQuery.clear();
+    QJsonObject target;
+    target.insert("code", mac);
+    target.insert("name", deviceName);
 
-    m_urlQuery.addQueryItem("code", mac);
-    m_urlQuery.addQueryItem("name", deviceName);
+    QScopedPointer<QNetworkAccessManager> manager_ptr(new QNetworkAccessManager);
+    auto manager = manager_ptr.data();
+    QNetworkRequest request = getRequest(target, m_urlApiRequestHeader + m_urlCreateDevice, false);
+    QNetworkReply *reply = manager->post(request, toPostData(target));
 
-    QNetworkRequest request = getRequest(m_urlApiRequestHeader + m_urlCreateDevice);
-    QNetworkReply *reply = m_pManager->post(request, urlQueryToByteArray());
-
-    auto func = [](QJsonObject object) {
-        return QString::number(object.value("code").toInt(-1));
-    };
-    int code = returnValueProcessing(reply, func).toInt();
-    if (0 == code) {
-        emit deviceCreated(tr("设备创建成功，请联系厂家进行激活！！！"));
+    QString tip = QString("failed to create device!");
+    QJsonObject retValue = returnValueProcessing(manager, reply);
+    if (!retValue.isEmpty()) {
+        tip = QString(QJsonDocument(retValue).toJson());
     }
-    else if (1 == code) {
-        emit deviceCreated(tr("设备已经创建，请勿重复创建！！！"));
-    }
-    else {
-        emit deviceCreated(QString("create error, code = %1").arg(code));
-    }
+    emit deviceCreated(tip);
 }
 
 QString HttpPost::picUpload(const QPixmap &pixmap, const QString &fileName)
@@ -425,43 +436,70 @@ QString HttpPost::picUpload(const QPixmap &pixmap, const QString &fileName)
     multiPart->appendTxt("scene", "wcReport");
     multiPart->appendTxt("output", "json2");
     // POST 请求
+    QScopedPointer<QNetworkAccessManager> manager_ptr(new QNetworkAccessManager);
+    auto manager = manager_ptr.data();
     QNetworkRequest request;
     request.setUrl(QUrl(m_urlFileServices + m_urlUploadFile));
-    QNetworkReply *reply = m_pManager->post(request, multiPart);
+    QNetworkReply *reply = manager->post(request, multiPart);
     multiPart->setParent(reply);
-    // processing function
-    auto func = [](QJsonObject object) {
-        QJsonObject data = object.value("data").toObject();
-        return data.value("path").toString();
-    };
-    return returnValueProcessing(reply, func);
+
+    QJsonObject retValue = returnValueProcessing(manager, reply);
+    if (retValue.isEmpty())
+        return nullptr;
+    return retValue.value("data").toObject().value("path").toString();
 }
 
-QNetworkRequest HttpPost::getRequest(const QString &url) const
+QNetworkRequest HttpPost::getRequest(const QJsonObject &target, const QString &url, bool authorization) const
 {
     QNetworkRequest request;
     request.setUrl(QUrl(url));
-    request.setHeader(QNetworkRequest::ContentTypeHeader, QVariant("application/x-www-form-urlencoded"));
-    request.setRawHeader("Connection", "Keep-Alive");
+    request.setRawHeader(QByteArray("Content-Type"), QByteArray("application/x-www-form-urlencoded"));
+    request.setRawHeader(QByteArray("Connection"), QByteArray("Keep-Alive"));
+    if (authorization) {    // 授权认证请求头
+        QJsonObject jsonObject = target; // signature json object
+        QString dKey = m_deviceInfo.id;
+        QString timestamp = QString::number(QDateTime::currentMSecsSinceEpoch());
+        QString noncestr = QUuid::createUuid().toString().remove("-").remove("{").remove("}");
+        jsonObject.insert("dKey", dKey);
+        jsonObject.insert("timestamp", timestamp);
+        jsonObject.insert("noncestr", noncestr);
+        QString signatureStr = QString(QJsonDocument(jsonObject).toJson(QJsonDocument::Compact)) + m_deviceInfo.signSecret;
+        QByteArray md5 = QCryptographicHash::hash(signatureStr.toUtf8(), QCryptographicHash::Md5);
+        QString signature = QString(md5.toHex());
+        request.setRawHeader(QByteArray("signature"), signature.toUtf8());
+        request.setRawHeader(QByteArray("dKey"), dKey.toUtf8());
+        request.setRawHeader(QByteArray("timestamp"), timestamp.toUtf8());
+        request.setRawHeader(QByteArray("noncestr"), noncestr.toUtf8());
+//        std::cout<<signatureStr.toLocal8Bit().data()<<std::endl;
+//        std::cout<<"signature "<<signature.toStdString()<<std::endl;
+//        std::cout<<"dKey "<<dKey.toStdString()<<std::endl;
+//        std::cout<<"timestamp "<<timestamp.toStdString()<<std::endl;
+//        std::cout<<"noncestr "<<noncestr.toStdString()<<std::endl;
+    }
+
     return request;
 }
 
-QByteArray HttpPost::urlQueryToByteArray()
+QByteArray HttpPost::toPostData(const QJsonObject &target)
 {
-    string headers = string(m_urlQuery.toString().toUtf8());
+    QUrlQuery urlQuery;
+    for (auto it = target.begin(); it < target.end(); ++it) {
+        urlQuery.addQueryItem(it.key(), it.value().toString());
+    }
+    string headers = string(urlQuery.toString().toUtf8());
     return QByteArray(headers.c_str(), int(headers.length()));
 }
 
-QString HttpPost::returnValueProcessing(QNetworkReply *reply, QString (*func)(QJsonObject object))
+QJsonObject HttpPost::returnValueProcessing(QNetworkAccessManager *manager, QNetworkReply *reply)
 {
     // 超时处理定时器
     QTimer timer;
-    timer.setInterval(1000);    // 超时时间
+    timer.setInterval(5000);    // 超时时间
     timer.setSingleShot(true);  // 单次触发
     // 开启事件循环
     QEventLoop eventLoop;
     connect(&timer, &QTimer::timeout, &eventLoop, &QEventLoop::quit);
-    connect(m_pManager, &QNetworkAccessManager::finished, &eventLoop, &QEventLoop::quit);
+    connect(manager, &QNetworkAccessManager::finished, &eventLoop, &QEventLoop::quit);
     timer.start();
     eventLoop.exec();
     // 响应处理
@@ -473,28 +511,27 @@ QString HttpPost::returnValueProcessing(QNetworkReply *reply, QString (*func)(QJ
         else {
             if (reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt() == 200) {
                 QString ret = QString(reply->readAll());
-//                qDebug()<<ret;
-                return func(QJsonDocument::fromJson(ret.toUtf8()).object());
+                std::cout<<ret.toLocal8Bit().data()<<std::endl;
+                return QJsonDocument::fromJson(ret.toUtf8()).object();
             }
         }
     }
     else {
-        disconnect(m_pManager, &QNetworkAccessManager::finished, &eventLoop, &QEventLoop::quit);
+        disconnect(manager, &QNetworkAccessManager::finished, &eventLoop, &QEventLoop::quit);
         reply->abort();
-        qDebug()<<"请求超时";
+        qDebug()<<"请求超时"<<reply->url();
     }
-    return QString::number(-1);
+    return QJsonObject();
 }
 
-QUrlQuery HttpPost::addJsonObject(const QJsonObject &jsonObject)
+void HttpPost::addJsonObject(QJsonObject &target, const QJsonObject &jsonObject)
 {
     for(auto it = jsonObject.begin(); it != jsonObject.end(); ++it) {
-        m_urlQuery.addQueryItem(it.key(), it.value().toString());
+        target.insert(it.key(), it.value());
     }
-    return m_urlQuery;
 }
 
-QUrlQuery HttpPost::addJsonArray(const QJsonArray &jsonArray, const QString &fpDzUrl, const QString &spDzUrl)
+void HttpPost::addJsonArray(QJsonObject &target, const QJsonArray &jsonArray, const QString &fpDzUrl, const QString &spDzUrl)
 {
     QString reportTime;
     QJsonObject fPos, sPos;
@@ -517,22 +554,21 @@ QUrlQuery HttpPost::addJsonArray(const QJsonArray &jsonArray, const QString &fpD
     fCvp = sPos.find(QString::number(Type::CVP))->toInt(4);
     sLap = sPos.find(QString::number(Type::LAP))->toInt(9);
 
-    m_urlQuery.addQueryItem("bodySurfaceArea", QString::number(DatCa::cBsa(height, weight), 'f', 2));
-    m_urlQuery.addQueryItem("reportTime", reportTime);
-    addDeviceString(Type::Dz, fpDzUrl, spDzUrl);
-    addBpDeviceString(Type::SBP, getData(fPos, Type::SBP), getData(sPos, Type::SBP), 0);
-    addBpDeviceString(Type::DBP, getData(fPos, Type::DBP), getData(sPos, Type::DBP), 0);
-    addBpDeviceString(Type::MAP,
+    target.insert("bodySurfaceArea", QString::number(DatCa::cBsa(height, weight), 'f', 2));
+    target.insert("reportTime", reportTime);
+
+    addDeviceString(target, Type::Dz, fpDzUrl, spDzUrl);
+    addBpDeviceString(target, Type::SBP, getData(fPos, Type::SBP), getData(sPos, Type::SBP), 0);
+    addBpDeviceString(target, Type::DBP, getData(fPos, Type::DBP), getData(sPos, Type::DBP), 0);
+    addBpDeviceString(target, Type::MAP,
                     DatCa::cMap(getData(fPos, Type::SBP), getData(fPos, Type::DBP)),
                     DatCa::cMap(getData(sPos, Type::SBP), getData(sPos, Type::DBP)), 0);
     for (char index = 0; index < 10; ++index) {
-        addDeviceString(index, fPos, sPos);
+        addDeviceString(target, index, fPos, sPos);
     }
-
-    return m_urlQuery;
 }
 
-QUrlQuery HttpPost::addDeviceString(const Type &type, QString fValue, QString sValue)
+void HttpPost::addDeviceString(QJsonObject &target, const Type &type, QString fValue, QString sValue)
 {
     Argument argument = Args().findArgument(typeName(type));
     QString name = QString("%1/%2").arg(argument.cn, argument.en);
@@ -560,17 +596,16 @@ QUrlQuery HttpPost::addDeviceString(const Type &type, QString fValue, QString sV
     jsonArray.append(fObject);
     jsonArray.append(sObject);
 
-    m_urlQuery.addQueryItem(ArgsNameToHttp(typeName(type)), QJsonDocument(jsonArray).toJson(QJsonDocument::Compact));
-    return m_urlQuery;
+    target.insert(ArgsNameToHttp(typeName(type)), QString(QJsonDocument(jsonArray).toJson(QJsonDocument::Compact)));
 }
 
-QUrlQuery HttpPost::addDeviceString(const Type &type, qreal fValue, qreal sValue, int digit)
+void HttpPost::addDeviceString(QJsonObject &target, const Type &type, qreal fValue, qreal sValue, int digit)
 {
-    return addDeviceString(type, DatCa::invalid() != fValue ? QString::number(fValue, 'f', digit) : "-",
+    return addDeviceString(target, type, DatCa::invalid() != fValue ? QString::number(fValue, 'f', digit) : "-",
                            DatCa::invalid() != sValue ? QString::number(sValue, 'f', digit) : "-");
 }
 
-QUrlQuery HttpPost::addDeviceString(const char &index, const QJsonObject &fObject, const QJsonObject &sObject)
+void HttpPost::addDeviceString(QJsonObject &target, const char &index, const QJsonObject &fObject, const QJsonObject &sObject)
 {
     qreal bsa = DatCa::cBsa(height, weight);
     qreal vept = DatCa::cVept(height, weight, sex);
@@ -578,32 +613,32 @@ QUrlQuery HttpPost::addDeviceString(const char &index, const QJsonObject &fObjec
     qreal sMap = DatCa::cMap(getData(sObject, Type::SBP), getData(sObject, Type::DBP));
     switch (index) {
     case Type::HR:
-        addDeviceString(Type::HR, DatCa::cHr(getData(fObject, Type::HR)), DatCa::cHr(getData(sObject, Type::HR)), 0);
+        addDeviceString(target, Type::HR, DatCa::cHr(getData(fObject, Type::HR)), DatCa::cHr(getData(sObject, Type::HR)), 0);
         break;
     case Type::VET:
-        addDeviceString(Type::LVET, DatCa::cVet(getData(fObject, Type::VET)), DatCa::cVet(getData(sObject, Type::VET)), 0);
+        addDeviceString(target, Type::LVET, DatCa::cVet(getData(fObject, Type::VET)), DatCa::cVet(getData(sObject, Type::VET)), 0);
         break;
     case Type::PEP:
     {
         qreal fPep = DatCa::cPep(getData(fObject, Type::PEP));
         qreal sPep = DatCa::cPep(getData(sObject, Type::PEP));
-        addDeviceString(Type::PEP, fPep, sPep, 0);
-        addDeviceString(Type::STR, DatCa::cStr(fPep, DatCa::cVet(getData(fObject, Type::VET))),
+        addDeviceString(target, Type::PEP, fPep, sPep, 0);
+        addDeviceString(target, Type::STR, DatCa::cStr(fPep, DatCa::cVet(getData(fObject, Type::VET))),
                         DatCa::cStr(sPep, DatCa::cVet(getData(sObject, Type::VET))), 1);
     }
         break;
     case Type::TFC:
-        addDeviceString(Type::TFC, DatCa::cTfc(getData(fObject, Type::TFC)), DatCa::cTfc(getData(sObject, Type::TFC)), 3);
+        addDeviceString(target, Type::TFC, DatCa::cTfc(getData(fObject, Type::TFC)), DatCa::cTfc(getData(sObject, Type::TFC)), 3);
         break;
     case Type::EPCI:
-        addDeviceString(Type::EPCI, DatCa::cEpci(getData(fObject, Type::EPCI)), DatCa::cEpci(getData(sObject, Type::EPCI)), 3);
+        addDeviceString(target, Type::EPCI, DatCa::cEpci(getData(fObject, Type::EPCI)), DatCa::cEpci(getData(sObject, Type::EPCI)), 3);
         break;
     case Type::ISI:
     {
         qreal fIsi = DatCa::cIsi(getData(fObject, Type::ISI));
         qreal sIsi = DatCa::cIsi(getData(sObject, Type::ISI));
-        addDeviceString(Type::ISI, fIsi, sIsi, 2);
-        addDeviceString(Type::Ino, DatCa::cIno(fIsi, sex, age), DatCa::cIno(sIsi, sex, age), 0);
+        addDeviceString(target, Type::ISI, fIsi, sIsi, 2);
+        addDeviceString(target, Type::Ino, DatCa::cIno(fIsi, sex, age), DatCa::cIno(sIsi, sex, age), 0);
     }
         break;
 //    case Type::EF:
@@ -618,17 +653,17 @@ QUrlQuery HttpPost::addDeviceString(const char &index, const QJsonObject &fObjec
         qreal sLswi = DatCa::cLswi(sSi, sMap, sLap);
         qreal fSsvri = DatCa::cSsvri(fSi, fMap, fCvp);
         qreal sSsvri = DatCa::cSsvri(sSi, sMap, sCvp);
-        addDeviceString(Type::SI, fSi, sSi, 0);
-        addDeviceString(Type::SV, fSv, sSv, 1);
-        addDeviceString(Type::EDI, DatCa::cEdi(fSi, DatCa::cEf(getData(fObject, Type::EF))),
+        addDeviceString(target, Type::SI, fSi, sSi, 0);
+        addDeviceString(target, Type::SV, fSv, sSv, 1);
+        addDeviceString(target, Type::EDI, DatCa::cEdi(fSi, DatCa::cEf(getData(fObject, Type::EF))),
                         DatCa::cEdi(sSi, DatCa::cEf(getData(sObject, Type::EF))), 0);
-        addDeviceString(Type::LSW, DatCa::cLsw(fSv, fMap, fLap), DatCa::cLsw(sSv, sMap, sLap), 0);
-        addDeviceString(Type::LSWI, fLswi, sLswi, 1);
-        addDeviceString(Type::Vol, DatCa::cVol(fLswi, DatCa::cIno(DatCa::cIsi(getData(fObject, Type::ISI)), sex, age)),
+        addDeviceString(target, Type::LSW, DatCa::cLsw(fSv, fMap, fLap), DatCa::cLsw(sSv, sMap, sLap), 0);
+        addDeviceString(target, Type::LSWI, fLswi, sLswi, 1);
+        addDeviceString(target, Type::Vol, DatCa::cVol(fLswi, DatCa::cIno(DatCa::cIsi(getData(fObject, Type::ISI)), sex, age)),
                         DatCa::cVol(sLswi, DatCa::cIno(DatCa::cIsi(getData(sObject, Type::ISI)), sex, age)), 0);
-        addDeviceString(Type::SSVR, DatCa::cSsvr(fSv, fMap, fCvp), DatCa::cSsvr(sSv, sMap, sCvp), 1);
-        addDeviceString(Type::SSVRI, fSsvri, sSsvri, 1);
-        addDeviceString(Type::Vas, DatCa::cVas(fSsvri), DatCa::cVas(sSsvri), 0);
+        addDeviceString(target, Type::SSVR, DatCa::cSsvr(fSv, fMap, fCvp), DatCa::cSsvr(sSv, sMap, sCvp), 1);
+        addDeviceString(target, Type::SSVRI, fSsvri, sSsvri, 1);
+        addDeviceString(target, Type::Vas, DatCa::cVas(fSsvri), DatCa::cVas(sSsvri), 0);
     }
         break;
     case Type::CI:
@@ -637,13 +672,13 @@ QUrlQuery HttpPost::addDeviceString(const char &index, const QJsonObject &fObjec
         qreal sCi = DatCa::cCi(getData(sObject, Type::CI), bsa, vept);
         qreal fCo = DatCa::cCo(fCi, bsa);
         qreal sCo = DatCa::cCo(sCi, bsa);
-        addDeviceString(Type::CI, fCi, sCi, 1);
-        addDeviceString(Type::CO, fCo, sCo, 1);
-        addDeviceString(Type::HRV, DatCa::cHrv(fCi), DatCa::cHrv(sCi), 0);
-        addDeviceString(Type::SVR, DatCa::cSvr(fCo, fMap, fCvp), DatCa::cSvr(sCo, sMap, sCvp), 0);
-        addDeviceString(Type::SVRI, DatCa::cSvri(fCi, fMap, fCvp), DatCa::cSvri(sCi, sMap, sCvp), 0);
-        addDeviceString(Type::LCW, DatCa::cLcw(fCo, fMap, fLap), DatCa::cLcw(sCo, sMap, sLap), 1);
-        addDeviceString(Type::LCWI, DatCa::cLcwi(fCi, fMap, fLap), DatCa::cLcwi(sCi, sMap, sLap), 2);
+        addDeviceString(target, Type::CI, fCi, sCi, 1);
+        addDeviceString(target, Type::CO, fCo, sCo, 1);
+        addDeviceString(target, Type::HRV, DatCa::cHrv(fCi), DatCa::cHrv(sCi), 0);
+        addDeviceString(target, Type::SVR, DatCa::cSvr(fCo, fMap, fCvp), DatCa::cSvr(sCo, sMap, sCvp), 0);
+        addDeviceString(target, Type::SVRI, DatCa::cSvri(fCi, fMap, fCvp), DatCa::cSvri(sCi, sMap, sCvp), 0);
+        addDeviceString(target, Type::LCW, DatCa::cLcw(fCo, fMap, fLap), DatCa::cLcw(sCo, sMap, sLap), 1);
+        addDeviceString(target, Type::LCWI, DatCa::cLcwi(fCi, fMap, fLap), DatCa::cLcwi(sCi, sMap, sLap), 2);
     }
         break;
 //    case Type::RR:
@@ -651,12 +686,11 @@ QUrlQuery HttpPost::addDeviceString(const char &index, const QJsonObject &fObjec
     default:
         break;
     }
-    return m_urlQuery;
 }
 
-QUrlQuery HttpPost::addBpDeviceString(const Type &type, qreal fValue, qreal sValue, int digit)
+void HttpPost::addBpDeviceString(QJsonObject &target, const Type &type, qreal fValue, qreal sValue, int digit)
 {
-    return addDeviceString(type, 0 != fValue ? fValue : DatCa::invalid(), 0 != sValue ? sValue : DatCa::invalid(), digit);
+    return addDeviceString(target, type, 0 != fValue ? fValue : DatCa::invalid(), 0 != sValue ? sValue : DatCa::invalid(), digit);
 }
 
 int HttpPost::getData(const QJsonObject &data, const Type &type)

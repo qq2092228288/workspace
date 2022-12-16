@@ -370,10 +370,10 @@ void CustomCtrlRegulator::addCustomCtrl(QList<CustomCtrl *> ctrls)
     allCustomCtrls.append(ctrls);
 }
 
-CustomCtrl *CustomCtrlRegulator::getCustomCtrl(const QString &name)
+CustomCtrl *CustomCtrlRegulator::getCustomCtrl(const QString &cname)
 {
     foreach (auto customCtrl, allCustomCtrls) {
-        if(customCtrl->getName() == name) {
+        if(customCtrl->getName() == cname) {
             return customCtrl;
         }
     }
@@ -524,7 +524,8 @@ void CustomCtrlRegulator::connectTrendChart(bool con)
 {
     foreach (auto customCtrl, allCustomCtrls) {
         if (con) {
-            connect(customCtrl, &CustomCtrl::currentValue, customCtrl->getTrendChart(), &TrendChart::addValue);
+            connect(customCtrl, &CustomCtrl::currentValue, customCtrl->getTrendChart(), &TrendChart::addValue,
+                    Qt::ConnectionType(Qt::AutoConnection|Qt::UniqueConnection));
         }
         else {
             disconnect(customCtrl, &CustomCtrl::currentValue, customCtrl->getTrendChart(), &TrendChart::addValue);

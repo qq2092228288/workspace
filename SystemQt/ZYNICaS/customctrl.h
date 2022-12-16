@@ -41,7 +41,6 @@ typedef struct ArgItems
 }AItems;
 
 struct Argument;
-class CustomCtrlRegulator;
 
 class CustomCtrl : public QWidget
 {
@@ -75,7 +74,6 @@ protected slots:
     void getChangeText(const QString &text);
     void timeoutSlot();
 signals:
-//    void recordValue(qreal);
     void currentValue(qreal);
     // 当前名字，交换显示的名字
     void changeName(const QString &, const QString &);
@@ -106,7 +104,7 @@ public:
 public:
     void addCustomCtrl(CustomCtrl *ctrl);
     void addCustomCtrl(QList<CustomCtrl *> ctrls);
-    CustomCtrl *getCustomCtrl(const QString &name);
+    CustomCtrl *getCustomCtrl(const QString &cname);
     QList<CustomCtrl *> getAllCustomCtrls();
     QStringList getSaveNames(bool trendChart);
     QStringList getAllNames();

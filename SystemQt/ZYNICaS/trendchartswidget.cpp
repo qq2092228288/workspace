@@ -1,16 +1,16 @@
-#include "trendchartsdialog.h"
+#include "trendchartswidget.h"
 #include "datamanagement.h"
 
-TrendChartsDialog::TrendChartsDialog(QWidget *parent)
-    : QDialog{parent}
+TrendChartsWidget::TrendChartsWidget(QWidget *parent)
+    : QWidget{parent}
 {
     setWindowTitle(tr("趋势图"));
     auto &instance = DataManagement::getInstance();
     setMinimumSize(1600*instance.wZoom(),900*instance.hZoom());
-    this->setStyleSheet("QDialog{background-color:#ffffff;}");
+    this->setStyleSheet("QWidget{background-color:#ffffff;}");
     CustomCtrlRegulator *regulator = instance.getRegulator();
     foreach (auto customCtrl, regulator->getAllCustomCtrls()) {
-        connect(customCtrl->getTrendChart(), &TrendChart::changeName, this, &TrendChartsDialog::changeShow);
+        connect(customCtrl->getTrendChart(), &TrendChart::changeName, this, &TrendChartsWidget::changeShow);
     }
     dataGLayout = new QGridLayout(this);
     QList<CustomCtrl *> customCtrls = regulator->getSaveCustomCtrls(true);
@@ -23,7 +23,7 @@ TrendChartsDialog::TrendChartsDialog(QWidget *parent)
     }
 }
 
-void TrendChartsDialog::changeShow(const QString &current, const QString &change)
+void TrendChartsWidget::changeShow(const QString &current, const QString &change)
 {
     auto regulator = DataManagement::getInstance().getRegulator();
     TrendChart *cuTc = regulator->getCustomCtrl(current)->getTrendChart();
@@ -37,5 +37,17 @@ void TrendChartsDialog::changeShow(const QString &current, const QString &change
             regulator->changeCurrentNames(current,change,true);
             break;
         }
+    }
+}
+
+void TrendChartsWidget::widgetShow()
+{
+    if (this->isHidden()) {
+        this->show();
+    }
+    else {
+        this->raise();
+        this->activateWindow();
+        this->setWindowState((this->windowState() & ~Qt::WindowMinimized) | Qt::WindowActive);
     }
 }

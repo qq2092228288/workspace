@@ -33,7 +33,6 @@ private:
     QDateTimeAxis *m_pAxisX;
     QValueAxis *m_pAxisY;
     QLineSeries *m_pSeries;
-    bool setMinX = true;
     SelectItemDialog *dialog;
     int digit;
 private:

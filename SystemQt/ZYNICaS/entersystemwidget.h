@@ -32,7 +32,7 @@
 #include "drawwaveforms.h"
 #include "drawsudoku.h"
 #include "customctrl.h"
-#include "trendchartsdialog.h"
+#include "trendchartswidget.h"
 #include "MyStruct.h"
 
 
@@ -111,9 +111,6 @@ private:
     QString rPos;
 
     //图形模块
-    QThread *ecgThread;
-    QThread *diffThread;
-    QThread *admitThread;
     QGroupBox *ecgGroupBox;
     QGroupBox *diffGroupBox;
     QGroupBox *admitGroupBox;
@@ -122,7 +119,6 @@ private:
     DrawWaveforms *admitDraw;
 
     //数据模块
-    QThread *dataThread;
     QGroupBox *dataGroupBox;
     QGridLayout *dataGLayout;
     CustomCtrlRegulator *regulator;
@@ -137,7 +133,7 @@ private:
     QPushButton *trendChartBtn;
     QPushButton *sudokuBtn;
     QPushButton *auxArgBtn;
-    TrendChartsDialog *trendChartsDialog;
+    TrendChartsWidget *trendChartsWidget;
     AuxArgDialog *auxArgDialog;
     DrawSudoku *sudokuDraw;
 

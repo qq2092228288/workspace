@@ -113,6 +113,7 @@ private:
     QPushButton *searchBtn;
     QPushButton *printBtn;
     MyListView *listView;
+    QLabel *countLabel;
     MyModel *model;
     QStringList fileNames;
 };
