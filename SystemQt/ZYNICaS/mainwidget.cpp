@@ -149,7 +149,12 @@ void MainWidget::createdReportSlot(const QString &baseDataString)
     instance.reportDataBase()->dataUpload();
     instance.deviceDatabase()->offlineUsed();
     int surplus = instance.deviceDatabase()->getConsumableSurplus();
-    if (surplus <= 20) {
+    if (surplus <= 0) {
+        QMessageBox::warning(this,tr("警告！"),tr("有效验证码已使用完，请联系厂家！"));
+        enterSystemWidget->hide();
+        this->show();
+    }
+    else if (surplus <= 20) {
         QMessageBox::warning(this,tr("警告！"),tr("有效验证码剩余 %1 ，请注意！").arg(surplus));
     }
 }

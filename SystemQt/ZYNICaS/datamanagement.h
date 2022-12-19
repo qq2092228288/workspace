@@ -131,7 +131,7 @@ public:
     void setDeviceDatabase(DeviceDatabase *deviceDatabase);
 public slots:
     void recordPosition(QString position);
-    QString saveReport(QString position, bool record);
+    QString saveReport(QDateTime curTime, QString position, bool record);
     void clearSlot();
     void reportPreview(const QString &path);
     void reportPrintOut(const QString &path);

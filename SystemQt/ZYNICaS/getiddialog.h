@@ -11,17 +11,19 @@
 #include <QMessageBox>
 
 
-class HttpPost;
-class DeviceInfo;
 class GetIdDialog : public QDialog
 {
     Q_OBJECT
 public:
     explicit GetIdDialog(QWidget *parent = nullptr);
     void showEvent(QShowEvent *event);
+public slots:
+    void hideCreateDevice(bool isHide);
 signals:
+    void requestDeviceOnlineNotice(const QString &deviceId);
 private slots:
     void setConsumables(const int &count);
+
     void copySlot();
 //    void usedSlot();
     // 创建设备

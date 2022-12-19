@@ -6,7 +6,7 @@ GetIdDialog::GetIdDialog(QWidget *parent)
     : QDialog{parent}
 {
     auto &instance = DataManagement::getInstance();
-    setFixedSize(500*instance.wZoom(),300*instance.hZoom());
+    setFixedSize(500*instance.wZoom(), 300*instance.hZoom());
     this->setWindowTitle(tr("有效验证码"));
     QGridLayout *mainLayout = new QGridLayout(this);
     consumablesLabel = new QLabel(tr("剩余有效验证码:"), this);
@@ -61,8 +61,16 @@ GetIdDialog::GetIdDialog(QWidget *parent)
     connect(instance.httpPost(), &HttpPost::getNewBatch, this, [=](const int &increase){
         int surplus = DataManagement::getInstance().deviceDatabase()->getConsumableSurplus();
         consumablesEdit->setText(QString::number(surplus));
-        QMessageBox::information(this, tr("有效验证码"), tr("获取 %1，剩余 %2。")
-                                 .arg(increase).arg(surplus));
+        QMessageBox::information(this, tr("有效验证码"), tr("获取 %1，剩余 %2。").arg(increase).arg(surplus));
+    });
+    connect(this, &GetIdDialog::requestDeviceOnlineNotice, instance.httpPost(), &HttpPost::deviceOnlineNotice);
+    connect(instance.httpPost(), &HttpPost::deviceOnline, this, [=](const bool &isOnline){
+        if (isOnline) {
+            QMessageBox::information(this, tr("提示！"), tr("已获取最新数据。"));
+        }
+        else {
+            QMessageBox::warning(this, tr("提示！"), tr("获取失败！"));
+        }
     });
     if (!instance.deviceDatabase()->databaseIntegralityCheck()) {
         QMessageBox::warning(this, tr("错误！"), tr("关键文件被非法修改，程序启动失败！"));
@@ -74,6 +82,13 @@ void GetIdDialog::showEvent(QShowEvent *event)
 {
     consumablesEdit->setText(QString::number(DataManagement::getInstance().deviceDatabase()->getConsumableSurplus()));
     event->accept();
+}
+
+void GetIdDialog::hideCreateDevice(bool isHide)
+{
+    deviceNameLabel->setHidden(isHide);
+    deviceNameLineEdit->setHidden(isHide);
+    createDeviceBtn->setHidden(isHide);
 }
 
 void GetIdDialog::setConsumables(const int &count)
@@ -133,10 +148,5 @@ void GetIdDialog::onlineGetSlot()
 {
     auto &instance = DataManagement::getInstance();
     instance.requestConsumableList();
-    if (instance.httpPost()->deviceOnlineNotice(instance.deviceDatabase()->getDeviceInfo("deviceId"))) {
-        QMessageBox::information(this, tr("提示！"), tr("已获取最新数据。"));
-    }
-    else {
-        QMessageBox::warning(this, tr("提示！"), tr("获取失败！"));
-    }
+    emit requestDeviceOnlineNotice(instance.deviceDatabase()->getDeviceInfo("deviceId"));
 }

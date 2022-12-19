@@ -383,7 +383,7 @@ void DataManagement::recordPosition(QString position)
     isRecord = true;
 }
 
-QString DataManagement::saveReport(QString position, bool record)
+QString DataManagement::saveReport(QDateTime curTime, QString position, bool record)
 {
     emit startCheck(false);
     m_newReportName.clear();
@@ -394,8 +394,6 @@ QString DataManagement::saveReport(QString position, bool record)
 
     reportThread->init();
     connect(reportThread,&CreateReportThread::finished,this,&DataManagement::clear);
-    //当前时间
-    QDateTime curTime = QDateTime::currentDateTime();
     // 打开模板
     QString result = tr("无创血流动力学检测系统评价，心脏动力，血管阻力，血液容量，血压等循环系统情况结论如下：\n");
     if (record) {       // 多体位

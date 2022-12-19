@@ -513,19 +513,17 @@ void EnterSystemWidget::createReport()
 {
     if (isStartCheck()) {
         auto &instance = DataManagement::getInstance();
-        if (instance.deviceDatabase()->getConsumableSurplus() <= 0) {
-            QMessageBox::warning(this,tr("警告！"),tr("有效验证码已使用完，请联系厂家！"));
-            return;
-        }
         if (patternGroup.checkedId() == 0 && !instance.isRecordPos()) {
-            QMessageBox::information(this,tr("提示"),tr("多体位模式需要记录体位！"));
+            QMessageBox::information(this, tr("提示"), tr("多体位模式需要记录体位！"));
             return;
         }
         WaitingDialog waiting = WaitingDialog(tr("报告生成中···"), this);
         connect(&instance, &DataManagement::clear, &waiting, &WaitingDialog::close);
         setBaseData();
         BaseData temp = baseData;
-        temp.reportConclusion = instance.saveReport(posGroup.checkedButton()->text(),!rPos.isEmpty());
+        // when second position time is valid, report time is equal to the second position time
+        QDateTime curTime = temp.secondPosture.cTime.isValid() ? temp.secondPosture.cTime : temp.firstPosture.cTime;
+        temp.reportConclusion = instance.saveReport(curTime, posGroup.checkedButton()->text(), !rPos.isEmpty());
         waiting.exec();
         emit createdReport(temp.structToJsonString());
         instance.reportPreview(instance.getNewReportName());

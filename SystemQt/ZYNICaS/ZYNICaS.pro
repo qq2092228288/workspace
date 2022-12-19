@@ -61,6 +61,7 @@ HEADERS += \
     personalinfodialog.h \
     reportdatabase.h \
     reportword.h \
+    resource.rc \
     selectitemdialog.h \
     showreportdialog.h \
     singleapplication.h \
@@ -69,8 +70,6 @@ HEADERS += \
     trendchart.h \
     trendchartswidget.h \
     waitingdialog.h
-
-
 
 
 include(../../commonFiles/base.pri)
@@ -91,4 +90,5 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 DISTFILES +=
 
 RESOURCES += \
-    images.qrc
+    images.qrc \
+    version.qrc

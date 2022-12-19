@@ -246,7 +246,7 @@ void HttpPost::activeDevice(const QString &mac)
     }
 }
 
-bool HttpPost::deviceOnlineNotice(const QString &deviceId)
+void HttpPost::deviceOnlineNotice(const QString &deviceId)
 {
     QJsonObject target;
     target.insert("deviceId", deviceId);
@@ -257,10 +257,11 @@ bool HttpPost::deviceOnlineNotice(const QString &deviceId)
     QNetworkReply *reply = manager->post(request, toPostData(target));
 
     QJsonObject retValue = returnValueProcessing(manager, reply);
+    bool isOnline = false;
     if (0 == retValue.value("code").toInt(-1)) {
-        return true;
+        isOnline = true;
     }
-    return false;
+    emit deviceOnline(isOnline);
 }
 
 void HttpPost::receiveConsumable(const DataList &dataList)

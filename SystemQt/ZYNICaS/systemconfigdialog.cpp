@@ -33,6 +33,8 @@ SystemConfigDialog::SystemConfigDialog(QWidget *parent)
     getIDBtn = new QPushButton(tr("有效验证码"), this);
     confirmBtn = new QPushButton(tr("确定"), this);
     getIdDialog = new GetIdDialog(this);
+    appMsgGroupBox = new QGroupBox(this);
+    aboutAppBtn = new QPushButton(tr("关于"), this);
 
     hospitalNameLineEdit->setReadOnly(true);
     roomNameLineEdit->setReadOnly(true);
@@ -47,16 +49,19 @@ SystemConfigDialog::SystemConfigDialog(QWidget *parent)
     QHBoxLayout *hLayout = new QHBoxLayout(systemInfoGroupBox);
     QHBoxLayout *pLayout = new QHBoxLayout;
     QHBoxLayout *btnLayout = new QHBoxLayout;
+    QHBoxLayout *appMsgLayout = new QHBoxLayout;
 
     hospitalInfoGroupBox->setFixedHeight(250*instance.hZoom());
     mainLayout->addWidget(hospitalInfoGroupBox);
     mainLayout->addWidget(reportGroupBox);
     mainLayout->addWidget(checkModeGroupBox);
     mainLayout->addWidget(systemInfoGroupBox);
+    mainLayout->addWidget(appMsgGroupBox);
     mainLayout->addLayout(btnLayout);
     hospitalInfoGroupBox->setLayout(gLayout);
     reportGroupBox->setLayout(rLayout);
     systemInfoGroupBox->setLayout(hLayout);
+    appMsgGroupBox->setLayout(appMsgLayout);
     gLayout->addWidget(hospitalNameLabel, 0, 0);
     gLayout->addWidget(hospitalNameLineEdit, 0, 1);
     gLayout->addWidget(roomNameLabel, 1, 0);
@@ -73,7 +78,9 @@ SystemConfigDialog::SystemConfigDialog(QWidget *parent)
     hLayout->addWidget(serialPortComboBox);
     hLayout->addStretch();
     hLayout->addWidget(getIDBtn);
+    appMsgLayout->addWidget(aboutAppBtn, 0, Qt::AlignRight);
     btnLayout->addWidget(confirmBtn);
+
 
     QStringList portNames;
     for (int var = 1; var <= 20; ++var) {
@@ -81,8 +88,9 @@ SystemConfigDialog::SystemConfigDialog(QWidget *parent)
     }
     serialPortComboBox->addItems(portNames);
 
-    connect(getIDBtn,&QPushButton::clicked,getIdDialog,&GetIdDialog::exec);
-    connect(confirmBtn,&QPushButton::clicked,this,&SystemConfigDialog::confirmSlot);
+    connect(getIDBtn, &QPushButton::clicked, getIdDialog, &GetIdDialog::exec);
+    connect(aboutAppBtn, &QPushButton::clicked, this, &SystemConfigDialog::aboutAppSlot);
+    connect(confirmBtn, &QPushButton::clicked, this, &SystemConfigDialog::confirmSlot);
 
     //读取配置
     QFile file(infoFileName);
@@ -180,6 +188,46 @@ void SystemConfigDialog::confirmSlot()
         file.close();
     }
     updateHospitalInfo();
+}
+
+void SystemConfigDialog::aboutAppSlot()
+{
+    QDialog dialog;
+    QVBoxLayout *vLayout = new QVBoxLayout(&dialog);
+    QTextBrowser *textBrowser = new QTextBrowser(&dialog);
+    textBrowser->setStyleSheet("background:transparent;border-width:0;border-style:outset");
+    vLayout->addWidget(textBrowser);
+    // get app version info
+    QFile file(":/resource.rc");
+    if (file.open(QIODevice::ReadOnly)) {
+        QTextStream out(&file);
+        out.setCodec("GB2312");
+        QRegExp regExp("(?:VALUE\")(.+)(?:\",\")(.+)(?:\")");
+        while (!out.atEnd()) {
+            QString strLine = out.readLine().remove(" ").remove("\t").remove("\\0");
+            if (strLine.indexOf(regExp) >= 0) {
+                if ("CompanyName" == regExp.cap(1)) {
+                    textBrowser->append(tr("公司名称: %1\n").arg(regExp.cap(2)));
+                }
+                else if ("ProductName" == regExp.cap(1)) {
+                    textBrowser->append(tr("软件名称: %1\n").arg(regExp.cap(2)));
+                }
+                else if ("ProductVersion" == regExp.cap(1)) {
+                    textBrowser->append(tr("软件版本: %1\n").arg(regExp.cap(2)));
+                }
+                else if ("OrganizationDomain" == regExp.cap(1)) {
+                    textBrowser->append(tr("公司网站: %1\n").arg(regExp.cap(2)));
+                }
+            }
+        }
+    }
+    dialog.exec();
+}
+
+void SystemConfigDialog::showEvent(QShowEvent *event)
+{
+    event->accept();
+    getIdDialog->hideCreateDevice(!hospitalNameLineEdit->text().isEmpty());
 }
 
 void SystemConfigDialog::updateHospitalInfo()

@@ -1,6 +1,10 @@
 #ifndef SYSTEMCONFIGDIALOG_H
 #define SYSTEMCONFIGDIALOG_H
 
+#pragma comment(lib, "version.lib")
+#include <windows.h>
+#include <tchar.h>
+
 #include <QDialog>
 #include <QPushButton>
 #include <QLineEdit>
@@ -40,9 +44,11 @@ class SystemConfigDialog : public QDialog
 public:
     explicit SystemConfigDialog(QWidget *parent = nullptr);
     QString getPortName() const;
-public slots:
+protected slots:
     void confirmSlot();
+    void aboutAppSlot();
 protected:
+    void showEvent(QShowEvent *event);
     void updateHospitalInfo();
 private:
     HospitalInfo hospitalInfo;
@@ -67,6 +73,8 @@ private:
     QPushButton *confirmBtn;
     QString infoFileName;
     GetIdDialog *getIdDialog;
+    QGroupBox *appMsgGroupBox;
+    QPushButton *aboutAppBtn;
 };
 
 #endif // SYSTEMCONFIGDIALOG_H

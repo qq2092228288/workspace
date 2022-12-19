@@ -107,12 +107,12 @@ ShowReportDialog::ShowReportDialog(QWidget *parent)
     this->setStyleSheet(instance.dialogQss());
 
     funcGroupBox = new QGroupBox(this);
-    searchLabel = new QLabel(tr("查找条件:"),this);
+    searchLabel = new QLabel(tr("查找条件:"), this);
     comboBox = new QComboBox(this);
     lineEdit = new MyLineEdit(this);
     calendarDialog = new CalendarDialog;
-    searchBtn = new QPushButton(tr("搜索"),this);
-    printBtn = new QPushButton(tr("打印"),this);
+    searchBtn = new QPushButton(tr("搜索"), this);
+    printBtn = new QPushButton(tr("打印"), this);
     listView = new MyListView(this);
     countLabel = new QLabel(this);
     model = new MyModel(fileNames,this);
@@ -140,16 +140,16 @@ ShowReportDialog::ShowReportDialog(QWidget *parent)
 
     comboBox->addItems(QStringList()<<tr("关键字")<<tr("时间"));
 
-    connect(lineEdit,&MyLineEdit::mousePress,this,&ShowReportDialog::showCalendarWidget);
-    connect(calendarDialog,&CalendarDialog::currentDate,this,[=](const QDate &date){
+    connect(lineEdit, &MyLineEdit::mousePress, this, &ShowReportDialog::showCalendarWidget);
+    connect(calendarDialog, &CalendarDialog::currentDate, this, [=](const QDate &date){
         lineEdit->setText(date.toString("yyyyMMdd"));
     });
-    connect(searchBtn,&QPushButton::clicked,this,&ShowReportDialog::filter);
-    connect(printBtn,&QPushButton::clicked,this,&ShowReportDialog::printer);
+    connect(searchBtn, &QPushButton::clicked, this, &ShowReportDialog::filter);
+    connect(printBtn, &QPushButton::clicked, this, &ShowReportDialog::printer);
     // 双击打开
-    connect(listView,&MyListView::doubleClick,this,[=](QString path){
+    connect(listView, &MyListView::doubleClick, this, [=](QString path){
         if (!QDesktopServices::openUrl(QUrl::fromLocalFile(path))) {
-            QMessageBox::warning(this,tr("错误！"),tr("文件不存在！"));
+            QMessageBox::warning(this, tr("错误！"), tr("文件不存在！"));
         }
     });
 }

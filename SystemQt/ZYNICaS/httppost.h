@@ -108,7 +108,7 @@ public slots:
     // 激活设备
     void activeDevice(const QString &mac);
     // 设备在线通知
-    bool deviceOnlineNotice(const QString &deviceId);
+    void deviceOnlineNotice(const QString &deviceId);
     // 接收耗材
     void receiveConsumable(const DataList &dataList);
     // 使用耗材
@@ -135,6 +135,8 @@ private:
     void addBpDeviceString(QJsonObject &target, const Type &type, qreal fValue, qreal sValue, int digit);
     int getData(const QJsonObject &data, const Type &type);
 signals:
+    // 设备在线
+    void deviceOnline(const bool &isOnline);
     // 激活设备获取的信息
     void deviceInfo(const DeviceInfo &deviceInfo);
     // 接收的耗材数据

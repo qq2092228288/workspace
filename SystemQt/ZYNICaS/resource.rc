@@ -1,6 +1,10 @@
-#include <windows.h>
-
 IDI_ICON1	ICON	DISCARDABLE	"images/app.ico"
+
+#if defined(UNDER_CE)
+#include <winbase.h>
+#else
+#include <winver.h>
+#endif
 
 VS_VERSION_INFO VERSIONINFO
 	FILEVERSION 1,0,0,1
@@ -19,13 +23,15 @@ VS_VERSION_INFO VERSIONINFO
 		BEGIN
 			BLOCK "080004b0"
 			BEGIN
-				VALUE "CompanyName", "\0"
+                VALUE "CompanyName", "广东泽耀医疗技术有限公司\0"
 				VALUE "FileDescription", "\0"
 				VALUE "FileVersion", "1.0.0.1\0"
-				VALUE "LegalCopyright", "Copyright(C) 2022 泽耀医疗\0"
+                VALUE "LegalCopyright", "Copyright(C) 广东泽耀医疗技术有限公司\0"
+                VALUE "LegalTrademarks", "广东泽耀医疗技术有限公司\0"
 				VALUE "OriginalFilename", "ZYNICaS.exe\0"
 				VALUE "ProductName", "无创血流动力学检测系统\0"
-				VALUE "ProductVersion", "1.0.0.1\0"
+                VALUE "ProductVersion", "1.0.0.1\0"
+                VALUE "OrganizationDomain", "https://zeyaotebco.com/\0"
 			END
 		END
 		BLOCK "VarFileInfo"
