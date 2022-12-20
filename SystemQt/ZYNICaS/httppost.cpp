@@ -306,6 +306,8 @@ void HttpPost::useConsumable(const QString &deviceId, const QString &consumableU
 void HttpPost::getConsumableList(const QString &pageNum, const QString &pageSize, const QString &deviceId,
                                  const QString &id, const QString &consumableTypeId)
 {
+    if (deviceId.isEmpty())
+        return;
     QJsonObject target;
     target.insert("pageNum", pageNum);
     target.insert("pageSize", pageSize);

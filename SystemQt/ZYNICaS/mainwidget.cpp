@@ -82,25 +82,31 @@ MainWidget::~MainWidget()
     //    qDebug()<<"~MainWidget()";
 }
 
+void MainWidget::showEvent(QShowEvent *event)
+{
+    setWindowState(Qt::WindowNoState);
+    event->accept();
+}
+
 void MainWidget::paintEvent(QPaintEvent *event)
 {
     Q_UNUSED(event);
     auto &instance = DataManagement::getInstance();
     QPainter painter(this);
     QPixmap pixmap = QPixmap(":/images/logo.png");
-    painter.drawPixmap(rect(),QPixmap(":/images/background.jpg"));
-    painter.drawPixmap(10,10,pixmap.scaled(pixmap.size()*instance.zoom()));
+    painter.drawPixmap(rect(), QPixmap(":/images/background.jpg"));
+    painter.drawPixmap(10, 10, pixmap.scaled(pixmap.size()*instance.zoom()));
 }
 
 void MainWidget::enterBtnSlot()
 {
     int surplus = DataManagement::getInstance().deviceDatabase()->getConsumableSurplus();
     if (surplus <= 0) {
-        QMessageBox::warning(this,tr("警告！"),tr("有效验证码已使用完，请联系厂家！"));
+        QMessageBox::warning(this, tr("警告！"), tr("有效验证码已使用完，请联系厂家！"));
         return;
     }
     else if (surplus <= 20) {
-        QMessageBox::warning(this,tr("警告！"),tr("有效验证码剩余 %1 ，请注意！").arg(surplus));
+        QMessageBox::warning(this, tr("警告！"), tr("有效验证码剩余 %1 ，请注意！").arg(surplus));
     }
     foreach (QSerialPortInfo info, QSerialPortInfo::availablePorts()) {
         if(configDialog->getPortName() == info.portName()) {

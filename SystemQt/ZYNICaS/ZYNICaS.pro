@@ -61,7 +61,6 @@ HEADERS += \
     personalinfodialog.h \
     reportdatabase.h \
     reportword.h \
-    resource.rc \
     selectitemdialog.h \
     showreportdialog.h \
     singleapplication.h \

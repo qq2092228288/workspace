@@ -131,6 +131,7 @@ void EnterSystemWidget::showEvent(QShowEvent *event)
         DataManagement::getInstance().getRegulator()->connectTrendChart(false);
         trendChartBtn->hide();
     }
+    setWindowState(Qt::WindowNoState);
     event->accept();
 }
 
@@ -596,7 +597,7 @@ void EnterSystemWidget::setBaseData()
     baseData.place.place1Id = hospitalInfo->place1Id;
     baseData.place.place2Id = hospitalInfo->place2Id;
     baseData.place.deviceId = hospitalInfo->deviceId;
-    baseData.place.inspector = hospitalInfo->doctorName;
+    baseData.place.inspector = hospitalInfo->doctorName.isEmpty() ? "unknown" : hospitalInfo->doctorName;
     baseData.sudokuPix = sudokuDraw->grab();
 }
 

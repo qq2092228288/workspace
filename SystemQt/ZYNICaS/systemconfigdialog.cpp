@@ -6,7 +6,7 @@ SystemConfigDialog::SystemConfigDialog(QWidget *parent)
     : QDialog{parent}
 {
     auto &instance = DataManagement::getInstance();
-    setFixedSize(500*instance.wZoom(), 600*instance.hZoom());
+    setMinimumWidth(500*instance.wZoom());
     this->setWindowTitle(tr("系统配置"));
     setWindowFlags(Qt::CustomizeWindowHint | Qt::WindowCloseButtonHint);
     infoFileName = instance.getPaths().baseInfo();
@@ -235,12 +235,11 @@ void SystemConfigDialog::updateHospitalInfo()
     auto database = DataManagement::getInstance().deviceDatabase();
     QString place1Name = database->getDeviceInfo("place1Name");
     QString place2Name = database->getDeviceInfo("place2Name");
-    QString doctorName = doctorNameLineEdit->text();
     hospitalNameLineEdit->setText(place1Name);
     roomNameLineEdit->setText(place2Name);
     hospitalInfo.hospitalName = place1Name;
     hospitalInfo.roomName = place2Name;
-    hospitalInfo.doctorName = doctorName.isEmpty() ? "unknown" : doctorName;
+    hospitalInfo.doctorName = doctorNameLineEdit->text();
     hospitalInfo.place1Id = database->getDeviceInfo("place1Id");
     hospitalInfo.place2Id = database->getDeviceInfo("place2Id");
     hospitalInfo.deviceId = database->getDeviceInfo("deviceId");
