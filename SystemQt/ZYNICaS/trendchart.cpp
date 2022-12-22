@@ -118,5 +118,5 @@ void TrendChart::getChangeText(const QString &text)
 {
     auto &instance = DataManagement::getInstance();
     emit changeName(m_pCustomCtrl->getArgItems().dataName, text);
-    instance.getRegulator()->saveNames(instance.getPaths().trendCharts(),instance.getRegulator()->getCurrentNames(true));
+    instance.getRegulator()->saveNames(instance.getPaths().trendCharts(), instance.getRegulator()->getCurrentNames(true));
 }

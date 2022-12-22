@@ -19,7 +19,9 @@ TrendChartsWidget::TrendChartsWidget(QWidget *parent)
         hLayouts.append(hLayout);
         hLayout->addWidget(customCtrls.at(num)->getTrendChart());
         dataGLayout->addLayout(hLayout, num/4, num%4);
-        customCtrls.at(num)->getTrendChart()->show();
+        TrendChart *trenChart = customCtrls.at(num)->getTrendChart();
+        trendCharts.append(trenChart);
+        trenChart->show();
     }
 }
 
@@ -34,7 +36,8 @@ void TrendChartsWidget::changeShow(const QString &current, const QString &change
             layout->removeWidget(cuTc);
             layout->addWidget(chTc);
             chTc->show();
-            regulator->changeCurrentNames(current,change,true);
+            regulator->changeCurrentNames(current, change, true);
+            trendCharts.replace(trendCharts.indexOf(cuTc), chTc);
             break;
         }
     }
@@ -49,5 +52,16 @@ void TrendChartsWidget::widgetShow()
         this->raise();
         this->activateWindow();
         this->setWindowState((this->windowState() & ~Qt::WindowMinimized) | Qt::WindowActive);
+    }
+}
+
+void TrendChartsWidget::saveTrendChartPic()
+{
+    auto &instance = DataManagement::getInstance();
+    QStringList fileNames = instance.getPaths().trendchartspic();
+    for (int index = 0; index < trendCharts.size(); ++index) {
+        if (!fileNames.at(index).isEmpty()) {
+            trendCharts.at(index)->grab().save(fileNames.at(index));
+        }
     }
 }

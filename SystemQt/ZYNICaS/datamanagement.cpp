@@ -52,6 +52,16 @@ QString MyFilePath::xmany_dot() const
     return appPath + "dot/manyPositionXprinterTemplate.dot";
 }
 
+QString MyFilePath::psingle_dot() const
+{
+    return appPath + "dot/singlePositionProTemplate.dot";
+}
+
+QString MyFilePath::pmany_dot() const
+{
+    return appPath + "dot/manyPositionProTemplate.dot";
+}
+
 QString MyFilePath::record_dz() const
 {
     return tempDir() + "record.png";
@@ -65,6 +75,15 @@ QString MyFilePath::current_dz() const
 QString MyFilePath::sudoku() const
 {
     return tempDir() + "sudoku.png";
+}
+
+QStringList MyFilePath::trendchartspic() const
+{
+    QStringList list;
+    for (int i = 0; i < 11; ++i) {
+        list<<(tempDir() + QString("trendchart%1.png").arg(i, 2, 10, QLatin1Char('0')));
+    }
+    return list;
 }
 
 QString MyFilePath::reports() const
@@ -379,7 +398,7 @@ void DataManagement::recordPosition(QString position)
     m_recordInfo.pos = position;
     m_recordInfo.posture = position == tr("半卧") ? "1" : (position == tr("平躺") ? "2" : "3");
     saveInfo(m_recordInfo);
-    m_pdZ->grab().scaled(300,120,Qt::IgnoreAspectRatio,Qt::SmoothTransformation).save(m_filePath.record_dz());
+    m_pdZ->grab().save(m_filePath.record_dz());
     isRecord = true;
 }
 
@@ -389,17 +408,22 @@ QString DataManagement::saveReport(QDateTime curTime, QString position, bool rec
     m_newReportName.clear();
     m_currentInfo.pos = position;
     saveInfo(m_currentInfo,record);
-    m_pdZ->grab().scaled(300,120,Qt::IgnoreAspectRatio,Qt::SmoothTransformation).save(m_filePath.current_dz());
+    m_pdZ->grab().save(m_filePath.current_dz());
     m_pSudoku->grab().save(m_filePath.sudoku());
 
     reportThread->init();
-    connect(reportThread,&CreateReportThread::finished,this,&DataManagement::clear);
+    connect(reportThread, &CreateReportThread::finished, this, &DataManagement::clear);
     // 打开模板
     QString result = tr("无创血流动力学检测系统评价，心脏动力，血管阻力，血液容量，血压等循环系统情况结论如下：\n");
     if (record) {       // 多体位
         reportThread->addMarks("rpos", m_recordInfo.pos);
-        if (!m_pHospitalInfo->xprinter) {
-            reportThread->setOpenArg(m_filePath.many_dot(),false);
+        if (!m_pHospitalInfo->xprinter) {   // 非热敏打印机
+            if (m_pHospitalInfo->professional) {
+                reportThread->setOpenArg(m_filePath.pmany_dot(), false);
+            }
+            else {
+                reportThread->setOpenArg(m_filePath.many_dot(), false);
+            }
             // 记录体位
             QStringList rList;
             for (int i = 0; i < 27; ++i) {
@@ -417,7 +441,7 @@ QString DataManagement::saveReport(QDateTime curTime, QString position, bool rec
                     .arg(pevl(Type::DBP),pevl(Type::TFC),compare(Type::SV),compare(Type::ISI),preload());
         }
         else {
-            reportThread->setOpenArg(m_filePath.xmany_dot(),false);
+            reportThread->setOpenArg(m_filePath.xmany_dot(), false);
             QStringList rList;
             for (int i = 0; i < 12; ++i) {
                 rList<<QString("r%1").arg(i,2,10,QLatin1Char('0'));
@@ -435,7 +459,12 @@ QString DataManagement::saveReport(QDateTime curTime, QString position, bool rec
     }
     else {      // 单体位
         if (!m_pHospitalInfo->xprinter) {
-            reportThread->setOpenArg(m_filePath.single_dot(),false);
+            if (m_pHospitalInfo->professional) {
+                reportThread->setOpenArg(m_filePath.psingle_dot(),false);
+            }
+            else {
+                reportThread->setOpenArg(m_filePath.single_dot(),false);
+            }
             result += tr("1.心脏功能：心输出量(CO)%1，心搏量(SV)%2，心搏指数(SI)%3，心脏指数(CI)%4，血管容量(Vol)%5，血管顺应性(Vas)%6，收缩变力性(Ino)%7；\n"
                 "2.血压管理：收缩压(SBP)%8，舒张压(DBP)%9，心率(HR)%10；")
                     .arg(pevl(Type::CO,false),pevl(Type::SV,false),pevl(Type::SI,false),pevl(Type::CI,false),pevl(Type::Vol,false),
@@ -469,6 +498,12 @@ QString DataManagement::saveReport(QDateTime curTime, QString position, bool rec
         reportThread->addMarks("cname", (m_currentInfo.pos + tr(" 心阻抗图(dZ)")));
         reportThread->addPic("cimage",m_filePath.current_dz());
         reportThread->addMarks("room" , m_pHospitalInfo->roomName);
+        if (m_pHospitalInfo->professional) {
+            for (int index = 0; index < m_filePath.trendchartspic().size(); ++index) {
+                reportThread->addPic(QString("trendchart%1").arg(index,2,10,QLatin1Char('0')),
+                                     m_filePath.trendchartspic().at(index));
+            }
+        }
     }
     else {
         QStringList rList;
@@ -480,6 +515,7 @@ QString DataManagement::saveReport(QDateTime curTime, QString position, bool rec
              <<m_currentInfo.values.mid(20,6);
         reportThread->addBatchMarks(rList, values);
     }
+    // dot normal data
     reportThread->addMarks("sname", tr("九宫分析图"));
     reportThread->addPic("simage",m_filePath.sudoku());
     // 医院、时间、检查人员

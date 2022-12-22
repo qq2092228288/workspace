@@ -79,7 +79,7 @@ void CreateReportThread::run()
         size = m_picPathList.size();
     }
     for (int index = 0; index < size; ++index) {
-        report.insertPic(m_picLabelList.at(index),m_picPathList.at(index));
+        report.insertPic(m_picLabelList.at(index), m_picPathList.at(index));
     }
     report.saveAs(m_savePath);
     report.close();

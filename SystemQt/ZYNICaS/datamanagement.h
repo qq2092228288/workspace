@@ -26,21 +26,24 @@ class MyFilePath
 {
 public:
     MyFilePath(const QString &path = nullptr);
-    QString initDir()     const;
-    QString tempDir()     const;
-    QString baseInfo()    const;
-    QString showItems()   const;
-    QString trendCharts() const;
-    QString single_dot()  const;
-    QString many_dot()    const;
-    QString xsingle_dot() const;
-    QString xmany_dot()   const;
-    QString record_dz()   const;
-    QString current_dz()  const;
-    QString sudoku()      const;
-    QString reports()     const;
-    QString config_zip()  const;
-    QString qrCode()      const;
+    QString initDir()           const;
+    QString tempDir()           const;
+    QString baseInfo()          const;
+    QString showItems()         const;
+    QString trendCharts()       const;
+    QString single_dot()        const;
+    QString many_dot()          const;
+    QString xsingle_dot()       const;
+    QString xmany_dot()         const;
+    QString psingle_dot()       const;
+    QString pmany_dot()         const;
+    QString record_dz()         const;
+    QString current_dz()        const;
+    QString sudoku()            const;
+    QStringList trendchartspic()const;
+    QString reports()           const;
+    QString config_zip()        const;
+    QString qrCode()            const;
 private:
     QString appPath;
 };

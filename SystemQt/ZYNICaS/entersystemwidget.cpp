@@ -518,6 +518,10 @@ void EnterSystemWidget::createReport()
             QMessageBox::information(this, tr("提示"), tr("多体位模式需要记录体位！"));
             return;
         }
+        // professional model
+        if (instance.getHospitalInfo()->professional) {
+            trendChartsWidget->saveTrendChartPic();
+        }
         WaitingDialog waiting = WaitingDialog(tr("报告生成中···"), this);
         connect(&instance, &DataManagement::clear, &waiting, &WaitingDialog::close);
         setBaseData();
