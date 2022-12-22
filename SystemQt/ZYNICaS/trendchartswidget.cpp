@@ -18,7 +18,7 @@ TrendChartsWidget::TrendChartsWidget(QWidget *parent)
         QHBoxLayout *hLayout = new QHBoxLayout;
         hLayouts.append(hLayout);
         hLayout->addWidget(customCtrls.at(num)->getTrendChart());
-        dataGLayout->addLayout(hLayout,num/4,num%4);
+        dataGLayout->addLayout(hLayout, num/4, num%4);
         customCtrls.at(num)->getTrendChart()->show();
     }
 }

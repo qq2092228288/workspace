@@ -5,11 +5,12 @@
 #include <QChart>
 #include <QtCharts>
 #include <QValueAxis>
-#include <QLineSeries>
+#include <QSplineSeries>
 #include <QDateTimeAxis>
 #include <QWidget>
 #include <QGridLayout>
 #include <QLabel>
+#include <QGroupBox>
 
 #include "selectitemdialog.h"
 class CustomCtrl;
@@ -17,7 +18,7 @@ class TrendChart : public QWidget
 {
     Q_OBJECT
 public:
-    explicit TrendChart(CustomCtrl *customCtrl, QWidget *parent = nullptr);
+    explicit TrendChart(QWidget *customCtrl);
     virtual ~TrendChart();
     void mouseDoubleClickEvent(QMouseEvent *event);
 public slots:
@@ -27,12 +28,13 @@ public slots:
 signals:
     void changeName(const QString &, const QString &);
 private:
+    QGroupBox *m_pGroupBox;
     QLabel *m_pLabel;
     QChartView *m_pChartView;
     QList<double> m_values;
     QDateTimeAxis *m_pAxisX;
     QValueAxis *m_pAxisY;
-    QLineSeries *m_pSeries;
+    QSplineSeries *m_pSeries;
     SelectItemDialog *dialog;
     int digit;
 private:

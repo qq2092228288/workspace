@@ -240,9 +240,9 @@ void EnterSystemWidget::initPosModule()
 
 void EnterSystemWidget::initOscModule()
 {
-    ecgGroupBox = new QGroupBox(tr("阻抗心电图"),this);
-    diffGroupBox = new QGroupBox(tr("心血流图"),this);
-    admitGroupBox = new QGroupBox(tr("心阻抗图"),this);
+    ecgGroupBox = new QGroupBox(tr("阻抗心电图"), this);
+    diffGroupBox = new QGroupBox(tr("心血流图"), this);
+    admitGroupBox = new QGroupBox(tr("心阻抗图"), this);
     ecgDraw = new DrawWaveforms(true);
     diffDraw = new DrawWaveforms;
     admitDraw = new DrawWaveforms(true);

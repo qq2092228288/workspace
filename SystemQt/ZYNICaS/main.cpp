@@ -14,11 +14,6 @@ int main(int argc, char *argv[])
 {
     SingleApplication a(argc, argv);
     if (!a.isRunning()) {
-        //set app info
-        QCoreApplication::setApplicationName("无创血流动力学检测系统");
-        QCoreApplication::setApplicationVersion("1.0.0.1");
-        QCoreApplication::setOrganizationName("广东泽耀医疗技术有限公司");
-        QCoreApplication::setOrganizationDomain("https://zeyaotebco.com/");
         // prevent system hibernation
         SetThreadExecutionState(ES_CONTINUOUS | ES_SYSTEM_REQUIRED | ES_DISPLAY_REQUIRED);
 
