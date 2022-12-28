@@ -1,4 +1,4 @@
-﻿#ifndef DATAMANAGEMENT_H
+#ifndef DATAMANAGEMENT_H
 #define DATAMANAGEMENT_H
 
 #include <QObject>
@@ -74,7 +74,7 @@ typedef struct Arguments
     Argument SSVRI = Argument("每搏外周阻力指数", "SSVRI", "dyn·s/cm^5/beat/m²", 99.7, 185.1);
     Argument SVRI = Argument("系统阻力指数", "SVRI", "dyn·s·m²/cm^5", 1056, 4000);
     Argument Vas = Argument("血管顺应性", "Vas", "%", -50, 50);
-    Argument EF = Argument("射血分数", "EF", "%", -45, 68);
+    Argument EF = Argument("射血分数", "EF", "%", 45, 68);
     Argument PEP = Argument("射血前期", "PEP", "ms", 50, 120);
     Argument LVET = Argument("射血时间", "VET", "ms", 250, 360);
     Argument LSW = Argument("左心室每搏做功", "LSW", "g·m", 20, 90);
