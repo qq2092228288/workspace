@@ -18,7 +18,7 @@ public slots:
 signals:
 private:
     QGridLayout *dataGLayout;
-    QList<QHBoxLayout *> hLayouts;
+//    QList<QHBoxLayout *> hLayouts;
     QList<TrendChart *> trendCharts;
 };
 

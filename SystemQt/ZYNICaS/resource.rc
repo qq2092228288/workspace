@@ -23,11 +23,11 @@ VS_VERSION_INFO VERSIONINFO
 		BEGIN
 			BLOCK "080004b0"
 			BEGIN
-                VALUE "CompanyName", "广东泽耀医疗技术有限公司\0"
+                VALUE "CompanyName", "长沙芫泽医疗器械有限公司\0"
 				VALUE "FileDescription", "\0"
 				VALUE "FileVersion", "1.0.0.1\0"
-                VALUE "LegalCopyright", "Copyright(C) 广东泽耀医疗技术有限公司\0"
-                VALUE "LegalTrademarks", "广东泽耀医疗技术有限公司\0"
+                VALUE "LegalCopyright", "Copyright(C) 长沙芫泽医疗器械有限公司\0"
+                VALUE "LegalTrademarks", "长沙芫泽医疗器械有限公司\0"
 				VALUE "OriginalFilename", "ZYNICaS.exe\0"
 				VALUE "ProductName", "无创血流动力学检测系统\0"
                 VALUE "ProductVersion", "1.0.0.1\0"

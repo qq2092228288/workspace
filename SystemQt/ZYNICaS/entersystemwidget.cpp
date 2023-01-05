@@ -13,7 +13,7 @@ EnterSystemWidget::EnterSystemWidget(QWidget *parent)
 {
     DataManagement &instance = DataManagement::getInstance();
     setMinimumSize(1600*instance.wZoom(),900*instance.hZoom());
-    setWindowTitle(tr("泽耀无创血流动力学检测"));
+    setWindowTitle(tr("芫泽无创血流动力学检测"));
 
     //样式表
     int fsize = 16*instance.zoom()+1;         //字体大小

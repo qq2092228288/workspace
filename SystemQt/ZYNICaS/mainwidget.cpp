@@ -4,7 +4,7 @@
 MainWidget::MainWidget(QWidget *parent)
     : QWidget{parent}
 {
-    setWindowTitle(tr("泽耀无创血流动力学检测系统"));
+    setWindowTitle(tr("芫泽无创血流动力学检测系统"));
     auto &instance = DataManagement::getInstance();
     setMinimumSize(1600*instance.wZoom(), 900*instance.hZoom());
     mainLayout = new QVBoxLayout(this);
