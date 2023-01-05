@@ -30,6 +30,8 @@ struct HospitalInfo
     QString hospitalName;
     QString roomName;
     QString doctorName;
+    QString place1Name;
+    QString place2Name;
     QString place1Id;
     QString place2Id;
     QString deviceId;
@@ -48,7 +50,6 @@ protected slots:
     void confirmSlot();
     void aboutAppSlot();
 protected:
-    void showEvent(QShowEvent *event);
     void updateHospitalInfo();
 private:
     HospitalInfo hospitalInfo;

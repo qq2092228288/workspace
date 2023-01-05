@@ -43,13 +43,13 @@ TrendChart::TrendChart(QWidget *customCtrl)
     m_pChartView->chart()->setTitleFont(m_pLabel->font());
     m_pChartView->chart()->setBackgroundVisible(false);
     // 图形边距
-//    m_pChartView->chart()->setContentsMargins(0, -10, 0, -10);
+    m_pChartView->chart()->setContentsMargins(0, 0, 0, 0);
     m_pChartView->chart()->layout()->setContentsMargins(0, 0, 0, 0);
 
     m_pChartView->chart()->addSeries(m_pSeries);
     m_pAxisX->setFormat("hh:mm:ss");
     m_pAxisX->setTickCount(2);
-    m_pAxisY->setTickCount(5);
+    m_pAxisY->setTickCount(3);
     m_pAxisY->setRange(m_pCustomCtrl->getMinValue(), m_pCustomCtrl->getMaxValue());
     // 精度
     if (digit == 0) {
@@ -62,7 +62,7 @@ TrendChart::TrendChart(QWidget *customCtrl)
     m_pChartView->chart()->addAxis(m_pAxisY, Qt::AlignLeft);
     m_pSeries->attachAxis (m_pAxisX);
     m_pSeries->attachAxis (m_pAxisY);
-    m_pSeries->setPen(QPen(Qt::blue, 2, Qt::SolidLine));
+    m_pSeries->setPen(QPen(Qt::blue, 1, Qt::SolidLine));
 
     m_pSeries->setUseOpenGL(true);
     m_pChartView->chart()->legend()->hide();
@@ -101,7 +101,7 @@ void TrendChart::addValue(double value)
     m_pLabel->setText(QString("MAX: %1; MIN: %2; AVG: %3;").arg(QString::number(min, 'f', digit),
                                                                 QString::number(max, 'f', digit),
                                                                 QString::number(avg, 'f', digit)));
-    double offset = 2/qPow(10, digit);
+    double offset = 5/qPow(10, digit);
     if (m_pAxisY->min() != min - offset || m_pAxisY->max() != max + offset) {
         m_pAxisY->setRange(min - offset, max + offset);
     }

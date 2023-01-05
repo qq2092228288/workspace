@@ -22,10 +22,11 @@ public slots:
 signals:
     void requestDeviceOnlineNotice(const QString &deviceId);
 private slots:
-    void setConsumables(const int &count);
-
+//    void setConsumables(const int &count);
+    // 复制MAC
     void copySlot();
-//    void usedSlot();
+    // 离线获取
+    void usedSlot();
     // 创建设备
     void createDeviceSlot();
     // 在线获取
@@ -33,12 +34,12 @@ private slots:
 private:
     QLabel *consumablesLabel;
     QLabel *macLabel;
-//    QLabel *codeLabel;
+    QLabel *codeLabel;
     QLineEdit *consumablesEdit;
     QLineEdit *macEdit;
-//    QLineEdit *codeEdit;
+    QLineEdit *codeEdit;
     QPushButton *copyBtn;
-//    QPushButton *usedBtn;
+    QPushButton *usedBtn;
     QLabel *deviceNameLabel;
     QLineEdit *deviceNameLineEdit;
     QPushButton *createDeviceBtn;

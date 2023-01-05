@@ -7,6 +7,7 @@
 #include <QDir>
 #include <QDebug>
 #include <QMutexLocker>
+#include <QCryptographicHash>
 
 #if defined(IDCHECK_LIBRARY)
 #  define IDCHECK_EXPORT Q_DECL_EXPORT

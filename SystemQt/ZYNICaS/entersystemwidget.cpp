@@ -597,7 +597,7 @@ void EnterSystemWidget::setBaseData()
     baseData.patient.weight = QString::number(bodyValue.weight);
     // 场所信息
     auto hospitalInfo = DataManagement::getInstance().getHospitalInfo();
-    baseData.place.placeId = hospitalInfo->roomName;
+    baseData.place.placeId = hospitalInfo->place2Name;
     baseData.place.place1Id = hospitalInfo->place1Id;
     baseData.place.place2Id = hospitalInfo->place2Id;
     baseData.place.deviceId = hospitalInfo->deviceId;

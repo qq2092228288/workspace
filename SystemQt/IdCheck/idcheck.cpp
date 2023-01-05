@@ -4,8 +4,8 @@
 #include <windows.h>
 
 const quint64 C_COUNT = 0x005A6559616F0000;     // (check 1B)ZeYao(count 2B)
-const quint64  C_TIME = 0x0000000337E11906;     // (check 4B)13822400774
-const char * PASSWORD = "^ZeYao@13822400774$";
+const quint64  C_TIME = 0x0000000337E11906;     // (check 4B)13824400774
+const char * PASSWORD = "^ZeYao@13824400774$";  // zip password
 static bool ok;
 
 IdCheck::IdCheck(QObject *parent)
@@ -28,25 +28,25 @@ QByteArray IdCheck::strToByteArray(QString str)
 {
     QByteArray array;
     for (int index = 0; index < str.size(); index+=2) {
-        array.append(char(str.midRef(index,2).toInt(&ok,16)));
+        array.append(char(str.midRef(index, 2).toInt(&ok, 16)));
     }
     return array;
 }
 
 quint16 IdCheck::getCodeCount(const QByteArray &code, const quint64 &mac)
 {
-    return C_COUNT^getCodeTime(code, mac)^code.mid(0,8).toHex().toULongLong(&ok,16);
+    return C_COUNT^getCodeTime(code, mac)^code.mid(0, 8).toHex().toULongLong(&ok, 16);
 }
 
 quint16 IdCheck::getCodeCount(const QByteArray &code, QString mac)
 {
-    return getCodeCount(code,removeSymbol(mac).toULongLong(&ok,16));
+    return getCodeCount(code, removeSymbol(mac).toULongLong(&ok, 16));
 }
 
 QByteArray IdCheck::getCode(const quint16 &count, const quint64 &mac)
 {
     // id = C_COUNT^count C_TIME^mac^time
-    qint64 ctime = QDateTime::currentSecsSinceEpoch();
+    qint64 ctime = QDateTime::currentMSecsSinceEpoch();
     QByteArray farray, sarray;
     quint64 firstCode = C_COUNT^count^ctime;
     quint64 secondeCode = C_TIME^mac^ctime;
@@ -59,12 +59,12 @@ QByteArray IdCheck::getCode(const quint16 &count, const quint64 &mac)
 
 QByteArray IdCheck::getCode(const quint16 &count, QString mac)
 {
-    return getCode(count,removeSymbol(mac).toULongLong(&ok,16));
+    return getCode(count, removeSymbol(mac).toULongLong(&ok, 16));
 }
 
 ZipError IdCheck::modifyConfig(const QByteArray &code, const quint64 &mac)
 {
-    qint64 ctime = QDateTime::currentSecsSinceEpoch();
+    qint64 ctime = QDateTime::currentMSecsSinceEpoch();
     // 无效
     if (code.size() != 16)
         return ZipError::CodeError;
@@ -73,7 +73,7 @@ ZipError IdCheck::modifyConfig(const QByteArray &code, const quint64 &mac)
     if (count == 0 || ctime <= time)
         return ZipError::CodeError;
     // 过期
-    if (ctime - time > 5*24*60*60)
+    if (ctime - time > 5*24*60*60*1000)
         return ZipError::Overdue;
     ConfigFilesTxt cfTxt = getConfigFilesTxt();
     // 已使用
@@ -87,7 +87,7 @@ ZipError IdCheck::modifyConfig(const QByteArray &code, const quint64 &mac)
 
 ZipError IdCheck::modifyConfig(const QByteArray &code, QString mac)
 {
-    return modifyConfig(code,removeSymbol(mac).toULongLong(&ok,16));
+    return modifyConfig(code, removeSymbol(mac).toULongLong(&ok, 16));
 }
 
 void IdCheck::consumablesUsed()
@@ -95,14 +95,14 @@ void IdCheck::consumablesUsed()
     ConfigFilesTxt cfTxt = getConfigFilesTxt();
     int count = 0;
     if (savedConsumables(cfTxt.config) > 0) {
-        count = savedConsumables(cfTxt.config)-1;
+        count = savedConsumables(cfTxt.config) - 1;
     }
     updateConsumablesCount(count, cfTxt.secretkey);
 }
 
 qint64 IdCheck::getCodeTime(const QByteArray &code, const quint64 &mac)
 {
-    return C_TIME^mac^code.mid(8,8).toHex().toULongLong(&ok,16);
+    return C_TIME^mac^code.mid(8, 8).toHex().toULongLong(&ok, 16);
 }
 
 int IdCheck::savedConsumables(QString str)
@@ -130,7 +130,7 @@ ConfigFilesTxt IdCheck::getConfigFilesTxt()
         zipFile.setZipName(qsTempZipName);
         QString filename = zip.getCurrentFileName();
         zipFile.setFileName(filename);
-        if (zipFile.open(QIODevice::ReadOnly,PASSWORD)) {
+        if (zipFile.open(QIODevice::ReadOnly, PASSWORD)) {
             if ("config.ini" == filename) {
                 config = zipFile.readAll();
             }
@@ -148,7 +148,7 @@ ConfigFilesTxt IdCheck::getConfigFilesTxt()
 
 QString IdCheck::zipName()
 {
-    return QCoreApplication::applicationDirPath() + "/init/config.zip";;
+    return QCoreApplication::applicationDirPath() + "/config.zip";
 }
 
 void IdCheck::updateConsumablesCount(const int &count, const QStringList &usedIds)
@@ -162,12 +162,12 @@ void IdCheck::updateConsumablesCount(const int &count, const QStringList &usedId
         return;
     }
     QuaZipFile configFile(&zip);
-    if (configFile.open(QIODevice::WriteOnly,QuaZipNewInfo("config.ini"),PASSWORD,0,8)) {
+    if (configFile.open(QIODevice::WriteOnly,QuaZipNewInfo("config.ini"), PASSWORD, 0, 8)) {
         configFile.write(QString("consumables=%1").arg(count).toUtf8().constData());
         configFile.close();
     }
     QuaZipFile usedId(&zip);
-    if (usedId.open(QIODevice::WriteOnly,QuaZipNewInfo("usedId.txt"),PASSWORD,0,8)) {
+    if (usedId.open(QIODevice::WriteOnly,QuaZipNewInfo("usedId.txt"), PASSWORD, 0, 8)) {
         foreach (QString line, usedIds) {
             usedId.write(line.toUtf8().constData());
         }

@@ -358,6 +358,11 @@ DeviceDatabase *DataManagement::deviceDatabase() const
     return m_pDeviceDatabase;
 }
 
+int DataManagement::surplus() const
+{
+    return (deviceDatabase()->getConsumableSurplus() + IdCheck::getCurrentConsumables());
+}
+
 void DataManagement::setHospitalInfo(HospitalInfo *hospitalInfo)
 {
     this->m_pHospitalInfo = hospitalInfo;

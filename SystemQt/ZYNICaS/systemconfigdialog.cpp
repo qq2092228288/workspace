@@ -36,8 +36,6 @@ SystemConfigDialog::SystemConfigDialog(QWidget *parent)
     appMsgGroupBox = new QGroupBox(this);
     aboutAppBtn = new QPushButton(tr("关于"), this);
 
-    hospitalNameLineEdit->setReadOnly(true);
-    roomNameLineEdit->setReadOnly(true);
     serialPortComboBox->setFixedWidth(120*instance.wZoom());
     printerRadio->setChecked(true);
     generalModeRadio->setChecked(true);
@@ -100,8 +98,8 @@ SystemConfigDialog::SystemConfigDialog(QWidget *parent)
         file.open(QFile::WriteOnly);
         QTextStream in(&file);
         in.setCodec(QTextCodec::codecForName("utf-8"));
-//        in<<QString("hospital=\"\"\n");
-//        in<<QString("department=\"\"\n");
+        in<<QString("hospital=\"\"\n");
+        in<<QString("department=\"\"\n");
         in<<QString("doctor=\"\"\n");
         in<<QString("printer=\"0\"\n");
         in<<QString("tip=\"0\"\n");
@@ -120,12 +118,12 @@ SystemConfigDialog::SystemConfigDialog(QWidget *parent)
             if (strLine.indexOf(nameExp) >= 0 && strLine.indexOf(valueExp) >= 0) {
                 QString name = nameExp.cap(1);
                 QString value = valueExp.cap(1);
-//                if (name == "hospital") {
-//                    hospitalNameLineEdit->setText(value);
-//                }
-//                else if (name == "department") {
-//                    roomNameLineEdit->setText(value);
-//                }
+                if (name == "hospital") {
+                    hospitalNameLineEdit->setText(value);
+                }
+                else if (name == "department") {
+                    roomNameLineEdit->setText(value);
+                }
                 if (name == "doctor") {
                     doctorNameLineEdit->setText(value);
                 }
@@ -178,8 +176,8 @@ void SystemConfigDialog::confirmSlot()
     if(file.open(QFile::WriteOnly)){
         QTextStream in(&file);
         in.setCodec(QTextCodec::codecForName("utf-8"));
-//        in<<QString("hospital=\"%1\"\n").arg(hospitalNameLineEdit->text());
-//        in<<QString("department=\"%1\"\n").arg(roomNameLineEdit->text());
+        in<<QString("hospital=\"%1\"\n").arg(hospitalNameLineEdit->text());
+        in<<QString("department=\"%1\"\n").arg(roomNameLineEdit->text());
         in<<QString("doctor=\"%1\"\n").arg(doctorNameLineEdit->text());
         in<<QString("printer=\"%1\"\n").arg(xprinterRadio->isChecked());
         in<<QString("tip=\"%1\"\n").arg(tipCheckBox->isChecked());
@@ -193,6 +191,7 @@ void SystemConfigDialog::confirmSlot()
 void SystemConfigDialog::aboutAppSlot()
 {
     QDialog dialog;
+    dialog.setWindowTitle(tr("关于"));
     QVBoxLayout *vLayout = new QVBoxLayout(&dialog);
     QTextBrowser *textBrowser = new QTextBrowser(&dialog);
     textBrowser->setStyleSheet("background:transparent;border-width:0;border-style:outset");
@@ -224,21 +223,17 @@ void SystemConfigDialog::aboutAppSlot()
     dialog.exec();
 }
 
-void SystemConfigDialog::showEvent(QShowEvent *event)
-{
-    event->accept();
-    getIdDialog->hideCreateDevice(!hospitalNameLineEdit->text().isEmpty());
-}
-
 void SystemConfigDialog::updateHospitalInfo()
 {
     auto database = DataManagement::getInstance().deviceDatabase();
-    QString place1Name = database->getDeviceInfo("place1Name");
-    QString place2Name = database->getDeviceInfo("place2Name");
-    hospitalNameLineEdit->setText(place1Name);
-    roomNameLineEdit->setText(place2Name);
-    hospitalInfo.hospitalName = place1Name;
-    hospitalInfo.roomName = place2Name;
+//    QString place1Name = database->getDeviceInfo("place1Name");
+//    QString place2Name = database->getDeviceInfo("place2Name");
+//    hospitalNameLineEdit->setText(place1Name);
+//    roomNameLineEdit->setText(place2Name);
+    hospitalInfo.hospitalName = hospitalNameLineEdit->text();
+    hospitalInfo.roomName = roomNameLineEdit->text();
+    hospitalInfo.place1Name = database->getDeviceInfo("place1Name");
+    hospitalInfo.place2Name = database->getDeviceInfo("place2Name");
     hospitalInfo.doctorName = doctorNameLineEdit->text();
     hospitalInfo.place1Id = database->getDeviceInfo("place1Id");
     hospitalInfo.place2Id = database->getDeviceInfo("place2Id");

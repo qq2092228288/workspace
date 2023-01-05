@@ -305,7 +305,7 @@ QString DeviceDatabase::md5Str(const DataList &dataList, const int &noUploadCoun
             .arg(dataList.deviceId, dataList.deviceName)
             .arg(noUploadCount)
             .arg(uuid);
-    QByteArray md5 = QCryptographicHash::hash(str.toLatin1(),QCryptographicHash::Md5);
+    QByteArray md5 = QCryptographicHash::hash(str.toLatin1(), QCryptographicHash::Md5);
     return QString(md5.toHex());
 }
 

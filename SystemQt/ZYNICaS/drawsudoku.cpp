@@ -1,4 +1,4 @@
-﻿#include "drawsudoku.h"
+#include "drawsudoku.h"
 #include "datamanagement.h"
 #include <iostream>
 #include <math.h>
@@ -8,7 +8,7 @@ DrawSudoku::DrawSudoku(QWidget *parent)
     : QDialog{parent}
 {
     this->setWindowTitle(tr("九宫格分析图"));
-    this->setFixedSize(480,500);
+    this->setFixedSize(480, 500);
     setWindowFlags(Qt::CustomizeWindowHint | Qt::WindowCloseButtonHint);
     this->setStyleSheet("QDialog{background-color:#ffffff;}");
 }
@@ -53,42 +53,42 @@ void DrawSudoku::paintEvent(QPaintEvent *event)
     Q_UNUSED(event);
     auto &args = DataManagement::getInstance().getArgs();
     //起始点
-    const QPoint point(55,height()-80);
+    const QPoint point(55, height() - 80);
     const int len = 400;
     QPainter painter(this);
     // 消除锯齿
     painter.setRenderHint(QPainter::Antialiasing, true);
     // 画笔颜色，宽度
-    painter.setPen(QPen(QColor(Qt::black),2));
+    painter.setPen(QPen(QColor(Qt::black), 2));
     // 坐标轴/边框
-    QLine axisX(point,QPoint(point.x()+len,point.y()));
-    QLine axisY(point,QPoint(point.x(),point.y()-len));
-    QLine topX(point.x(),point.y()-len,point.x()+len,point.y()-len);
-    QLine topY(point.x()+len,point.y(),point.x()+len,point.y()-len);
+    QLine axisX(point, QPoint(point.x() + len, point.y()));
+    QLine axisY(point, QPoint(point.x(), point.y() - len));
+    QLine topX(point.x(), point.y() - len, point.x() + len, point.y() - len);
+    QLine topY(point.x() + len, point.y(), point.x() + len, point.y() - len);
     painter.drawLines(QVector<QLine>()<<axisX<<axisY<<topX<<topY);
     // 刻度
     const qreal minX = 20, maxX = 100;    //范围
     const qreal minY = 40, maxY = 140;
-    const qreal stepLenX = len/(maxX-minX);   //步长
-    const qreal stepLenY = len/(maxY-minY);
+    const qreal stepLenX = len/(maxX - minX);   //步长
+    const qreal stepLenY = len/(maxY - minY);
     for (int x = minX; x <= maxX; x += 10) {
-        QPoint temp(point.x()+(x-minX)*stepLenX,point.y()+15);
-        painter.drawPoint(temp.x(),point.y()-2);
-        painter.drawText(temp,QString::number(x));
+        QPoint temp(point.x() + (x-minX)*stepLenX, point.y() + 15);
+        painter.drawPoint(temp.x(), point.y() - 2);
+        painter.drawText(temp, QString::number(x));
     }
     for (int y = minY; y <= maxY; y += 20) {
         QPoint temp(point.x()-20,point.y()-(y-minY)*stepLenY);
-        painter.drawPoint(point.x()+2,temp.y());
-        painter.drawText(temp,QString::number(y));
+        painter.drawPoint(point.x() + 2, temp.y());
+        painter.drawText(temp, QString::number(y));
     }
     // 标签
     QFont font = painter.font();
     font.setPointSize(18);
     painter.setFont(font);
-    painter.drawText(QPoint(point.x()-50,point.y()-len/2),QString("MAP"));
-    painter.drawText(QPoint(point.x()+len/2,point.y()+40),QString("SI"));
+    painter.drawText(QPoint(point.x() - 50, point.y() - len/2), QString("MAP"));
+    painter.drawText(QPoint(point.x() + len/2, point.y() + 40), QString("SI"));
 
-    painter.setPen(QPen(QColor(Qt::black),1));
+    painter.setPen(QPen(QColor(Qt::black), 1));
     // MAP SI
     Argument mapArg, siArg, ssvriArg, lswiArg;
     foreach (Argument argument, args.arguments) {
@@ -101,10 +101,10 @@ void DrawSudoku::paintEvent(QPaintEvent *event)
         else if("LSWI" == argument.en)
             lswiArg = argument;
     }
-    QLine minMap(point.x(),point.y()-(mapArg.min-minY)*stepLenY,point.x()+len,point.y()-(mapArg.min-minY)*stepLenY);
-    QLine maxMap(point.x(),point.y()-(mapArg.max-minY)*stepLenY,point.x()+len,point.y()-(mapArg.max-minY)*stepLenY);
-    QLine minSi(point.x()+(siArg.min-minX)*stepLenX,point.y(),point.x()+(siArg.min-minX)*stepLenX,point.y()-len);
-    QLine maxSi(point.x()+(siArg.max-minX)*stepLenX,point.y(),point.x()+(siArg.max-minX)*stepLenX,point.y()-len);
+    QLine minMap(point.x(), point.y()-(mapArg.min-minY)*stepLenY, point.x()+len, point.y()-(mapArg.min-minY)*stepLenY);
+    QLine maxMap(point.x(), point.y()-(mapArg.max-minY)*stepLenY, point.x()+len, point.y()-(mapArg.max-minY)*stepLenY);
+    QLine minSi(point.x()+(siArg.min-minX)*stepLenX, point.y(), point.x()+(siArg.min-minX)*stepLenX, point.y()-len);
+    QLine maxSi(point.x()+(siArg.max-minX)*stepLenX, point.y(), point.x()+(siArg.max-minX)*stepLenX, point.y()-len);
     painter.drawLines(QVector<QLine>()<<minMap<<maxMap<<minSi<<maxSi);
     // SSVRI LSWI
     QList<QPointF> minSsvriPoints;
@@ -119,24 +119,24 @@ void DrawSudoku::paintEvent(QPaintEvent *event)
         qreal minLswi = lswiArg.min/0.0144/realX+args.LAP;
         qreal maxLswi = lswiArg.max/0.0144/realX+args.LAP;
         if(minSsvri >= minY && minSsvri <= maxY) {
-            minSsvriPoints.append(QPointF(point.x()+x,point.y()+(minY-minSsvri)*stepLenY));
+            minSsvriPoints.append(QPointF(point.x()+x, point.y()+(minY-minSsvri)*stepLenY));
         }
         if(maxSsvri >= minY && maxSsvri <= maxY) {
-            maxSsvriPoints.append(QPointF(point.x()+x,point.y()+(minY-maxSsvri)*stepLenY));
+            maxSsvriPoints.append(QPointF(point.x()+x, point.y()+(minY-maxSsvri)*stepLenY));
         }
         if(minLswi >= minY && minLswi <= maxY) {
-            minLswiPoints.append(QPointF(point.x()+x,point.y()+(minY-minLswi)*stepLenY));
+            minLswiPoints.append(QPointF(point.x()+x, point.y()+(minY-minLswi)*stepLenY));
         }
         if(maxLswi >= minY && maxLswi <= maxY) {
-            maxLswiPoints.append(QPointF(point.x()+x,point.y()+(minY-maxLswi)*stepLenY));
+            maxLswiPoints.append(QPointF(point.x()+x, point.y()+(minY-maxLswi)*stepLenY));
         }
     }
     font.setPointSize(10);
     painter.setFont(font);
-    drawCurve(painter,minSsvriPoints,"SSVRI");
-    drawCurve(painter,maxSsvriPoints,"SSVRI");
-    drawCurve(painter,minLswiPoints,"LSWI");
-    drawCurve(painter,maxLswiPoints,"LSWI");
+    drawCurve(painter, minSsvriPoints, "SSVRI");
+    drawCurve(painter, maxSsvriPoints, "SSVRI");
+    drawCurve(painter, minLswiPoints, "LSWI");
+    drawCurve(painter, maxLswiPoints, "LSWI");
 
     // 相交点X坐标
     qreal minMin_X = (intersectAxisX(lswiArg.min,ssvriArg.min)-minX)*stepLenX+point.x();
@@ -144,19 +144,19 @@ void DrawSudoku::paintEvent(QPaintEvent *event)
     qreal maxMin_X = (intersectAxisX(lswiArg.max,ssvriArg.min)-minX)*stepLenX+point.x();
     qreal maxMax_X = (intersectAxisX(lswiArg.max,ssvriArg.max)-minX)*stepLenX+point.x();
     // 去除交点外的点
-    removePoints(minLswiPoints,minMax_X,minMin_X);
-    removePoints(maxLswiPoints,maxMax_X,maxMin_X);
-    removePoints(minSsvriPoints,minMin_X,maxMin_X);
-    removePoints(maxSsvriPoints,minMax_X,maxMax_X);
+    removePoints(minLswiPoints, minMax_X, minMin_X);
+    removePoints(maxLswiPoints, maxMax_X, maxMin_X);
+    removePoints(minSsvriPoints, minMin_X, maxMin_X);
+    removePoints(maxSsvriPoints, minMax_X, maxMax_X);
 
     // normal values
-    painter.setBrush(QColor(50,205,50));
+    painter.setBrush(QColor(50, 205, 50));
     painter.setPen(QPen(Qt::black));
     QPolygonF pointList;
-    pointList<<getNormalPoint(minLswiPoints,minMap.y1(),maxMap.y1(),minSi.x1(),maxSi.x1());
-    pointList<<getNormalPoint(minSsvriPoints,minMap.y1(),maxMap.y1(),minSi.x1(),maxSi.x1());
-    pointList<<getNormalPoint(maxLswiPoints,minMap.y1(),maxMap.y1(),minSi.x1(),maxSi.x1(),false);
-    pointList<<getNormalPoint(maxSsvriPoints,minMap.y1(),maxMap.y1(),minSi.x1(),maxSi.x1(),false);
+    pointList<<getNormalPoint(minLswiPoints, minMap.y1(), maxMap.y1(), minSi.x1(),maxSi.x1());
+    pointList<<getNormalPoint(minSsvriPoints, minMap.y1(), maxMap.y1(), minSi.x1(),maxSi.x1());
+    pointList<<getNormalPoint(maxLswiPoints, minMap.y1(), maxMap.y1(), minSi.x1(),maxSi.x1(), false);
+    pointList<<getNormalPoint(maxSsvriPoints, minMap.y1(), maxMap.y1(), minSi.x1(),maxSi.x1(), false);
     QPainterPath path;
     path.addPolygon(pointList);
     painter.drawPath(path);
@@ -167,10 +167,10 @@ void DrawSudoku::paintEvent(QPaintEvent *event)
     font.setPointSize(12);
     painter.setFont(font);
     if (m_cSi != 0 && m_cMap != 0) {
-        drawPosition(painter,m_cPositon,QPointF((m_cSi-minX)*stepLenX+point.x(),point.y()-(m_cMap-minY)*stepLenY),false);
+        drawPosition(painter, m_cPositon, QPointF((m_cSi-minX)*stepLenX+point.x(), point.y()-(m_cMap-minY)*stepLenY), false);
     }
     if (m_rSi != 0 && m_rMap != 0) {
-        drawPosition(painter,m_rPositon,QPointF((m_rSi-minX)*stepLenX+point.x(),point.y()-(m_rMap-minY)*stepLenY),true);
+        drawPosition(painter, m_rPositon, QPointF((m_rSi-minX)*stepLenX+point.x(), point.y()-(m_rMap-minY)*stepLenY), true);
     }
 }
 
@@ -211,7 +211,7 @@ QPolygonF DrawSudoku::getNormalPoint(QList<QPointF> &points, int map1, int map2,
 qreal DrawSudoku::intersectAxisX(qreal lswi, qreal ssvri)
 {
     auto &args = DataManagement::getInstance().getArgs();
-    return (sqrt((80*lswi/(0.0144*ssvri))+pow((80*(args.CVP-args.LAP))/(2*ssvri),2))
+    return (sqrt((80*lswi/(0.0144*ssvri))+pow((80*(args.CVP-args.LAP))/(2*ssvri), 2))
             - (80*(args.CVP-args.LAP))/(2*ssvri));
 }
 
@@ -232,7 +232,7 @@ void DrawSudoku::removePoints(QList<QPointF> &points, int min, int max)
     }
     for (int index = 0; index < points.size(); ++index) {
         if (points.at(index).x() > max) {
-            points = points.mid(0,index);
+            points = points.mid(0, index);
             break;
         }
     }
@@ -242,40 +242,40 @@ void DrawSudoku::drawPosition(QPainter &painter, char position, QPointF point, b
 {
     const int radius = 6;
     const int txtSize = painter.font().pointSize();
-    QPointF titleGraph(80,height()-20);
-    QPointF titleTxt(titleGraph.x()+txtSize/2,titleGraph.y()+txtSize/2);
+    QPointF titleGraph(80, height()-20);
+    QPointF titleTxt(titleGraph.x()+txtSize/2, titleGraph.y()+txtSize/2);
     if (record) {
         titleGraph.setX(160);
         titleTxt.setX(titleGraph.x()+radius);
     }
     switch (position) {
     case 0: // 圆
-        painter.drawEllipse(point,radius,radius);
-        painter.drawEllipse(titleGraph,txtSize/2,txtSize/2);
+        painter.drawEllipse(point, radius, radius);
+        painter.drawEllipse(titleGraph, txtSize/2, txtSize/2);
         break;
     case 1: // 矩形
-        painter.drawRect(point.x()-radius/2,point.y()-radius/2,2*radius,2*radius);
-        painter.drawRect(titleGraph.x()-txtSize/2,titleGraph.y()-txtSize/2,txtSize,txtSize);
+        painter.drawRect(point.x()-radius/2, point.y()-radius/2, 2*radius, 2*radius);
+        painter.drawRect(titleGraph.x()-txtSize/2, titleGraph.y()-txtSize/2, txtSize, txtSize);
         break;
     case 2: // 三角形
     {
         QPainterPath path;
-        path.addPolygon(QPolygonF()<<QPointF(point.x(),point.y()-radius)
+        path.addPolygon(QPolygonF()<<QPointF(point.x(), point.y()-radius)
                         <<QPointF(point.x()-radius,point.y()+radius)
                         <<QPointF(point.x()+radius,point.y()+radius)
-                        <<QPointF(point.x(),point.y()-radius));
+                        <<QPointF(point.x(), point.y()-radius));
         painter.drawPath(path);
         QPainterPath titlePath;
-        titlePath.addPolygon(QPolygonF()<<QPointF(titleGraph.x(),titleGraph.y()-txtSize/2)
-                             <<QPointF(titleGraph.x()-txtSize/2,titleGraph.y()+txtSize/2)
-                             <<QPointF(titleGraph.x()+txtSize/2,titleGraph.y()+txtSize/2)
-                             <<QPointF(titleGraph.x(),titleGraph.y()-txtSize/2));
+        titlePath.addPolygon(QPolygonF()<<QPointF(titleGraph.x(), titleGraph.y()-txtSize/2)
+                             <<QPointF(titleGraph.x()-txtSize/2, titleGraph.y()+txtSize/2)
+                             <<QPointF(titleGraph.x()+txtSize/2, titleGraph.y()+txtSize/2)
+                             <<QPointF(titleGraph.x(), titleGraph.y()-txtSize/2));
         painter.drawPath(titlePath);
     }
         break;
     }
     if (position >= 0 && position <= 2) {
-        painter.drawText(titleTxt,":"+getPosStr(position));
+        painter.drawText(titleTxt, ":"+getPosStr(position));
     }
 }
 

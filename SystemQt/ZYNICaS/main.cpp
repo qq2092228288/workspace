@@ -5,7 +5,7 @@
 #include "datamanagement.h"
 #include "threadserivce.h"
 #include "singleapplication.h"
-
+#include <QTimer>
 
 DataManagement DataManagement::instance;
 ThreadSerivce ThreadSerivce::instance;
@@ -69,10 +69,17 @@ int main(int argc, char *argv[])
         ins.httpPost()->setDeviceInfo(deviceDatabase.deviceInfo());
         // get device info
         ins.httpPost()->activeDevice(ins.getMac());
+//        // upload reports
+//        reportDatabase.dataUpload();
+//        // upload offline used consumable
+//        deviceDatabase.tryToUpload();
+        // data upload timer
+        QTimer timer;
         // upload reports
-        reportDatabase.dataUpload();
-        // upload offline used consumable
-        deviceDatabase.tryToUpload();
+        QObject::connect(&timer, &QTimer::timeout, &reportDatabase, &ReportDataBase::dataUpload);
+        // upload used consumables
+        QObject::connect(&timer, &QTimer::timeout, &deviceDatabase, &DeviceDatabase::tryToUpload);
+        timer.start(10000);
 
         MainWidget w;
         a.mainWidget = &w;

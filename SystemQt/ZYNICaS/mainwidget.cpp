@@ -6,20 +6,20 @@ MainWidget::MainWidget(QWidget *parent)
 {
     setWindowTitle(tr("泽耀无创血流动力学检测系统"));
     auto &instance = DataManagement::getInstance();
-    setMinimumSize(1600*instance.wZoom(),900*instance.hZoom());
+    setMinimumSize(1600*instance.wZoom(), 900*instance.hZoom());
     mainLayout = new QVBoxLayout(this);
-    titleLabel = new QLabel(tr("无创血流动力学检测系统"),this);
+    titleLabel = new QLabel(tr("无创血流动力学检测系统"), this);
     btnGroup = new QButtonGroup(this);
-    enterBtn = new QPushButton(tr("进入系统"),this);
-    reportBtn = new QPushButton(tr("查看报告"),this);
-    demoBtn = new QPushButton(tr("演示模式"),this);
-    configBtn = new QPushButton(tr("系统配置"),this);
-    exitBtn = new QPushButton(tr("退出系统"),this);
+    enterBtn = new QPushButton(tr("进入系统"), this);
+    reportBtn = new QPushButton(tr("查看报告"), this);
+    demoBtn = new QPushButton(tr("演示模式"), this);
+    configBtn = new QPushButton(tr("系统配置"), this);
+    exitBtn = new QPushButton(tr("退出系统"), this);
 
     reportDialog = new ShowReportDialog;
     configDialog = new SystemConfigDialog;
     enterSystemWidget = new EnterSystemWidget;
-    QObject::connect(enterSystemWidget,&EnterSystemWidget::widgetClose,this,&EnterSystemWidget::show);
+    QObject::connect(enterSystemWidget, &EnterSystemWidget::widgetClose, this, &EnterSystemWidget::show);
 
     btnGroup->addButton(enterBtn);
     btnGroup->addButton(reportBtn);
@@ -29,13 +29,13 @@ MainWidget::MainWidget(QWidget *parent)
 
     //布局
     mainLayout->addStretch();
-    mainLayout->addWidget(titleLabel,0,Qt::AlignCenter);
+    mainLayout->addWidget(titleLabel, 0, Qt::AlignCenter);
     mainLayout->addStretch();
-    mainLayout->addWidget(enterBtn,0,Qt::AlignCenter);
-    mainLayout->addWidget(reportBtn,0,Qt::AlignCenter);
-    mainLayout->addWidget(demoBtn,0,Qt::AlignCenter);
-    mainLayout->addWidget(configBtn,0,Qt::AlignCenter);
-    mainLayout->addWidget(exitBtn,0,Qt::AlignCenter);
+    mainLayout->addWidget(enterBtn, 0, Qt::AlignCenter);
+    mainLayout->addWidget(reportBtn, 0, Qt::AlignCenter);
+    mainLayout->addWidget(demoBtn, 0, Qt::AlignCenter);
+    mainLayout->addWidget(configBtn, 0, Qt::AlignCenter);
+    mainLayout->addWidget(exitBtn, 0, Qt::AlignCenter);
     mainLayout->addStretch();
 
     //样式表
@@ -67,11 +67,11 @@ MainWidget::MainWidget(QWidget *parent)
     }
 
     //按键槽函数关联
-    connect(enterBtn,&QPushButton::clicked,this,&MainWidget::enterBtnSlot);
-    connect(reportBtn,&QPushButton::clicked,reportDialog,&ShowReportDialog::exec);
-    connect(demoBtn,&QPushButton::clicked,this,&MainWidget::demoBtnSlot);
-    connect(configBtn,&QPushButton::clicked,configDialog,&SystemConfigDialog::exec);
-    connect(exitBtn,&QPushButton::clicked,this,&MainWidget::close);
+    connect(enterBtn, &QPushButton::clicked, this, &MainWidget::enterBtnSlot);
+    connect(reportBtn, &QPushButton::clicked, reportDialog, &ShowReportDialog::exec);
+    connect(demoBtn, &QPushButton::clicked, this, &MainWidget::demoBtnSlot);
+    connect(configBtn, &QPushButton::clicked, configDialog, &SystemConfigDialog::exec);
+    connect(exitBtn, &QPushButton::clicked, this, &MainWidget::close);
 }
 
 MainWidget::~MainWidget()
@@ -100,7 +100,7 @@ void MainWidget::paintEvent(QPaintEvent *event)
 
 void MainWidget::enterBtnSlot()
 {
-    int surplus = DataManagement::getInstance().deviceDatabase()->getConsumableSurplus();
+    int surplus = DataManagement::getInstance().surplus();
     if (surplus <= 0) {
         QMessageBox::warning(this, tr("警告！"), tr("有效验证码已使用完，请联系厂家！"));
         return;
@@ -116,8 +116,8 @@ void MainWidget::enterBtnSlot()
                 DataManagement::getInstance().clearSlot();
                 enterSystemWidget->clearUiSlot();
             }
-            connect(&DataManagement::getInstance(),&DataManagement::startCheck,
-                    DataManagement::getInstance().getTebco(),&ZyTebco::startCheckSlot,
+            connect(&DataManagement::getInstance(), &DataManagement::startCheck,
+                    DataManagement::getInstance().getTebco(), &ZyTebco::startCheckSlot,
                     Qt::ConnectionType(Qt::AutoConnection|Qt::UniqueConnection));
             connect(enterSystemWidget, &EnterSystemWidget::createdReport, this, &MainWidget::createdReportSlot,
                     Qt::ConnectionType(Qt::AutoConnection|Qt::UniqueConnection));
@@ -128,7 +128,7 @@ void MainWidget::enterBtnSlot()
             return;
         }
     }
-    QMessageBox::warning(this,tr("警告！"),tr("串口“%1”打开失败，请检查装置接入的串口是否和“系统配置”一致！")
+    QMessageBox::warning(this, tr("警告！"), tr("串口“%1”打开失败，请检查装置接入的串口是否和“系统配置”一致！")
                          .arg(configDialog->getPortName()));
 }
 
@@ -137,8 +137,8 @@ void MainWidget::demoBtnSlot()
     connect(enterSystemWidget, &EnterSystemWidget::startDemoMode,
             DataManagement::getInstance().getTebco(), &ZyTebco::startDemoMode,
             Qt::ConnectionType(Qt::AutoConnection|Qt::UniqueConnection));
-    if (disconnect(&DataManagement::getInstance(),&DataManagement::startCheck,
-            DataManagement::getInstance().getTebco(),&ZyTebco::startCheckSlot)) {
+    if (disconnect(&DataManagement::getInstance(), &DataManagement::startCheck,
+            DataManagement::getInstance().getTebco(), &ZyTebco::startCheckSlot)) {
         DataManagement::getInstance().getTebco()->startCheckSlot(false);
         DataManagement::getInstance().clearSlot();
         enterSystemWidget->clearUiSlot();
@@ -152,15 +152,20 @@ void MainWidget::createdReportSlot(const QString &baseDataString)
 {
     auto &instance = DataManagement::getInstance();
     instance.reportDataBase()->insert(QDateTime::currentMSecsSinceEpoch(), 0, baseDataString);
-    instance.reportDataBase()->dataUpload();
-    instance.deviceDatabase()->offlineUsed();
-    int surplus = instance.deviceDatabase()->getConsumableSurplus();
+    IdCheck idCheck(this);
+    if (idCheck.getCurrentConsumables() <= 0) {
+        instance.deviceDatabase()->offlineUsed();
+    }
+    else {
+        idCheck.consumablesUsed();
+    }
+    int surplus = instance.surplus();
     if (surplus <= 0) {
-        QMessageBox::warning(this,tr("警告！"),tr("有效验证码已使用完，请联系厂家！"));
+        QMessageBox::warning(this, tr("警告！"), tr("有效验证码已使用完，请联系厂家！"));
         enterSystemWidget->hide();
         this->show();
     }
     else if (surplus <= 20) {
-        QMessageBox::warning(this,tr("警告！"),tr("有效验证码剩余 %1 ，请注意！").arg(surplus));
+        QMessageBox::warning(this, tr("警告！"), tr("有效验证码剩余 %1 ，请注意！").arg(surplus));
     }
 }

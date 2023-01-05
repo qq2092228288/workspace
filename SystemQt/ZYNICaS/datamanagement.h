@@ -16,7 +16,7 @@
 #include "drawsudoku.h"
 #include "zytebco.h"
 #include "createreportthread.h"
-//#include "idcheck.h"
+#include "idcheck.h"
 #include "httppost.h"
 #include "reportdatabase.h"
 #include "devicedatabase.h"
@@ -123,6 +123,7 @@ public:
     QString getMac() const;
     ReportDataBase *reportDataBase() const;
     DeviceDatabase *deviceDatabase() const;
+    int surplus() const;
 public:
     void setHospitalInfo(HospitalInfo *hospitalInfo);
     void setBodyValue(BodyValue *bodyValue);

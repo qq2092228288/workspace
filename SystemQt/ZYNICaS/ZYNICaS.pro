@@ -74,11 +74,11 @@ HEADERS += \
 include(../../commonFiles/base.pri)
 
 INCLUDEPATH += ../ZyTebco \
-#    ../IdCheck \
+    ../IdCheck \
     ../../commonFiles/QRencode
 
 LIBS += -L$$PROJECT_LIBDIR -lZyTebco \
-#    -L$$PROJECT_LIBDIR -lIdCheck \
+    -L$$PROJECT_LIBDIR -lIdCheck \
     -L$$PROJECT_LIBDIR -lqrencoded
 
 # Default rules for deployment.
