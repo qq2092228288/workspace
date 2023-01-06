@@ -4,6 +4,7 @@ QT       += printsupport sql network
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 CONFIG += c++17
+TARGET = YZNICaS
 #版本信息、图标
 RC_FILE = resource.rc
 

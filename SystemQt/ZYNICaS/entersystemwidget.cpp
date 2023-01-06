@@ -121,6 +121,12 @@ EnterSystemWidget::~EnterSystemWidget()
     //    qDebug()<<"~EnterSystemWidget()";
 }
 
+void EnterSystemWidget::trendChartLayout()
+{
+    trendChartsWidget->show();
+    trendChartsWidget->hide();
+}
+
 void EnterSystemWidget::showEvent(QShowEvent *event)
 {
     if (DataManagement::getInstance().getHospitalInfo()->professional) {

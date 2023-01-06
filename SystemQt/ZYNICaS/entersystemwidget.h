@@ -42,6 +42,9 @@ class EnterSystemWidget : public QWidget
 public:
     explicit EnterSystemWidget(QWidget *parent = nullptr);
     virtual ~EnterSystemWidget();
+    // 显示后再隐藏，处理QWidget没有show截屏导致控件大小改变不可控问题
+    void trendChartLayout();
+protected:
     void showEvent(QShowEvent *event);
     void closeEvent(QCloseEvent *event);
     //初始化

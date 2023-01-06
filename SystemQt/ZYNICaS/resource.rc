@@ -28,7 +28,7 @@ VS_VERSION_INFO VERSIONINFO
 				VALUE "FileVersion", "1.0.0.1\0"
                 VALUE "LegalCopyright", "Copyright(C) 长沙芫泽医疗器械有限公司\0"
                 VALUE "LegalTrademarks", "长沙芫泽医疗器械有限公司\0"
-				VALUE "OriginalFilename", "ZYNICaS.exe\0"
+                VALUE "OriginalFilename", "YZNICaS.exe\0"
 				VALUE "ProductName", "无创血流动力学检测系统\0"
                 VALUE "ProductVersion", "1.0.0.1\0"
                 VALUE "OrganizationDomain", "https://zeyaotebco.com/\0"

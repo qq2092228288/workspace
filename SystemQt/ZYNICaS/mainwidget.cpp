@@ -72,6 +72,8 @@ MainWidget::MainWidget(QWidget *parent)
     connect(demoBtn, &QPushButton::clicked, this, &MainWidget::demoBtnSlot);
     connect(configBtn, &QPushButton::clicked, configDialog, &SystemConfigDialog::exec);
     connect(exitBtn, &QPushButton::clicked, this, &MainWidget::close);
+    // QT自动布局问题处理
+    enterSystemWidget->trendChartLayout();
 }
 
 MainWidget::~MainWidget()
