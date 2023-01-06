@@ -6,10 +6,10 @@ AuxArgDialog::AuxArgDialog(QWidget *parent)
 {
     this->setWindowTitle(tr("辅助参数"));
     auto &instance = DataManagement::getInstance();
-    this->setFixedSize(400*instance.wZoom(),200*instance.hZoom());
+    this->setMinimumSize(400*instance.wZoom(),200*instance.hZoom());
     setWindowFlags(Qt::CustomizeWindowHint | Qt::WindowCloseButtonHint);
     //样式表
-    this->setStyleSheet(instance.dialogQss());
+    this->setStyleSheet(instance.dialogQss(1.5));
 
     cvpLabel = new QLabel(tr("CVP_中心静脉压(2~6mmHg):"),this);
     lapLabel = new QLabel(tr("LAP_左房压(6~12mmHg):"),this);

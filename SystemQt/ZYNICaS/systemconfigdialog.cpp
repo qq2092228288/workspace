@@ -11,7 +11,7 @@ SystemConfigDialog::SystemConfigDialog(QWidget *parent)
     setWindowFlags(Qt::CustomizeWindowHint | Qt::WindowCloseButtonHint);
     infoFileName = instance.getPaths().baseInfo();
     //样式表
-    this->setStyleSheet(instance.dialogQss());
+    this->setStyleSheet(instance.dialogQss(1.2));
 
     hospitalInfoGroupBox = new QGroupBox(tr("信息配置"),this);
     hospitalNameLabel = new QLabel(tr("医院"), this);

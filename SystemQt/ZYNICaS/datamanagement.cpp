@@ -224,9 +224,9 @@ QSize DataManagement::rectSize(const int &w, const int &h)
     return QSize(w*wZoom(),h*hZoom());
 }
 
-QString DataManagement::dialogQss() const
+QString DataManagement::dialogQss(const double scale) const
 {
-    int fsize = 18*zoom()+1;
+    int fsize = (18*zoom() + 1)*scale;
     QString qss = QString("QLabel\
                 {\
                     color:#000000;\

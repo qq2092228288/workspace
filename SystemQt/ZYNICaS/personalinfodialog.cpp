@@ -9,7 +9,7 @@ PersonalInfoDialog::PersonalInfoDialog(QWidget *parent)
 {
     setWindowTitle(tr("患者信息导入"));
     auto &instance = DataManagement::getInstance();
-    setFixedSize(650*instance.wZoom(),400*instance.hZoom());
+    setMinimumSize(650*instance.wZoom(), 400*instance.hZoom());
 
     QVBoxLayout *mainLayout = new QVBoxLayout(this);
     QHBoxLayout *hLayout = new QHBoxLayout;
@@ -21,7 +21,7 @@ PersonalInfoDialog::PersonalInfoDialog(QWidget *parent)
     confirmBtn = new QPushButton(tr("确定"),this);
 
     comboBox->addItems(QStringList()<<tr("病历号")<<tr("姓名"));
-    comboBox->setFixedWidth(100*instance.hZoom());
+    comboBox->setFixedWidth(120*instance.hZoom());
 
     mainLayout->addLayout(hLayout);
     mainLayout->addWidget(tableView);

@@ -237,7 +237,11 @@ void HttpPost::activeDevice(const QString &mac)
 
     QJsonObject retValue = returnValueProcessing(manager, reply);
     if (retValue.isEmpty())
-        return ;
+        return;
+    if (retValue.find("code").value().toInt(-1) == 1) {
+        emit deviceNotExist();
+        return;
+    }
     QJsonObject data = retValue.find("data").value().toObject();
     QString retStr = QString(QJsonDocument(data).toJson());
     if (QJsonDocument::fromJson(retStr.toUtf8()).isObject()) {
@@ -248,6 +252,8 @@ void HttpPost::activeDevice(const QString &mac)
 
 void HttpPost::deviceOnlineNotice(const QString &deviceId)
 {
+    if (deviceId.isEmpty())
+        return;
     QJsonObject target;
     target.insert("deviceId", deviceId);
 
@@ -286,6 +292,8 @@ void HttpPost::receiveConsumable(const DataList &dataList)
 
 void HttpPost::useConsumable(const QString &deviceId, const QString &consumableUsedData)
 {
+    if (deviceId.isEmpty())
+        return;
     QJsonObject target;
     target.insert("deviceId", deviceId);
     target.insert("consumableUsedData", consumableUsedData);

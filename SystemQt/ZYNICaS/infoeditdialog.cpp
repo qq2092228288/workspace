@@ -30,9 +30,9 @@ InfoEditDialog::InfoEditDialog(QWidget *parent)
     this->setWindowTitle(tr("编辑患者信息"));
     auto &instance = DataManagement::getInstance();
     setWindowFlags(Qt::CustomizeWindowHint | Qt::WindowCloseButtonHint);
-    setFixedSize(600*instance.wZoom(),400*instance.hZoom());
+    setMinimumSize(600*instance.wZoom(), 400*instance.hZoom());
     //样式表
-    this->setStyleSheet(instance.dialogQss());
+    this->setStyleSheet(instance.dialogQss(1.5));
 
     nameLabel = new QLabel(tr("姓名"),this);
     numLabel = new QLabel(tr("病历号"),this);

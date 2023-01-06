@@ -40,6 +40,8 @@ public slots:
     void tryToUpload();
     // 已上传
     void uploaded();
+    // 清空数据
+    void clearTables();
 private:
     // calculation md5
     QString md5Str(const DataList &dataList, const int &noUploadCount, const QString &uuid);

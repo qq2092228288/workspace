@@ -101,10 +101,10 @@ ShowReportDialog::ShowReportDialog(QWidget *parent)
 {
     this->setWindowTitle(tr("查看报告"));
     auto &instance = DataManagement::getInstance();
-    setFixedSize(500*instance.wZoom(),600*instance.hZoom());
+    setMinimumSize(500*instance.wZoom(), 600*instance.hZoom());
     setWindowFlags(Qt::CustomizeWindowHint | Qt::WindowCloseButtonHint);
     //样式表
-    this->setStyleSheet(instance.dialogQss());
+    this->setStyleSheet(instance.dialogQss(1));
 
     funcGroupBox = new QGroupBox(this);
     searchLabel = new QLabel(tr("查找条件:"), this);

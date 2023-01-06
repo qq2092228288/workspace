@@ -6,10 +6,10 @@ SelectItemDialog::SelectItemDialog(bool trendChart, QWidget *parent)
 {
     auto &instance = DataManagement::getInstance();
 
-    setFixedSize(240*instance.wZoom(),120*instance.hZoom());
+    setMinimumSize(240*instance.wZoom(), 120*instance.hZoom());
     setWindowFlags(Qt::CustomizeWindowHint | Qt::WindowCloseButtonHint);
     //样式表
-    setStyleSheet(instance.dialogQss());
+    setStyleSheet(instance.dialogQss(1.5));
     comboBox = new QComboBox(this);
     confirmBtn = new QPushButton(tr("确定"),this);
     comboBox->setFixedWidth(120*instance.wZoom());

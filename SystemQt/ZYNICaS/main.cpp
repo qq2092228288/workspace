@@ -16,7 +16,7 @@ int main(int argc, char *argv[])
     if (!a.isRunning()) {
         // prevent system hibernation
         SetThreadExecutionState(ES_CONTINUOUS | ES_SYSTEM_REQUIRED | ES_DISPLAY_REQUIRED);
-
+        // data management instance
         auto &ins = DataManagement::getInstance();
         // tebco serialport class move to thread
         ThreadSerivce::getInstance().objectMoveToThread(ins.getTebco());
@@ -63,16 +63,13 @@ int main(int argc, char *argv[])
         QObject::connect(ins.httpPost(), &HttpPost::used, &deviceDatabase, &DeviceDatabase::uploaded);
         // upload used consumable data
         QObject::connect(&deviceDatabase, &DeviceDatabase::requestUseConsumable, ins.httpPost(), &HttpPost::useConsumable);
-
+        // device does not exist
+        QObject::connect(ins.httpPost(), &HttpPost::deviceNotExist, &deviceDatabase, &DeviceDatabase::clearTables);
         // update device info when starting software
         // set deviceInfo for httpPost
         ins.httpPost()->setDeviceInfo(deviceDatabase.deviceInfo());
         // get device info
         ins.httpPost()->activeDevice(ins.getMac());
-//        // upload reports
-//        reportDatabase.dataUpload();
-//        // upload offline used consumable
-//        deviceDatabase.tryToUpload();
         // data upload timer
         QTimer timer;
         // upload reports

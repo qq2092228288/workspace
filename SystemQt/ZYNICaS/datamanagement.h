@@ -111,7 +111,7 @@ public:
     qreal zoom() const;
     QFont font(const int &size, const QString &family = "Microsoft YaHei") const;
     QSize rectSize(const int &w, const int &h);
-    QString dialogQss() const;
+    QString dialogQss(const double scale) const;
     void initCurrentPath();
     MyFilePath getPaths() const;
     bool isRecordPos() const;

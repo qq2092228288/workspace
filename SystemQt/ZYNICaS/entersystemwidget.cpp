@@ -12,11 +12,11 @@ EnterSystemWidget::EnterSystemWidget(QWidget *parent)
     : QWidget{parent}
 {
     DataManagement &instance = DataManagement::getInstance();
-    setMinimumSize(1600*instance.wZoom(),900*instance.hZoom());
+    setMinimumSize(1600*instance.wZoom(), 900*instance.hZoom());
     setWindowTitle(tr("芫泽无创血流动力学检测"));
 
     //样式表
-    int fsize = 16*instance.zoom()+1;         //字体大小
+    int fsize = 20*instance.zoom()+1;         //字体大小
     int gsize = 20*instance.zoom()+1;
     QString qss = QString("QLabel\
     {\
@@ -86,7 +86,7 @@ EnterSystemWidget::EnterSystemWidget(QWidget *parent)
     mainLayout->addLayout(secColLayout,0,1);
 
     timer = new QTimer(this);
-    connect(timer,&QTimer::timeout,this,&EnterSystemWidget::timeoutSlot);
+    connect(timer, &QTimer::timeout, this, &EnterSystemWidget::timeoutSlot);
     timer->start(1000);
 
     initInfoModule();
@@ -503,6 +503,7 @@ void EnterSystemWidget::recordPosition()
         auto &instance = DataManagement::getInstance();
         instance.recordPosition(rPos);
         setBaseData();
+        QMessageBox::information(this, tr("提示"), tr("已记录体位"));
     }
 }
 

@@ -292,6 +292,13 @@ void DeviceDatabase::uploaded()
     }
 }
 
+void DeviceDatabase::clearTables()
+{
+    QSqlQuery sqlQuery(m_database);
+    sqlQuery.exec(QString("DELETE FROM %1").arg(m_dataTable));
+    sqlQuery.exec(QString("DELETE FROM %1").arg(m_batchTable));
+}
+
 QString DeviceDatabase::md5Str(const DataList &dataList, const int &noUploadCount, const QString &uuid)
 {
     QString str = QString("createTime=%1;typeName=%2;isReceived=%3;id=%4;consumableTypeId=%5;"

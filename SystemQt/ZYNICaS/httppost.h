@@ -153,6 +153,8 @@ signals:
     void finished(const qint64 &time);
     // 设备已创建
     void deviceCreated(const QString &tip);
+    // 设备不存在
+    void deviceNotExist();
 private:
     const QString m_urlApiRequestHeader;    // api接口请求头
     const QString m_urlFileServices;        // 文件服务

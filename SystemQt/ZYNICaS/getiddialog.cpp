@@ -7,7 +7,7 @@ GetIdDialog::GetIdDialog(QWidget *parent)
     : QDialog{parent}
 {
     auto &instance = DataManagement::getInstance();
-    setFixedSize(500*instance.wZoom(), 300*instance.hZoom());
+    setMinimumSize(500*instance.wZoom(), 300*instance.hZoom());
     this->setWindowTitle(tr("有效验证码"));
     QGridLayout *mainLayout = new QGridLayout(this);
     consumablesLabel = new QLabel(tr("剩余有效验证码:"), this);

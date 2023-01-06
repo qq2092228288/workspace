@@ -29,7 +29,7 @@ TrendChart::TrendChart(QWidget *customCtrl)
                                    font:bold 12px;\
                                }");
     m_pLabel->setStyleSheet(QString("QLabel{font:bold %1px;color: #000000;font-family:Microsoft YaHei;}")
-                            .arg(int(15*instance.zoom() + 1)));
+                            .arg(int(18*instance.zoom() + 1)));
     QVBoxLayout *mainLayout = new QVBoxLayout(this);
     mainLayout->addWidget(m_pGroupBox);
     QVBoxLayout *gLayout = new QVBoxLayout(m_pGroupBox);
@@ -95,11 +95,11 @@ void TrendChart::addValue(double value)
         m_pAxisX->setMin(cTime);
     }
     m_values.append(value);
-    double min = *min_element(m_values.begin(), m_values.end());
     double max = *max_element(m_values.begin(), m_values.end());
+    double min = *min_element(m_values.begin(), m_values.end());
     double avg = accumulate(m_values.begin(), m_values.end(), 0.0)/m_values.size();
-    m_pLabel->setText(QString("MAX: %1; MIN: %2; AVG: %3;").arg(QString::number(min, 'f', digit),
-                                                                QString::number(max, 'f', digit),
+    m_pLabel->setText(QString("MAX: %1; MIN: %2; AVG: %3;").arg(QString::number(max, 'f', digit),
+                                                                QString::number(min, 'f', digit),
                                                                 QString::number(avg, 'f', digit)));
     double offset = 5/qPow(10, digit);
     if (m_pAxisY->min() != min - offset || m_pAxisY->max() != max + offset) {

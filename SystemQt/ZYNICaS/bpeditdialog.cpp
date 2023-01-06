@@ -6,16 +6,16 @@ BPEditDialog::BPEditDialog(QWidget *parent)
 {
     this->setWindowTitle(tr("输入血压"));
     auto &instance = DataManagement::getInstance();
-    setFixedSize(300*instance.wZoom(),200*instance.hZoom());
+    setMinimumSize(300*instance.wZoom(), 200*instance.hZoom());
     setWindowFlags(Qt::CustomizeWindowHint | Qt::WindowCloseButtonHint);
     //样式表
-    this->setStyleSheet(instance.dialogQss());
+    this->setStyleSheet(instance.dialogQss(1.5));
 
-    sbpLabel = new QLabel(tr("收缩压(mmHg):"),this);
-    dbpLabel = new QLabel(tr("舒张压(mmHg):"),this);
+    sbpLabel = new QLabel(tr("收缩压(mmHg):"), this);
+    dbpLabel = new QLabel(tr("舒张压(mmHg):"), this);
     sbpLineEdit = new QLineEdit(this);
     dbpLineEdit = new QLineEdit(this);
-    confirmBtn = new QPushButton(tr("确定"),this);
+    confirmBtn = new QPushButton(tr("确定"), this);
 
     QVBoxLayout *vLayout = new QVBoxLayout(this);
     QHBoxLayout *sbpLayout = new QHBoxLayout;
@@ -30,10 +30,10 @@ BPEditDialog::BPEditDialog(QWidget *parent)
     dbpLayout->addWidget(dbpLineEdit);
     btnLayout->addWidget(confirmBtn,0,Qt::AlignRight);
 
-    QIntValidator *validator = new QIntValidator(0,999,this);
+    QIntValidator *validator = new QIntValidator(0, 999, this);
     sbpLineEdit->setValidator(validator);
     dbpLineEdit->setValidator(validator);
-    connect(confirmBtn,&QPushButton::clicked,this,&BPEditDialog::confirmSlot);
+    connect(confirmBtn, &QPushButton::clicked, this, &BPEditDialog::confirmSlot);
 }
 
 void BPEditDialog::keyPressEvent(QKeyEvent *event)
@@ -54,7 +54,7 @@ void BPEditDialog::clear()
 void BPEditDialog::confirmSlot()
 {
     if(!sbpLineEdit->text().isEmpty() && !dbpLineEdit->text().isEmpty()){
-        emit value(sbpLineEdit->text(),dbpLineEdit->text());
+        emit value(sbpLineEdit->text(), dbpLineEdit->text());
         this->close();
     }else{
         QMessageBox::warning(this,tr("警告！"),tr("信息不完整！"));
