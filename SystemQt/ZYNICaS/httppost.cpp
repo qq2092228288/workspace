@@ -243,9 +243,8 @@ void HttpPost::activeDevice(const QString &mac)
         return;
     }
     QJsonObject data = retValue.find("data").value().toObject();
-    QString retStr = QString(QJsonDocument(data).toJson());
-    if (QJsonDocument::fromJson(retStr.toUtf8()).isObject()) {
-        m_deviceInfo = DeviceInfo(QJsonDocument::fromJson(retStr.toUtf8()).object());
+    if (!data.isEmpty()) {
+        m_deviceInfo = DeviceInfo(data);
         emit deviceInfo(m_deviceInfo);
     }
 }

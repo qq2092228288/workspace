@@ -22,11 +22,11 @@ DeviceDatabase::DeviceDatabase(QObject *parent)
                                     "agentName TEXT, "
                                     "hospitalName TEXT, "
                                     "secret TEXT, "
-                                    "place1Id TEXT NOT NULL, "
+                                    "place1Id TEXT, "
                                     "place1Name TEXT, "
                                     "place2Id TEXT, "
                                     "place2Name TEXT, "
-                                    "signSecret TEXT NOT NULL)")
+                                    "signSecret TEXT)")
                             .arg(m_dataTable);
         sqlQuery.prepare(dataTable);
         sqlQuery.exec();
@@ -52,14 +52,6 @@ DeviceDatabase::DeviceDatabase(QObject *parent)
     else {
         qWarning("数据库打开失败！");
     }
-//    QSqlQuery sqlQuery(m_database);
-//    sqlQuery.exec(QString("SELECT * FROM %1").arg(m_dataTable));
-//    QSqlRecord record = sqlQuery.record();
-//    while (sqlQuery.next()) {
-//        for (int index = 0; index < record.count(); ++index) {
-//            qDebug()<<record.fieldName(index)<<sqlQuery.value(index);
-//        }
-//    }
 }
 
 bool DeviceDatabase::databaseIntegralityCheck()
