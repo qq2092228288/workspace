@@ -54,9 +54,13 @@ private:
 signals:
     void requestUseConsumable(const QString &deviceId, const QString &consumableUsedData);
 private:
+    // 数据库名
     const QString m_databaseName;
+    // 设备数据表
     const QString m_dataTable;
+    // 耗材数据表
     const QString m_batchTable;
+    // 数据库类
     QSqlDatabase m_database;
 };
 
