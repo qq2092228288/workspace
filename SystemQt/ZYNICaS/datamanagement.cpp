@@ -1,5 +1,6 @@
 #include "datamanagement.h"
 #include "qrencode.h"
+#include "idcheck.h"
 
 MyFilePath::MyFilePath(const QString &path)
     : appPath{path}
@@ -412,7 +413,7 @@ QString DataManagement::saveReport(QDateTime curTime, QString position, bool rec
     emit startCheck(false);
     m_newReportName.clear();
     m_currentInfo.pos = position;
-    saveInfo(m_currentInfo,record);
+    saveInfo(m_currentInfo, record);
     m_pdZ->grab().save(m_filePath.current_dz());
     m_pSudoku->grab().save(m_filePath.sudoku());
 
@@ -441,9 +442,20 @@ QString DataManagement::saveReport(QDateTime curTime, QString position, bool rec
             result += tr("1.第一体位：心输出量(CO)%1，心脏指数(CI)%2，心搏量(SV)%3，心搏指数(SI)%4，心率(HR)%5，血管顺应性(Vas)%6，"
                 "血管容量(Vol)%7，收缩变力性(Ino)%8，收缩压(SBP)%9，舒张压(DBP)%10，胸液传导性(TFC)%11；\n"
                 "2.第二体位增加容量负荷实验后：心搏量(SV)%12，变力状态指数(ISI)%13，%14。")
-                    .arg(pevl(Type::CO),pevl(Type::CI),pevl(Type::SV),pevl(Type::SI),pevl(Type::HR),
-                         pevl(Type::Vas),pevl(Type::Vol),pevl(Type::Ino),pevl(Type::SBP))
-                    .arg(pevl(Type::DBP),pevl(Type::TFC),compare(Type::SV),compare(Type::ISI),preload());
+                    .arg(pevl(Type::CO),
+                         pevl(Type::CI),
+                         pevl(Type::SV),
+                         pevl(Type::SI),
+                         pevl(Type::HR),
+                         pevl(Type::Vas),
+                         pevl(Type::Vol),
+                         pevl(Type::Ino),
+                         pevl(Type::SBP))
+                    .arg(pevl(Type::DBP),
+                         pevl(Type::TFC),
+                         compare(Type::SV),
+                         compare(Type::ISI),
+                         preload());
         }
         else {
             reportThread->setOpenArg(m_filePath.xmany_dot(), false);
@@ -457,33 +469,62 @@ QString DataManagement::saveReport(QDateTime curTime, QString position, bool rec
             reportThread->addBatchMarks(rList, values);
             result += tr("1.第一体位：CO%1，CI%2，SV%3，SI%4，HR%5，Vas%6，Vol%7，Ino%8，SBP%9，DBP%10，TFC%11；\n"
                 "2.第二体位增加容量负荷实验后：SV%12，ISI%13，%14。")
-                    .arg(pevl(Type::CO),pevl(Type::CI),pevl(Type::SV),pevl(Type::SI),pevl(Type::HR),
-                         pevl(Type::Vas),pevl(Type::Vol),pevl(Type::Ino),pevl(Type::SBP))
-                    .arg(pevl(Type::DBP),pevl(Type::TFC),compare(Type::SV),compare(Type::ISI),preload());
+                    .arg(pevl(Type::CO),
+                         pevl(Type::CI),
+                         pevl(Type::SV),
+                         pevl(Type::SI),
+                         pevl(Type::HR),
+                         pevl(Type::Vas),
+                         pevl(Type::Vol),
+                         pevl(Type::Ino),
+                         pevl(Type::SBP))
+                    .arg(pevl(Type::DBP),
+                         pevl(Type::TFC),
+                         compare(Type::SV),
+                         compare(Type::ISI),
+                         preload());
         }
     }
     else {      // 单体位
         if (!m_pHospitalInfo->xprinter) {
             if (m_pHospitalInfo->professional) {
-                reportThread->setOpenArg(m_filePath.psingle_dot(),false);
+                reportThread->setOpenArg(m_filePath.psingle_dot(), false);
             }
             else {
-                reportThread->setOpenArg(m_filePath.single_dot(),false);
+                reportThread->setOpenArg(m_filePath.single_dot(), false);
             }
             result += tr("1.心脏功能：心输出量(CO)%1，心搏量(SV)%2，心搏指数(SI)%3，心脏指数(CI)%4，血管容量(Vol)%5，血管顺应性(Vas)%6，收缩变力性(Ino)%7；\n"
                 "2.血压管理：收缩压(SBP)%8，舒张压(DBP)%9，心率(HR)%10；")
-                    .arg(pevl(Type::CO,false),pevl(Type::SV,false),pevl(Type::SI,false),pevl(Type::CI,false),pevl(Type::Vol,false),
-                         pevl(Type::Vas,false),pevl(Type::Ino,false),pevl(Type::SBP,false),pevl(Type::DBP,false))
-                    .arg(pevl(Type::HR,false));
+                    .arg(pevl(Type::CO, false),
+                         pevl(Type::SV, false),
+                         pevl(Type::SI, false),
+                         pevl(Type::CI, false),
+                         pevl(Type::Vol, false),
+                         pevl(Type::Vas, false),
+                         pevl(Type::Ino, false),
+                         pevl(Type::SBP, false),
+                         pevl(Type::DBP, false))
+                    .arg(pevl(Type::HR, false));
         }
         else {
             reportThread->setOpenArg(m_filePath.xsingle_dot(),false);
             result += tr("1.心脏功能：CO%1，SV%2，SI%3，CI%4，Vol%5，Vas%6，Ino%7；\n"
                 "2.血压管理：SBP%8，DBP%9，HR%10；")
-                    .arg(pevl(Type::CO,false),pevl(Type::SV,false),pevl(Type::SI,false),pevl(Type::CI,false),pevl(Type::Vol,false),
-                         pevl(Type::Vas,false),pevl(Type::Ino,false),pevl(Type::SBP,false),pevl(Type::DBP,false))
-                    .arg(pevl(Type::HR,false));
+                    .arg(pevl(Type::CO, false),
+                         pevl(Type::SV, false),
+                         pevl(Type::SI, false),
+                         pevl(Type::CI, false),
+                         pevl(Type::Vol, false),
+                         pevl(Type::Vas, false),
+                         pevl(Type::Ino, false),
+                         pevl(Type::SBP, false),
+                         pevl(Type::DBP, false))
+                    .arg(pevl(Type::HR, false));
         }
+    }
+    if (m_pRegulator->getCustomCtrl("MAP")->getCurrentValue() == 0 ||
+            (record && m_pRegulator->getCustomCtrl("MAP")->getRecordValue() == 0)) {
+        result.clear();
     }
     reportThread->addMarks("result", result);
     QString tip = tr("提示：血流动力学检测异常会增加心源性猝死的风险，请结合临床相关检查。");
@@ -501,7 +542,7 @@ QString DataManagement::saveReport(QDateTime curTime, QString position, bool rec
         }
         reportThread->addBatchMarks(cList, m_currentInfo.values);
         reportThread->addMarks("cname", (m_currentInfo.pos + tr(" 心阻抗图(dZ)")));
-        reportThread->addPic("cimage",m_filePath.current_dz());
+        reportThread->addPic("cimage", m_filePath.current_dz());
         reportThread->addMarks("room" , m_pHospitalInfo->roomName);
         if (m_pHospitalInfo->professional) {
             for (int index = 0; index < m_filePath.trendchartspic().size(); ++index) {
@@ -522,7 +563,7 @@ QString DataManagement::saveReport(QDateTime curTime, QString position, bool rec
     }
     // dot normal data
     reportThread->addMarks("sname", tr("九宫分析图"));
-    reportThread->addPic("simage",m_filePath.sudoku());
+    reportThread->addPic("simage", m_filePath.sudoku());
     // 医院、时间、检查人员
     reportThread->addMarks("hospital" , m_pHospitalInfo->hospitalName);
     reportThread->addMarks("time" , curTime.toString("yyyy-MM-dd hh:mm"));
@@ -530,17 +571,17 @@ QString DataManagement::saveReport(QDateTime curTime, QString position, bool rec
     // 患者基本信息
     reportThread->addMarks("name" , m_pBodyValue->name);
     reportThread->addMarks("sex", (0 == m_pBodyValue->sex) ? tr("男") : tr("女"));
-    reportThread->addMarks("age" , QString::number(m_pBodyValue->age)+tr(" 岁"));
-    reportThread->addMarks("height" , QString::number(m_pBodyValue->height)+" cm");
-    reportThread->addMarks("weight" , QString::number(m_pBodyValue->weight)+" kg");
+    reportThread->addMarks("age" , QString::number(m_pBodyValue->age) + tr(" 岁"));
+    reportThread->addMarks("height" , QString::number(m_pBodyValue->height) + " cm");
+    reportThread->addMarks("weight" , QString::number(m_pBodyValue->weight) + " kg");
     reportThread->addMarks("number" , m_pBodyValue->id);
-    reportThread->addMarks("area" , QString::number(m_pBodyValue->BSA(),'f',1)+" m²");
+    reportThread->addMarks("area" , QString::number(m_pBodyValue->BSA(), 'f', 1) + " m²");
     // 二维码
     getQrCodeUrlPixmap(m_pHospitalInfo->deviceId, curTime.toString("yyyyMMddHHmmss")).save(m_filePath.qrCode());
     reportThread->addPic("qrcode", m_filePath.qrCode());
     // 保存
     m_newReportName = QString("%1/%2-%3-%4.docx").arg(m_filePath.reports(),
-                      curTime.toString("yyyyMMddhhmm"),m_pBodyValue->id,m_pBodyValue->name);
+                      curTime.toString("yyyyMMddhhmm"), m_pBodyValue->id,m_pBodyValue->name);
     reportThread->setSaveAs(m_newReportName);
     reportThread->start();
     return result;
@@ -606,18 +647,47 @@ void DataManagement::saveInfo(Cdata &cdata, bool second)
     foreach (CustomCtrl *customCtrl, customCtrls) {
         if (customCtrl->getName() != "SBP/DBP") {
             cdata.values<<flag(customCtrl, second);
-            auto args = customCtrl->getArgItems();
         }
         else {
             auto sbp = customCtrl->getArgItems();
             auto dbp = customCtrl->getDbpArgItems();
             if (!second) {
-                cdata.values<<tip(sbp.minValue,sbp.maxValue,sbp.currentValue)
-                            <<tip(dbp.minValue,dbp.maxValue,dbp.currentValue);
+                if (sbp.currentValue == 0) {
+                    cdata.values<<QString("-");
+                }
+                else {
+                    cdata.values<<tip(sbp.minValue, sbp.maxValue, sbp.currentValue);
+                }
+                if (dbp.currentValue == 0) {
+                    cdata.values<<QString("-");
+                }
+                else {
+                    cdata.values<<tip(dbp.minValue, dbp.maxValue, dbp.currentValue);
+                }
             }
             else {
-                cdata.values<<tip(sbp.recordValue,sbp.currentValue)
-                            <<tip(dbp.recordValue,dbp.currentValue);
+                if (sbp.currentValue == 0) {
+                    cdata.values<<QString("-");
+                }
+                else {
+                    if (sbp.recordValue == 0) {
+                        cdata.values<<QString::number(sbp.currentValue);
+                    }
+                    else {
+                        cdata.values<<tip(sbp.recordValue, sbp.currentValue);
+                    }
+                }
+                if (dbp.currentValue == 0) {
+                    cdata.values<<QString("-");
+                }
+                else {
+                    if (dbp.recordValue == 0) {
+                        cdata.values<<QString::number(dbp.currentValue);
+                    }
+                    else {
+                        cdata.values<<tip(dbp.recordValue, dbp.currentValue);
+                    }
+                }
             }
         }
     }
@@ -625,19 +695,57 @@ void DataManagement::saveInfo(Cdata &cdata, bool second)
 
 QString DataManagement::flag(CustomCtrl *customCtrl, bool second)
 {
+//    QString name = customCtrl->getName();
     QStringList list = QStringList()<<"CO"<<"CI"<<"SV"<<"SI"<<"TFC"<<"EPCI"<<"ISI"<<"Ino"<<"HR"<<"MAP";
-    if (second) {   // 第二体位
-        if (list.indexOf(customCtrl->getName()) != -1) {
-            return tip(customCtrl->getRecordValue(),customCtrl->getCurrentValue());
-        }
-    }
-    else {          // 第一体位
-        list<<"Vol"<<"HRV"<<"Vas";
-        if (list.indexOf(customCtrl->getName()) != -1) {
-            return tip(customCtrl->getMinValue(),customCtrl->getMaxValue(),customCtrl->getCurrentValue());
-        }
-    }
+//    if (second) {   // 第二体位
+//        if (list.indexOf(customCtrl->getName()) != -1) {
+//            if (customCtrl->getRecordValue() != 0 && customCtrl->getCurrentValue() != 0) {
+//                return tip(customCtrl->getRecordValue(), customCtrl->getCurrentValue());
+//            }
+//        }
+//    }
+//    else {          // 第一体位
+//        list<<"Vol"<<"HRV"<<"Vas";
+//        if (list.indexOf(customCtrl->getName()) != -1 && customCtrl->getCurrentValue() != 0) {
+//            return tip(customCtrl->getMinValue(), customCtrl->getMaxValue(), customCtrl->getCurrentValue());
+//        }
+//    }
+//    if (customCtrl->getCurrentValue() == 0) {
+//        if (name != "Vol" || name != "Vas" || m_pRegulator->getCustomCtrl("MAP")->getCurrentValue() != 0) {
+//            return QString("-");
+//        }
+//    }
+//    return QString::number(customCtrl->getCurrentValue());
 
+    if (!second) {  // 第一体位
+        list<<"Vol"<<"HRV"<<"Vas";
+        if (list.indexOf(customCtrl->getName()) != -1 && customCtrl->getCurrentValue() != 0) {    // 需要标注箭头的参数
+            if ((customCtrl->getName() == "Vol" || customCtrl->getName() == "Vas") &&
+                    m_pRegulator->getCustomCtrl("MAP")->getCurrentValue() == 0) {   // Vol或Vas参数时MAP为零
+                return QString("-");
+            }
+            return tip(customCtrl->getMinValue(), customCtrl->getMaxValue(), customCtrl->getCurrentValue());
+        }
+        else if (customCtrl->getCurrentValue() == 0) {
+            return QString("-");
+        }
+    }
+    else {  // 第二体位
+        if (list.indexOf(customCtrl->getName()) != -1) {
+            if (customCtrl->getCurrentValue() != 0) {
+                if (customCtrl->getRecordValue() != 0) {
+                    return tip(customCtrl->getRecordValue(), customCtrl->getCurrentValue());
+                }
+            }
+            else {
+                if ((customCtrl->getName() == "Vol" || customCtrl->getName() == "Vas") &&
+                    m_pRegulator->getCustomCtrl("MAP")->getCurrentValue() != 0) {
+                    return QString::number(customCtrl->getCurrentValue());
+                }
+                return QString("-");
+            }
+        }
+    }
     return QString::number(customCtrl->getCurrentValue());
 }
 

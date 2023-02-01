@@ -53,7 +53,7 @@ void DrawSudoku::paintEvent(QPaintEvent *event)
     Q_UNUSED(event);
     auto &args = DataManagement::getInstance().getArgs();
     //起始点
-    const QPoint point(55, height() - 80);
+    const QPoint point(60, height() - 80);
     const int len = 400;
     QPainter painter(this);
     // 消除锯齿
@@ -67,8 +67,8 @@ void DrawSudoku::paintEvent(QPaintEvent *event)
     QLine topY(point.x() + len, point.y(), point.x() + len, point.y() - len);
     painter.drawLines(QVector<QLine>()<<axisX<<axisY<<topX<<topY);
     // 刻度
-    const qreal minX = 20, maxX = 100;    //范围
-    const qreal minY = 40, maxY = 140;
+    const qreal minX = 10, maxX = 100;    //范围
+    const qreal minY = 20, maxY = 180;
     const qreal stepLenX = len/(maxX - minX);   //步长
     const qreal stepLenY = len/(maxY - minY);
     for (int x = minX; x <= maxX; x += 10) {
@@ -77,7 +77,7 @@ void DrawSudoku::paintEvent(QPaintEvent *event)
         painter.drawText(temp, QString::number(x));
     }
     for (int y = minY; y <= maxY; y += 20) {
-        QPoint temp(point.x()-20,point.y()-(y-minY)*stepLenY);
+        QPoint temp(point.x()-20, point.y()-(y-minY)*stepLenY);
         painter.drawPoint(point.x() + 2, temp.y());
         painter.drawText(temp, QString::number(y));
     }
@@ -85,7 +85,7 @@ void DrawSudoku::paintEvent(QPaintEvent *event)
     QFont font = painter.font();
     font.setPointSize(18);
     painter.setFont(font);
-    painter.drawText(QPoint(point.x() - 50, point.y() - len/2), QString("MAP"));
+    painter.drawText(QPoint(point.x() - 55, point.y() - len/2), QString("MAP"));
     painter.drawText(QPoint(point.x() + len/2, point.y() + 40), QString("SI"));
 
     painter.setPen(QPen(QColor(Qt::black), 1));
@@ -179,7 +179,7 @@ void DrawSudoku::drawCurve(QPainter &painter, QList<QPointF> &points, QString na
     if (!points.isEmpty()) {
         QPainterPath path;
         path.moveTo(points.at(0));
-        painter.drawText(points.at(points.size()/20),name);
+        painter.drawText(points.at(points.size()/10), name);
         foreach (const QPointF &point, points) {
             path.lineTo(point);
         }

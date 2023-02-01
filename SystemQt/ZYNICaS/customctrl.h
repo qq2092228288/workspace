@@ -29,7 +29,7 @@ QString typeName(const uchar &type);
 QString typeName(const Type &type);
 
 // 范围，记录值，当前值，名称，单位
-typedef struct ArgItems
+struct ArgItems
 {
     double minValue = 0;
     double maxValue = 0;
@@ -38,7 +38,7 @@ typedef struct ArgItems
     QString dataName;
     QString dataName_cn;
     QString dataUnit;
-}AItems;
+};
 
 struct Argument;
 
@@ -54,8 +54,8 @@ public:
 protected:
     void mouseDoubleClickEvent(QMouseEvent *);
 public:
-    AItems getArgItems();
-    AItems getDbpArgItems();
+    ArgItems getArgItems();
+    ArgItems getDbpArgItems();
     double getRecordValue();
     double getCurrentValue();
     double getMinValue() const;
@@ -87,8 +87,8 @@ private:
     QLineEdit *valueEdit;   //值
     QLabel *scopeLabel;     //范围
     QLabel *unitLabel;      //单位
-    AItems aitems;
-    AItems dbpaitems;
+    ArgItems aitems;
+    ArgItems dbpaitems;
     int digit;
     // 精度
     qreal m_accuracy = 1;

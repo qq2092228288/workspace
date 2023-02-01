@@ -1,7 +1,7 @@
 #include "getiddialog.h"
 #include "datamanagement.h"
 #include "httppost.h"
-
+#include "idcheck.h"
 
 GetIdDialog::GetIdDialog(QWidget *parent)
     : QDialog{parent}

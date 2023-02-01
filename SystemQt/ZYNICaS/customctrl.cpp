@@ -225,12 +225,12 @@ void CustomCtrl::mouseDoubleClickEvent(QMouseEvent *)
     m_pDialog->exec();
 }
 
-AItems CustomCtrl::getArgItems()
+ArgItems CustomCtrl::getArgItems()
 {
     return aitems;
 }
 
-AItems CustomCtrl::getDbpArgItems()
+ArgItems CustomCtrl::getDbpArgItems()
 {
     return dbpaitems;
 }
