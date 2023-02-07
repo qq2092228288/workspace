@@ -574,6 +574,7 @@ void EnterSystemWidget::clearUiSlot()
 
 void EnterSystemWidget::setCtrlValue(const Type &type, const double &value)
 {
+    if (value == DatCa::invalid()) return;
     regulator->getCustomCtrl(typeName(type))->setValue(value);
 }
 

@@ -521,7 +521,7 @@ QJsonObject HttpPost::returnValueProcessing(QNetworkAccessManager *manager, QNet
         else {
             if (reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt() == 200) {
                 QString ret = QString(reply->readAll());
-                std::cout<<ret.toLocal8Bit().data()<<std::endl;
+//                std::cout<<ret.toLocal8Bit().data()<<std::endl;
                 return QJsonDocument::fromJson(ret.toUtf8()).object();
             }
         }
