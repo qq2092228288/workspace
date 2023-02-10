@@ -522,8 +522,18 @@ QString DataManagement::saveReport(QDateTime curTime, QString position, bool rec
                     .arg(pevl(Type::HR, false));
         }
     }
-    if (m_pRegulator->getCustomCtrl("MAP")->getCurrentValue() == 0 ||
-            (record && m_pRegulator->getCustomCtrl("MAP")->getRecordValue() == 0)) {
+    if (record) {
+
+    }
+    else {
+
+    }
+    if (m_pRegulator->getCustomCtrl("HR")->getCurrentValue() == 0 ||
+            m_pRegulator->getCustomCtrl("MAP")->getCurrentValue() == 0) {
+        result.clear();
+    }
+    else if (record && (m_pRegulator->getCustomCtrl("HR")->getRecordValue() == 0 ||
+                        m_pRegulator->getCustomCtrl("MAP")->getRecordValue() == 0)) {
         result.clear();
     }
     reportThread->addMarks("result", result);
@@ -646,7 +656,61 @@ void DataManagement::saveInfo(Cdata &cdata, bool second)
     auto customCtrls = m_pRegulator->getAllCustomCtrls();
     foreach (CustomCtrl *customCtrl, customCtrls) {
         if (customCtrl->getName() != "SBP/DBP") {
-            cdata.values<<flag(customCtrl, second);
+            // 第一体位<<"CO"<<"CI"<<"SV"<<"SI"<<"TFC"<<"EPCI"<<"ISI"(<<"Ino")<<"HR"<<"MAP"(<<"Vol"<<"HRV"<<"Vas")
+            // 第二体位<<"CO"<<"CI"<<"SV"<<"SI"<<"TFC"<<"EPCI"<<"ISI"(<<"Ino")<<"HR"<<"MAP"
+            QStringList list = QStringList()<<"CO"<<"CI"<<"SV"<<"SI"<<"TFC"<<"EPCI"<<"ISI"<<"HR"<<"MAP";
+
+            QString name = customCtrl->getName();
+            double min = customCtrl->getMinValue();
+            double max = customCtrl->getMaxValue();
+            double rValue = customCtrl->getRecordValue();
+            double cValue = customCtrl->getCurrentValue();
+
+            QString str = QString::number(cValue);
+            // list比较
+            if (list.indexOf(name) != -1) {
+                if (!second) {  // 第一体位
+                    if (cValue != 0) {
+                        str = tip(min, max, cValue);
+                    }
+                    else {
+                        str = QString("-");
+                    }
+                }
+                else {  // 第二体位
+                    if (cValue != 0 && rValue != 0) {
+                        str = tip(rValue, cValue);
+                    }
+                    else if (cValue != 0 && rValue == 0) {
+                        str = QString::number(cValue);
+                    }
+                    else {
+                        str = QString("-");
+                    }
+                }
+            }
+            else {
+                if (cValue != 0) {
+                    str = QString::number(cValue);
+                }
+                else if (name == "Ino" || (!second && (name == "HRV" || name == "Vol" || name == "Vas"))) {
+                    if (m_pRegulator->getCustomCtrl("HR")->getCurrentValue() != 0) {    // 真实数据
+                        if (!second) {
+                            str = tip(min, max, cValue);
+                        }
+                        else {
+                            str = tip(rValue, cValue);
+                        }
+                    }
+                    else {
+                        str = QString("-");
+                    }
+                }
+                else {
+                    str = QString("-");
+                }
+            }
+            cdata.values<<str;
         }
         else {
             auto sbp = customCtrl->getArgItems();
@@ -695,43 +759,24 @@ void DataManagement::saveInfo(Cdata &cdata, bool second)
 
 QString DataManagement::flag(CustomCtrl *customCtrl, bool second)
 {
-//    QString name = customCtrl->getName();
-    QStringList list = QStringList()<<"CO"<<"CI"<<"SV"<<"SI"<<"TFC"<<"EPCI"<<"ISI"<<"Ino"<<"HR"<<"MAP";
-//    if (second) {   // 第二体位
-//        if (list.indexOf(customCtrl->getName()) != -1) {
-//            if (customCtrl->getRecordValue() != 0 && customCtrl->getCurrentValue() != 0) {
-//                return tip(customCtrl->getRecordValue(), customCtrl->getCurrentValue());
-//            }
-//        }
-//    }
-//    else {          // 第一体位
-//        list<<"Vol"<<"HRV"<<"Vas";
-//        if (list.indexOf(customCtrl->getName()) != -1 && customCtrl->getCurrentValue() != 0) {
-//            return tip(customCtrl->getMinValue(), customCtrl->getMaxValue(), customCtrl->getCurrentValue());
-//        }
-//    }
-//    if (customCtrl->getCurrentValue() == 0) {
-//        if (name != "Vol" || name != "Vas" || m_pRegulator->getCustomCtrl("MAP")->getCurrentValue() != 0) {
-//            return QString("-");
-//        }
-//    }
-//    return QString::number(customCtrl->getCurrentValue());
+    QStringList fList = QStringList()<<"CO"<<"CI"<<"SV"<<"SI"<<"TFC"<<"EPCI"<<"ISI"<<"Ino"<<"HR"<<"MAP";
+    QStringList sList = fList<<"Vol"<<"HRV"<<"Vas";
 
     if (!second) {  // 第一体位
-        list<<"Vol"<<"HRV"<<"Vas";
-        if (list.indexOf(customCtrl->getName()) != -1 && customCtrl->getCurrentValue() != 0) {    // 需要标注箭头的参数
-            if ((customCtrl->getName() == "Vol" || customCtrl->getName() == "Vas") &&
-                    m_pRegulator->getCustomCtrl("MAP")->getCurrentValue() == 0) {   // Vol或Vas参数时MAP为零
-                return QString("-");
+        if (fList.indexOf(customCtrl->getName()) != -1) {
+            if (customCtrl->getCurrentValue() != 0) {
+                if ((customCtrl->getName() == "Vol" || customCtrl->getName() == "Vas") &&
+                        m_pRegulator->getCustomCtrl("MAP")->getCurrentValue() == 0) {   // Vol或Vas参数时MAP为零
+                    return QString("-");
+                }
+                else {
+                    return tip(customCtrl->getMinValue(), customCtrl->getMaxValue(), customCtrl->getCurrentValue());
+                }
             }
-            return tip(customCtrl->getMinValue(), customCtrl->getMaxValue(), customCtrl->getCurrentValue());
-        }
-        else if (customCtrl->getCurrentValue() == 0) {
-            return QString("-");
         }
     }
     else {  // 第二体位
-        if (list.indexOf(customCtrl->getName()) != -1) {
+        if (sList.indexOf(customCtrl->getName()) != -1) {
             if (customCtrl->getCurrentValue() != 0) {
                 if (customCtrl->getRecordValue() != 0) {
                     return tip(customCtrl->getRecordValue(), customCtrl->getCurrentValue());
