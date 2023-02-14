@@ -468,7 +468,7 @@ void EnterSystemWidget::setBPValue(const QString &sbp, const QString &dbp)
         if(!sbp.isEmpty() && !dbp.isEmpty()) {
             bodyValue.SBP = sbp.toInt();
             bodyValue.DBP = dbp.toInt();
-            BPCtrl->setValues(bodyValue.SBP,bodyValue.DBP);
+            BPCtrl->setValues(bodyValue.SBP, bodyValue.DBP);
             MAPCtrl->setValue(bodyValue.MAP());
         }
         else {

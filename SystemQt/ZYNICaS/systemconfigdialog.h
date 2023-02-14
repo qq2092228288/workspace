@@ -75,6 +75,7 @@ private:
     QString infoFileName;
     GetIdDialog *getIdDialog;
     QGroupBox *appMsgGroupBox;
+    QCheckBox *selfStartCheckBox;
     QPushButton *aboutAppBtn;
 };
 

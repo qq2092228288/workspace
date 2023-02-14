@@ -34,6 +34,7 @@ SystemConfigDialog::SystemConfigDialog(QWidget *parent)
     confirmBtn = new QPushButton(tr("确定"), this);
     getIdDialog = new GetIdDialog(this);
     appMsgGroupBox = new QGroupBox(this);
+    selfStartCheckBox = new QCheckBox("开机自启");
     aboutAppBtn = new QPushButton(tr("关于"), this);
 
     serialPortComboBox->setFixedWidth(120*instance.wZoom());
@@ -76,6 +77,7 @@ SystemConfigDialog::SystemConfigDialog(QWidget *parent)
     hLayout->addWidget(serialPortComboBox);
     hLayout->addStretch();
     hLayout->addWidget(getIDBtn);
+    appMsgLayout->addWidget(selfStartCheckBox, 0, Qt::AlignLeft);
     appMsgLayout->addWidget(aboutAppBtn, 0, Qt::AlignRight);
     btnLayout->addWidget(confirmBtn);
 
