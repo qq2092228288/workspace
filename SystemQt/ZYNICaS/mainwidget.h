@@ -21,7 +21,6 @@ class MainWidget : public QWidget
 public:
     explicit MainWidget(QWidget *parent = nullptr);
     virtual ~MainWidget();
-    void showEvent(QShowEvent *event);
     virtual void paintEvent(QPaintEvent *event);
 signals:
 

@@ -20,7 +20,7 @@ MainWidget::MainWidget(QWidget *parent)
     reportDialog = new ShowReportDialog;
     configDialog = new SystemConfigDialog;
     enterSystemWidget = new EnterSystemWidget;
-    QObject::connect(enterSystemWidget, &EnterSystemWidget::widgetClose, this, &EnterSystemWidget::show);
+    QObject::connect(enterSystemWidget, &EnterSystemWidget::widgetClose, this, &EnterSystemWidget::showMaximized);
 
     btnGroup->addButton(enterBtn);
     btnGroup->addButton(reportBtn);
@@ -73,7 +73,7 @@ MainWidget::MainWidget(QWidget *parent)
     connect(demoBtn, &QPushButton::clicked, this, &MainWidget::demoBtnSlot);
     connect(configBtn, &QPushButton::clicked, configDialog, &SystemConfigDialog::exec);
     connect(exitBtn, &QPushButton::clicked, this, &MainWidget::close);
-    // QT自动布局问题处理
+    // 未show控件截屏问题处理
     enterSystemWidget->trendChartLayout();
 }
 
@@ -83,12 +83,6 @@ MainWidget::~MainWidget()
     delete configDialog;
     delete enterSystemWidget;
     //    qDebug()<<"~MainWidget()";
-}
-
-void MainWidget::showEvent(QShowEvent *event)
-{
-    setWindowState(Qt::WindowNoState);
-    event->accept();
 }
 
 void MainWidget::paintEvent(QPaintEvent *event)
@@ -125,7 +119,7 @@ void MainWidget::enterBtnSlot()
             connect(enterSystemWidget, &EnterSystemWidget::createdReport, this, &MainWidget::createdReportSlot,
                     Qt::ConnectionType(Qt::AutoConnection|Qt::UniqueConnection));
             this->close();
-            enterSystemWidget->show();
+            enterSystemWidget->showMaximized();
             // 打开串口
             emit DataManagement::getInstance().sendSerialName(info.portName());
             return;
@@ -148,7 +142,7 @@ void MainWidget::demoBtnSlot()
     }
     disconnect(enterSystemWidget, &EnterSystemWidget::createdReport, this, &MainWidget::createdReportSlot);
     this->close();
-    enterSystemWidget->show();
+    enterSystemWidget->showMaximized();
 }
 
 void MainWidget::createdReportSlot(const QString &baseDataString)

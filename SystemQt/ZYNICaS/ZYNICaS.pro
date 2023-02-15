@@ -14,6 +14,7 @@ RC_FILE = resource.rc
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+    anothersetdialog.cpp \
     auxargdialog.cpp \
     bpeditdialog.cpp \
     createreportthread.cpp \
@@ -44,6 +45,7 @@ SOURCES += \
 
 HEADERS += \
     MyStruct.h \
+    anothersetdialog.h \
     auxargdialog.h \
     bpeditdialog.h \
     createreportthread.h \

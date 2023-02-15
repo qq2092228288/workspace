@@ -80,7 +80,7 @@ int main(int argc, char *argv[])
 
         MainWidget w;
         a.mainWidget = &w;
-        w.show();
+        w.showMaximized();
         // update consumable list, exec message box for getiddialog  when get new consumable list.
         ins.requestConsumableList();
         return a.exec();

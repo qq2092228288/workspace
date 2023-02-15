@@ -23,7 +23,10 @@
 #include <QCheckBox>
 #include <QRadioButton>
 
+
 #include "getiddialog.h"
+#include "anothersetdialog.h"
+
 
 struct HospitalInfo
 {
@@ -49,6 +52,7 @@ public:
 protected slots:
     void confirmSlot();
     void aboutAppSlot();
+    void anotherSetSlot();
 protected:
     void updateHospitalInfo();
 private:
@@ -75,7 +79,7 @@ private:
     QString infoFileName;
     GetIdDialog *getIdDialog;
     QGroupBox *appMsgGroupBox;
-    QCheckBox *selfStartCheckBox;
+    QPushButton *anotherSetBtn;
     QPushButton *aboutAppBtn;
 };
 

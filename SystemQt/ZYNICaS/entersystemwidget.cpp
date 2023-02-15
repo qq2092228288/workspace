@@ -14,7 +14,6 @@ EnterSystemWidget::EnterSystemWidget(QWidget *parent)
     DataManagement &instance = DataManagement::getInstance();
     setMinimumSize(1600*instance.wZoom(), 900*instance.hZoom());
     setWindowTitle(tr("芫泽无创血流动力学检测"));
-
     //样式表
     int fsize = 20*instance.zoom()+1;         //字体大小
     int gsize = 20*instance.zoom()+1;
@@ -137,7 +136,6 @@ void EnterSystemWidget::showEvent(QShowEvent *event)
         DataManagement::getInstance().getRegulator()->connectTrendChart(false);
         trendChartBtn->hide();
     }
-    setWindowState(Qt::WindowNoState);
     event->accept();
 }
 
