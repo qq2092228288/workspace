@@ -60,6 +60,7 @@ public slots:
     void timeoutSlot();
     void changeShow(const QString &current, const QString &change);
     void setData(const uchar &type, const short &value);
+    void showBpDialogSlot();
     void setBPValue(const QString &sbp, const QString &dbp);
     void changeMode(const int &id);
     void recordPosition();

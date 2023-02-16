@@ -7,6 +7,10 @@ CONFIG += c++17
 TARGET = YZNICaS
 #版本信息、图标
 RC_FILE = resource.rc
+#管理员权限运行
+#CONFIG(release, debug|release){
+#    QMAKE_LFLAGS += /MANIFESTUAC:\"level=\'requireAdministrator\' uiAccess=\'false\'\"
+#}
 
 
 # You can make your code fail to compile if it uses deprecated APIs.

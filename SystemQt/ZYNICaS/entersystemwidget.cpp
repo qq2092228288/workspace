@@ -326,7 +326,7 @@ void EnterSystemWidget::signalsAndSlots()
         numLineEdit->setText(bodyValue.id);
     });
     // bp
-    connect(mdiBtn, &QPushButton::clicked, bpDialog, &BPEditDialog::exec);
+    connect(mdiBtn, &QPushButton::clicked, this, &EnterSystemWidget::showBpDialogSlot);
     connect(bpDialog, &BPEditDialog::value, this, &EnterSystemWidget::setBPValue);
     // position
     connect(&patternGroup, &QButtonGroup::idClicked, this, &EnterSystemWidget::changeMode);
@@ -453,6 +453,13 @@ void EnterSystemWidget::setData(const uchar &type, const short &value)
     case Type::BEEP:
 //        QApplication::beep();
         break;
+    }
+}
+
+void EnterSystemWidget::showBpDialogSlot()
+{
+    if (isStartCheck()) {
+        bpDialog->exec();
     }
 }
 
