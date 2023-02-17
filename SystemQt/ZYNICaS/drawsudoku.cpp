@@ -167,9 +167,17 @@ void DrawSudoku::paintEvent(QPaintEvent *event)
     font.setPointSize(12);
     painter.setFont(font);
     if (m_cSi != 0 && m_cMap != 0) {
+        if (m_cSi < minX + 3)       m_cSi = minX + 3;
+        else if (m_cSi > maxX - 3)  m_cSi = maxX - 3;
+        if (m_cMap < minY + 3)      m_cMap = minY + 3;
+        else if (m_cMap > maxY - 3) m_cMap = maxY - 3;
         drawPosition(painter, m_cPositon, QPointF((m_cSi-minX)*stepLenX+point.x(), point.y()-(m_cMap-minY)*stepLenY), false);
     }
     if (m_rSi != 0 && m_rMap != 0) {
+        if (m_rSi < minX + 3)       m_rSi = minX + 3;
+        else if (m_rSi > maxX - 3)  m_rSi = maxX - 3;
+        if (m_rMap < minY + 3)      m_rMap = minY + 3;
+        else if (m_rMap > maxY - 3) m_rMap = maxY - 3;
         drawPosition(painter, m_rPositon, QPointF((m_rSi-minX)*stepLenX+point.x(), point.y()-(m_rMap-minY)*stepLenY), true);
     }
 }

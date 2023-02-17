@@ -82,6 +82,9 @@ SystemConfigDialog::SystemConfigDialog(QWidget *parent)
     btnLayout->addWidget(confirmBtn);
 
 
+    // 隐藏其它设置按钮
+    anotherSetBtn->hide();
+
     QStringList portNames;
     for (int var = 1; var <= 20; ++var) {
         portNames<<QString("COM%1").arg(var);
