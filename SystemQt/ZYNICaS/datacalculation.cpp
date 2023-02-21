@@ -96,6 +96,16 @@ qreal DataCalculation::cVas(const qreal &ssvri)
     return (isInvalid(ssvri) ? invalid() : percent(ssvri, 137.8));
 }
 
+qreal DataCalculation::cSvv(const qreal &sv, QList<qreal> svList)
+{
+    if (svList.size() < 7 || isInvalid(sv)) return invalid();
+    svList.removeLast();
+    svList.removeOne(*std::min_element(svList.begin(), svList.end()));
+    svList.removeOne(*std::max_element(svList.begin(), svList.end()));
+    qreal svAvg = std::accumulate(svList.begin(), svList.end(), 0.0)/svList.size();
+    return qAbs(sv - svAvg)/svAvg;
+}
+
 qreal DataCalculation::cCi(const qreal &value, const qreal &bsa, const qreal &vept)
 {
     return (isInvalid(value, bsa) ? invalid() : 2/bsa*vept/6800*(value/10.0));
@@ -131,6 +141,11 @@ qreal DataCalculation::cLcwi(const qreal &ci, const qreal &map, const qreal &lap
     return (isInvalid(ci, map) ? invalid() : 0.0144*(map - lap)*ci);
 }
 
+qreal DataCalculation::cDo2(const qreal &co, const qreal &hb)
+{
+    return (isInvalid(co) ? invalid() : 1.34*hb*co*10);
+}
+
 qreal DataCalculation::cRr(const qreal &value)
 {
     return checkValue(value/10);
@@ -143,7 +158,12 @@ qreal DataCalculation::cBsa(const qreal &height, const qreal &weight)
 
 qreal DataCalculation::cVept(const qreal &height, const qreal &weight, const qreal &sex)
 {
-    return ((qPow(0.17*height, 3)/4.25)*(1 + 0.65*(weight/(sex == 0 ? 0.524*height - 16.58 : 0.524*height - 26.58) - 1)));
+    return ((qPow(0.17*height, 3)/4.25)*(1 + 0.65*(weight/cIdealW(height, sex) - 1)));
+}
+
+qreal DataCalculation::cIdealW(const qreal &height, const qreal &sex)
+{
+    return (0.524*height - (sex == 0 ? 16.58 : 26.58));
 }
 
 qreal DataCalculation::cMap(const qreal &sbp, const qreal &dbp)
@@ -153,7 +173,12 @@ qreal DataCalculation::cMap(const qreal &sbp, const qreal &dbp)
 
 qreal DataCalculation::percent(const qreal &value, const qreal &ideal)
 {
-    return (isInvalid(value) ? invalid() : (value >= ideal ? (value/ideal - 1)*100 : (1 - ideal/value)*100));
+    return (isInvalid(value) ? invalid() : perPNJ(value, ideal));
+}
+
+qreal DataCalculation::perPNJ(const qreal &value1, const qreal &value2)
+{
+    return (value1 >= value2 ? (value1/value2 - 1)*100 : (1 - value2/value1)*100);
 }
 
 qreal DataCalculation::checkValue(const qreal &value)

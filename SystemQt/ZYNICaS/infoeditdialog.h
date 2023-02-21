@@ -1,4 +1,4 @@
-﻿#ifndef INFOEDITDIALOG_H
+#ifndef INFOEDITDIALOG_H
 #define INFOEDITDIALOG_H
 
 #include <QDialog>
@@ -28,8 +28,6 @@ struct BodyValue
     //default
     int CVP = 4;
     int LAP = 9;
-    //理想体重
-    double idealWeight() const;
     //体表面积
     double BSA() const;
 

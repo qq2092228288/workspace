@@ -293,7 +293,7 @@ void EnterSystemWidget::initReportModule()
     backBtn = new QPushButton(tr("返回"),this);
     reportBtn = new QPushButton(tr("生成报告"),this);
     trendChartBtn = new QPushButton(tr("趋势图"),this);
-    sudokuBtn = new QPushButton(tr("九宫格图"),this);
+    sudokuBtn = new QPushButton(tr("血压管理分析图"),this);
     auxArgBtn = new QPushButton(tr("辅助参数"),this);
     trendChartsWidget = new TrendChartsWidget;
     auxArgDialog = new AuxArgDialog;

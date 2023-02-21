@@ -1,27 +1,20 @@
 #include "infoeditdialog.h"
 #include "datamanagement.h"
-
-double BodyValue::idealWeight() const
-{
-    if(sex == 0) {
-        return (0.524*height-16.58);
-    }
-    return (0.524*height-26.58);
-}
+#include "datacalculation.h"
 
 double BodyValue::BSA() const
 {
-    return (qPow(weight,0.425)*qPow(height,0.725)*0.007184);
+    return DatCa::cBsa(height, weight);
 }
 
 double BodyValue::VEPT() const
 {
-    return ((qPow(0.17*height,3)/4.25)*(1 + 0.65*(weight/idealWeight() - 1)));
+    return DatCa::cVept(height, weight, sex);
 }
 
 int BodyValue::MAP() const
 {
-    return ((SBP + DBP*2)/3);
+    return DatCa::cMap(SBP, DBP);
 }
 
 InfoEditDialog::InfoEditDialog(QWidget *parent)

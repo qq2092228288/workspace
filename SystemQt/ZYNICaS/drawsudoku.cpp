@@ -7,7 +7,7 @@ using namespace std;
 DrawSudoku::DrawSudoku(QWidget *parent)
     : QDialog{parent}
 {
-    this->setWindowTitle(tr("九宫格分析图"));
+    this->setWindowTitle(tr("血压管理分析图"));
     this->setFixedSize(480, 500);
     setWindowFlags(Qt::CustomizeWindowHint | Qt::WindowCloseButtonHint);
     this->setStyleSheet("QDialog{background-color:#ffffff;}");

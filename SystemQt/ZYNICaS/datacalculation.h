@@ -26,6 +26,7 @@ public:
     static qreal cSsvr   (const qreal &sv, const qreal &map, const qreal &cvp);
     static qreal cSsvri  (const qreal &si, const qreal &map, const qreal &cvp);
     static qreal cVas    (const qreal &ssvri);
+    static qreal cSvv    (const qreal &sv, QList<qreal> svList);
     static qreal cCi     (const qreal &value, const qreal &bsa, const qreal &vept);
     static qreal cCo     (const qreal &ci, const qreal &bsa);
     static qreal cHrv    (const qreal &ci);
@@ -33,13 +34,16 @@ public:
     static qreal cSvri   (const qreal &ci, const qreal &map, const qreal &cvp);
     static qreal cLcw    (const qreal &co, const qreal &map, const qreal &lap);
     static qreal cLcwi   (const qreal &ci, const qreal &map, const qreal &lap);
+    static qreal cDo2    (const qreal &co, const qreal &hb);
     static qreal cRr     (const qreal &value);
     // body data
     static qreal cBsa    (const qreal &height, const qreal &weight);
     static qreal cVept   (const qreal &height, const qreal &weight, const qreal &sex);
+    static qreal cIdealW (const qreal &height, const qreal &sex);
     static qreal cMap    (const qreal &sbp, const qreal &dbp);
 private:
     static qreal percent (const qreal &value, const qreal &ideal);
+    static qreal perPNJ  (const qreal &value1, const qreal &value2);
     static qreal checkValue(const qreal &value);
     static bool  isInvalid(const qreal &value);
     static bool  isInvalid(const qreal &value1, const qreal &value2);

@@ -2,6 +2,7 @@
 #include "qrencode.h"
 #include "idcheck.h"
 
+
 MyFilePath::MyFilePath(const QString &path)
     : appPath{path}
 {
@@ -522,12 +523,6 @@ QString DataManagement::saveReport(QDateTime curTime, QString position, bool rec
                     .arg(pevl(Type::HR, false));
         }
     }
-    if (record) {
-
-    }
-    else {
-
-    }
     if (m_pRegulator->getCustomCtrl("HR")->getCurrentValue() == 0 ||
             m_pRegulator->getCustomCtrl("MAP")->getCurrentValue() == 0) {
         result.clear();
@@ -537,12 +532,18 @@ QString DataManagement::saveReport(QDateTime curTime, QString position, bool rec
         result.clear();
     }
     reportThread->addMarks("result", result);
-    QString tip = tr("提示：血流动力学检测异常会增加心源性猝死的风险，请结合临床相关检查。");
+//    QString tip = tr("提示：血流动力学检测异常会增加心源性猝死的风险，请结合临床相关检查。");
+//    if (m_pHospitalInfo->tip) {
+//        tip = QString("%1(%2)").arg(riskTip(record), tip);
+//        reportThread->addMarks("tick", tr("血流动力学检测： 未见明显异常 [  ]    异常 [  ]"));
+//    }
+//    reportThread->addMarks("tip", tip);
     if (m_pHospitalInfo->tip) {
-        tip = QString("%1(%2)").arg(riskTip(record),tip);
-        reportThread->addMarks("tick", tr("血流动力学检测： 未见明显异常 [  ]    异常 [  ]"));
+        auto hrv = m_pRegulator->getCustomCtrl(typeName(Type::HRV));
+        if (hrv->getCurrentValue() < hrv->getMinValue()) {
+            reportThread->addMarks("tip", tr("心血管疾患高风险人群提示。"));
+        }
     }
-    reportThread->addMarks("tip", tip);
     // 当前体位
     reportThread->addMarks("cpos", m_currentInfo.pos);
     if (!m_pHospitalInfo->xprinter) {
@@ -572,7 +573,7 @@ QString DataManagement::saveReport(QDateTime curTime, QString position, bool rec
         reportThread->addBatchMarks(rList, values);
     }
     // dot normal data
-    reportThread->addMarks("sname", tr("九宫分析图"));
+    reportThread->addMarks("sname", tr("血压管理分析图"));
     reportThread->addPic("simage", m_filePath.sudoku());
     // 医院、时间、检查人员
     reportThread->addMarks("hospital" , m_pHospitalInfo->hospitalName);
