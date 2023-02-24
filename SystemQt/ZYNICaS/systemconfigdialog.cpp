@@ -1,6 +1,6 @@
 #include "systemconfigdialog.h"
 #include "datamanagement.h"
-
+#include "anothersetdialog.h"
 
 SystemConfigDialog::SystemConfigDialog(QWidget *parent)
     : QDialog{parent}
@@ -21,12 +21,15 @@ SystemConfigDialog::SystemConfigDialog(QWidget *parent)
     roomNameLineEdit = new QLineEdit(this);
     doctorNameLineEdit = new QLineEdit(this);
     reportGroupBox = new QGroupBox(tr("报告配置"), this);
+    printerButtonGroup = new QButtonGroup(this);
     printerRadio = new QRadioButton(tr("常规打印机报告"), this);
     xprinterRadio = new QRadioButton(tr("热敏打印机报告"), this);
     tipCheckBox = new QCheckBox(tr("心源性猝死提示"), this);
     checkModeGroupBox = new QGroupBox(tr("模式配置"), this);
+    modeButtonGroup = new QButtonGroup(this);
     generalModeRadio = new QRadioButton(tr("常规模式"), this);
     professionalModeRadio = new QRadioButton(tr("专业模式"), this);
+    hypertensionModeRadio = new QRadioButton(tr("高血压模式"), this);
     systemInfoGroupBox = new QGroupBox(tr("系统配置"), this);
     serialPortLabel = new QLabel(tr("串口设置"), this);
     serialPortComboBox = new QComboBox(this);
@@ -37,6 +40,12 @@ SystemConfigDialog::SystemConfigDialog(QWidget *parent)
     anotherSetBtn = new QPushButton(tr("其它设置"), this);
     aboutAppBtn = new QPushButton(tr("关于"), this);
 
+    printerButtonGroup->addButton(printerRadio, 0);
+    printerButtonGroup->addButton(xprinterRadio, 1);
+    modeButtonGroup->addButton(generalModeRadio, 0);
+    modeButtonGroup->addButton(professionalModeRadio, 1);
+    modeButtonGroup->addButton(hypertensionModeRadio, 2);
+
     serialPortComboBox->setFixedWidth(120*instance.wZoom());
     printerRadio->setChecked(true);
     generalModeRadio->setChecked(true);
@@ -44,7 +53,7 @@ SystemConfigDialog::SystemConfigDialog(QWidget *parent)
     QVBoxLayout *mainLayout = new QVBoxLayout(this);
     QGridLayout *gLayout = new QGridLayout(hospitalInfoGroupBox);
     QVBoxLayout *rLayout = new QVBoxLayout(reportGroupBox);
-    QHBoxLayout *cLayout = new QHBoxLayout(checkModeGroupBox);
+    QGridLayout *cLayout = new QGridLayout(checkModeGroupBox);
     QHBoxLayout *hLayout = new QHBoxLayout(systemInfoGroupBox);
     QHBoxLayout *pLayout = new QHBoxLayout;
     QHBoxLayout *btnLayout = new QHBoxLayout;
@@ -70,8 +79,9 @@ SystemConfigDialog::SystemConfigDialog(QWidget *parent)
     rLayout->addLayout(pLayout);
     pLayout->addWidget(printerRadio);
     pLayout->addWidget(xprinterRadio);
-    cLayout->addWidget(generalModeRadio);
-    cLayout->addWidget(professionalModeRadio);
+    cLayout->addWidget(generalModeRadio, 0, 0);
+    cLayout->addWidget(professionalModeRadio, 0, 1);
+    cLayout->addWidget(hypertensionModeRadio, 1, 0);
     rLayout->addWidget(tipCheckBox);
     hLayout->addWidget(serialPortLabel);
     hLayout->addWidget(serialPortComboBox);
@@ -109,7 +119,7 @@ SystemConfigDialog::SystemConfigDialog(QWidget *parent)
         in<<QString("doctor=\"\"\n");
         in<<QString("printer=\"0\"\n");
         in<<QString("tip=\"0\"\n");
-        in<<QString("professional=\"0\"\n");
+        in<<QString("mode=\"0\"\n");
         in<<QString("serialport=\"COM3\"\n");
         file.close();
     }
@@ -134,27 +144,24 @@ SystemConfigDialog::SystemConfigDialog(QWidget *parent)
                     doctorNameLineEdit->setText(value);
                 }
                 else if (name == "printer") {
-                    if (value == "1") {
-                        xprinterRadio->setChecked(true);
+                    auto btn = printerButtonGroup->button(value.toInt());
+                    if (nullptr != btn) {
+                        btn->setChecked(true);
                     }
                     else {
-                        printerRadio->setChecked(true);
+                        printerButtonGroup->button(0)->setChecked(true);
                     }
                 }
                 else if (name == "tip") {
-                    if (value == "1") {
-                        tipCheckBox->setChecked(true);
-                    }
-                    else {
-                        tipCheckBox->setChecked(false);
-                    }
+                    tipCheckBox->setChecked(value.toInt());
                 }
-                else if (name == "professional") {
-                    if (value == "1") {
-                        professionalModeRadio->setChecked(true);
+                else if (name == "mode") {
+                    auto btn = modeButtonGroup->button(value.toInt());
+                    if (nullptr != btn) {
+                        btn->setChecked(true);
                     }
                     else {
-                        generalModeRadio->setChecked(true);
+                        modeButtonGroup->button(0)->setChecked(true);
                     }
                 }
                 else if (name == "serialport") {
@@ -185,9 +192,9 @@ void SystemConfigDialog::confirmSlot()
         in<<QString("hospital=\"%1\"\n").arg(hospitalNameLineEdit->text());
         in<<QString("department=\"%1\"\n").arg(roomNameLineEdit->text());
         in<<QString("doctor=\"%1\"\n").arg(doctorNameLineEdit->text());
-        in<<QString("printer=\"%1\"\n").arg(xprinterRadio->isChecked());
+        in<<QString("printer=\"%1\"\n").arg(printerButtonGroup->checkedId());
         in<<QString("tip=\"%1\"\n").arg(tipCheckBox->isChecked());
-        in<<QString("professional=\"%1\"\n").arg(professionalModeRadio->isChecked());
+        in<<QString("mode=\"%1\"\n").arg(modeButtonGroup->checkedId());
         in<<QString("serialport=\"%1\"\n").arg(serialPortComboBox->currentText());
         file.close();
     }
@@ -250,8 +257,8 @@ void SystemConfigDialog::updateHospitalInfo()
     hospitalInfo.place1Id = database->getDeviceInfo("place1Id");
     hospitalInfo.place2Id = database->getDeviceInfo("place2Id");
     hospitalInfo.deviceId = database->getDeviceInfo("deviceId");
-    hospitalInfo.xprinter = xprinterRadio->isChecked();
+    hospitalInfo.printer = printerButtonGroup->checkedId();
     hospitalInfo.tip = tipCheckBox->isChecked();
-    hospitalInfo.professional = professionalModeRadio->isChecked();
+    hospitalInfo.mode = modeButtonGroup->checkedId();
     DataManagement::getInstance().setHospitalInfo(&hospitalInfo);
 }

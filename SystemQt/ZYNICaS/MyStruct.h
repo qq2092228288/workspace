@@ -18,6 +18,7 @@ struct PatientInfo
     QString age;                // 年龄
     QString height;             // 身高
     QString weight;             // 体重
+    QString hb;                 // 血红蛋白
     QString patientName;        // 姓名
     QString medicalRecordNumber;// 病历号
 };
@@ -64,6 +65,7 @@ struct BaseData
         jPatient.insert("age", patient.age);
         jPatient.insert("height", patient.height);
         jPatient.insert("weight", patient.weight);
+        jPatient.insert("hb", patient.hb);
         jPatient.insert("patientName", patient.patientName);
         jPatient.insert("medicalRecordNumber", patient.medicalRecordNumber);
         jBaseData.insert("patientInfo", jPatient);

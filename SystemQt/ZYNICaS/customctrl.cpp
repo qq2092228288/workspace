@@ -111,6 +111,12 @@ QString typeName(const uchar &type)
     case Type::Dz:
         return "Dz";
         break;
+    case Type::DO2:
+        return "DO2";
+        break;
+    case Type::SVV:
+        return "SVV";
+        break;
     default:
         break;
     }
@@ -130,8 +136,10 @@ CustomCtrl::CustomCtrl(Argument arg, QWidget *parent)
     m_pDialog = new SelectItemDialog(false);
 
     timer = new QTimer(this);
+    oldAndNewValueTimer = new QTimer(this);
 
     connect(timer,&QTimer::timeout,this,&CustomCtrl::timeoutSlot);
+    connect(oldAndNewValueTimer, &QTimer::timeout, this, &CustomCtrl::oldAndNewValueTimerSlot);
 
     QVBoxLayout *vLayout = new QVBoxLayout(this);
     frame = new QFrame(this);
@@ -175,6 +183,9 @@ CustomCtrl::CustomCtrl(Argument arg, QWidget *parent)
         scopeLabel->setText(QString("%1~%2/%3~%4").arg(aitems.minValue).arg(aitems.maxValue)
                             .arg(dbpaitems.minValue).arg(dbpaitems.maxValue));
     }
+    if (arg.min == arg.max) {
+        scopeLabel->setText("-");
+    }
 
     //样式表
     int fsize = 10*instance.zoom();
@@ -200,6 +211,9 @@ CustomCtrl::~CustomCtrl()
     if (timer->isActive()){
         timer->stop();
     }
+    if (oldAndNewValueTimer->isActive()) {
+        oldAndNewValueTimer->stop();
+    }
     delete m_pTrendChart;
     delete m_pDialog;
 //    qDebug()<<aitems.dataName<<"~CustomCtrl()";
@@ -217,6 +231,23 @@ void CustomCtrl::stopTimer()
 {
     if (timer->isActive()) {
         timer->stop();
+    }
+}
+
+void CustomCtrl::smoothTransitionTimer(bool isStart)
+{
+    if (getName() == "MAP" || getName() == "SBP/DBP") {
+        return;
+    }
+    if (isStart) {
+        if (!oldAndNewValueTimer->isActive()) {
+            oldAndNewValueTimer->start(3000);
+        }
+    }
+    else {
+        if (oldAndNewValueTimer->isActive()) {
+            oldAndNewValueTimer->stop();
+        }
     }
 }
 
@@ -283,15 +314,22 @@ void CustomCtrl::clear()
     dbpaitems.currentValue = 0;
     valueEdit->clear();
     m_pTrendChart->clear();
+    oldAndNewValue.clear();
     valueWarning(false);
 }
 
 void CustomCtrl::setValue(const double &value)
 {
-    valueEdit->setText(QString::number(value, 'f', digit));
-    aitems.currentValue = valueEdit->text().toDouble();
-    valueWarning(aitems.currentValue < aitems.minValue || aitems.currentValue > aitems.maxValue);
-    emit currentValue(value);
+    oldAndNewValue.append(value);
+    if (oldAndNewValue.size() > 2) {
+        oldAndNewValue.removeFirst();
+    }
+    else {
+        valueEdit->setText(QString::number(value, 'f', digit));
+        aitems.currentValue = valueEdit->text().toDouble();
+        valueWarning(aitems.currentValue < aitems.minValue || aitems.currentValue > aitems.maxValue);
+        emit currentValue(value);
+    }
 }
 
 void CustomCtrl::setValues(const double &value, const double &value1)
@@ -305,6 +343,7 @@ void CustomCtrl::setValues(const double &value, const double &value1)
 
 void CustomCtrl::valueWarning(bool warning)
 {
+    if (getName() == "DO2") return;
     auto &instance = DataManagement::getInstance();
     int fsize = 10*instance.zoom();
     int vsize = 50*instance.zoom();
@@ -341,6 +380,26 @@ void CustomCtrl::timeoutSlot()
         qreal temp = aitems.currentValue + QRandomGenerator::global()->bounded(-2,2)/m_accuracy;
         valueEdit->setText(QString::number(temp));
         valueWarning(temp < aitems.minValue || temp > aitems.maxValue);
+    }
+}
+
+void CustomCtrl::oldAndNewValueTimerSlot()
+{
+    if (oldAndNewValue.size() == 2) {
+        qreal oldValue = oldAndNewValue.at(0);
+        qreal newValue = oldAndNewValue.at(1);
+        if ((oldValue < newValue && newValue/oldValue > 1.1) ||
+                (oldValue > newValue && oldValue/newValue > 1.1)) {
+            oldValue += (newValue - oldValue)*0.15;
+        }
+        else {
+            oldValue = newValue;
+        }
+        oldAndNewValue.replace(0, oldValue);
+        valueEdit->setText(QString::number(oldValue, 'f', digit));
+        aitems.currentValue = valueEdit->text().toDouble();
+        valueWarning(aitems.currentValue < aitems.minValue || aitems.currentValue > aitems.maxValue);
+        emit currentValue(oldValue);
     }
 }
 

@@ -11,7 +11,7 @@ SelectItemDialog::SelectItemDialog(bool trendChart, QWidget *parent)
     //样式表
     setStyleSheet(instance.dialogQss(1.5));
     comboBox = new QComboBox(this);
-    confirmBtn = new QPushButton(tr("确定"),this);
+    confirmBtn = new QPushButton(tr("确定"), this);
     comboBox->setFixedWidth(120*instance.wZoom());
     QHBoxLayout *layout = new QHBoxLayout(this);
     setWindowTitle(tr("选择参数"));
@@ -21,7 +21,7 @@ SelectItemDialog::SelectItemDialog(bool trendChart, QWidget *parent)
     layout->addStretch();
     layout->addWidget(confirmBtn);
 
-    connect(confirmBtn,&QPushButton::clicked,this,&SelectItemDialog::confirmSlot);
+    connect(confirmBtn, &QPushButton::clicked, this, &SelectItemDialog::confirmSlot);
 }
 
 void SelectItemDialog::confirmSlot()

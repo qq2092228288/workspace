@@ -23,7 +23,7 @@
 enum Type {
     HR = 0, VET, PEP, TFC, EPCI, ISI, EF, SI, CI, RR, BEEP, Reserved = 15,
     CO, SV, HRV, EDI, Vol, SVR, SSVR, SSVRI, SVRI, Vas, LVET, LSW, LSWI,
-    LCW, LCWI, STR, Ino, SBP, DBP, MAP, CVP, LAP, Dz, Pos
+    LCW, LCWI, STR, Ino, SBP, DBP, MAP, CVP, LAP, Dz, Pos, DO2, SVV
 };
 QString typeName(const uchar &type);
 QString typeName(const Type &type);
@@ -51,6 +51,8 @@ public:
     // 数据波动
     void startTimer(qreal accuracy);
     void stopTimer();
+    //
+    void smoothTransitionTimer(bool isStart);
 protected:
     void mouseDoubleClickEvent(QMouseEvent *);
 public:
@@ -73,6 +75,7 @@ public slots:
 protected slots:
     void getChangeText(const QString &text);
     void timeoutSlot();
+    void oldAndNewValueTimerSlot();
 signals:
     void currentValue(qreal);
     // 当前名字，交换显示的名字
@@ -93,6 +96,9 @@ private:
     // 精度
     qreal m_accuracy = 1;
     TrendChart *m_pTrendChart;
+    // 数据平稳过渡
+    QList<qreal> oldAndNewValue;
+    QTimer *oldAndNewValueTimer;
 };
 
 class CustomCtrlRegulator : public QObject

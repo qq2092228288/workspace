@@ -12,6 +12,8 @@
 #include <QValidator>
 #include <QKeyEvent>
 #include <QtMath>
+#include <QDoubleValidator>
+
 
 #include "personalinfodialog.h"
 
@@ -23,6 +25,7 @@ struct BodyValue
     int age = 0;
     int height = 0;
     int weight = 0;
+    float hb = 0;
     int SBP = 0;
     int DBP = 0;
     //default
@@ -46,6 +49,7 @@ public:
 signals:
     //性别，年龄，身高，体重
     void bodyValue(const BodyValue &);
+    void updateUi();
 public slots:
     void clearSlot();
     void confirmSlot();
@@ -59,12 +63,14 @@ private:
     QLabel *ageLabel;
     QLabel *heightLabel;
     QLabel *weightLabel;
+    QLabel *hbLabel;
     QLineEdit *nameLineEdit;
     QLineEdit *numLineEdit;
     QComboBox *sexComboBox;
     QLineEdit *ageLineEdit;
     QLineEdit *heightLineEdit;
     QLineEdit *weightLineEdit;
+    QLineEdit *hbLineEdit;
     QPushButton *importBtn;
     QPushButton *clearBtn;
     QPushButton *confirmBtn;

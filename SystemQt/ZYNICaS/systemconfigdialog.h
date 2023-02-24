@@ -22,10 +22,11 @@
 #include <QTextCodec>
 #include <QCheckBox>
 #include <QRadioButton>
+#include <QButtonGroup>
 
 
 #include "getiddialog.h"
-#include "anothersetdialog.h"
+
 
 
 struct HospitalInfo
@@ -38,9 +39,9 @@ struct HospitalInfo
     QString place1Id;
     QString place2Id;
     QString deviceId;
-    bool xprinter;
+    int printer;
     bool tip;
-    bool professional;
+    int mode;
 };
 
 class SystemConfigDialog : public QDialog
@@ -65,12 +66,15 @@ private:
     QLineEdit *roomNameLineEdit;
     QLineEdit *doctorNameLineEdit;
     QGroupBox *reportGroupBox;
+    QButtonGroup *printerButtonGroup;
     QRadioButton *printerRadio;
     QRadioButton *xprinterRadio;
     QCheckBox *tipCheckBox;
     QGroupBox *checkModeGroupBox;
+    QButtonGroup *modeButtonGroup;
     QRadioButton *generalModeRadio;
     QRadioButton *professionalModeRadio;
+    QRadioButton *hypertensionModeRadio;
     QGroupBox *systemInfoGroupBox;
     QLabel *serialPortLabel;
     QComboBox *serialPortComboBox;

@@ -20,6 +20,8 @@ RC_FILE = resource.rc
 SOURCES += \
     anothersetdialog.cpp \
     auxargdialog.cpp \
+    baseargwidget.cpp \
+    baseargwidgetsinst.cpp \
     bpeditdialog.cpp \
     createreportthread.cpp \
     customctrl.cpp \
@@ -33,6 +35,7 @@ SOURCES += \
     getiddialog.cpp \
     httppost.cpp \
     infoeditdialog.cpp \
+    isicurvewidget.cpp \
     main.cpp \
     mainwidget.cpp \
     personalinfodialog.cpp \
@@ -41,6 +44,7 @@ SOURCES += \
     selectitemdialog.cpp \
     showreportdialog.cpp \
     singleapplication.cpp \
+    surplusbaseargsdialog.cpp \
     systemconfigdialog.cpp \
     threadserivce.cpp \
     trendchart.cpp \
@@ -51,6 +55,8 @@ HEADERS += \
     MyStruct.h \
     anothersetdialog.h \
     auxargdialog.h \
+    baseargwidget.h \
+    baseargwidgetsinst.h \
     bpeditdialog.h \
     createreportthread.h \
     customctrl.h \
@@ -64,6 +70,7 @@ HEADERS += \
     getiddialog.h \
     httppost.h \
     infoeditdialog.h \
+    isicurvewidget.h \
     mainwidget.h \
     personalinfodialog.h \
     reportdatabase.h \
@@ -71,6 +78,7 @@ HEADERS += \
     selectitemdialog.h \
     showreportdialog.h \
     singleapplication.h \
+    surplusbaseargsdialog.h \
     systemconfigdialog.h \
     threadserivce.h \
     trendchart.h \

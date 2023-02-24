@@ -129,6 +129,7 @@ private:
     BodyValue bodyValue;
     QList<QHBoxLayout *> hLayouts;
     qreal efValue = 0;
+    QList<qreal> svValues;
 
     //返回、生成报告、九宫格图、辅助参数
     QGroupBox *operationGroupBox;

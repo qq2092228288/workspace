@@ -3,6 +3,7 @@
 #include "threadserivce.h"
 #include "waitingdialog.h"
 #include "datacalculation.h"
+#include "isicurvewidget.h"
 #include <iostream>
 #include <numeric>
 #include <math.h>
@@ -128,7 +129,7 @@ void EnterSystemWidget::trendChartLayout()
 
 void EnterSystemWidget::showEvent(QShowEvent *event)
 {
-    if (DataManagement::getInstance().getHospitalInfo()->professional) {
+    if (DataManagement::getInstance().getHospitalInfo()->mode == 1) {
         DataManagement::getInstance().getRegulator()->connectTrendChart(true);
         trendChartBtn->show();
     }
@@ -325,6 +326,22 @@ void EnterSystemWidget::signalsAndSlots()
         nameLineEdit->setText(bodyValue.name);
         numLineEdit->setText(bodyValue.id);
     });
+    connect(infoDialog, &InfoEditDialog::updateUi, this, [=](){
+        rPos.clear();
+        recordDataMap.clear();
+        baseData = BaseData();
+        svValues.clear();
+        // 清空波形图
+        ecgDraw->clear();
+        diffDraw->clear();
+        admitDraw->clear();
+        // 清空九宫格
+        sudokuDraw->clear();
+        // 清空检测的数据
+        foreach (auto customCtrl, regulator->getAllCustomCtrls()) {
+            customCtrl->clear();
+        }
+    });
     // bp
     connect(mdiBtn, &QPushButton::clicked, this, &EnterSystemWidget::showBpDialogSlot);
     connect(bpDialog, &BPEditDialog::value, this, &EnterSystemWidget::setBPValue);
@@ -430,6 +447,11 @@ void EnterSystemWidget::setData(const uchar &type, const short &value)
             setCtrlValue(Type::SSVRI, ssvri);
             setCtrlValue(Type::Vas, DatCa::cVas(ssvri));
         }
+        setCtrlValue(Type::SVV, DatCa::cSvv(sv, svValues));
+        svValues.append(sv);
+        if (svValues.size() > 25) {
+            svValues.removeFirst();
+        }
     }
         break;
     case Type::CI:
@@ -444,6 +466,9 @@ void EnterSystemWidget::setData(const uchar &type, const short &value)
             setCtrlValue(Type::SVRI, DatCa::cSvri(ci, bodyValue.MAP(), bodyValue.CVP));
             setCtrlValue(Type::LCW, DatCa::cLcw(co, bodyValue.MAP(), bodyValue.LAP));
             setCtrlValue(Type::LCWI, DatCa::cLcwi(ci, bodyValue.MAP(), bodyValue.LAP));
+        }
+        if (bodyValue.hb != 0) {
+            setCtrlValue(Type::DO2, DatCa::cDo2(co, bodyValue.hb));
         }
     }
         break;
@@ -531,8 +556,14 @@ void EnterSystemWidget::createReport()
             return;
         }
         // professional model
-        if (instance.getHospitalInfo()->professional) {
+        if (instance.getHospitalInfo()->mode == 1) {
             trendChartsWidget->saveTrendChartPic();
+        }
+        auto isiCtrl = regulator->getCustomCtrl("ISI");
+        if (isiCtrl->getRecordValue() != 0 || isiCtrl->getCurrentValue() != 0) {
+            IsiCurveWidget widget(this);
+            widget.setIsi(isiCtrl->getRecordValue(), isiCtrl->getCurrentValue());
+            widget.grab().save(instance.getPaths().isiCurve());
         }
         WaitingDialog waiting = WaitingDialog(tr("报告生成中···"), this);
         connect(&instance, &DataManagement::clear, &waiting, &WaitingDialog::close);
@@ -555,6 +586,7 @@ void EnterSystemWidget::clearUiSlot()
     rPos.clear();
     recordDataMap.clear();
     baseData = BaseData();
+    svValues.clear();
     // 清空界面个人信息
     numLineEdit->clear();
     nameLineEdit->clear();
@@ -608,6 +640,7 @@ void EnterSystemWidget::setBaseData()
     baseData.patient.age = QString::number(bodyValue.age);
     baseData.patient.height = QString::number(bodyValue.height);
     baseData.patient.weight = QString::number(bodyValue.weight);
+    baseData.patient.hb = QString::number(bodyValue.hb);
     // 场所信息
     auto hospitalInfo = DataManagement::getInstance().getHospitalInfo();
     baseData.place.placeId = hospitalInfo->place2Name;

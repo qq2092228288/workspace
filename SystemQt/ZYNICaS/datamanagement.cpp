@@ -79,6 +79,11 @@ QString MyFilePath::sudoku() const
     return tempDir() + "sudoku.png";
 }
 
+QString MyFilePath::isiCurve() const
+{
+    return tempDir() + "isicurve.png";
+}
+
 QStringList MyFilePath::trendchartspic() const
 {
     QStringList list;
@@ -124,11 +129,13 @@ Arguments::Arguments()
     arguments = QList<Argument>()
         <<Argument("心输出量", "CO", "L/min", 3.5, 9.0, 1)
         <<Argument("心脏指数", "CI", "L/min·m²", 2.0, 5.0, 1)
+        <<Argument("氧输送", "DO2", "mL/min", 1000, 1000, 0)
         <<Argument("心搏量", "SV", "mL/beat", 50, 120, 1)
         <<Argument("心搏指数", "SI", "mL/beat·m²", 35, 65, 0)
         <<Argument("心率变异性", "HRV", "%", -50, 50, 0)
         <<Argument("胸液传导性", "TFC", "1/Ω", 0.025, 0.045, 3)
         <<Argument("舒张末期指数", "EDI", "mL/beat·m²", 54, 130, 0)
+        <<Argument("每搏输出变异性", "SVV", "%", 0, 10, 0)
         <<Argument("血管容积", "Vol", "%", -50, 50, 0)
         <<Argument("系统阻力", "SVR", "dyn·s·m²/cm^5", 489, 2262, 0)
         <<Argument("每搏外周阻力", "SSVR", "dyn·s/cm^5", 119.6, 429.2, 1)
@@ -424,22 +431,30 @@ QString DataManagement::saveReport(QDateTime curTime, QString position, bool rec
     QString result = tr("无创血流动力学检测系统评价，心脏动力，血管阻力，血液容量，血压等循环系统情况结论如下：\n");
     if (record) {       // 多体位
         reportThread->addMarks("rpos", m_recordInfo.pos);
-        if (!m_pHospitalInfo->xprinter) {   // 非热敏打印机
-            if (m_pHospitalInfo->professional) {
+        if (m_pHospitalInfo->printer == 0) {   // 常规打印
+            if (m_pHospitalInfo->mode == 0) {
+                reportThread->setOpenArg(m_filePath.many_dot(), false);
+            }
+            else if (m_pHospitalInfo->mode == 1) {
                 reportThread->setOpenArg(m_filePath.pmany_dot(), false);
             }
-            else {
-                reportThread->setOpenArg(m_filePath.many_dot(), false);
+            else if (m_pHospitalInfo->mode == 1) {
+                // 高血压模式
             }
             // 记录体位
             QStringList rList;
-            for (int i = 0; i < 27; ++i) {
+            for (int i = 0; i < 29; ++i) {
                 rList<<QString("r%1").arg(i,2,10,QLatin1Char('0'));
             }
             reportThread->addBatchMarks(rList, m_recordInfo.values);
             reportThread->addMarks("rname", (m_recordInfo.pos + tr(" 心阻抗图(dZ)")));
             // 插入图片
             reportThread->addPic("rimage",m_filePath.record_dz());
+            auto isiCtrl = m_pRegulator->getCustomCtrl("ISI");
+            if (isiCtrl->getRecordValue() != 0 || isiCtrl->getCurrentValue() != 0) {
+                reportThread->addMarks("aname", (tr("心肌收缩力与容量分析图")));
+                reportThread->addPic("aimage", m_filePath.isiCurve());
+            }
             result += tr("1.第一体位：心输出量(CO)%1，心脏指数(CI)%2，心搏量(SV)%3，心搏指数(SI)%4，心率(HR)%5，血管顺应性(Vas)%6，"
                 "血管容量(Vol)%7，收缩变力性(Ino)%8，收缩压(SBP)%9，舒张压(DBP)%10，胸液传导性(TFC)%11；\n"
                 "2.第二体位增加容量负荷实验后：心搏量(SV)%12，变力状态指数(ISI)%13，%14。")
@@ -458,7 +473,7 @@ QString DataManagement::saveReport(QDateTime curTime, QString position, bool rec
                          compare(Type::ISI),
                          preload());
         }
-        else {
+        else if (m_pHospitalInfo->printer == 1) {    // 热敏打印
             reportThread->setOpenArg(m_filePath.xmany_dot(), false);
             QStringList rList;
             for (int i = 0; i < 12; ++i) {
@@ -487,12 +502,15 @@ QString DataManagement::saveReport(QDateTime curTime, QString position, bool rec
         }
     }
     else {      // 单体位
-        if (!m_pHospitalInfo->xprinter) {
-            if (m_pHospitalInfo->professional) {
+        if (m_pHospitalInfo->printer == 0) {
+            if (m_pHospitalInfo->mode == 0) {
+                reportThread->setOpenArg(m_filePath.single_dot(), false);
+            }
+            else if (m_pHospitalInfo->mode == 1) {
                 reportThread->setOpenArg(m_filePath.psingle_dot(), false);
             }
-            else {
-                reportThread->setOpenArg(m_filePath.single_dot(), false);
+            else if (m_pHospitalInfo->mode == 2) {
+                // 高血压
             }
             result += tr("1.心脏功能：心输出量(CO)%1，心搏量(SV)%2，心搏指数(SI)%3，心脏指数(CI)%4，血管容量(Vol)%5，血管顺应性(Vas)%6，收缩变力性(Ino)%7；\n"
                 "2.血压管理：收缩压(SBP)%8，舒张压(DBP)%9，心率(HR)%10；")
@@ -507,7 +525,7 @@ QString DataManagement::saveReport(QDateTime curTime, QString position, bool rec
                          pevl(Type::DBP, false))
                     .arg(pevl(Type::HR, false));
         }
-        else {
+        else if (m_pHospitalInfo->printer == 1) {
             reportThread->setOpenArg(m_filePath.xsingle_dot(),false);
             result += tr("1.心脏功能：CO%1，SV%2，SI%3，CI%4，Vol%5，Vas%6，Ino%7；\n"
                 "2.血压管理：SBP%8，DBP%9，HR%10；")
@@ -546,23 +564,23 @@ QString DataManagement::saveReport(QDateTime curTime, QString position, bool rec
     }
     // 当前体位
     reportThread->addMarks("cpos", m_currentInfo.pos);
-    if (!m_pHospitalInfo->xprinter) {
+    if (m_pHospitalInfo->printer == 0) {   // 常规
         QStringList cList;
-        for (int i = 0; i < 27; ++i) {
+        for (int i = 0; i < 29; ++i) {
             cList<<QString("c%1").arg(i,2,10,QLatin1Char('0'));
         }
         reportThread->addBatchMarks(cList, m_currentInfo.values);
         reportThread->addMarks("cname", (m_currentInfo.pos + tr(" 心阻抗图(dZ)")));
         reportThread->addPic("cimage", m_filePath.current_dz());
         reportThread->addMarks("room" , m_pHospitalInfo->roomName);
-        if (m_pHospitalInfo->professional) {
+        if (m_pHospitalInfo->mode == 1) {    // 专业模式
             for (int index = 0; index < m_filePath.trendchartspic().size(); ++index) {
                 reportThread->addPic(QString("trendchart%1").arg(index,2,10,QLatin1Char('0')),
                                      m_filePath.trendchartspic().at(index));
             }
         }
     }
-    else {
+    else if (m_pHospitalInfo->printer == 1) {   // 热敏
         QStringList rList;
         for (int i = 0; i < 12; ++i) {
             rList<<QString("c%1").arg(i,2,10,QLatin1Char('0'));
@@ -630,6 +648,9 @@ void DataManagement::customCtrlTimer(bool start)
     auto hrCtrl = m_pRegulator->getCustomCtrl(typeName(Type::HR));
     auto svCtrl = m_pRegulator->getCustomCtrl(typeName(Type::SV));
     auto isiCtrl = m_pRegulator->getCustomCtrl(typeName(Type::ISI));
+    foreach (auto ctrl, m_pRegulator->getAllCustomCtrls()) {
+        ctrl->smoothTransitionTimer(start);
+    }
     if (hrCtrl == nullptr || svCtrl == nullptr || isiCtrl == nullptr)
         return;
     if (start) {

@@ -39,6 +39,7 @@ public:
     QString record_dz()         const;
     QString current_dz()        const;
     QString sudoku()            const;
+    QString isiCurve()          const;
     QStringList trendchartspic()const;
     QString reports()           const;
     QString config_zip()        const;

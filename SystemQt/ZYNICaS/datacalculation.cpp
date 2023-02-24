@@ -98,8 +98,7 @@ qreal DataCalculation::cVas(const qreal &ssvri)
 
 qreal DataCalculation::cSvv(const qreal &sv, QList<qreal> svList)
 {
-    if (svList.size() < 7 || isInvalid(sv)) return invalid();
-    svList.removeLast();
+    if (svList.size() < 6 || isInvalid(sv)) return invalid();
     svList.removeOne(*std::min_element(svList.begin(), svList.end()));
     svList.removeOne(*std::max_element(svList.begin(), svList.end()));
     qreal svAvg = std::accumulate(svList.begin(), svList.end(), 0.0)/svList.size();
