@@ -550,6 +550,9 @@ QString DataManagement::saveReport(QDateTime curTime, QString position, bool rec
         result.clear();
     }
     reportThread->addMarks("result", result);
+    if (result.isEmpty()) {
+        result = "null";
+    }
 //    QString tip = tr("提示：血流动力学检测异常会增加心源性猝死的风险，请结合临床相关检查。");
 //    if (m_pHospitalInfo->tip) {
 //        tip = QString("%1(%2)").arg(riskTip(record), tip);

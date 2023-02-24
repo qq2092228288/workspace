@@ -48,7 +48,7 @@ void ReportDataBase::dataUpload()
 {
     QSqlQuery sqlQuery(m_database);
     sqlQuery.exec(QString("SELECT * FROM %1 WHERE upload=0").arg(m_tableName));
-    while (sqlQuery.next()) {
+    if (sqlQuery.next()) {
         emit upload(sqlQuery.value(0).toLongLong(), sqlQuery.value(2).toString());
     }
 }
