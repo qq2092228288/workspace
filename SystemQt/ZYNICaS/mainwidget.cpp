@@ -73,6 +73,9 @@ MainWidget::MainWidget(QWidget *parent)
     connect(demoBtn, &QPushButton::clicked, this, &MainWidget::demoBtnSlot);
     connect(configBtn, &QPushButton::clicked, configDialog, &SystemConfigDialog::exec);
     connect(exitBtn, &QPushButton::clicked, this, &MainWidget::close);
+
+    connect(configDialog, &SystemConfigDialog::modeChanged, enterSystemWidget, &EnterSystemWidget::systemModeChanged);
+    configDialog->updateHospitalInfo();
     // 未show控件截屏问题处理
     enterSystemWidget->trendChartLayout();
 }

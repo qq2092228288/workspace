@@ -27,7 +27,19 @@
 
 #include "getiddialog.h"
 
+enum Printer_Type
+{
+    General,    // A4纸
+    Thermal     // xprinter热敏纸
+};
 
+enum Check_Mode
+{
+    Hypertension,           // 高血压模式
+    InternalMedicine,       // 内科模式
+    Critical,               // 重症模式
+    PhysicalExamination     // 体检模式
+};
 
 struct HospitalInfo
 {
@@ -39,9 +51,9 @@ struct HospitalInfo
     QString place1Id;
     QString place2Id;
     QString deviceId;
-    int printer;
+    Printer_Type pType;
     bool tip;
-    int mode;
+    Check_Mode cMode;
 };
 
 class SystemConfigDialog : public QDialog
@@ -50,12 +62,14 @@ class SystemConfigDialog : public QDialog
 public:
     explicit SystemConfigDialog(QWidget *parent = nullptr);
     QString getPortName() const;
+    void updateHospitalInfo();
 protected slots:
-    void confirmSlot();
     void aboutAppSlot();
     void anotherSetSlot();
 protected:
-    void updateHospitalInfo();
+    void closeEvent(QCloseEvent *event);
+signals:
+    void modeChanged(Check_Mode);
 private:
     HospitalInfo hospitalInfo;
     QGroupBox *hospitalInfoGroupBox;
@@ -74,7 +88,8 @@ private:
     QButtonGroup *modeButtonGroup;
     QRadioButton *generalModeRadio;
     QRadioButton *professionalModeRadio;
-    QRadioButton *hypertensionModeRadio;
+    QRadioButton *criticalModeRadio;
+    QRadioButton *healthCheckModeRadio;
     QGroupBox *systemInfoGroupBox;
     QLabel *serialPortLabel;
     QComboBox *serialPortComboBox;

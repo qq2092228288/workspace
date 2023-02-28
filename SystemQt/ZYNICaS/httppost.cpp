@@ -358,13 +358,13 @@ void HttpPost::reportUpload(const qint64 &dtime, const QString &jsonStr)
     for (auto it = object.begin(); it != object.end(); ++it) {
         if (it.key() == "pAnalyse") {
             QPixmap pixmap = jsonToPixmap(it.value());
-            sudokuUrl = picUpload(pixmap, QString("pAnalyse%1.png").arg(QDateTime::currentMSecsSinceEpoch()));
+            sudokuUrl = picUpload(pixmap, QString("pAnalyse%1.png").arg(QDateTime::currentSecsSinceEpoch()%10));
         }
         else if (it.key() == "position") {
             QJsonArray array = it.value().toArray();
             for (auto iterator = array.begin(); iterator != array.end(); ++iterator) {
                 QPixmap pixmap = jsonToPixmap(iterator->toObject().find("pDz").value());
-                QString fileName = picUpload(pixmap, QString("pDz%1.png").arg(QDateTime::currentMSecsSinceEpoch()));
+                QString fileName = picUpload(pixmap, QString("pDz%1.png").arg(QDateTime::currentSecsSinceEpoch()%10));
                 if (fpDzUrl.isEmpty()) {
                     fpDzUrl = fileName;
                 }

@@ -34,7 +34,7 @@
 #include "customctrl.h"
 #include "trendchartswidget.h"
 #include "MyStruct.h"
-
+#include "systemconfigdialog.h"
 
 class EnterSystemWidget : public QWidget
 {
@@ -67,6 +67,7 @@ public slots:
     void changePosition(int id);
     void createReport();
     void clearUiSlot();
+    void systemModeChanged(Check_Mode mode);
 private:
     void setCtrlValue(const Type &type, const double &value);
     bool isStartCheck();

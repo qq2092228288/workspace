@@ -129,14 +129,15 @@ void EnterSystemWidget::trendChartLayout()
 
 void EnterSystemWidget::showEvent(QShowEvent *event)
 {
-    if (DataManagement::getInstance().getHospitalInfo()->mode == 1) {
-        DataManagement::getInstance().getRegulator()->connectTrendChart(true);
-        trendChartBtn->show();
-    }
-    else {
-        DataManagement::getInstance().getRegulator()->connectTrendChart(false);
-        trendChartBtn->hide();
-    }
+//    auto &instance = DataManagement::getInstance();
+//    if (instance.getHospitalInfo()->cMode == Check_Mode::InternalMedicine) {
+//        instance.getRegulator()->connectTrendChart(true);
+//        trendChartBtn->show();
+//    }
+//    else {
+//        instance.getRegulator()->connectTrendChart(false);
+//        trendChartBtn->hide();
+//    }
     event->accept();
 }
 
@@ -294,7 +295,7 @@ void EnterSystemWidget::initReportModule()
     backBtn = new QPushButton(tr("返回"),this);
     reportBtn = new QPushButton(tr("生成报告"),this);
     trendChartBtn = new QPushButton(tr("趋势图"),this);
-    sudokuBtn = new QPushButton(tr("血压管理分析图"),this);
+    sudokuBtn = new QPushButton(tr("血压靶向分析图"),this);
     auxArgBtn = new QPushButton(tr("辅助参数"),this);
     trendChartsWidget = new TrendChartsWidget;
     auxArgDialog = new AuxArgDialog;
@@ -515,11 +516,11 @@ void EnterSystemWidget::changeMode(const int &id)
     }
     else if(id == 1) {
         if (!rPos.isEmpty() && QMessageBox::question(this,tr("提示"),
-                         tr("已记录体位，确定切换为单体位吗？")) == QMessageBox::No){
+                         tr("已记录体位，确定切换为单体位吗？")) == QMessageBox::No) {
             manyBtn->setChecked(true);
-            baseData = BaseData();
             return;
         }
+        baseData = BaseData();
         rPos.clear();
         recordBtn->setVisible(false);
     }
@@ -551,12 +552,12 @@ void EnterSystemWidget::createReport()
 {
     if (isStartCheck()) {
         auto &instance = DataManagement::getInstance();
-        if (patternGroup.checkedId() == 0 && !instance.isRecordPos()) {
+        if (patternGroup.checkedId() == 0 && rPos.isEmpty()) {
             QMessageBox::information(this, tr("提示"), tr("多体位模式需要记录体位！"));
             return;
         }
         // professional model
-        if (instance.getHospitalInfo()->mode == 1) {
+        if (instance.getHospitalInfo()->cMode == Check_Mode::InternalMedicine) {
             trendChartsWidget->saveTrendChartPic();
         }
         auto isiCtrl = regulator->getCustomCtrl("ISI");
@@ -607,6 +608,30 @@ void EnterSystemWidget::clearUiSlot()
     foreach (auto customCtrl, regulator->getAllCustomCtrls()) {
         customCtrl->clear();
     }
+}
+
+void EnterSystemWidget::systemModeChanged(Check_Mode mode)
+{
+    switch (mode) {
+    case Check_Mode::PhysicalExamination:
+        singleBtn->show();
+        break;
+    default:
+        manyBtn->setChecked(true);
+        singleBtn->hide();
+        recordBtn->show();
+        break;
+    }
+    if (mode == Check_Mode::InternalMedicine) {
+        DataManagement::getInstance().getRegulator()->connectTrendChart(true);
+        trendChartBtn->show();
+    }
+    else {
+        DataManagement::getInstance().getRegulator()->connectTrendChart(false);
+        trendChartBtn->hide();
+    }
+    baseData = BaseData();
+    rPos.clear();
 }
 
 void EnterSystemWidget::setCtrlValue(const Type &type, const double &value)

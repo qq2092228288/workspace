@@ -146,6 +146,9 @@ private:
     QString flag(CustomCtrl *customCtrl, bool second);
     QString tip(qreal min, qreal max, qreal value);
     QString tip(qreal rValue, qreal cValue);
+    QString mArg(const Type &type, const int &printer, bool isMany);
+    // 报告结论
+    QString reportResult(bool record);
     // 第一体位评价
     QString pevl(const Type &type, bool many = true);
     // 两个体位对比
