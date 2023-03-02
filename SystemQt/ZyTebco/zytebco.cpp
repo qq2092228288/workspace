@@ -11,11 +11,22 @@ ZyTebco::ZyTebco(QObject *parent)
     m_pSerial->setBaudRate(9600);
     m_pSerial->setDataBits(QSerialPort::Data8);
     m_pSerial->setStopBits(QSerialPort::OneStop);
+    /***************************/
+//    m_pExtSerial = new QextSerialPort(QextSerialPort::QueryMode::EventDriven, this);
+//    m_pExtSerial->setParity(ParityType::PAR_NONE);
+//    m_pExtSerial->setBaudRate(BaudRateType::BAUD9600);
+//    m_pExtSerial->setDataBits(DataBitsType::DATA_8);
+//    m_pExtSerial->setStopBits(StopBitsType::STOP_1);
+    /**************************/
+
 
     m_pTimer = new QTimer(this);
     m_pDemoDataTimer = new QTimer(this);
     connect(m_pTimer, &QTimer::timeout, this, &ZyTebco::reConnect);
     connect(m_pDemoDataTimer, &QTimer::timeout, this, &ZyTebco::demoModeSlot);
+
+    qRegisterMetaType<QSerialPort::SerialPortError>("SerialThread");
+    connect(m_pSerial, &QSerialPort::errorOccurred, this, &ZyTebco::handleSerialError, Qt::UniqueConnection);
 }
 
 ZyTebco::~ZyTebco()
@@ -33,7 +44,7 @@ ZyTebco::~ZyTebco()
     delete m_pDemoDataTimer;
     delete m_pTimer;
     delete m_pSerial;
-//    qDebug()<<"~ZyTebco()";
+//    qDebug()<<__FUNCTION__;
 }
 
 QSerialPort *ZyTebco::getSerial()
@@ -47,9 +58,9 @@ void ZyTebco::openSerial(const QString &portName)
         return;
     }
     m_pSerial->setPortName(portName);
-    m_pSerial->open(QIODevice::ReadWrite);
-    qRegisterMetaType<QSerialPort::SerialPortError>("SerialThread");
-    connect(m_pSerial, &QSerialPort::errorOccurred, this, &ZyTebco::handleSerialError, Qt::UniqueConnection);
+    if (!m_pSerial->open(QIODevice::ReadWrite))  {
+        emit openFailed();
+    }
 }
 
 void ZyTebco::startCheckSlot(bool check)

@@ -620,7 +620,18 @@ QString DataManagement::saveReport(QDateTime curTime, QString position, bool rec
     /*********************************************************************/
     if (m_pHospitalInfo->pType == Printer_Type::General) {        // 常规打印机
         if (record) {   // 多体位
-            reportThread->setOpenArg(m_filePath.many_dot(), false);
+            if (m_pHospitalInfo->cMode == Check_Mode::Hypertension) {
+                reportThread->setOpenArg(m_filePath.many_dot(), false);
+            }
+            else if (m_pHospitalInfo->cMode == Check_Mode::InternalMedicine) {
+                reportThread->setOpenArg(m_filePath.pmany_dot(), false);
+            }
+            else if (m_pHospitalInfo->cMode == Check_Mode::Critical) {
+                reportThread->setOpenArg(m_filePath.many_dot(), false);
+            }
+            else if (m_pHospitalInfo->cMode == Check_Mode::PhysicalExamination) {
+                reportThread->setOpenArg(m_filePath.many_dot(), false);
+            }
             // 记录体位
             QStringList rList;
             for (int i = 0; i < 29; ++i) {
@@ -637,7 +648,18 @@ QString DataManagement::saveReport(QDateTime curTime, QString position, bool rec
             }
         }
         else {  // 单体位
-            reportThread->setOpenArg(m_filePath.single_dot(), false);
+            if (m_pHospitalInfo->cMode == Check_Mode::Hypertension) {
+                reportThread->setOpenArg(m_filePath.single_dot(), false);
+            }
+            else if (m_pHospitalInfo->cMode == Check_Mode::InternalMedicine) {
+                reportThread->setOpenArg(m_filePath.psingle_dot(), false);
+            }
+            else if (m_pHospitalInfo->cMode == Check_Mode::Critical) {
+                reportThread->setOpenArg(m_filePath.single_dot(), false);
+            }
+            else if (m_pHospitalInfo->cMode == Check_Mode::PhysicalExamination) {
+                reportThread->setOpenArg(m_filePath.single_dot(), false);
+            }
         }
         QStringList cList;
         for (int i = 0; i < 29; ++i) {
@@ -827,7 +849,8 @@ void DataManagement::saveInfo(Cdata &cdata, bool second)
                 if (cValue != 0) {
                     str = QString::number(cValue);
                 }
-                else if (name == "Ino" || (!second && (name == "HRV" || name == "Vol" || name == "Vas"))) {
+                else if (name == "Ino" || (!second && (name == "HRV" || name == "Vol" || name == "Vas"))
+                         || (name == "SVV" && m_pRegulator->getCustomCtrl("SV")->getCurrentValue() != 0)) {
                     if (m_pRegulator->getCustomCtrl("HR")->getCurrentValue() != 0) {    // 真实数据
                         if (!second) {
                             str = tip(min, max, cValue);

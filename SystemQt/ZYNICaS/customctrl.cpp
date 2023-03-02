@@ -324,7 +324,17 @@ void CustomCtrl::setValue(const double &value)
     if (oldAndNewValue.size() > 2) {
         oldAndNewValue.removeFirst();
     }
-    else {
+//    else {
+//        valueEdit->setText(QString::number(value, 'f', digit));
+//        aitems.currentValue = valueEdit->text().toDouble();
+//        valueWarning(aitems.currentValue < aitems.minValue || aitems.currentValue > aitems.maxValue);
+//        emit currentValue(value);
+    //    }
+}
+
+void CustomCtrl::setValue(const double &value, const QString &name)
+{
+    if (name == getName()) {
         valueEdit->setText(QString::number(value, 'f', digit));
         aitems.currentValue = valueEdit->text().toDouble();
         valueWarning(aitems.currentValue < aitems.minValue || aitems.currentValue > aitems.maxValue);
@@ -388,18 +398,19 @@ void CustomCtrl::oldAndNewValueTimerSlot()
     if (oldAndNewValue.size() == 2) {
         qreal oldValue = oldAndNewValue.at(0);
         qreal newValue = oldAndNewValue.at(1);
-        if ((oldValue < newValue && newValue/oldValue > 1.1) ||
-                (oldValue > newValue && oldValue/newValue > 1.1)) {
+        if ((oldValue < newValue && newValue/oldValue > 1.1) || (oldValue > newValue && oldValue/newValue > 1.1)) {
             oldValue += (newValue - oldValue)*0.15;
         }
         else {
             oldValue = newValue;
         }
         oldAndNewValue.replace(0, oldValue);
-        valueEdit->setText(QString::number(oldValue, 'f', digit));
+    }
+    if (!oldAndNewValue.isEmpty()) {
+        valueEdit->setText(QString::number(oldAndNewValue.at(0), 'f', digit));
         aitems.currentValue = valueEdit->text().toDouble();
         valueWarning(aitems.currentValue < aitems.minValue || aitems.currentValue > aitems.maxValue);
-        emit currentValue(oldValue);
+        emit currentValue(aitems.currentValue);
     }
 }
 

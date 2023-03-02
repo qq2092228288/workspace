@@ -17,7 +17,7 @@ TrendChart::TrendChart(QWidget *customCtrl)
     m_pLabel = new QLabel(this);
     m_pAxisX = new QDateTimeAxis(this);
     m_pAxisY = new QValueAxis(this);
-    m_pSeries = new QSplineSeries(this);
+    m_pSeries = new QLineSeries(this);
     dialog = new SelectItemDialog(true);
 
     m_pGroupBox->setStyleSheet("QGroupBox\
@@ -101,9 +101,8 @@ void TrendChart::addValue(double value)
     m_pLabel->setText(QString("MAX: %1; MIN: %2; AVG: %3;").arg(QString::number(max, 'f', digit),
                                                                 QString::number(min, 'f', digit),
                                                                 QString::number(avg, 'f', digit)));
-    double offset = 5/qPow(10, digit);
-    if (m_pAxisY->min() != min - offset || m_pAxisY->max() != max + offset) {
-        m_pAxisY->setRange(min - offset, max + offset);
+    if (m_pAxisY->min() != min - 0.1*qAbs(min) || m_pAxisY->max() != max + 0.1*qAbs(max)) {
+        m_pAxisY->setRange(min - 0.1*qAbs(min), max + 0.1*qAbs(max));
     }
     if (m_pAxisX->min() != cTime) {
         m_pAxisX->setMax(cTime);

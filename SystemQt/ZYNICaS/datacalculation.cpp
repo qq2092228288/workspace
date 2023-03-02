@@ -157,7 +157,10 @@ qreal DataCalculation::cBsa(const qreal &height, const qreal &weight)
 
 qreal DataCalculation::cVept(const qreal &height, const qreal &weight, const qreal &sex)
 {
-    return ((qPow(0.17*height, 3)/4.25)*(1 + 0.65*(weight/cIdealW(height, sex) - 1)));
+//    qreal bmi = weight/qPow(height/100.0, 2);
+//    qreal increase = (bmi <= 23.9 ? 1.1 : 1.1 + (bmi - 23.9)*0.1625);
+//    return ((qPow(0.17*height, 3)/4.25)*(1 + 0.65*(weight/(0.524*height - (sex == 0 ? 16.58 : 26.58)) - 1))*increase);
+    return ((qPow(0.17*height, 3)/4.25)*(1 + 0.65*(weight/(0.524*height - (sex == 0 ? 16.58 : 26.58)) - 1)));
 }
 
 qreal DataCalculation::cIdealW(const qreal &height, const qreal &sex)

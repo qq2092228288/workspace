@@ -500,7 +500,7 @@ void EnterSystemWidget::setBPValue(const QString &sbp, const QString &dbp)
             bodyValue.SBP = sbp.toInt();
             bodyValue.DBP = dbp.toInt();
             BPCtrl->setValues(bodyValue.SBP, bodyValue.DBP);
-            MAPCtrl->setValue(bodyValue.MAP());
+            MAPCtrl->setValue(bodyValue.MAP(), MAPCtrl->getName());
         }
         else {
             BPCtrl->clear();

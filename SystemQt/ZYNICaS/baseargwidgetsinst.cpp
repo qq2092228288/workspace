@@ -7,7 +7,7 @@ BaseArgWidgetsInst::BaseArgWidgetsInst(QObject *parent)
 {
     appendWidget("心输出量", "CO", "L/min", 3.5, 9.0, 1);
     appendWidget("心脏指数", "CI", "L/min·m²", 2.0, 5.0, 1);
-    appendWidget("氧输送", "DO2", "", "mL/min", 0);
+    appendWidget("氧输送", "DO2", "-", "mL/min", 0);
     appendWidget("心搏量", "SV", "mL/beat", 50, 120, 1);
     appendWidget("心搏指数", "SI", "mL/beat·m²", 35, 65, 0);
     appendWidget("心率变异性", "HRV", "%", -50, 50, 0);

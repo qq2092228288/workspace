@@ -69,6 +69,7 @@ public:
 public slots:
     void clear();
     void setValue(const double &value);
+    void setValue(const double &value, const QString &name);
     void setValues(const double &value, const double &value1);
     void valueWarning(bool warning);
     void recordValueSlot();

@@ -6,6 +6,7 @@
 #include <QtCharts>
 #include <QValueAxis>
 #include <QSplineSeries>
+#include <QLineSeries>
 #include <QDateTimeAxis>
 #include <QWidget>
 #include <QGridLayout>
@@ -34,7 +35,7 @@ private:
     QList<double> m_values;
     QDateTimeAxis *m_pAxisX;
     QValueAxis *m_pAxisY;
-    QSplineSeries *m_pSeries;
+    QLineSeries *m_pSeries;
     SelectItemDialog *dialog;
     int digit;
 private:

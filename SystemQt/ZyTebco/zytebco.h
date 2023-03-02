@@ -13,6 +13,8 @@
 #include <QQueue>
 #include <QMutexLocker>
 
+//#include "qextserialport.h"
+
 
 #if defined(ZYTEBCO_LIBRARY)
 #  define ZYTEBCO_EXPORT Q_DECL_EXPORT
@@ -41,6 +43,7 @@ signals:
     void ecgValue(uchar);   // ECG
     void diffValue(uchar);  // dZ/dT
     void admitValue(uchar); // dZ
+    void openFailed();
 private slots:
     void handleSerialError(QSerialPort::SerialPortError error);
     void reConnect();
@@ -52,6 +55,7 @@ private:
     QTimer *m_pTimer;
     bool working;
     QTimer *m_pDemoDataTimer;
+//    QextSerialPort *m_pExtSerial;
 };
 
 #endif // ZYTEBCO_H

@@ -70,19 +70,21 @@ int main(int argc, char *argv[])
         ins.httpPost()->setDeviceInfo(deviceDatabase.deviceInfo());
         // get device info
         ins.httpPost()->activeDevice(ins.getMac());
-        // data upload timer
-        QTimer timer;
-        // upload reports
-        QObject::connect(&timer, &QTimer::timeout, &reportDatabase, &ReportDataBase::dataUpload);
-        // upload used consumables
-        QObject::connect(&timer, &QTimer::timeout, &deviceDatabase, &DeviceDatabase::tryToUpload);
-        timer.start(10000);
 
         MainWidget w;
         a.mainWidget = &w;
         w.showMaximized();
+        // data upload timer
+        QTimer timer(&w);
+        // upload reports
+        QObject::connect(&timer, &QTimer::timeout, &reportDatabase, &ReportDataBase::dataUpload);
+        // upload used consumables
+        QObject::connect(&timer, &QTimer::timeout, &deviceDatabase, &DeviceDatabase::tryToUpload);
+
+        timer.start(10000);
         // update consumable list, exec message box for getiddialog  when get new consumable list.
         ins.requestConsumableList();
+
         return a.exec();
     }
     return 0;

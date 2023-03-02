@@ -38,6 +38,7 @@ void SelectItemDialog::showEvent(QShowEvent *event)
     if (m_trendChart) {
         list.removeOne("SBP/DBP");
         list.removeOne("MAP");
+        list.removeOne("DO2");
     }
     foreach (const QString &name, list) {
         if(-1 == regulator->getSaveNames(m_trendChart).indexOf(name)) {

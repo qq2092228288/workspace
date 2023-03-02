@@ -19,6 +19,10 @@ HEADERS += \
 
 include(../../commonFiles/base.pri)
 
+INCLUDEPATH += ../../commonFiles/qextserialport/src
+
+LIBS += -L$$PROJECT_LIBDIR -lQt5ExtSerialPort1
+
 # Default rules for deployment.
 unix {
     target.path = /usr/lib
