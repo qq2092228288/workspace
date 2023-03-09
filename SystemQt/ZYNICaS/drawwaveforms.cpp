@@ -1,4 +1,4 @@
-﻿#include "drawwaveforms.h"
+#include "drawwaveforms.h"
 #include <iostream>
 #include <algorithm>
 using namespace std;
@@ -57,18 +57,19 @@ QChartView *DrawWaveforms::getView() const
 
 void DrawWaveforms::addValue(uchar value)
 {
-    m_values.append(QPointF(++m_x,value));
+    m_values.append(QPointF(++m_x, value));
     m_oldValues.enqueue(value);
     if (m_x%6 == 0) {
         m_pSeries->replace(m_values);
-        if(m_x >= m_tickCount+10) {
-            m_pAxisX->setRange(m_x-m_tickCount,m_x);
-            m_values.removeFirst();
-            m_oldValues.dequeue();
+        if(m_x >= m_tickCount + 10) {
+            m_pAxisX->setRange(m_x - m_tickCount, m_x);
+            for (int i = 0; i < 6; ++i) {
+                m_values.removeFirst();
+                m_oldValues.dequeue();
+            }
             if(autoSetY) {
-                m_pAxisY->setRange((*min_element(m_oldValues.begin(),m_oldValues.end()))/30*30-30,
-                                   (*max_element(m_oldValues.begin(),m_oldValues.end()))/30*30+30);
-                m_pView->update();
+                m_pAxisY->setRange((*min_element(m_oldValues.begin(),m_oldValues.end()))/30*30 - 30,
+                                   (*max_element(m_oldValues.begin(),m_oldValues.end()))/30*30 + 30);
             }
         }
     }
@@ -79,7 +80,7 @@ void DrawWaveforms::clear()
     m_pSeries->clear();
     m_values.clear();
     m_oldValues.clear();
-    m_pAxisX->setRange(0,m_tickCount);
-    m_pAxisY->setRange(0,255);
+    m_pAxisX->setRange(0, m_tickCount);
+    m_pAxisY->setRange(0, 255);
     m_x = 0;
 }

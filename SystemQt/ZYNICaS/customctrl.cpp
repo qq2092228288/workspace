@@ -308,10 +308,8 @@ int CustomCtrl::getDigit() const
 
 void CustomCtrl::clear()
 {
-    aitems.recordValue = 0;
-    aitems.currentValue = 0;
-    dbpaitems.recordValue = 0;
-    dbpaitems.currentValue = 0;
+    aitems.clear();
+    dbpaitems.clear();
     valueEdit->clear();
     m_pTrendChart->clear();
     oldAndNewValue.clear();
@@ -320,6 +318,7 @@ void CustomCtrl::clear()
 
 void CustomCtrl::setValue(const double &value)
 {
+    aitems.values.append(value);
     oldAndNewValue.append(value);
     if (oldAndNewValue.size() > 2) {
         oldAndNewValue.removeFirst();

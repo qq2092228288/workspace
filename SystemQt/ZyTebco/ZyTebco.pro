@@ -19,9 +19,9 @@ HEADERS += \
 
 include(../../commonFiles/base.pri)
 
-INCLUDEPATH += ../../commonFiles/qextserialport/src
+#include(../../commonFiles/qextserialport/src/qextserialport.pri)
 
-LIBS += -L$$PROJECT_LIBDIR -lQt5ExtSerialPort1
+#LIBS += -L$$PROJECT_LIBDIR -lQt5ExtSerialPort1
 
 # Default rules for deployment.
 unix {

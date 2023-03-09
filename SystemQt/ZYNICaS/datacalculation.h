@@ -41,9 +41,15 @@ public:
     static qreal cVept   (const qreal &height, const qreal &weight, const qreal &sex);
     static qreal cIdealW (const qreal &height, const qreal &sex);
     static qreal cMap    (const qreal &sbp, const qreal &dbp);
+    // hrv analyse rr = 60/hr
+    static qreal cNnvgr  (const QList<qreal> &hrList);
+    static qreal cSdnn   (const QList<qreal> &hrList);
+    static qreal cPnn50  (const QList<qreal> &hrList);
+    static qreal cRmssd  (const QList<qreal> &hrList);
 private:
     static qreal percent (const qreal &value, const qreal &ideal);
     static qreal perPNJ  (const qreal &value1, const qreal &value2);
+    static QList<qreal> getRrList(const QList<qreal> &hrList);
     static qreal checkValue(const qreal &value);
     static bool  isInvalid(const qreal &value);
     static bool  isInvalid(const qreal &value1, const qreal &value2);

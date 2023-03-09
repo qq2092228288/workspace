@@ -22,8 +22,10 @@ public:
     explicit MainWidget(QWidget *parent = nullptr);
     virtual ~MainWidget();
     virtual void paintEvent(QPaintEvent *event);
+    bool nativeEvent(const QByteArray &eventType, void *message, long *result);
 signals:
-
+    // Windows 消息，设备插拔 wParam(0x8000)已插入设备或介质，现在可用。wParam(0x8004)设备或介质已被移出。
+    void wmDeviceChange(bool insert);
 private slots:
     void enterBtnSlot();
     void demoBtnSlot();

@@ -561,7 +561,7 @@ void HttpPost::addJsonArray(QJsonObject &target, const QJsonArray &jsonArray, co
     fCvp = fPos.find(QString::number(Type::CVP))->toInt(4);
     fLap = fPos.find(QString::number(Type::LAP))->toInt(9);
     sposture = getData(sPos, Type::Pos);
-    fCvp = sPos.find(QString::number(Type::CVP))->toInt(4);
+    sCvp = sPos.find(QString::number(Type::CVP))->toInt(4);
     sLap = sPos.find(QString::number(Type::LAP))->toInt(9);
 
     target.insert("bodySurfaceArea", QString::number(DatCa::cBsa(height, weight), 'f', 2));

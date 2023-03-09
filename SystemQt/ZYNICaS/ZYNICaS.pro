@@ -87,6 +87,7 @@ HEADERS += \
 
 
 include(../../commonFiles/base.pri)
+#include(../../commonFiles/qextserialport/src/qextserialport.pri)
 
 INCLUDEPATH += ../ZyTebco \
     ../IdCheck \

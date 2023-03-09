@@ -31,12 +31,13 @@ class ZYTEBCO_EXPORT ZyTebco : public QObject
 public:
     explicit ZyTebco(QObject *parent = nullptr);
     virtual ~ZyTebco();
-    QSerialPort *getSerial();
+//    QSerialPort *getSerial();
 public slots:
     void openSerial(const QString &portName);
     void startCheckSlot(bool check);
     void clearSerial();
     bool isWorking();
+    void hotPlug(bool insert);  // 热插拔
     void startDemoMode(bool start);
 signals:
     void data(uchar, short);
@@ -45,14 +46,14 @@ signals:
     void admitValue(uchar); // dZ
     void openFailed();
 private slots:
-    void handleSerialError(QSerialPort::SerialPortError error);
-    void reConnect();
+//    void handleSerialError(QSerialPort::SerialPortError error);
+//    void reConnect();
     void recvInfoSlot();
     void demoModeSlot();
 private:
     QMutex mutex;
     QSerialPort *m_pSerial;
-    QTimer *m_pTimer;
+//    QTimer *m_pTimer;
     bool working;
     QTimer *m_pDemoDataTimer;
 //    QextSerialPort *m_pExtSerial;

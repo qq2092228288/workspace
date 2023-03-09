@@ -38,6 +38,13 @@ struct ArgItems
     QString dataName;
     QString dataName_cn;
     QString dataUnit;
+    QList<double> values;
+    void clear()
+    {
+        recordValue = 0;
+        currentValue = 0;
+        values.clear();
+    }
 };
 
 struct Argument;

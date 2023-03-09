@@ -1,7 +1,7 @@
 #include "datamanagement.h"
 #include "qrencode.h"
 #include "idcheck.h"
-
+#include "datacalculation.h"
 
 MyFilePath::MyFilePath(const QString &path)
     : appPath{path}
@@ -62,6 +62,11 @@ QString MyFilePath::psingle_dot() const
 QString MyFilePath::pmany_dot() const
 {
     return appPath + "dot/manyPositionProTemplate.dot";
+}
+
+QString MyFilePath::_dot() const
+{
+    return appPath + "dot/testTemplate.dot";
 }
 
 QString MyFilePath::record_dz() const
@@ -428,196 +433,6 @@ QString DataManagement::saveReport(QDateTime curTime, QString position, bool rec
     reportThread->init();
     connect(reportThread, &CreateReportThread::finished, this, &DataManagement::clear);
     // 打开模板
-//    QString result = tr("无创血流动力学检测系统评价，心脏动力，血管阻力，血液容量，血压等循环系统情况结论如下：\n");
-//    if (record) {       // 多体位
-//        reportThread->addMarks("rpos", m_recordInfo.pos);
-//        if (m_pHospitalInfo->printer == 0) {   // 常规打印
-//            if (m_pHospitalInfo->mode == 0) {
-//                reportThread->setOpenArg(m_filePath.many_dot(), false);
-//            }
-//            else if (m_pHospitalInfo->mode == 1) {
-//                reportThread->setOpenArg(m_filePath.pmany_dot(), false);
-//            }
-//            else if (m_pHospitalInfo->mode == 1) {
-//                // 高血压模式
-//            }
-//            // 记录体位
-//            QStringList rList;
-//            for (int i = 0; i < 29; ++i) {
-//                rList<<QString("r%1").arg(i,2,10,QLatin1Char('0'));
-//            }
-//            reportThread->addBatchMarks(rList, m_recordInfo.values);
-//            reportThread->addMarks("rname", (m_recordInfo.pos + tr(" 心阻抗图(dZ)")));
-//            // 插入图片
-//            reportThread->addPic("rimage",m_filePath.record_dz());
-//            auto isiCtrl = m_pRegulator->getCustomCtrl("ISI");
-//            if (isiCtrl->getRecordValue() != 0 || isiCtrl->getCurrentValue() != 0) {
-//                reportThread->addMarks("aname", (tr("容量@泵力分析图")));
-//                reportThread->addPic("aimage", m_filePath.isiCurve());
-//            }
-//            result += tr("1.第一体位：心输出量(CO)%1，心脏指数(CI)%2，心搏量(SV)%3，心搏指数(SI)%4，心率(HR)%5，血管顺应性(Vas)%6，"
-//                "血管容量(Vol)%7，收缩变力性(Ino)%8，收缩压(SBP)%9，舒张压(DBP)%10，胸液传导性(TFC)%11；\n"
-//                "2.第二体位增加容量负荷实验后：心搏量(SV)%12，变力状态指数(ISI)%13，%14。")
-//                    .arg(pevl(Type::CO),
-//                         pevl(Type::CI),
-//                         pevl(Type::SV),
-//                         pevl(Type::SI),
-//                         pevl(Type::HR),
-//                         pevl(Type::Vas),
-//                         pevl(Type::Vol),
-//                         pevl(Type::Ino),
-//                         pevl(Type::SBP))
-//                    .arg(pevl(Type::DBP),
-//                         pevl(Type::TFC),
-//                         compare(Type::SV),
-//                         compare(Type::ISI),
-//                         preload());
-//        }
-//        else if (m_pHospitalInfo->printer == 1) {    // 热敏打印
-//            reportThread->setOpenArg(m_filePath.xmany_dot(), false);
-//            QStringList rList;
-//            for (int i = 0; i < 12; ++i) {
-//                rList<<QString("r%1").arg(i,2,10,QLatin1Char('0'));
-//            }
-//            QStringList values = m_recordInfo.values.mid(0,4);
-//            values<<m_recordInfo.values.at(7)<<m_recordInfo.values.at(12)
-//                 <<m_recordInfo.values.mid(20,6);
-//            reportThread->addBatchMarks(rList, values);
-//            result += tr("1.第一体位：CO%1，CI%2，SV%3，SI%4，HR%5，Vas%6，Vol%7，Ino%8，SBP%9，DBP%10，TFC%11；\n"
-//                "2.第二体位增加容量负荷实验后：SV%12，ISI%13，%14。")
-//                    .arg(pevl(Type::CO),
-//                         pevl(Type::CI),
-//                         pevl(Type::SV),
-//                         pevl(Type::SI),
-//                         pevl(Type::HR),
-//                         pevl(Type::Vas),
-//                         pevl(Type::Vol),
-//                         pevl(Type::Ino),
-//                         pevl(Type::SBP))
-//                    .arg(pevl(Type::DBP),
-//                         pevl(Type::TFC),
-//                         compare(Type::SV),
-//                         compare(Type::ISI),
-//                         preload());
-//        }
-//    }
-//    else {      // 单体位
-//        if (m_pHospitalInfo->printer == 0) {
-//            if (m_pHospitalInfo->mode == 0) {
-//                reportThread->setOpenArg(m_filePath.single_dot(), false);
-//            }
-//            else if (m_pHospitalInfo->mode == 1) {
-//                reportThread->setOpenArg(m_filePath.psingle_dot(), false);
-//            }
-//            else if (m_pHospitalInfo->mode == 2) {
-//                // 高血压
-//            }
-//            result += tr("1.心脏功能：心输出量(CO)%1，心搏量(SV)%2，心搏指数(SI)%3，心脏指数(CI)%4，血管容量(Vol)%5，血管顺应性(Vas)%6，收缩变力性(Ino)%7；\n"
-//                "2.血压管理：收缩压(SBP)%8，舒张压(DBP)%9，心率(HR)%10；")
-//                    .arg(pevl(Type::CO, false),
-//                         pevl(Type::SV, false),
-//                         pevl(Type::SI, false),
-//                         pevl(Type::CI, false),
-//                         pevl(Type::Vol, false),
-//                         pevl(Type::Vas, false),
-//                         pevl(Type::Ino, false),
-//                         pevl(Type::SBP, false),
-//                         pevl(Type::DBP, false))
-//                    .arg(pevl(Type::HR, false));
-//        }
-//        else if (m_pHospitalInfo->printer == 1) {
-//            reportThread->setOpenArg(m_filePath.xsingle_dot(),false);
-//            result += tr("1.心脏功能：CO%1，SV%2，SI%3，CI%4，Vol%5，Vas%6，Ino%7；\n"
-//                "2.血压管理：SBP%8，DBP%9，HR%10；")
-//                    .arg(pevl(Type::CO, false),
-//                         pevl(Type::SV, false),
-//                         pevl(Type::SI, false),
-//                         pevl(Type::CI, false),
-//                         pevl(Type::Vol, false),
-//                         pevl(Type::Vas, false),
-//                         pevl(Type::Ino, false),
-//                         pevl(Type::SBP, false),
-//                         pevl(Type::DBP, false))
-//                    .arg(pevl(Type::HR, false));
-//        }
-//    }
-//    if (m_pRegulator->getCustomCtrl("HR")->getCurrentValue() == 0 ||
-//            m_pRegulator->getCustomCtrl("MAP")->getCurrentValue() == 0) {
-//        result.clear();
-//    }
-//    else if (record && (m_pRegulator->getCustomCtrl("HR")->getRecordValue() == 0 ||
-//                        m_pRegulator->getCustomCtrl("MAP")->getRecordValue() == 0)) {
-//        result.clear();
-//    }
-//    reportThread->addMarks("result", result);
-//    if (result.isEmpty()) {
-//        result = "null";
-//    }
-//    QString tip = tr("提示：血流动力学检测异常会增加心源性猝死的风险，请结合临床相关检查。");
-//    if (m_pHospitalInfo->tip) {
-//        tip = QString("%1(%2)").arg(riskTip(record), tip);
-//        reportThread->addMarks("tick", tr("血流动力学检测： 未见明显异常 [  ]    异常 [  ]"));
-//    }
-//    reportThread->addMarks("tip", tip);
-//    if (m_pHospitalInfo->tip) {
-//        auto hrv = m_pRegulator->getCustomCtrl(typeName(Type::HRV));
-//        if (hrv->getCurrentValue() < hrv->getMinValue()) {
-//            reportThread->addMarks("tip", tr("心血管疾患高风险人群提示。"));
-//        }
-//    }
-//    // 当前体位
-//    reportThread->addMarks("cpos", m_currentInfo.pos);
-//    if (m_pHospitalInfo->printer == 0) {   // 常规
-//        QStringList cList;
-//        for (int i = 0; i < 29; ++i) {
-//            cList<<QString("c%1").arg(i, 2, 10, QLatin1Char('0'));
-//        }
-//        reportThread->addBatchMarks(cList, m_currentInfo.values);
-//        reportThread->addMarks("cname", (m_currentInfo.pos + tr(" 心阻抗图(dZ)")));
-//        reportThread->addPic("cimage", m_filePath.current_dz());
-//        reportThread->addMarks("room" , m_pHospitalInfo->roomName);
-//        if (m_pHospitalInfo->mode == 1) {    // 专业模式
-//            for (int index = 0; index < m_filePath.trendchartspic().size(); ++index) {
-//                reportThread->addPic(QString("trendchart%1").arg(index,2,10, QLatin1Char('0')),
-//                                     m_filePath.trendchartspic().at(index));
-//            }
-//        }
-//    }
-//    else if (m_pHospitalInfo->printer == 1) {   // 热敏
-//        QStringList rList;
-//        for (int i = 0; i < 12; ++i) {
-//            rList<<QString("c%1").arg(i,2,10,QLatin1Char('0'));
-//        }
-//        QStringList values = m_currentInfo.values.mid(0,4);
-//        values<<m_currentInfo.values.at(7)<<m_currentInfo.values.at(12)
-//             <<m_currentInfo.values.mid(20,6);
-//        reportThread->addBatchMarks(rList, values);
-//    }
-//    // dot normal data
-//    reportThread->addMarks("sname", tr("血压靶向分析图"));
-//    reportThread->addPic("simage", m_filePath.sudoku());
-//    // 医院、时间、检查人员
-//    reportThread->addMarks("hospital" , m_pHospitalInfo->hospitalName);
-//    reportThread->addMarks("time" , curTime.toString("yyyy-MM-dd hh:mm"));
-//    reportThread->addMarks("doctor" , m_pHospitalInfo->doctorName);
-//    // 患者基本信息
-//    reportThread->addMarks("name" , m_pBodyValue->name);
-//    reportThread->addMarks("sex", (0 == m_pBodyValue->sex) ? tr("男") : tr("女"));
-//    reportThread->addMarks("age" , QString::number(m_pBodyValue->age) + tr(" 岁"));
-//    reportThread->addMarks("height" , QString::number(m_pBodyValue->height) + " cm");
-//    reportThread->addMarks("weight" , QString::number(m_pBodyValue->weight) + " kg");
-//    reportThread->addMarks("number" , m_pBodyValue->id);
-//    reportThread->addMarks("area" , QString::number(m_pBodyValue->BSA(), 'f', 1) + " m²");
-//    // 二维码
-//    getQrCodeUrlPixmap(m_pHospitalInfo->deviceId, curTime.toString("yyyyMMddHHmmss")).save(m_filePath.qrCode());
-//    reportThread->addPic("qrcode", m_filePath.qrCode());
-//    // 保存
-//    m_newReportName = QString("%1/%2-%3-%4.docx").arg(m_filePath.reports(),
-//                      curTime.toString("yyyyMMddhhmm"), m_pBodyValue->id,m_pBodyValue->name);
-//    reportThread->setSaveAs(m_newReportName);
-//    reportThread->start();
-//    return result;
-    /*********************************************************************/
     if (m_pHospitalInfo->pType == Printer_Type::General) {        // 常规打印机
         if (record) {   // 多体位
             if (m_pHospitalInfo->cMode == Check_Mode::Hypertension) {
@@ -627,7 +442,7 @@ QString DataManagement::saveReport(QDateTime curTime, QString position, bool rec
                 reportThread->setOpenArg(m_filePath.pmany_dot(), false);
             }
             else if (m_pHospitalInfo->cMode == Check_Mode::Critical) {
-                reportThread->setOpenArg(m_filePath.many_dot(), false);
+                reportThread->setOpenArg(m_filePath._dot(), false);
             }
             else if (m_pHospitalInfo->cMode == Check_Mode::PhysicalExamination) {
                 reportThread->setOpenArg(m_filePath.many_dot(), false);
@@ -646,6 +461,38 @@ QString DataManagement::saveReport(QDateTime curTime, QString position, bool rec
                 reportThread->addMarks("aname", (tr("容量@泵力分析图")));
                 reportThread->addPic("aimage", m_filePath.isiCurve());
             }
+            // PLRT
+            reportThread->addMarks("plrttitle", tr("被动抬腿试验"));
+            reportThread->addMarks("baseline", tr("BaseLine"));
+            reportThread->addMarks("challenge", tr("Challenge"));
+            reportThread->addMarks("plrtchange", tr("%"));
+            addPlrt(0, Type::HR);
+            addPlrt(1, Type::SI);
+            addPlrt(2, Type::CI);
+            addPlrt(3, Type::SV);
+            addPlrt(4, Type::CO);
+            addPlrt(5, Type::DO2);
+            addPlrt(6, Type::TFC);
+            addPlrt(7, Type::ISI);
+            // hrv
+            reportThread->addMarks("hrvtitle", tr("心率变异性分析"));
+            auto hrvalues = m_pRegulator->getCustomCtrl(typeName(Type::HR))->getArgItems().values;
+            reportThread->addMarks("hrcount", QString::number(hrvalues.size()));
+            reportThread->addMarks("hrmax", QString::number(*std::max_element(hrvalues.begin(), hrvalues.end())));
+            reportThread->addMarks("hrmin", QString::number(*std::min_element(hrvalues.begin(), hrvalues.end())));
+            reportThread->addMarks("hravg", QString::number(std::accumulate(hrvalues.begin(), hrvalues.end(), 0)/hrvalues.size()));
+            reportThread->addMarks("argname00", "NNVGR(ms)");
+            reportThread->addMarks("argname01", "SDNN(ms)");
+            reportThread->addMarks("argname02", "PNN50(%)");
+            reportThread->addMarks("argname03", "RMSSD(ms)");
+            reportThread->addMarks("argvalue00", QString::number(DatCa::cNnvgr(hrvalues)));
+            reportThread->addMarks("argvalue01", QString::number(DatCa::cSdnn(hrvalues)));
+            reportThread->addMarks("argvalue02", QString::number(DatCa::cPnn50(hrvalues)));
+            reportThread->addMarks("argvalue03", QString::number(DatCa::cRmssd(hrvalues)));
+            reportThread->addMarks("arglimits00", "-");
+            reportThread->addMarks("arglimits01", "-");
+            reportThread->addMarks("arglimits02", "-");
+            reportThread->addMarks("arglimits03", "-");
         }
         else {  // 单体位
             if (m_pHospitalInfo->cMode == Check_Mode::Hypertension) {
@@ -727,6 +574,8 @@ QString DataManagement::saveReport(QDateTime curTime, QString position, bool rec
             reportThread->addMarks("tip", tr("心血管疾患高风险人群提示。"));
         }
     }
+    // title
+    reportThread->addMarks("title", tr("无创心功能监测报告"));
     // dot normal data
     reportThread->addMarks("sname", tr("血压靶向分析图"));
     reportThread->addPic("simage", m_filePath.sudoku());
@@ -1238,4 +1087,15 @@ QPixmap DataManagement::getQrCodeUrlPixmap(const QString &deviceId, const QStrin
     }
     QRcode_free(qrcode);
     return QPixmap::fromImage(mainimg);
+}
+
+void DataManagement::addPlrt(const int &num, const Type &type)
+{
+    auto ctrl = m_pRegulator->getCustomCtrl(typeName(type));
+    qreal rvalue = ctrl->getRecordValue();
+    qreal cvalue = ctrl->getCurrentValue();
+    reportThread->addMarks(QString("plrt0%1").arg(num), QString::number(rvalue));
+    reportThread->addMarks(QString("plrt1%1").arg(num), QString::number(cvalue));
+    double percent = (int(((rvalue - cvalue)/cvalue + 0.05)*10))/10.0;
+    reportThread->addMarks(QString("plrt2%1").arg(num), QString::number(percent));
 }

@@ -173,6 +173,46 @@ qreal DataCalculation::cMap(const qreal &sbp, const qreal &dbp)
     return ((sbp + dbp*2)/3);
 }
 
+qreal DataCalculation::cNnvgr(const QList<qreal> &hrList)
+{
+    QList<qreal> rrList = getRrList(hrList);
+    return (std::accumulate(rrList.begin(), rrList.end(), 0.0)/rrList.size());
+}
+
+qreal DataCalculation::cSdnn(const QList<qreal> &hrList)
+{
+    QList<qreal> rrList = getRrList(hrList);
+    double avg = std::accumulate(rrList.begin(), rrList.end(), 0.0)/rrList.size();
+    double accum = 0.0;
+    foreach (auto rr, rrList) {
+        accum += qPow(rr - avg, 2);
+    }
+    return (qSqrt(accum/rrList.size()));
+}
+
+qreal DataCalculation::cPnn50(const QList<qreal> &hrList)
+{
+    QList<qreal> rrList = getRrList(hrList);
+    int mT50ms = 0;
+    for (int index = 1; index < rrList.size() - 1; ++index) {
+        if (qAbs(rrList.at(index) - rrList.at(index - 1)) > 0.05) {
+            ++mT50ms;
+        }
+    }
+    return (mT50ms/rrList.size());
+}
+
+qreal DataCalculation::cRmssd(const QList<qreal> &hrList)
+{
+    QList<qreal> rrList = getRrList(hrList);
+    if (rrList.size() < 2) return 0;
+    double accum = 0.0;
+    for (int index = 1; index < rrList.size() - 1; ++index) {
+        accum += qPow(rrList.at(index) - rrList.at(index - 1), 2);
+    }
+    return (qSqrt(accum/(rrList.size() - 1)));
+}
+
 qreal DataCalculation::percent(const qreal &value, const qreal &ideal)
 {
     return (isInvalid(value) ? invalid() : perPNJ(value, ideal));
@@ -181,6 +221,15 @@ qreal DataCalculation::percent(const qreal &value, const qreal &ideal)
 qreal DataCalculation::perPNJ(const qreal &value1, const qreal &value2)
 {
     return (value1 >= value2 ? (value1/value2 - 1)*100 : (1 - value2/value1)*100);
+}
+
+QList<qreal> DataCalculation::getRrList(const QList<qreal> &hrList)
+{
+    QList<qreal> rrList;
+    foreach (auto hr, hrList) {
+        rrList<<(60000.0/hr);
+    }
+    return rrList;
 }
 
 qreal DataCalculation::checkValue(const qreal &value)

@@ -36,6 +36,7 @@ public:
     QString xmany_dot()         const;
     QString psingle_dot()       const;
     QString pmany_dot()         const;
+    QString _dot()              const;
     QString record_dz()         const;
     QString current_dz()        const;
     QString sudoku()            const;
@@ -158,6 +159,7 @@ private:
     // 猝死风险提示
     QString riskTip(bool many);
     QPixmap getQrCodeUrlPixmap(const QString &deviceId, const QString &reportTime);
+    void addPlrt(const int &num, const Type &type);
 private:
     CreateReportThread *reportThread;
     MyFilePath m_filePath;
