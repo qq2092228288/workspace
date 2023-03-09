@@ -938,13 +938,13 @@ QString DataManagement::pevl(const Type &type, bool many)
     qreal max = temp->getMaxValue();
     if (type == Type::DBP) {
         value = temp->getDbpArgItems().recordValue;
+        min = temp->getDbpArgItems().minValue;
+        max = temp->getDbpArgItems().maxValue;
     }
     if (!many) {
         value = temp->getCurrentValue();
         if (type == Type::DBP) {
             value = temp->getDbpArgItems().currentValue;
-            min = temp->getDbpArgItems().minValue;
-            max = temp->getDbpArgItems().maxValue;
         }
     }
     if (value < min)
