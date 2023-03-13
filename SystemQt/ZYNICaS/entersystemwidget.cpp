@@ -208,7 +208,7 @@ void EnterSystemWidget::initBPModule()
 
 void EnterSystemWidget::initPosModule()
 {
-    pldGroupBox = new QGroupBox(tr("PLD-被动抬腿实验"),this);
+    pldGroupBox = new QGroupBox(tr("PLR-被动抬腿试验"),this);
     manyBtn = new QRadioButton(tr("多体位"),this);
     singleBtn = new QRadioButton(tr("单体位"),this);
     halfLieBtn = new QRadioButton(tr("半卧"),this);

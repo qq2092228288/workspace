@@ -447,6 +447,7 @@ QString DataManagement::saveReport(QDateTime curTime, QString position, bool rec
             else if (m_pHospitalInfo->cMode == Check_Mode::PhysicalExamination) {
                 reportThread->setOpenArg(m_filePath.many_dot(), false);
             }
+            reportThread->addMarks("rpos", (m_recordInfo.pos));
             // 记录体位
             QStringList rList;
             for (int i = 0; i < 29; ++i) {
@@ -508,6 +509,7 @@ QString DataManagement::saveReport(QDateTime curTime, QString position, bool rec
                 reportThread->setOpenArg(m_filePath.single_dot(), false);
             }
         }
+        reportThread->addMarks("cpos", (m_currentInfo.pos));
         QStringList cList;
         for (int i = 0; i < 29; ++i) {
             cList<<QString("c%1").arg(i, 2, 10, QLatin1Char('0'));

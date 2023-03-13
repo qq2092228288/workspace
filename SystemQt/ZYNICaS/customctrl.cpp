@@ -241,7 +241,7 @@ void CustomCtrl::smoothTransitionTimer(bool isStart)
     }
     if (isStart) {
         if (!oldAndNewValueTimer->isActive()) {
-            oldAndNewValueTimer->start(3000);
+            oldAndNewValueTimer->start(2500);
         }
     }
     else {
@@ -398,7 +398,7 @@ void CustomCtrl::oldAndNewValueTimerSlot()
         qreal oldValue = oldAndNewValue.at(0);
         qreal newValue = oldAndNewValue.at(1);
         if ((oldValue < newValue && newValue/oldValue > 1.1) || (oldValue > newValue && oldValue/newValue > 1.1)) {
-            oldValue += (newValue - oldValue)*0.15;
+            oldValue += (newValue - oldValue)*0.3;
         }
         else {
             oldValue = newValue;
