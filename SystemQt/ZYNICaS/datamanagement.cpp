@@ -415,7 +415,7 @@ void DataManagement::setDeviceDatabase(DeviceDatabase *deviceDatabase)
 void DataManagement::recordPosition(QString position)
 {
     m_recordInfo.pos = position;
-    m_recordInfo.posture = position == tr("半卧") ? "1" : (position == tr("平躺") ? "2" : "3");
+//    m_recordInfo.posture = position == tr("半卧") ? "1" : (position == tr("平躺") ? "2" : "3");
     saveInfo(m_recordInfo);
     m_pdZ->grab().save(m_filePath.record_dz());
     isRecord = true;
@@ -436,10 +436,10 @@ QString DataManagement::saveReport(QDateTime curTime, QString position, bool rec
     if (m_pHospitalInfo->pType == Printer_Type::General) {        // 常规打印机
         if (record) {   // 多体位
             if (m_pHospitalInfo->cMode == Check_Mode::Hypertension) {
-                reportThread->setOpenArg(m_filePath.many_dot(), false);
+                reportThread->setOpenArg(m_filePath._dot(), false);
             }
             else if (m_pHospitalInfo->cMode == Check_Mode::InternalMedicine) {
-                reportThread->setOpenArg(m_filePath.pmany_dot(), false);
+                reportThread->setOpenArg(m_filePath._dot(), false);
             }
             else if (m_pHospitalInfo->cMode == Check_Mode::Critical) {
                 reportThread->setOpenArg(m_filePath._dot(), false);
@@ -464,9 +464,9 @@ QString DataManagement::saveReport(QDateTime curTime, QString position, bool rec
             }
             // PLRT
             reportThread->addMarks("plrttitle", tr("被动抬腿试验"));
-            reportThread->addMarks("baseline", tr("BaseLine"));
-            reportThread->addMarks("challenge", tr("Challenge"));
-            reportThread->addMarks("plrtchange", tr("%"));
+            reportThread->addPic("plrtfimage", posImagePath(m_recordInfo.pos));
+            reportThread->addPic("plrtsimage", posImagePath(m_currentInfo.pos));
+            reportThread->addMarks("plrtchange", "%");
             addPlrt(0, Type::HR);
             addPlrt(1, Type::SI);
             addPlrt(2, Type::CI);
@@ -475,6 +475,10 @@ QString DataManagement::saveReport(QDateTime curTime, QString position, bool rec
             addPlrt(5, Type::DO2);
             addPlrt(6, Type::TFC);
             addPlrt(7, Type::ISI);
+            reportThread->addMarks("plrtevaluation", tr("被动抬腿试验测试报告的建议：\n"
+                "1.阳性的判定：被动抬腿试验结束后，SV，SI，CO，CI大于第一体位10%~15%。视同为被动抬腿试验阳性（液体负荷试验阳性）。\n"
+                "2.阴性的判定：被动抬腿试验结束后，SV，SI，CO，CI小于第一体位10%。视同为被动抬腿试验阴性（液体负荷试验阴性）。\n"
+                "请结合临床慎重处置液体管理问题。\n"));
             // hrv
             reportThread->addMarks("hrvtitle", tr("心率变异性分析"));
             auto hrvalues = m_pRegulator->getCustomCtrl(typeName(Type::HR))->getArgItems().values;
@@ -490,17 +494,23 @@ QString DataManagement::saveReport(QDateTime curTime, QString position, bool rec
             reportThread->addMarks("argvalue01", QString::number(DatCa::cSdnn(hrvalues)));
             reportThread->addMarks("argvalue02", QString::number(DatCa::cPnn50(hrvalues)));
             reportThread->addMarks("argvalue03", QString::number(DatCa::cRmssd(hrvalues)));
-            reportThread->addMarks("arglimits00", "-");
-            reportThread->addMarks("arglimits01", "-");
-            reportThread->addMarks("arglimits02", "-");
-            reportThread->addMarks("arglimits03", "-");
+            reportThread->addMarks("arglimits00", getScope(HrvArg::Nnvgr, m_pBodyValue->age));
+            reportThread->addMarks("arglimits01", getScope(HrvArg::Sdnn, m_pBodyValue->age));
+            reportThread->addMarks("arglimits02", getScope(HrvArg::Pnn50, m_pBodyValue->age));
+            reportThread->addMarks("arglimits03", getScope(HrvArg::Rmssd, m_pBodyValue->age));
+            reportThread->addMarks("argevaluation", tr("说明：\n"
+                "1.心血管疾病患者（房颤、早搏、高血压、糖尿病等）心率变异性数据通常会偏高，高于正常值范围；\n"
+                "2.同年龄段，女性心率变异性数据普遍略高于男性；\n"
+                "3.运动人群心率变异值高于普通人群；\n"
+                "4.心率变异性会随着年龄的增长而逐渐下降；\n"
+                "5.测量姿势不正确，心电图存在干扰，都会影响心率变异性的准确性。"));
         }
         else {  // 单体位
             if (m_pHospitalInfo->cMode == Check_Mode::Hypertension) {
                 reportThread->setOpenArg(m_filePath.single_dot(), false);
             }
             else if (m_pHospitalInfo->cMode == Check_Mode::InternalMedicine) {
-                reportThread->setOpenArg(m_filePath.psingle_dot(), false);
+                reportThread->setOpenArg(m_filePath.single_dot(), false);
             }
             else if (m_pHospitalInfo->cMode == Check_Mode::Critical) {
                 reportThread->setOpenArg(m_filePath.single_dot(), false);
@@ -856,33 +866,47 @@ QString DataManagement::reportResult(bool record)
     if (record) {   // 双体位
         if (m_pHospitalInfo->pType == Printer_Type::General) {
             // 双体位常规打印机报告
-            result = tr("无创血流动力学检测系统评价，心脏动力，血管阻力，血液容量，血压等循环系统情况结论如下：\n"
-                         "1.第一体位：心输出量(CO)%1，心脏指数(CI)%2，心搏量(SV)%3，心搏指数(SI)%4，"
-                         "心率(HR)%5，血管顺应性(Vas)%6，血管容量(Vol)%7，收缩变力性(Ino)%8，"
-                         "收缩压(SBP)%9，舒张压(DBP)%10，胸液传导性(TFC)%11；\n"
-                         "2.第二体位增加容量负荷实验后：心搏量(SV)%12，变力状态指数(ISI)%13，%14。")
+            auto isi = m_pRegulator->getCustomCtrl(typeName(Type::ISI));
+            auto sv = m_pRegulator->getCustomCtrl(typeName(Type::SV));
+            auto svr = m_pRegulator->getCustomCtrl(typeName(Type::SVR));
+            auto map = m_pRegulator->getCustomCtrl(typeName(Type::MAP));
+            QString fstr = (isi->getCurrentValue() > isi->getRecordValue() && sv->getCurrentValue() > sv->getRecordValue() ? tr("正常") : tr("异常"));
+            QString sstr = (isi->getCurrentValue() <= isi->getMaxValue() && isi->getCurrentValue() >= isi->getMinValue() ? tr("正常") : tr("异常"));
+            QString tstr = (svr->getCurrentValue() <= svr->getMaxValue() && svr->getCurrentValue() >= svr->getMinValue() ? tr("正常") : tr("异常"));
+            if (map->getCurrentValue() < map->getMinValue() && svr->getCurrentValue() > svr->getMaxValue()) {
+                tstr += tr("(提示：病人血压低，后负荷被动性代偿)");
+            }
+            result = tr("连续无创血流动力学对高血压病靶向分析报告如下：\n"
+                        "1.第一体位：心输出量(CO)%1，心脏指数(CI)%2，心搏量(SV)%3，心搏指数(SI)%4，"
+                        "心率(HR)%5，血管顺应性(Vas)%6，血管容量(Vol)%7，收缩变力性(Ino)%8，"
+                        "收缩压(SBP)%9，舒张压(DBP)%10，胸液传导性(TFC)%11；\n"
+                        "2.第二体位增加容量负荷实验后：心搏量(SV)%12，变力状态指数(ISI)%13，%14；\n"
+                        "3.前负荷(容量负荷)：%15；\n"
+                        "心肌力(心脏泵力)：%16；\n"
+                        "后负荷(张力负荷)：%17。")
                     .arg(pevl(Type::CO), pevl(Type::CI), pevl(Type::SV), pevl(Type::SI), pevl(Type::HR),
                          pevl(Type::Vas), pevl(Type::Vol), pevl(Type::Ino), pevl(Type::SBP))
-                    .arg(pevl(Type::DBP), pevl(Type::TFC), compare(Type::SV), compare(Type::ISI), preload());
+                    .arg(pevl(Type::DBP), pevl(Type::TFC), compare(Type::SV), compare(Type::ISI), preload(),
+                         fstr, sstr, tstr);
             if (m_pHospitalInfo->cMode == Check_Mode::Hypertension) {
                 // 高血压模式
-                result.clear();
-                ArgItems items = m_pRegulator->getCustomCtrl(typeName(Type::SV))->getArgItems();
-                if (items.recordValue != 0 || items.currentValue != 0) {
-                    if (items.currentValue < items.recordValue) {
-                        result = tr("前负荷(容量)高;\n");
-                    }
-                    else if (items.currentValue/items.recordValue < 1.1) {
-                        result = tr("前负荷(容量)偏高;\n");
-                    }
-                }
-                items = m_pRegulator->getCustomCtrl(typeName(Type::SVR))->getArgItems();
-                CustomCtrl *ctrl = m_pRegulator->getCustomCtrl("SBP/DBP");
-                if ((ctrl->getArgItems().currentValue > ctrl->getArgItems().maxValue ||
-                     ctrl->getDbpArgItems().currentValue > ctrl->getDbpArgItems().maxValue) &&
-                        items.currentValue > items.recordValue) {
-                    result += tr("后负荷负荷(容量)高;\n");
-                }
+//                result.clear();
+//                ArgItems items = m_pRegulator->getCustomCtrl(typeName(Type::SV))->getArgItems();
+//                if (items.recordValue != 0 || items.currentValue != 0) {
+//                    if (items.currentValue < items.recordValue) {
+//                        result = tr("前负荷(容量)高;\n");
+//                    }
+//                    else if (items.currentValue/items.recordValue < 1.1) {
+//                        result = tr("前负荷(容量)偏高;\n");
+//                    }
+//                }
+//                items = m_pRegulator->getCustomCtrl(typeName(Type::SVR))->getArgItems();
+//                CustomCtrl *ctrl = m_pRegulator->getCustomCtrl("SBP/DBP");
+//                if ((ctrl->getArgItems().currentValue > ctrl->getArgItems().maxValue ||
+//                     ctrl->getDbpArgItems().currentValue > ctrl->getDbpArgItems().maxValue) &&
+//                        items.currentValue > items.recordValue) {
+//                    result += tr("后负荷负荷(容量)高;\n");
+//                }
             }
             else if (m_pHospitalInfo->cMode == Check_Mode::InternalMedicine) {
                 // 内科模式
@@ -1100,4 +1124,65 @@ void DataManagement::addPlrt(const int &num, const Type &type)
     reportThread->addMarks(QString("plrt1%1").arg(num), QString::number(cvalue));
     double percent = (int(((rvalue - cvalue)/cvalue + 0.05)*10))/10.0;
     reportThread->addMarks(QString("plrt2%1").arg(num), QString::number(percent));
+}
+
+QString DataManagement::posImagePath(const QString &posture)
+{
+    QImage image;
+    if (posture == "半卧") {
+        image.load(":/images/halfsleeper.jpg");
+    }
+    else if (posture == "平躺") {
+        image.load(":/images/lieflat.jpg");
+    }
+    else if (posture == "抬腿") {
+        image.load(":/images/leglift.jpg");
+    }
+    QString fileName = m_filePath.tempDir() + posture + ".jpg";
+    image.save(fileName);
+    return fileName;
+}
+
+QString DataManagement::getScope(const double &init, const double &offset)
+{
+    return QString("%1~%2").arg(init - offset).arg(init + offset);
+}
+
+QString DataManagement::getScope(const HrvArg &hrvArg, const int &age)
+{
+    Q_UNUSED(age);
+    QString scope;
+    switch (hrvArg) {
+    case HrvArg::Nnvgr:
+        scope = "-";
+        break;
+    case HrvArg::Sdnn:
+//        if (age < 30) {
+//            scope = getScope(169.92, 41.01);
+//        }
+//        else if (age < 50) {
+//            scope = getScope(148.31, 32.80);
+//        }
+//        else {
+//            scope = getScope(121.19, 29.27);
+//        }
+        scope = getScope(141, 39);
+        break;
+    case HrvArg::Pnn50:
+        scope = getScope(16.7, 12.3);
+        break;
+    case HrvArg::Rmssd:
+//        if (age < 30) {
+//            scope = getScope(12.39, 47.10);
+//        }
+//        else if (age < 50) {
+//            scope = getScope(48.40, 20.90);
+//        }
+//        else {
+//            scope = getScope(40.40, 18.29);
+//        }
+        scope = getScope(39, 15);
+        break;
+    }
+    return scope;
 }

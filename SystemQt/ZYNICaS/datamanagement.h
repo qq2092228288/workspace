@@ -51,9 +51,9 @@ private:
 
 typedef struct CheckedData
 {
-    QString pos;        //体位
-    QString posture;    // 1半卧,2平躺,3抬腿
-    QStringList values; //检查获取的数据
+    QString pos;        // 体位
+//    QString posture;    // 1半卧,2平躺,3抬腿
+    QStringList values; // 检查获取的数据
 }Cdata, *p_Cdata;
 
 struct Argument
@@ -82,6 +82,14 @@ typedef struct Arguments
     qreal LAP = 9;
     QList<Argument> arguments;
 }Args;
+
+enum HrvArg
+{
+    Nnvgr,
+    Sdnn,
+    Pnn50,
+    Rmssd
+};
 
 // 数据管理
 class DataManagement : public QObject
@@ -160,6 +168,9 @@ private:
     QString riskTip(bool many);
     QPixmap getQrCodeUrlPixmap(const QString &deviceId, const QString &reportTime);
     void addPlrt(const int &num, const Type &type);
+    QString posImagePath(const QString &posture);
+    QString getScope(const double &init, const double &offset);
+    QString getScope(const HrvArg &hrvArg, const int &age);
 private:
     CreateReportThread *reportThread;
     MyFilePath m_filePath;

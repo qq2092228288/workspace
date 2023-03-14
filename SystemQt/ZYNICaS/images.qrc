@@ -4,5 +4,8 @@
         <file>images/app.ico</file>
         <file>images/logo.png</file>
         <file>images/background.jpg</file>
+        <file>images/halfsleeper.jpg</file>
+        <file>images/leglift.jpg</file>
+        <file>images/lieflat.jpg</file>
     </qresource>
 </RCC>
