@@ -35,6 +35,7 @@
 #include "trendchartswidget.h"
 #include "MyStruct.h"
 #include "systemconfigdialog.h"
+#include "plrttablewidget.h"
 
 class EnterSystemWidget : public QWidget
 {
@@ -136,9 +137,11 @@ private:
     QGroupBox *operationGroupBox;
     QPushButton *backBtn;
     QPushButton *reportBtn;
+    QPushButton *plrtBtn;
     QPushButton *trendChartBtn;
     QPushButton *sudokuBtn;
     QPushButton *auxArgBtn;
+    PlrtTableWidget *plrtWidget;
     TrendChartsWidget *trendChartsWidget;
     AuxArgDialog *auxArgDialog;
     DrawSudoku *sudokuDraw;

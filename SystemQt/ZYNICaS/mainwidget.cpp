@@ -75,7 +75,7 @@ MainWidget::MainWidget(QWidget *parent)
     connect(exitBtn, &QPushButton::clicked, this, &MainWidget::close);
 
     connect(configDialog, &SystemConfigDialog::modeChanged, enterSystemWidget, &EnterSystemWidget::systemModeChanged);
-    connect(this, &MainWidget::wmDeviceChange, instance.getTebco(), &ZyTebco::hotPlug);
+//    connect(this, &MainWidget::wmDeviceChange, instance.getTebco(), &ZyTebco::hotPlug);
     configDialog->updateHospitalInfo();
     // 未show控件截屏问题处理
     enterSystemWidget->trendChartLayout();
@@ -99,22 +99,22 @@ void MainWidget::paintEvent(QPaintEvent *event)
     painter.drawPixmap(10, 10, pixmap.scaled(pixmap.size()*instance.zoom()));
 }
 
-bool MainWidget::nativeEvent(const QByteArray &eventType, void *message, long *result)
-{
-    Q_UNUSED(eventType);
-    Q_UNUSED(result);
-    MSG* msg = reinterpret_cast<MSG*>(message);
-    if (msg->message == WM_DEVICECHANGE)    // 发生硬件热插拔事件
-    {
-        if (msg->wParam == 0x8000) {
-            emit wmDeviceChange(true);
-        }
-        else if (msg->wParam == 0x8004) {
-            emit wmDeviceChange(false);
-        }
-    }
-    return false;
-}
+//bool MainWidget::nativeEvent(const QByteArray &eventType, void *message, long *result)
+//{
+//    Q_UNUSED(eventType);
+//    Q_UNUSED(result);
+//    MSG* msg = reinterpret_cast<MSG*>(message);
+//    if (msg->message == WM_DEVICECHANGE)    // 发生硬件热插拔事件
+//    {
+//        if (msg->wParam == 0x8000) {
+//            emit wmDeviceChange(true);
+//        }
+//        else if (msg->wParam == 0x8004) {
+//            emit wmDeviceChange(false);
+//        }
+//    }
+//    return false;
+//}
 
 void MainWidget::enterBtnSlot()
 {

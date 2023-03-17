@@ -129,15 +129,15 @@ void EnterSystemWidget::trendChartLayout()
 
 void EnterSystemWidget::showEvent(QShowEvent *event)
 {
-//    auto &instance = DataManagement::getInstance();
-//    if (instance.getHospitalInfo()->cMode == Check_Mode::InternalMedicine) {
-//        instance.getRegulator()->connectTrendChart(true);
-//        trendChartBtn->show();
-//    }
-//    else {
-//        instance.getRegulator()->connectTrendChart(false);
-//        trendChartBtn->hide();
-//    }
+    auto &instance = DataManagement::getInstance();
+    if (instance.getHospitalInfo()->cMode == Check_Mode::PhysicalExamination) {
+        instance.getRegulator()->connectTrendChart(false);
+        trendChartBtn->hide();
+    }
+    else {
+        instance.getRegulator()->connectTrendChart(true);
+        trendChartBtn->show();
+    }
     event->accept();
 }
 
@@ -235,10 +235,10 @@ void EnterSystemWidget::initPosModule()
     btnLayout->addStretch();
 
     patternGroup.addButton(manyBtn,0);
-    patternGroup.addButton(singleBtn,1);
-    posGroup.addButton(halfLieBtn,0);
-    posGroup.addButton(lieBtn,1);
-    posGroup.addButton(legLiftBtn,2);
+    patternGroup.addButton(singleBtn, 1);
+    posGroup.addButton(halfLieBtn, 0);
+    posGroup.addButton(lieBtn, 1);
+    posGroup.addButton(legLiftBtn, 2);
 
     manyBtn->setChecked(true);
     halfLieBtn->setChecked(true);
@@ -294,9 +294,11 @@ void EnterSystemWidget::initReportModule()
     operationGroupBox = new QGroupBox(this);
     backBtn = new QPushButton(tr("返回"),this);
     reportBtn = new QPushButton(tr("生成报告"),this);
+    plrtBtn = new QPushButton(tr("PLRT"), this);
     trendChartBtn = new QPushButton(tr("趋势图"),this);
     sudokuBtn = new QPushButton(tr("血压靶向分析图"),this);
     auxArgBtn = new QPushButton(tr("辅助参数"),this);
+    plrtWidget = new PlrtTableWidget;
     trendChartsWidget = new TrendChartsWidget;
     auxArgDialog = new AuxArgDialog;
     sudokuDraw = new DrawSudoku;
@@ -305,9 +307,9 @@ void EnterSystemWidget::initReportModule()
 
     firstColLayout->addWidget(operationGroupBox);
     hLayout->addWidget(backBtn);
-    hLayout->addStretch();
     hLayout->addWidget(reportBtn);
     hLayout->addStretch();
+    hLayout->addWidget(plrtBtn);
     hLayout->addWidget(trendChartBtn);
     hLayout->addWidget(sudokuBtn);
     hLayout->addWidget(auxArgBtn);
@@ -364,6 +366,7 @@ void EnterSystemWidget::signalsAndSlots()
                 sudokuDraw->setMap(posGroup.checkedId(),map,!rPos.isEmpty());
             });
         }
+        connect(customCtrl, &CustomCtrl::nameAndValue, plrtWidget, &PlrtTableWidget::setData);
     }
     // osc
     connect(instance.getTebco(), &ZyTebco::ecgValue, ecgDraw, &DrawWaveforms::addValue);
@@ -372,6 +375,7 @@ void EnterSystemWidget::signalsAndSlots()
     // report
     connect(backBtn, &QPushButton::clicked, this, &EnterSystemWidget::close);
     connect(reportBtn, &QPushButton::clicked, this, &EnterSystemWidget::createReport);
+    connect(plrtBtn, &QPushButton::clicked, plrtWidget, &PlrtTableWidget::show);
     connect(trendChartBtn, &QPushButton::clicked, trendChartsWidget, &TrendChartsWidget::widgetShow);
     connect(auxArgBtn, &QPushButton::clicked, auxArgDialog, &AuxArgDialog::exec);
     connect(sudokuBtn, &QPushButton::clicked, sudokuDraw, &DrawSudoku::exec);
@@ -542,6 +546,12 @@ void EnterSystemWidget::changePosition(int id)
 {
     if (!rPos.isEmpty() && posGroup.button(id)->text() != rPos) {
         recordBtn->hide();
+        foreach (auto btn, posGroup.buttons()) {
+            if (btn->text() == rPos) {
+                plrtWidget->setPic(PosType(posGroup.id(btn) + 1), PosType(id + 1));
+            }
+        }
+//        plrtWidget->setPos(rPos, posGroup.button(id)->text());
     }
     else if(posGroup.button(id)->text() == rPos) {
         recordBtn->show();
@@ -554,6 +564,10 @@ void EnterSystemWidget::createReport()
         auto &instance = DataManagement::getInstance();
         if (patternGroup.checkedId() == 0 && rPos.isEmpty()) {
             QMessageBox::information(this, tr("提示"), tr("多体位模式需要记录体位！"));
+            return;
+        }
+        if (!rPos.isEmpty() && !recordBtn->isHidden()) {
+            QMessageBox::information(this, tr("提示"), tr("未改变体位！"));
             return;
         }
         // professional model

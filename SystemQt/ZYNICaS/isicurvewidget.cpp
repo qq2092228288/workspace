@@ -4,7 +4,7 @@
 IsiCurveWidget::IsiCurveWidget(QWidget *parent)
     : QWidget{parent}
 {
-    this->setFixedSize(300, 120);
+    this->setFixedSize(300, 130);
     this->setStyleSheet("IsiCurveWidget{background-color:#ffffff;}");
 }
 
@@ -23,7 +23,7 @@ void IsiCurveWidget::clear()
 void IsiCurveWidget::paintEvent(QPaintEvent *event)
 {
     Q_UNUSED(event);
-    const QPoint point(20, height() - 10);
+    const QPoint point(20, height() - 20);
     int len = width() - 40;
     QPainter painter(this);
     // 消除锯齿
@@ -31,15 +31,13 @@ void IsiCurveWidget::paintEvent(QPaintEvent *event)
     // 画笔颜色，宽度
     painter.setPen(QPen(QColor(Qt::black), 1.5));
     // 坐标轴
-//    drawArrow(painter, point, QPoint(width() - 10, point.y()));
     painter.drawLine(QLine(point, QPoint(width() - 10, point.y())));
     painter.drawLine(QLine(point, QPoint(point.x(), 10)));
-    painter.drawText(QPointF(30, 20), "ISI");
+    // 垂直字体
+    painter.drawText(5, 30, 20, 100, Qt::AlignTop | Qt::TextSingleLine | Qt::TextWordWrap, tr("心脏泵力"));
     // 画弧线
-//    painter.setPen(QPen(QColor(Qt::blue), 2));
     QList<QPointF> curvePoints;
     for (int x = 15; x < len; ++x) {
-//        qreal y = -13.0/1440*qPow(x, 2) + 91.0/36*x - 485.0/18;
         curvePoints.append(QPointF(point.x() + x, point.y() - gety(x)));
     }
     QPainterPath path;
@@ -49,42 +47,48 @@ void IsiCurveWidget::paintEvent(QPaintEvent *event)
     }
     painter.drawPath(path);
     // ISI的点
-//    painter.setPen(QPen(QColor(Qt::red), 2));
     if (m_oldIsi != 0 && m_newIsi != 0) {
+        qreal op, np;
+        QString xText;
+        if (m_oldIsi < m_newIsi) {
+            op = 50;
+            np = 100;
+            xText = tr("容量增加");
+        }
+        else if (m_oldIsi == m_newIsi) {
+            op = 75;
+            np = 75;
+            xText = tr("容量不变");
+        }
+        else {
+            op = 100;
+            np = 50;
+            xText = tr("容量减少");
+        }
+        painter.drawText(QPointF(point.x() + 110, point.y() + 15), xText);
+        QPointF oldPoint(point.x() + getx(op, true), point.y() - op);
+        QPointF newPoint(point.x() + getx(np, false), point.y() - np);
         const int radius = 2;
-        const qreal zoom = 39.0625;
-        QPointF oldPoint(point.x() + getx(m_oldIsi*zoom, true), point.y() - m_oldIsi*zoom);
-        QPointF newPoint(point.x() + getx(m_newIsi*zoom, false), point.y() - m_newIsi*zoom);
         painter.drawEllipse(oldPoint, radius, radius);
         painter.drawEllipse(newPoint, radius, radius);
-        QFont font = painter.font();
-        font.setPixelSize(12);
-        painter.setFont(font);
-        painter.drawText(QPointF(oldPoint.x() - 20, oldPoint.y() - 10), QString::number(m_oldIsi));
-        painter.drawText(QPointF(newPoint.x(), newPoint.y() - 10), QString::number(m_newIsi));
         drawArrow(painter, oldPoint, newPoint);
     }
 }
 
 qreal IsiCurveWidget::gety(const qreal &x) const
 {
-//    return (-13.0/1440*qPow(x, 2) + 91.0/36*x - 485.0/18);
     return (-qPow(x, 2)/180.0 + 14/9.0*x - 80/9.0);
 }
 
 qreal IsiCurveWidget::getx(const qreal &y, bool isOld) const
 {
-//    if (y > 150)return -1; // 负值求根
-//    qreal temp = qSqrt(19600 - (1440*y + 38800)/13.0);
-//    if (isOld)  return (140 - temp);
-//    return (140 + temp);
     if (y > 100) return -1;
     return (isOld ? 140 - qSqrt(18000 - 180*y) : 140 + qSqrt(18000 - 180*y));
 }
 
 void IsiCurveWidget::drawArrow(QPainter &painter, const QPointF &point1, const QPointF &point2)
 {
-    qreal arrowSize = 10;
+    qreal arrowSize = 8;
     QLineF line(point2, point1);
 
     double angle = std::atan2(-line.dy(), line.dx());

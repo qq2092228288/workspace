@@ -466,7 +466,7 @@ QString DataManagement::saveReport(QDateTime curTime, QString position, bool rec
             reportThread->addMarks("plrttitle", tr("被动抬腿试验"));
             reportThread->addPic("plrtfimage", posImagePath(m_recordInfo.pos));
             reportThread->addPic("plrtsimage", posImagePath(m_currentInfo.pos));
-            reportThread->addMarks("plrtchange", "%");
+            reportThread->addMarks("plrtunit", "%");
             addPlrt(0, Type::HR);
             addPlrt(1, Type::SI);
             addPlrt(2, Type::CI);
@@ -880,39 +880,21 @@ QString DataManagement::reportResult(bool record)
                         "1.第一体位：心输出量(CO)%1，心脏指数(CI)%2，心搏量(SV)%3，心搏指数(SI)%4，"
                         "心率(HR)%5，血管顺应性(Vas)%6，血管容量(Vol)%7，收缩变力性(Ino)%8，"
                         "收缩压(SBP)%9，舒张压(DBP)%10，胸液传导性(TFC)%11；\n"
-                        "2.第二体位增加容量负荷实验后：心搏量(SV)%12，变力状态指数(ISI)%13，%14；\n"
-                        "3.前负荷(容量负荷)：%15；\n"
-                        "心肌力(心脏泵力)：%16；\n"
-                        "后负荷(张力负荷)：%17。")
+                        "2.第二体位增加容量负荷实验后：心搏量(SV)%12，变力状态指数(ISI)%13，%14；\n")
                     .arg(pevl(Type::CO), pevl(Type::CI), pevl(Type::SV), pevl(Type::SI), pevl(Type::HR),
                          pevl(Type::Vas), pevl(Type::Vol), pevl(Type::Ino), pevl(Type::SBP))
-                    .arg(pevl(Type::DBP), pevl(Type::TFC), compare(Type::SV), compare(Type::ISI), preload(),
-                         fstr, sstr, tstr);
+                    .arg(pevl(Type::DBP), pevl(Type::TFC), compare(Type::SV), compare(Type::ISI), preload());
             if (m_pHospitalInfo->cMode == Check_Mode::Hypertension) {
                 // 高血压模式
-//                result.clear();
-//                ArgItems items = m_pRegulator->getCustomCtrl(typeName(Type::SV))->getArgItems();
-//                if (items.recordValue != 0 || items.currentValue != 0) {
-//                    if (items.currentValue < items.recordValue) {
-//                        result = tr("前负荷(容量)高;\n");
-//                    }
-//                    else if (items.currentValue/items.recordValue < 1.1) {
-//                        result = tr("前负荷(容量)偏高;\n");
-//                    }
-//                }
-//                items = m_pRegulator->getCustomCtrl(typeName(Type::SVR))->getArgItems();
-//                CustomCtrl *ctrl = m_pRegulator->getCustomCtrl("SBP/DBP");
-//                if ((ctrl->getArgItems().currentValue > ctrl->getArgItems().maxValue ||
-//                     ctrl->getDbpArgItems().currentValue > ctrl->getDbpArgItems().maxValue) &&
-//                        items.currentValue > items.recordValue) {
-//                    result += tr("后负荷负荷(容量)高;\n");
-//                }
+                result += tr("3.前负荷(容量负荷)：%1；\n心肌力(心脏泵力)：%2；\n后负荷(张力负荷)：%3。").arg(fstr, sstr, tstr);
             }
             else if (m_pHospitalInfo->cMode == Check_Mode::InternalMedicine) {
                 // 内科模式
+                result += tr("3.前负荷(容量负荷)：%1；\n心肌力(心脏泵力)：%2；\n后负荷(张力负荷)：%3。").arg(fstr, sstr, tstr);
             }
             else if (m_pHospitalInfo->cMode == Check_Mode::Critical) {
                 // 重症模式
+                result += tr("3.前负荷(容量负荷)：%1；\n心肌力(心脏泵力)：%2；\n后负荷(张力负荷)：%3。").arg(fstr, sstr, tstr);
             }
             else if (m_pHospitalInfo->cMode == Check_Mode::PhysicalExamination) {
                 // 体检模式
@@ -920,13 +902,19 @@ QString DataManagement::reportResult(bool record)
         }
         else if (m_pHospitalInfo->pType == Printer_Type::Thermal) {
             //双体位热敏打印机报告
+            result = tr("连续无创血流动力学对高血压病靶向分析报告如下：\n"
+                         "1.第一体位：CO%1，CI%2，SV%3，SI%4，HR%5，Vas%6，Vol%7，Ino%8，SBP%9，DBP%10，TFC%11；\n"
+                         "2.第二体位增加容量负荷实验后：SV%12，ISI%13，%14。")
+                    .arg(pevl(Type::CO), pevl(Type::CI), pevl(Type::SV), pevl(Type::SI), pevl(Type::HR),
+                         pevl(Type::Vas), pevl(Type::Vol), pevl(Type::Ino), pevl(Type::SBP))
+                    .arg(pevl(Type::DBP), pevl(Type::TFC), compare(Type::SV), compare(Type::ISI), preload());
         }
     }
     else {  // 单体位
-        result = tr("无创血流动力学检测系统评价，心脏动力，血管阻力，血液容量，血压等循环系统情况结论如下：\n"
-                     "1.心脏功能：心输出量(CO)%1，心搏量(SV)%2，心搏指数(SI)%3，心脏指数(CI)%4，血管容量(Vol)%5，"
-                     "血管顺应性(Vas)%6，收缩变力性(Ino)%7；\n"
-                     "2.血压管理：收缩压(SBP)%8，舒张压(DBP)%9，心率(HR)%10；")
+        result = tr("连续无创血流动力学对高血压病靶向分析报告如下：\n"
+                    "1.心脏功能：心输出量(CO)%1，心搏量(SV)%2，心搏指数(SI)%3，心脏指数(CI)%4，血管容量(Vol)%5，"
+                    "血管顺应性(Vas)%6，收缩变力性(Ino)%7；\n"
+                    "2.血压管理：收缩压(SBP)%8，舒张压(DBP)%9，心率(HR)%10；")
                 .arg(pevl(Type::CO, false), pevl(Type::SV, false), pevl(Type::SI, false),
                      pevl(Type::CI, false), pevl(Type::Vol, false), pevl(Type::Vas, false),
                      pevl(Type::Ino, false), pevl(Type::SBP, false), pevl(Type::DBP, false))
@@ -1130,16 +1118,16 @@ QString DataManagement::posImagePath(const QString &posture)
 {
     QImage image;
     if (posture == "半卧") {
-        image.load(":/images/halfsleeper.jpg");
+        image.load(":/images/halfsleeper.png");
     }
     else if (posture == "平躺") {
-        image.load(":/images/lieflat.jpg");
+        image.load(":/images/lieflat.png");
     }
     else if (posture == "抬腿") {
-        image.load(":/images/leglift.jpg");
+        image.load(":/images/leglift.png");
     }
-    QString fileName = m_filePath.tempDir() + posture + ".jpg";
-    image.save(fileName);
+    QString fileName = m_filePath.tempDir() + posture + ".png";
+    image.save(fileName, "PNG");
     return fileName;
 }
 

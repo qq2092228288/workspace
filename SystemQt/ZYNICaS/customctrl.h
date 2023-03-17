@@ -86,6 +86,7 @@ protected slots:
     void oldAndNewValueTimerSlot();
 signals:
     void currentValue(qreal);
+    void nameAndValue(const QString &, const double &rVal, const double &cVal);
     // 当前名字，交换显示的名字
     void changeName(const QString &, const QString &);
 private:

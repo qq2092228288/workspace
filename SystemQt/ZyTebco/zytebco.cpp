@@ -21,13 +21,13 @@ ZyTebco::ZyTebco(QObject *parent)
     /**************************/
 
 
-//    m_pTimer = new QTimer(this);
+    m_pTimer = new QTimer(this);
     m_pDemoDataTimer = new QTimer(this);
-//    connect(m_pTimer, &QTimer::timeout, this, &ZyTebco::reConnect);
+    connect(m_pTimer, &QTimer::timeout, this, &ZyTebco::reConnect);
     connect(m_pDemoDataTimer, &QTimer::timeout, this, &ZyTebco::demoModeSlot);
 
     qRegisterMetaType<QSerialPort::SerialPortError>("SerialThread");
-//    connect(m_pSerial, &QSerialPort::errorOccurred, this, &ZyTebco::handleSerialError, Qt::UniqueConnection);
+    connect(m_pSerial, &QSerialPort::errorOccurred, this, &ZyTebco::handleSerialError, Qt::UniqueConnection);
 }
 
 ZyTebco::~ZyTebco()
@@ -35,9 +35,9 @@ ZyTebco::~ZyTebco()
     if (m_pDemoDataTimer->isActive()) {
         m_pDemoDataTimer->stop();
     }
-//    if (m_pTimer->isActive()) {
-//        m_pTimer->stop();
-//    }
+    if (m_pTimer->isActive()) {
+        m_pTimer->stop();
+    }
     if (m_pSerial->isOpen()) {
         m_pSerial->clear();
         m_pSerial->close();
@@ -47,7 +47,7 @@ ZyTebco::~ZyTebco()
 //        qDebug()<<__LINE__;
 //    }
     delete m_pDemoDataTimer;
-//    delete m_pTimer;
+    delete m_pTimer;
     delete m_pSerial;
 //    delete m_pExtSerial;
 //    qDebug()<<__FUNCTION__;
@@ -99,9 +99,9 @@ void ZyTebco::startCheckSlot(bool check)
 
 void ZyTebco::clearSerial()
 {
-//    if (m_pSerial->isOpen()) {
-//        m_pSerial->clear();
-//    }
+    if (m_pSerial->isOpen()) {
+        m_pSerial->clear();
+    }
 }
 
 bool ZyTebco::isWorking()
@@ -109,27 +109,27 @@ bool ZyTebco::isWorking()
     return working;
 }
 
-void ZyTebco::hotPlug(bool insert)
-{
+//void ZyTebco::hotPlug(bool insert)
+//{
 //    qDebug()<<m_pSerial->portName()<<insert;
-    bool removal = true;
-    foreach (auto info, QSerialPortInfo::availablePorts()) {
-        if(info.portName() == m_pSerial->portName()) {
-            if (insert) {
-                if (!m_pSerial->isOpen()) {
-                    m_pSerial->open(QIODevice::ReadWrite);
-                }
-                return;
-            }
-            else {
-                removal = false;    // 非指定设备移除
-            }
-            break;
-        }
-    }
-    if (m_pSerial->isOpen() && removal) {
-        m_pSerial->close();
-    }
+//    bool removal = true;
+//    foreach (auto info, QSerialPortInfo::availablePorts()) {
+//        if(info.portName() == m_pSerial->portName()) {
+//            if (insert) {
+//                if (!m_pSerial->isOpen()) {
+//                    m_pSerial->open(QIODevice::ReadWrite);
+//                }
+//                return;
+//            }
+//            else {
+//                removal = false;    // 非指定设备移除
+//            }
+//            break;
+//        }
+//    }
+//    if (m_pSerial->isOpen() && removal) {
+//        m_pSerial->close();
+//    }
 //    qDebug()<<m_pExtSerial->portName()<<insert;
 //    bool removal = true;
 //    foreach (auto info, QSerialPortInfo::availablePorts()) {
@@ -149,7 +149,7 @@ void ZyTebco::hotPlug(bool insert)
 //    if (m_pExtSerial->isOpen() && removal) {
 //        m_pExtSerial->close();
 //    }
-}
+//}
 
 void ZyTebco::startDemoMode(bool start)
 {
@@ -167,24 +167,24 @@ void ZyTebco::startDemoMode(bool start)
     }
 }
 
-//void ZyTebco::handleSerialError(QSerialPort::SerialPortError error)
-//{
-//    qDebug()<<error;
-//    if(error == QSerialPort::ResourceError || error == QSerialPort::PermissionError) {
-//        m_pSerial->close();
-//        m_pTimer->start(1000);
-//    }
-//}
+void ZyTebco::handleSerialError(QSerialPort::SerialPortError error)
+{
+    qDebug()<<error;
+    if(error == QSerialPort::ResourceError || error == QSerialPort::PermissionError) {
+        m_pSerial->close();
+        m_pTimer->start(1000);
+    }
+}
 
-//void ZyTebco::reConnect()
-//{
-//    foreach (auto info, QSerialPortInfo::availablePorts()) {
-//        if(info.portName() == m_pSerial->portName()) {
-//            m_pTimer->stop();
-//            m_pSerial->open(QIODevice::ReadWrite);
-//        }
-//    }
-//}
+void ZyTebco::reConnect()
+{
+    foreach (auto info, QSerialPortInfo::availablePorts()) {
+        if(info.portName() == m_pSerial->portName()) {
+            m_pTimer->stop();
+            m_pSerial->open(QIODevice::ReadWrite);
+        }
+    }
+}
 
 void ZyTebco::recvInfoSlot()
 {

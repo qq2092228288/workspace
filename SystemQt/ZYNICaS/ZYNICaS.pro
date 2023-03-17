@@ -39,6 +39,7 @@ SOURCES += \
     main.cpp \
     mainwidget.cpp \
     personalinfodialog.cpp \
+    plrttablewidget.cpp \
     reportdatabase.cpp \
     reportword.cpp \
     selectitemdialog.cpp \
@@ -73,6 +74,7 @@ HEADERS += \
     isicurvewidget.h \
     mainwidget.h \
     personalinfodialog.h \
+    plrttablewidget.h \
     reportdatabase.h \
     reportword.h \
     selectitemdialog.h \
