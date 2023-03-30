@@ -1,7 +1,7 @@
 #ifndef PLRTTABLEWIDGET_H
 #define PLRTTABLEWIDGET_H
 
-#include <QWidget>
+#include <QDialog>
 #include <QGridLayout>
 #include <QLabel>
 #include <QPixmap>
@@ -30,7 +30,7 @@ typedef enum PostureType
 }PosType;
 
 
-class PlrtTableWidget : public QWidget
+class PlrtTableWidget : public QDialog
 {
     Q_OBJECT
 public:

@@ -160,11 +160,11 @@ CustomCtrl::CustomCtrl(Argument arg, QWidget *parent)
     valueEdit->setAlignment(Qt::AlignHCenter);
     valueEdit->setPlaceholderText("--");
 
-    mainLayout->addWidget(mainLabel,0,Qt::AlignLeft);
-    mainLayout->addWidget(secondaryLabel,0,Qt::AlignLeft);
+    mainLayout->addWidget(mainLabel, 0, Qt::AlignLeft);
+    mainLayout->addWidget(secondaryLabel, 0, Qt::AlignLeft);
     mainLayout->addWidget(valueEdit);
-    mainLayout->addWidget(scopeLabel,0,Qt::AlignCenter);
-    mainLayout->addWidget(unitLabel,0,Qt::AlignCenter);
+    mainLayout->addWidget(scopeLabel, 0, Qt::AlignCenter);
+    mainLayout->addWidget(unitLabel, 0, Qt::AlignCenter);
 
 
     aitems.minValue = arg.min;
@@ -208,6 +208,7 @@ CustomCtrl::CustomCtrl(Argument arg, QWidget *parent)
 
     connect(m_pDialog, &SelectItemDialog::currentText, this, &CustomCtrl::getChangeText);
     m_pTrendChart = new TrendChart(this);
+    m_pTrendChart->hide();
 }
 
 CustomCtrl::~CustomCtrl()
@@ -461,42 +462,40 @@ QList<CustomCtrl *> CustomCtrlRegulator::getAllCustomCtrls()
 QStringList CustomCtrlRegulator::getSaveNames(bool trendChart)
 {
     QStringList list;
-    QString fileName;
     if (trendChart) {
-        fileName = DataManagement::getInstance().getPaths().trendCharts();
+        QFile file(DataManagement::getInstance().getPaths().trendCharts());
+        if (file.open(QFile::ReadWrite | QFile::Text)) {
+            QTextStream stream(&file);
+            stream.setCodec(QTextCodec::codecForName("utf-8"));
+            while (!stream.atEnd()) {
+                list<<stream.readLine();
+            }
+            if (list.size() != 12) {
+                list.clear();
+                list<<"CO"<<"CI"<<"SV"<<"SI"<<"HRV"<<"Vol"<<"SSVRI"<<"Vas"<<"ISI"<<"Ino"<<"HR"<<"DO2";
+                foreach (QString str, list) {
+                    stream<<QString("%1\n").arg(str);
+                }
+            }
+        }
     }
     else {
-        fileName = DataManagement::getInstance().getPaths().showItems();
-    }
-    QFile file(fileName);
-    QFileInfo fileInfo(file);
-    if(!fileInfo.isFile())
-    {
-        file.open(QFile::WriteOnly);
-        QTextStream in(&file);
-        in.setCodec(QTextCodec::codecForName("utf-8"));
-        QStringList temp;
-        if (trendChart) {
-            temp<<"CO"<<"CI"<<"SV"<<"SI"<<"HRV"<<"Vol"<<"SSVRI"<<"Vas"<<"ISI"<<"Ino"<<"HR";
+        QFile file(DataManagement::getInstance().getPaths().showItems());
+        if (file.open(QFile::ReadWrite | QFile::Text)) {
+            QTextStream stream(&file);
+            stream.setCodec(QTextCodec::codecForName("utf-8"));
+            while (!stream.atEnd()) {
+                list<<stream.readLine();
+            }
+            if (list.size() != 11) {
+                list.clear();
+                list<<"HR"<<"TFC"<<"CO"<<"CI"<<"SV"<<"SI"<<"HRV"<<"ISI"<<"Ino"<<"SSVRI"<<"SBP/DBP";
+                foreach (QString str, list) {
+                    stream<<QString("%1\n").arg(str);
+                }
+            }
         }
-        else {
-            temp<<"HR"<<"TFC"<<"CO"<<"CI"<<"SV"<<"SI"<<"EDI"<<"HRV"<<"ISI"<<"Ino"<<"SSVRI"<<"SBP/DBP";
-        }
-        foreach (QString str, temp) {
-            in<<QString("%1\n").arg(str);
-        }
-        file.close();
     }
-    if(!file.open(QFile::ReadOnly | QFile::Text)){
-        emit openError(file.fileName());
-        qDebug()<<file.fileName();
-        return list;
-    }
-    QTextStream out(&file);
-    while (!out.atEnd()) {
-        list<<out.readLine();
-    }
-    file.close();
     if (trendChart) {
         currentTrendChartNames = list;
     }

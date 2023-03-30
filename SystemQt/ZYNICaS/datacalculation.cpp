@@ -175,12 +175,14 @@ qreal DataCalculation::cMap(const qreal &sbp, const qreal &dbp)
 
 qreal DataCalculation::cNnvgr(const QList<qreal> &hrList)
 {
+    if (hrList.count() == 0) return invalid();
     QList<qreal> rrList = getRrList(hrList);
     return (std::accumulate(rrList.begin(), rrList.end(), 0.0)/rrList.size());
 }
 
 qreal DataCalculation::cSdnn(const QList<qreal> &hrList)
 {
+    if (hrList.count() == 0) return invalid();
     QList<qreal> rrList = getRrList(hrList);
     double avg = std::accumulate(rrList.begin(), rrList.end(), 0.0)/rrList.size();
     double accum = 0.0;

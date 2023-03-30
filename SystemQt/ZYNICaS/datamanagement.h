@@ -13,7 +13,7 @@
 #include "systemconfigdialog.h"
 #include "customctrl.h"
 #include "infoeditdialog.h"
-#include "drawsudoku.h"
+//#include "drawsudoku.h"
 #include "zytebco.h"
 #include "createreportthread.h"
 #include "httppost.h"
@@ -81,6 +81,16 @@ typedef struct Arguments
     qreal CVP = 4;
     qreal LAP = 9;
     QList<Argument> arguments;
+    Argument find(const Type &type)
+    {
+        auto en = typeName(type);
+        foreach (Argument arg, arguments) {
+            if (arg.en == en) {
+                return arg;
+            }
+        }
+        return Argument();
+    }
 }Args;
 
 enum HrvArg
@@ -139,7 +149,7 @@ public:
     void setRegulator(CustomCtrlRegulator *regulator);
     // 心阻抗图
     void setdZ(QChartView *dZ);
-    void setSudoku(DrawSudoku *sudoku);
+    void setSudoku(QWidget *sudoku);
     void setReportDataBase(ReportDataBase *reportDataBase);
     void setDeviceDatabase(DeviceDatabase *deviceDatabase);
 public slots:
@@ -178,7 +188,7 @@ private:
     BodyValue *m_pBodyValue;
     CustomCtrlRegulator *m_pRegulator;
     QChartView *m_pdZ;       //阻抗图
-    DrawSudoku *m_pSudoku;   //九宫格图
+    QWidget *m_pSudoku;      //九宫格图
     //当前、记录的信息
     bool isRecord;
     Cdata m_recordInfo;

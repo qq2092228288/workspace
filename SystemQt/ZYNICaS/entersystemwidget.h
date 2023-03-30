@@ -30,7 +30,8 @@
 #include "bpeditdialog.h"
 #include "auxargdialog.h"
 #include "drawwaveforms.h"
-#include "drawsudoku.h"
+//#include "drawsudoku.h"
+#include "sudokuwidget.h"
 #include "customctrl.h"
 #include "trendchartswidget.h"
 #include "MyStruct.h"
@@ -129,7 +130,8 @@ private:
     QGridLayout *dataGLayout;
     CustomCtrlRegulator *regulator;
     BodyValue bodyValue;
-    QList<QHBoxLayout *> hLayouts;
+//    QList<QHBoxLayout *> hLayouts;
+    SudokuWidget *sudokuWidget;
     qreal efValue = 0;
     QList<qreal> svValues;
 
@@ -139,12 +141,12 @@ private:
     QPushButton *reportBtn;
     QPushButton *plrtBtn;
     QPushButton *trendChartBtn;
-    QPushButton *sudokuBtn;
+//    QPushButton *sudokuBtn;
     QPushButton *auxArgBtn;
     PlrtTableWidget *plrtWidget;
     TrendChartsWidget *trendChartsWidget;
     AuxArgDialog *auxArgDialog;
-    DrawSudoku *sudokuDraw;
+//    DrawSudoku *sudokuDraw;
 
     // 记录数据
     QMap<uchar, short> recordDataMap;

@@ -9,6 +9,7 @@ DrawSudoku::DrawSudoku(QWidget *parent)
 {
     this->setWindowTitle(tr("血压靶向分析图"));
     this->setFixedSize(480, 500);
+//    this->setMinimumSize(200, 200);
     setWindowFlags(Qt::CustomizeWindowHint | Qt::WindowCloseButtonHint);
     this->setStyleSheet("QDialog{background-color:#ffffff;}");
 }
@@ -53,7 +54,7 @@ void DrawSudoku::paintEvent(QPaintEvent *event)
     Q_UNUSED(event);
     auto &args = DataManagement::getInstance().getArgs();
     //起始点
-    const QPoint point(60, height() - 80);
+    const QPoint point(25, height() - 20);
     const int len = 400;
     QPainter painter(this);
     // 消除锯齿
@@ -85,8 +86,8 @@ void DrawSudoku::paintEvent(QPaintEvent *event)
     QFont font = painter.font();
     font.setPointSize(18);
     painter.setFont(font);
-    painter.drawText(QPoint(point.x() - 55, point.y() - len/2), QString("MAP"));
-    painter.drawText(QPoint(point.x() + len/2, point.y() + 40), QString("SI"));
+//    painter.drawText(QPoint(point.x() - 55, point.y() - len/2), QString("MAP"));
+//    painter.drawText(QPoint(point.x() + len/2, point.y() + 40), QString("SI"));
 
     painter.setPen(QPen(QColor(Qt::black), 1));
     // MAP SI

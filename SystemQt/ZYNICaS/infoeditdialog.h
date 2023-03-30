@@ -21,7 +21,7 @@ struct BodyValue
 {
     QString id;
     QString name;
-    int sex = 0;
+    int sex = 2;
     int age = 0;
     int height = 0;
     int weight = 0;

@@ -58,7 +58,6 @@ public:
     // 数据波动
     void startTimer(qreal accuracy);
     void stopTimer();
-    //
     void smoothTransitionTimer(bool isStart);
 protected:
     void mouseDoubleClickEvent(QMouseEvent *);

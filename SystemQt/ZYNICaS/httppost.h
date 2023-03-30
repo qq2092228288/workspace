@@ -77,6 +77,20 @@ public:
     QString deviceName;         // 设备名称
 };
 
+class SoftwareVersionInfo : public JsonObjectData
+{
+public:
+    SoftwareVersionInfo(){}
+    SoftwareVersionInfo(const QJsonObject &object);
+    QString versionId;
+    QString newVersionCode;
+    QString createTime;
+    QString isForceUpgrade;
+    QString actionCommon;
+    QString descript;
+    QString programFilePath;
+};
+
 QString ArgsNameToHttp(const QString &argsName);
 
 class PostHttpMultiPart : public QHttpMultiPart
@@ -120,6 +134,10 @@ public slots:
     void reportUpload(const qint64 &dtime, const QString &jsonStr);
     // 创建设备
     void createDevice(const QString &mac, const QString &deviceName);
+    // 校验升级版本
+    void checkDeviceUpdateVersion(const QString &deviceId, const QString &oldVerionId);
+    // 设备版本升级
+    void doDeviceUpdateVersion(const QString &id, const QString &oldVerionId, const QString &status);
 public:
     // return image url path
     QString picUpload(const QPixmap &pixmap, const QString &fileName);
@@ -166,6 +184,8 @@ private:
     const QString m_urlSendPationReport;    // 发送患者报告
     const QString m_urlUploadFile;          // 上传文件
     const QString m_urlCreateDevice;        // 创建设备
+    const QString m_urlCheckDeviceUpdateVersion;// 校验设备升级版本
+    const QString m_urlDoDeviceUpadateVersion;  // 设备版本升级
     // 设备信息
     DeviceInfo m_deviceInfo;
 private:

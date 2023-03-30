@@ -4,7 +4,7 @@
 #include <QtMath>
 
 PlrtTableWidget::PlrtTableWidget(QWidget *parent)
-    : QWidget{parent},
+    : QDialog{parent},
       m_rows{4},
       m_columns{9}
 {
@@ -65,7 +65,9 @@ void PlrtTableWidget::clear()
     for (int row = 1; row < rowCount(); ++row) {
         for (int col = 0; col < columnCount(); ++col) {
             if (!(3 == row && 0 == col)) {
-                labels().at(getLabelNumber(row, col))->clear();
+                auto label = labels().at(getLabelNumber(row, col));
+                label->clear();
+                label->setStyleSheet(labelQss(LabelStatus::None));
             }
         }
     }

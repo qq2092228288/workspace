@@ -87,6 +87,18 @@ void DataList::print() const
 //    qDebug()<<noUploadCount<<"noUploadCount";
 }
 
+SoftwareVersionInfo::SoftwareVersionInfo(const QJsonObject &object)
+    : JsonObjectData{object}
+{
+    versionId = find("versionId");
+    newVersionCode = find("newVersionCode");
+    createTime = find("createTime");
+    isForceUpgrade = find("isForceUpgrade");
+    actionCommon = find("actionCommon");
+    descript = find("descript");
+    programFilePath = find("programFilePath");
+}
+
 QString ArgsNameToHttp(const QString &argsName)
 {
     if (argsName == "CO")           return "cCo";
@@ -202,7 +214,9 @@ HttpPost::HttpPost(QObject *parent)
       m_urlGetConsumableList{"/qk-wcxl-business/dDevice/getConsumableList"},
       m_urlSendPationReport{"/qk-wcxl-business/dDevice/sendPationReport"},
       m_urlUploadFile{"/group1/upload"},
-      m_urlCreateDevice{"/qk-wcxl-business/dDevice/createDevice"}
+      m_urlCreateDevice{"/qk-wcxl-business/dDevice/createDevice"},
+      m_urlCheckDeviceUpdateVersion{"/qk-wcxl-business/dDevice/checkDeviceUpdateVersion"},
+      m_urlDoDeviceUpadateVersion{"/qk-wcxl-business/dDevice/doDeviceUpdateVersion"}
 {
 
 }
@@ -435,6 +449,49 @@ void HttpPost::createDevice(const QString &mac, const QString &deviceName)
         tip = QString(QJsonDocument(retValue).toJson());
     }
     emit deviceCreated(tip);
+}
+
+void HttpPost::checkDeviceUpdateVersion(const QString &deviceId, const QString &oldVerionId)
+{
+    QJsonObject target;
+    target.insert("deviceId", deviceId);
+    target.insert("oldVerionId", oldVerionId);
+
+    QScopedPointer<QNetworkAccessManager> manager_ptr(new QNetworkAccessManager);
+    auto manager = manager_ptr.data();
+    QNetworkRequest request = getRequest(target, m_urlApiRequestHeader + m_urlCheckDeviceUpdateVersion);
+    QNetworkReply *reply = manager->post(request, toPostData(target));
+
+    QJsonObject retValue = returnValueProcessing(manager, reply);
+    if (retValue.isEmpty())
+        return;
+    int code = retValue.value("code").toInt(-1);
+    if (0 == code) {
+//        QJsonObject data = retValue.find("data").value().toObject();
+//        SoftwareVersionInfo versionInfo(data);
+    }
+}
+
+void HttpPost::doDeviceUpdateVersion(const QString &id, const QString &oldVerionId, const QString &status)
+{
+    QJsonObject target;
+    target.insert("id", id);
+    target.insert("oldVerionId", oldVerionId);
+    target.insert("status", status);
+
+
+    QScopedPointer<QNetworkAccessManager> manager_ptr(new QNetworkAccessManager);
+    auto manager = manager_ptr.data();
+    QNetworkRequest request = getRequest(target, m_urlApiRequestHeader + m_urlDoDeviceUpadateVersion);
+    QNetworkReply *reply = manager->post(request, toPostData(target));
+
+    QJsonObject retValue = returnValueProcessing(manager, reply);
+    if (retValue.isEmpty())
+        return;
+    int code = retValue.value("code").toInt(-1);
+    if (0 == code) {
+
+    }
 }
 
 QString HttpPost::picUpload(const QPixmap &pixmap, const QString &fileName)

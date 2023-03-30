@@ -45,6 +45,7 @@ SOURCES += \
     selectitemdialog.cpp \
     showreportdialog.cpp \
     singleapplication.cpp \
+    sudokuwidget.cpp \
     surplusbaseargsdialog.cpp \
     systemconfigdialog.cpp \
     threadserivce.cpp \
@@ -80,6 +81,7 @@ HEADERS += \
     selectitemdialog.h \
     showreportdialog.h \
     singleapplication.h \
+    sudokuwidget.h \
     surplusbaseargsdialog.h \
     systemconfigdialog.h \
     threadserivce.h \

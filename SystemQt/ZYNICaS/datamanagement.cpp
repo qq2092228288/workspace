@@ -92,7 +92,7 @@ QString MyFilePath::isiCurve() const
 QStringList MyFilePath::trendchartspic() const
 {
     QStringList list;
-    for (int i = 0; i < 11; ++i) {
+    for (int i = 0; i < 12; ++i) {
         list<<(tempDir() + QString("trendchart%1.png").arg(i, 2, 10, QLatin1Char('0')));
     }
     return list;
@@ -397,7 +397,7 @@ void DataManagement::setdZ(QChartView *dZ)
     this->m_pdZ = dZ;
 }
 
-void DataManagement::setSudoku(DrawSudoku *sudoku)
+void DataManagement::setSudoku(QWidget *sudoku)
 {
     this->m_pSudoku = sudoku;
 }
@@ -479,21 +479,29 @@ QString DataManagement::saveReport(QDateTime curTime, QString position, bool rec
                 "1.阳性的判定：被动抬腿试验结束后，SV，SI，CO，CI大于第一体位10%~15%。视同为被动抬腿试验阳性（液体负荷试验阳性）。\n"
                 "2.阴性的判定：被动抬腿试验结束后，SV，SI，CO，CI小于第一体位10%。视同为被动抬腿试验阴性（液体负荷试验阴性）。\n"
                 "请结合临床慎重处置液体管理问题。\n"));
+            // 趋势图
+            if (instance.getHospitalInfo()->cMode != Check_Mode::PhysicalExamination) {
+                for (int index = 0; index < m_filePath.trendchartspic().size(); ++index) {
+                    reportThread->addPic(QString("trendchart%1").arg(index, 2, 10, QLatin1Char('0')),
+                                         m_filePath.trendchartspic().at(index));
+                }
+            }
             // hrv
             reportThread->addMarks("hrvtitle", tr("心率变异性分析"));
             auto hrvalues = m_pRegulator->getCustomCtrl(typeName(Type::HR))->getArgItems().values;
-            reportThread->addMarks("hrcount", QString::number(hrvalues.size()));
-            reportThread->addMarks("hrmax", QString::number(*std::max_element(hrvalues.begin(), hrvalues.end())));
-            reportThread->addMarks("hrmin", QString::number(*std::min_element(hrvalues.begin(), hrvalues.end())));
-            reportThread->addMarks("hravg", QString::number(std::accumulate(hrvalues.begin(), hrvalues.end(), 0)/hrvalues.size()));
+            int count = hrvalues.count();
+            reportThread->addMarks("hrcount", QString::number(count));
+            reportThread->addMarks("hrmax", 0 == count ? "-" : QString::number(*std::max_element(hrvalues.begin(), hrvalues.end())));
+            reportThread->addMarks("hrmin", 0 == count ? "-" : QString::number(*std::min_element(hrvalues.begin(), hrvalues.end())));
+            reportThread->addMarks("hravg", 0 == count ? "-" : QString::number(std::accumulate(hrvalues.begin(), hrvalues.end(), 0)/count));
             reportThread->addMarks("argname00", "NNVGR(ms)");
             reportThread->addMarks("argname01", "SDNN(ms)");
             reportThread->addMarks("argname02", "PNN50(%)");
             reportThread->addMarks("argname03", "RMSSD(ms)");
-            reportThread->addMarks("argvalue00", QString::number(DatCa::cNnvgr(hrvalues)));
-            reportThread->addMarks("argvalue01", QString::number(DatCa::cSdnn(hrvalues)));
-            reportThread->addMarks("argvalue02", QString::number(DatCa::cPnn50(hrvalues)));
-            reportThread->addMarks("argvalue03", QString::number(DatCa::cRmssd(hrvalues)));
+            reportThread->addMarks("argvalue00", 0 == count ? "-" : QString::number(DatCa::cNnvgr(hrvalues)));
+            reportThread->addMarks("argvalue01", 0 == count ? "-" : QString::number(DatCa::cSdnn(hrvalues)));
+            reportThread->addMarks("argvalue02", 0 == count ? "-" : QString::number(DatCa::cPnn50(hrvalues)));
+            reportThread->addMarks("argvalue03", 0 == count ? "-" : QString::number(DatCa::cRmssd(hrvalues)));
             reportThread->addMarks("arglimits00", getScope(HrvArg::Nnvgr, m_pBodyValue->age));
             reportThread->addMarks("arglimits01", getScope(HrvArg::Sdnn, m_pBodyValue->age));
             reportThread->addMarks("arglimits02", getScope(HrvArg::Pnn50, m_pBodyValue->age));
@@ -528,15 +536,9 @@ QString DataManagement::saveReport(QDateTime curTime, QString position, bool rec
         reportThread->addMarks("cname", (m_currentInfo.pos + tr(" 心阻抗图(dZ)")));
         reportThread->addPic("cimage", m_filePath.current_dz());
         reportThread->addMarks("room" , m_pHospitalInfo->roomName);
-        if (m_pHospitalInfo->cMode == Check_Mode::InternalMedicine) {    // 内科模式
-            for (int index = 0; index < m_filePath.trendchartspic().size(); ++index) {
-                reportThread->addPic(QString("trendchart%1").arg(index, 2, 10, QLatin1Char('0')),
-                                     m_filePath.trendchartspic().at(index));
-            }
-        }
         // 二维码
-        getQrCodeUrlPixmap(m_pHospitalInfo->deviceId, curTime.toString("yyyyMMddHHmmss")).save(m_filePath.qrCode());
-        reportThread->addPic("qrcode", m_filePath.qrCode());
+//        getQrCodeUrlPixmap(m_pHospitalInfo->deviceId, curTime.toString("yyyyMMddHHmmss")).save(m_filePath.qrCode());
+//        reportThread->addPic("qrcode", m_filePath.qrCode());
     }
     else if (m_pHospitalInfo->pType == Printer_Type::Thermal) {   // 热敏打印机
         if (record) {
@@ -1016,7 +1018,7 @@ QString DataManagement::preload()
             strIsi = "下降";
         }
     }
-    return tr("前负荷%1，心力贮备%2").arg(strSv,strIsi);
+    return tr("前负荷%1，心力贮备%2").arg(strSv, strIsi);
 }
 
 QString DataManagement::riskTip(bool many)
@@ -1108,10 +1110,10 @@ void DataManagement::addPlrt(const int &num, const Type &type)
     auto ctrl = m_pRegulator->getCustomCtrl(typeName(type));
     qreal rvalue = ctrl->getRecordValue();
     qreal cvalue = ctrl->getCurrentValue();
-    reportThread->addMarks(QString("plrt0%1").arg(num), QString::number(rvalue));
-    reportThread->addMarks(QString("plrt1%1").arg(num), QString::number(cvalue));
+    reportThread->addMarks(rvalue == 0 ? "-" : QString("plrt0%1").arg(num), QString::number(rvalue));
+    reportThread->addMarks(cvalue == 0 ? "-" : QString("plrt1%1").arg(num), QString::number(cvalue));
     double percent = (int(((rvalue - cvalue)/cvalue + 0.05)*10))/10.0;
-    reportThread->addMarks(QString("plrt2%1").arg(num), QString::number(percent));
+    reportThread->addMarks(rvalue == 0 || cvalue == 0 ? "-" : QString("plrt2%1").arg(num), QString::number(percent));
 }
 
 QString DataManagement::posImagePath(const QString &posture)

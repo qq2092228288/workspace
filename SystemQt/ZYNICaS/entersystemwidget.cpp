@@ -102,7 +102,7 @@ EnterSystemWidget::EnterSystemWidget(QWidget *parent)
 
     instance.setBodyValue(&bodyValue);
     instance.setdZ(admitDraw->getView());
-    instance.setSudoku(sudokuDraw);
+    instance.setSudoku(sudokuWidget);
 }
 
 EnterSystemWidget::~EnterSystemWidget()
@@ -117,7 +117,8 @@ EnterSystemWidget::~EnterSystemWidget()
     delete bpDialog;
     delete trendChartsWidget;
     delete auxArgDialog;
-    delete sudokuDraw;
+//    delete sudokuDraw;
+    delete sudokuWidget;
     //    qDebug()<<"~EnterSystemWidget()";
 }
 
@@ -270,21 +271,28 @@ void EnterSystemWidget::initOscModule()
 
 void EnterSystemWidget::initDataModule()
 {
+    auto args = DataManagement::getInstance().getArgs();
+    SuBArg suBArg;
+    suBArg.cvp = args.CVP;
+    suBArg.lap = args.LAP;
+    suBArg.map = ArgScope(args.find(Type::MAP).min, args.find(Type::MAP).max);
+    suBArg.si = ArgScope(args.find(Type::SI).min, args.find(Type::SI).max);
+    suBArg.ssvri = ArgScope(args.find(Type::SSVRI).min, args.find(Type::SSVRI).max);
+    suBArg.lswi = ArgScope(args.find(Type::LSWI).min, args.find(Type::LSWI).max);
+
     dataGroupBox = new QGroupBox(this);
     dataGLayout = new QGridLayout(dataGroupBox);
     regulator = new CustomCtrlRegulator;
     dataGroupBox->setStyleSheet("QGroupBox::title{subcontrol-position: bottom center;}");
     secColLayout->addWidget(dataGroupBox);
+    sudokuWidget = new SudokuWidget(suBArg);
 
     QList<CustomCtrl *> customCtrls = regulator->getSaveCustomCtrls(false);
-    for (int num = 0; num < customCtrls.size(); ++num) {
-        QHBoxLayout *hLayout = new QHBoxLayout;
-        hLayouts.append(hLayout);
-        hLayout->addWidget(customCtrls.at(num));
-        dataGLayout->addLayout(hLayout, num/4, num%4);
+    for (int num = 0; num < 11; ++num) {
+        dataGLayout->addWidget(customCtrls.at(num), num/4, num%4);
         customCtrls.at(num)->show();
     }
-
+    dataGLayout->addWidget(sudokuWidget, 2, 3);
     ThreadSerivce::getInstance().objectMoveToThread(regulator);
     DataManagement::getInstance().setRegulator(regulator);
 }
@@ -296,12 +304,12 @@ void EnterSystemWidget::initReportModule()
     reportBtn = new QPushButton(tr("生成报告"),this);
     plrtBtn = new QPushButton(tr("PLRT"), this);
     trendChartBtn = new QPushButton(tr("趋势图"),this);
-    sudokuBtn = new QPushButton(tr("血压靶向分析图"),this);
+//    sudokuBtn = new QPushButton(tr("血压靶向分析图"),this);
     auxArgBtn = new QPushButton(tr("辅助参数"),this);
     plrtWidget = new PlrtTableWidget;
     trendChartsWidget = new TrendChartsWidget;
     auxArgDialog = new AuxArgDialog;
-    sudokuDraw = new DrawSudoku;
+//    sudokuDraw = new DrawSudoku;
 
     QHBoxLayout *hLayout = new QHBoxLayout(operationGroupBox);
 
@@ -311,7 +319,7 @@ void EnterSystemWidget::initReportModule()
     hLayout->addStretch();
     hLayout->addWidget(plrtBtn);
     hLayout->addWidget(trendChartBtn);
-    hLayout->addWidget(sudokuBtn);
+//    hLayout->addWidget(sudokuBtn);
     hLayout->addWidget(auxArgBtn);
 }
 
@@ -339,7 +347,10 @@ void EnterSystemWidget::signalsAndSlots()
         diffDraw->clear();
         admitDraw->clear();
         // 清空九宫格
-        sudokuDraw->clear();
+//        sudokuDraw->clear();
+        sudokuWidget->clear();
+        // 清空plrt
+        plrtWidget->clear();
         // 清空检测的数据
         foreach (auto customCtrl, regulator->getAllCustomCtrls()) {
             customCtrl->clear();
@@ -356,14 +367,19 @@ void EnterSystemWidget::signalsAndSlots()
     foreach (auto customCtrl, regulator->getAllCustomCtrls()) {
         connect(customCtrl, &CustomCtrl::changeName, this, &EnterSystemWidget::changeShow);
         connect(this, &EnterSystemWidget::recordValue, customCtrl, &CustomCtrl::recordValueSlot);
+//        if (customCtrl->getName() == "SI") {
+//            connect(customCtrl, &CustomCtrl::currentValue, sudokuDraw, [=](qreal si){
+//                sudokuDraw->setSi(posGroup.checkedId(),si,!rPos.isEmpty());
+//            });
+//        }
+//        if (customCtrl->getName() == "MAP") {
+//            connect(customCtrl, &CustomCtrl::currentValue, sudokuDraw, [=](qreal map){
+//                sudokuDraw->setMap(posGroup.checkedId(),map,!rPos.isEmpty());
+//            });
+//        }
         if (customCtrl->getName() == "SI") {
-            connect(customCtrl, &CustomCtrl::currentValue, sudokuDraw, [=](qreal si){
-                sudokuDraw->setSi(posGroup.checkedId(),si,!rPos.isEmpty());
-            });
-        }
-        if (customCtrl->getName() == "MAP") {
-            connect(customCtrl, &CustomCtrl::currentValue, sudokuDraw, [=](qreal map){
-                sudokuDraw->setMap(posGroup.checkedId(),map,!rPos.isEmpty());
+            connect(customCtrl, &CustomCtrl::currentValue, this, [=](qreal si){
+                sudokuWidget->setPoint(bodyValue.MAP(), si, SignType(posGroup.checkedId()), rPos.isEmpty());
             });
         }
         connect(customCtrl, &CustomCtrl::nameAndValue, plrtWidget, &PlrtTableWidget::setData);
@@ -375,10 +391,10 @@ void EnterSystemWidget::signalsAndSlots()
     // report
     connect(backBtn, &QPushButton::clicked, this, &EnterSystemWidget::close);
     connect(reportBtn, &QPushButton::clicked, this, &EnterSystemWidget::createReport);
-    connect(plrtBtn, &QPushButton::clicked, plrtWidget, &PlrtTableWidget::show);
+    connect(plrtBtn, &QPushButton::clicked, plrtWidget, &PlrtTableWidget::exec);
     connect(trendChartBtn, &QPushButton::clicked, trendChartsWidget, &TrendChartsWidget::widgetShow);
     connect(auxArgBtn, &QPushButton::clicked, auxArgDialog, &AuxArgDialog::exec);
-    connect(sudokuBtn, &QPushButton::clicked, sudokuDraw, &DrawSudoku::exec);
+//    connect(sudokuBtn, &QPushButton::clicked, sudokuDraw, &DrawSudoku::exec);
     connect(auxArgDialog, &AuxArgDialog::value, this, [=](int cvp, int lap){
         bodyValue.CVP = cvp;
         bodyValue.LAP = lap;
@@ -396,13 +412,14 @@ void EnterSystemWidget::changeShow(const QString &current, const QString &change
 {
     CustomCtrl *cuCtrl = regulator->getCustomCtrl(current);
     CustomCtrl *chCtrl = regulator->getCustomCtrl(change);
-    foreach (QHBoxLayout *layout, hLayouts) {
-        if(-1 != layout->indexOf(cuCtrl)) {
+    for (int index = 0; index < dataGLayout->count(); ++index) {
+        auto widget = dataGLayout->itemAtPosition(index/4, index%4)->widget();
+        if (widget == cuCtrl && widget != nullptr) {
             cuCtrl->hide();
-            layout->removeWidget(cuCtrl);
-            layout->addWidget(chCtrl);
+            dataGLayout->removeWidget(cuCtrl);
+            dataGLayout->addWidget(chCtrl, index/4, index%4);
             chCtrl->show();
-            regulator->changeCurrentNames(current,change,false);
+            regulator->changeCurrentNames(current, change, false);
             break;
         }
     }
@@ -570,8 +587,8 @@ void EnterSystemWidget::createReport()
             QMessageBox::information(this, tr("提示"), tr("未改变体位！"));
             return;
         }
-        // professional model
-        if (instance.getHospitalInfo()->cMode == Check_Mode::InternalMedicine) {
+        // not physical examination model
+        if (instance.getHospitalInfo()->cMode != Check_Mode::PhysicalExamination) {
             trendChartsWidget->saveTrendChartPic();
         }
         auto isiCtrl = regulator->getCustomCtrl("ISI");
@@ -615,9 +632,12 @@ void EnterSystemWidget::clearUiSlot()
     diffDraw->clear();
     admitDraw->clear();
     // 清空九宫格
-    sudokuDraw->clear();
+//    sudokuDraw->clear();
+    sudokuWidget->clear();
     // 重置人体信息
     bodyValue = BodyValue();
+    // 清空plrt
+    plrtWidget->clear();
     // 清空检测的数据
     foreach (auto customCtrl, regulator->getAllCustomCtrls()) {
         customCtrl->clear();
@@ -644,8 +664,7 @@ void EnterSystemWidget::systemModeChanged(Check_Mode mode)
         DataManagement::getInstance().getRegulator()->connectTrendChart(false);
         trendChartBtn->hide();
     }
-    baseData = BaseData();
-    rPos.clear();
+    clearUiSlot();
 }
 
 void EnterSystemWidget::setCtrlValue(const Type &type, const double &value)
@@ -687,7 +706,8 @@ void EnterSystemWidget::setBaseData()
     baseData.place.place2Id = hospitalInfo->place2Id;
     baseData.place.deviceId = hospitalInfo->deviceId;
     baseData.place.inspector = hospitalInfo->doctorName.isEmpty() ? "unknown" : hospitalInfo->doctorName;
-    baseData.sudokuPix = sudokuDraw->grab();
+//    baseData.sudokuPix = sudokuDraw->grab();
+    baseData.sudokuPix = sudokuWidget->grab();
 }
 
 void EnterSystemWidget::setTebcoData(TebcoData &tebcoData)

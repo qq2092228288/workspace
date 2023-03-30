@@ -27,12 +27,12 @@ InfoEditDialog::InfoEditDialog(QWidget *parent)
     //样式表
     this->setStyleSheet(instance.dialogQss(1.5));
 
-    nameLabel = new QLabel(tr("姓名"),this);
-    numLabel = new QLabel(tr("病历号"),this);
-    sexLabel = new QLabel(tr("性别"),this);
-    ageLabel = new QLabel(tr("年龄"),this);
-    heightLabel = new QLabel(tr("身高(cm)"),this);
-    weightLabel = new QLabel(tr("体重(kg)"),this);
+    nameLabel = new QLabel(tr("姓名"), this);
+    numLabel = new QLabel(tr("病历号"), this);
+    sexLabel = new QLabel(tr("性别"), this);
+    ageLabel = new QLabel(tr("年龄"), this);
+    heightLabel = new QLabel(tr("身高(cm)"), this);
+    weightLabel = new QLabel(tr("体重(kg)"), this);
     hbLabel = new QLabel(tr("血红蛋白(g/dl)"), this);
     nameLineEdit = new QLineEdit(this);
     numLineEdit = new QLineEdit(this);
@@ -48,6 +48,8 @@ InfoEditDialog::InfoEditDialog(QWidget *parent)
 
     sexComboBox->addItem(tr("男"));
     sexComboBox->addItem(tr("女"));
+    sexComboBox->addItem("");
+    sexComboBox->setCurrentIndex(2);
     numLineEdit->setValidator(new QRegExpValidator(QRegExp("^[a-zA-Z0-9]+$"),this));
     ageLineEdit->setValidator(new QRegExpValidator(QRegExp("^([1-9]|(1[0-4])){0,1}[0-9]$"),this));
     heightLineEdit->setValidator(new QRegExpValidator(QRegExp("^([2-9]|[1-2][0-9])[0-9]$"),this));
@@ -55,37 +57,37 @@ InfoEditDialog::InfoEditDialog(QWidget *parent)
     hbLineEdit->setValidator(new QRegExpValidator(QRegExp("^([1-9]|[1-4][0-9])([\\.][0-9]){0,1}$"),this));
 
     QGridLayout *mainLayout = new QGridLayout(this);
-    mainLayout->addWidget(nameLabel,0,0);
-    mainLayout->addWidget(nameLineEdit,0,1);
-    mainLayout->addWidget(numLabel,0,2);
-    mainLayout->addWidget(numLineEdit,0,3);
-    mainLayout->addWidget(sexLabel,1,0);
-    mainLayout->addWidget(sexComboBox,1,1);
-    mainLayout->addWidget(ageLabel,1,2);
-    mainLayout->addWidget(ageLineEdit,1,3);
-    mainLayout->addWidget(heightLabel,2,0);
-    mainLayout->addWidget(heightLineEdit,2,1);
-    mainLayout->addWidget(weightLabel,2,2);
-    mainLayout->addWidget(weightLineEdit,2,3);
-    mainLayout->addWidget(hbLabel,3,0);
-    mainLayout->addWidget(hbLineEdit,3,1);
-    mainLayout->addWidget(importBtn,4,1,Qt::AlignRight);
-    mainLayout->addWidget(clearBtn,4,2,Qt::AlignRight);
-    mainLayout->addWidget(confirmBtn,4,3,Qt::AlignRight);
+    mainLayout->addWidget(nameLabel, 0, 0);
+    mainLayout->addWidget(nameLineEdit, 0, 1);
+    mainLayout->addWidget(numLabel, 0, 2);
+    mainLayout->addWidget(numLineEdit, 0, 3);
+    mainLayout->addWidget(sexLabel, 1, 0);
+    mainLayout->addWidget(sexComboBox, 1, 1);
+    mainLayout->addWidget(ageLabel, 1, 2);
+    mainLayout->addWidget(ageLineEdit, 1, 3);
+    mainLayout->addWidget(heightLabel, 2, 0);
+    mainLayout->addWidget(heightLineEdit, 2, 1);
+    mainLayout->addWidget(weightLabel, 2, 2);
+    mainLayout->addWidget(weightLineEdit, 2, 3);
+    mainLayout->addWidget(hbLabel, 3, 0);
+    mainLayout->addWidget(hbLineEdit, 3, 1);
+    mainLayout->addWidget(importBtn, 4, 1, Qt::AlignRight);
+    mainLayout->addWidget(clearBtn, 4, 2, Qt::AlignRight);
+    mainLayout->addWidget(confirmBtn, 4, 3, Qt::AlignRight);
 
     heightLineEdit->setPlaceholderText(tr("120 ~ 230"));
     weightLineEdit->setPlaceholderText(tr("30 ~ 160"));
 
-    connect(clearBtn,&QPushButton::clicked,this,&InfoEditDialog::clearSlot);
-    connect(confirmBtn,&QPushButton::clicked,this,&InfoEditDialog::confirmSlot);
-    connect(nameLineEdit,&QLineEdit::textEdited,this,&InfoEditDialog::stopCheck);
-    connect(numLineEdit,&QLineEdit::textEdited,this,&InfoEditDialog::stopCheck);
-    connect(sexComboBox,&QComboBox::currentTextChanged,this,&InfoEditDialog::stopCheck);
-    connect(ageLineEdit,&QLineEdit::textEdited,this,&InfoEditDialog::stopCheck);
-    connect(heightLineEdit,&QLineEdit::textEdited,this,&InfoEditDialog::stopCheck);
-    connect(weightLineEdit,&QLineEdit::textEdited,this,&InfoEditDialog::stopCheck);
-    connect(importBtn,&QPushButton::clicked,pInfoDialog,&PersonalInfoDialog::exec);
-    connect(pInfoDialog,&PersonalInfoDialog::patientInfo,this,&InfoEditDialog::importPatientInfo);
+    connect(clearBtn, &QPushButton::clicked, this, &InfoEditDialog::clearSlot);
+    connect(confirmBtn, &QPushButton::clicked, this, &InfoEditDialog::confirmSlot);
+    connect(nameLineEdit, &QLineEdit::textEdited, this, &InfoEditDialog::stopCheck);
+    connect(numLineEdit, &QLineEdit::textEdited, this, &InfoEditDialog::stopCheck);
+    connect(sexComboBox, &QComboBox::currentTextChanged, this, &InfoEditDialog::stopCheck);
+    connect(ageLineEdit, &QLineEdit::textEdited, this, &InfoEditDialog::stopCheck);
+    connect(heightLineEdit, &QLineEdit::textEdited, this, &InfoEditDialog::stopCheck);
+    connect(weightLineEdit, &QLineEdit::textEdited, this, &InfoEditDialog::stopCheck);
+    connect(importBtn, &QPushButton::clicked, pInfoDialog, &PersonalInfoDialog::exec);
+    connect(pInfoDialog, &PersonalInfoDialog::patientInfo, this, &InfoEditDialog::importPatientInfo);
 }
 
 void InfoEditDialog::keyPressEvent(QKeyEvent *event)
@@ -101,7 +103,7 @@ void InfoEditDialog::clear()
 {
     nameLineEdit->clear();
     numLineEdit->clear();
-    sexComboBox->setCurrentIndex(0);
+    sexComboBox->setCurrentIndex(2);
     ageLineEdit->clear();
     heightLineEdit->clear();
     weightLineEdit->clear();
@@ -135,6 +137,10 @@ void InfoEditDialog::confirmSlot()
     }
     else if (weight.toInt() < 30 || weight.toInt() > 160) {
         QMessageBox::warning(this,tr("警告！"),tr("体重超过范围！"));
+        return;
+    }
+    else if (sexComboBox->currentIndex() == 2) {
+        QMessageBox::warning(this,tr("警告！"),tr("请选择性别！"));
         return;
     }
     else if (!hbLineEdit->text().isEmpty() && hbLineEdit->text().indexOf(".") == hbLineEdit->text().size() -1) {
