@@ -7,8 +7,8 @@ IDI_ICON1	ICON	DISCARDABLE	"images/app.ico"
 #endif
 
 VS_VERSION_INFO VERSIONINFO
-    FILEVERSION 2,0,0,2
-    PRODUCTVERSION 2,0,0,2
+    FILEVERSION 2,1,0,1
+    PRODUCTVERSION 2,1,0,1
 	FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
 	FILEFLAGS VS_FF_DEBUG
@@ -29,7 +29,7 @@ VS_VERSION_INFO VERSIONINFO
                 VALUE "LegalTrademarks", "长沙芫泽医疗器械有限公司\0"
                 VALUE "OriginalFilename", "YZNICaS.exe\0"
 				VALUE "ProductName", "无创血流动力学检测系统\0"
-                VALUE "OrganizationDomain", "https://zeyaotebco.com/\0"
+                VALUE "OrganizationDomain", "http://zeyaotebco.com/\0"
 			END
 		END
 		BLOCK "VarFileInfo"

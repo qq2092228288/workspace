@@ -23,6 +23,7 @@ SOURCES += \
     baseargwidget.cpp \
     baseargwidgetsinst.cpp \
     bpeditdialog.cpp \
+    countdowngizmo.cpp \
     createreportthread.cpp \
     customctrl.cpp \
     datacalculation.cpp \
@@ -60,6 +61,7 @@ HEADERS += \
     baseargwidget.h \
     baseargwidgetsinst.h \
     bpeditdialog.h \
+    countdowngizmo.h \
     createreportthread.h \
     customctrl.h \
     datacalculation.h \

@@ -113,6 +113,11 @@ QString MyFilePath::qrCode() const
     return tempDir() + "qrcode.png";
 }
 
+QString MyFilePath::hospitalLogo() const
+{
+    return initDir() + "hospitalLogo.png";
+}
+
 Argument::Argument(){}
 
 Argument::Argument(QString _cn, QString _en, QString _unit, qreal _min, qreal _max, int _digit)
@@ -191,8 +196,8 @@ DataManagement::~DataManagement()
     delete m_pHttpPost;
     delete reportThread;
     // delete temp dir
-    QDir dir(m_filePath.tempDir());
-    dir.removeRecursively();
+//    QDir dir(m_filePath.tempDir());
+//    dir.removeRecursively();
 //    qDebug()<<"~DataManagement()";
 }
 
@@ -435,14 +440,61 @@ QString DataManagement::saveReport(QDateTime curTime, QString position, bool rec
     // 打开模板
     if (m_pHospitalInfo->pType == Printer_Type::General) {        // 常规打印机
         if (record) {   // 多体位
-            if (m_pHospitalInfo->cMode == Check_Mode::Hypertension) {
+            if (m_pHospitalInfo->cMode == Check_Mode::Hypertension
+                    || m_pHospitalInfo->cMode == Check_Mode::InternalMedicine
+                    || m_pHospitalInfo->cMode == Check_Mode::Critical) {
+                // 报告dot
                 reportThread->setOpenArg(m_filePath._dot(), false);
-            }
-            else if (m_pHospitalInfo->cMode == Check_Mode::InternalMedicine) {
-                reportThread->setOpenArg(m_filePath._dot(), false);
-            }
-            else if (m_pHospitalInfo->cMode == Check_Mode::Critical) {
-                reportThread->setOpenArg(m_filePath._dot(), false);
+                // PLRT
+                reportThread->addMarks("plrttitle", tr("被动抬腿试验"));
+                reportThread->addPic("plrtfimage", posImagePath(m_recordInfo.pos));
+                reportThread->addPic("plrtsimage", posImagePath(m_currentInfo.pos));
+                reportThread->addMarks("plrtunit", "%");
+                addPlrt(0, Type::HR);
+                addPlrt(1, Type::SI);
+                addPlrt(2, Type::CI);
+                addPlrt(3, Type::SV);
+                addPlrt(4, Type::CO);
+                addPlrt(5, Type::DO2);
+                addPlrt(6, Type::TFC);
+                addPlrt(7, Type::ISI);
+                reportThread->addMarks("plrtevaluation", tr("被动抬腿试验测试报告的建议：\n"
+                    "1.阳性的判定：被动抬腿试验结束后，SV，SI，CO，CI大于第一体位10%~15%。视同为被动抬腿试验阳性（液体负荷试验阳性）。\n"
+                    "2.阴性的判定：被动抬腿试验结束后，SV，SI，CO，CI小于第一体位10%。视同为被动抬腿试验阴性（液体负荷试验阴性）。\n"
+                    "请结合临床慎重处置液体管理问题。\n"));
+                // 趋势图
+                if (instance.getHospitalInfo()->cMode != Check_Mode::PhysicalExamination) {
+                    for (int index = 0; index < m_filePath.trendchartspic().size(); ++index) {
+                        reportThread->addPic(QString("trendchart%1").arg(index, 2, 10, QLatin1Char('0')),
+                                             m_filePath.trendchartspic().at(index));
+                    }
+                }
+                // hrv
+                reportThread->addMarks("hrvtitle", tr("心率变异性分析"));
+                auto hrvalues = m_pRegulator->getCustomCtrl(typeName(Type::HR))->getArgItems().values;
+                int count = hrvalues.count();
+                reportThread->addMarks("hrcount", QString::number(count));
+                reportThread->addMarks("hrmax", 0 == count ? "-" : QString::number(*std::max_element(hrvalues.begin(), hrvalues.end())));
+                reportThread->addMarks("hrmin", 0 == count ? "-" : QString::number(*std::min_element(hrvalues.begin(), hrvalues.end())));
+                reportThread->addMarks("hravg", 0 == count ? "-" : QString::number(std::accumulate(hrvalues.begin(), hrvalues.end(), 0)/count));
+                reportThread->addMarks("argname00", "NNVGR(ms)");
+                reportThread->addMarks("argname01", "SDNN(ms)");
+                reportThread->addMarks("argname02", "PNN50(%)");
+                reportThread->addMarks("argname03", "RMSSD(ms)");
+                reportThread->addMarks("argvalue00", 0 == count ? "-" : QString::number(DatCa::cNnvgr(hrvalues)));
+                reportThread->addMarks("argvalue01", 0 == count ? "-" : QString::number(DatCa::cSdnn(hrvalues)));
+                reportThread->addMarks("argvalue02", 0 == count ? "-" : QString::number(DatCa::cPnn50(hrvalues)));
+                reportThread->addMarks("argvalue03", 0 == count ? "-" : QString::number(DatCa::cRmssd(hrvalues)));
+                reportThread->addMarks("arglimits00", getScope(HrvArg::Nnvgr, m_pBodyValue->age));
+                reportThread->addMarks("arglimits01", getScope(HrvArg::Sdnn, m_pBodyValue->age));
+                reportThread->addMarks("arglimits02", getScope(HrvArg::Pnn50, m_pBodyValue->age));
+                reportThread->addMarks("arglimits03", getScope(HrvArg::Rmssd, m_pBodyValue->age));
+                reportThread->addMarks("argevaluation", tr("说明：\n"
+                    "1.心血管疾病患者（房颤、早搏、高血压、糖尿病等）心率变异性数据通常会偏高，高于正常值范围；\n"
+                    "2.同年龄段，女性心率变异性数据普遍略高于男性；\n"
+                    "3.运动人群心率变异值高于普通人群；\n"
+                    "4.心率变异性会随着年龄的增长而逐渐下降；\n"
+                    "5.测量姿势不正确，心电图存在干扰，都会影响心率变异性的准确性。"));
             }
             else if (m_pHospitalInfo->cMode == Check_Mode::PhysicalExamination) {
                 reportThread->setOpenArg(m_filePath.many_dot(), false);
@@ -462,56 +514,6 @@ QString DataManagement::saveReport(QDateTime curTime, QString position, bool rec
                 reportThread->addMarks("aname", (tr("容量@泵力分析图")));
                 reportThread->addPic("aimage", m_filePath.isiCurve());
             }
-            // PLRT
-            reportThread->addMarks("plrttitle", tr("被动抬腿试验"));
-            reportThread->addPic("plrtfimage", posImagePath(m_recordInfo.pos));
-            reportThread->addPic("plrtsimage", posImagePath(m_currentInfo.pos));
-            reportThread->addMarks("plrtunit", "%");
-            addPlrt(0, Type::HR);
-            addPlrt(1, Type::SI);
-            addPlrt(2, Type::CI);
-            addPlrt(3, Type::SV);
-            addPlrt(4, Type::CO);
-            addPlrt(5, Type::DO2);
-            addPlrt(6, Type::TFC);
-            addPlrt(7, Type::ISI);
-            reportThread->addMarks("plrtevaluation", tr("被动抬腿试验测试报告的建议：\n"
-                "1.阳性的判定：被动抬腿试验结束后，SV，SI，CO，CI大于第一体位10%~15%。视同为被动抬腿试验阳性（液体负荷试验阳性）。\n"
-                "2.阴性的判定：被动抬腿试验结束后，SV，SI，CO，CI小于第一体位10%。视同为被动抬腿试验阴性（液体负荷试验阴性）。\n"
-                "请结合临床慎重处置液体管理问题。\n"));
-            // 趋势图
-            if (instance.getHospitalInfo()->cMode != Check_Mode::PhysicalExamination) {
-                for (int index = 0; index < m_filePath.trendchartspic().size(); ++index) {
-                    reportThread->addPic(QString("trendchart%1").arg(index, 2, 10, QLatin1Char('0')),
-                                         m_filePath.trendchartspic().at(index));
-                }
-            }
-            // hrv
-            reportThread->addMarks("hrvtitle", tr("心率变异性分析"));
-            auto hrvalues = m_pRegulator->getCustomCtrl(typeName(Type::HR))->getArgItems().values;
-            int count = hrvalues.count();
-            reportThread->addMarks("hrcount", QString::number(count));
-            reportThread->addMarks("hrmax", 0 == count ? "-" : QString::number(*std::max_element(hrvalues.begin(), hrvalues.end())));
-            reportThread->addMarks("hrmin", 0 == count ? "-" : QString::number(*std::min_element(hrvalues.begin(), hrvalues.end())));
-            reportThread->addMarks("hravg", 0 == count ? "-" : QString::number(std::accumulate(hrvalues.begin(), hrvalues.end(), 0)/count));
-            reportThread->addMarks("argname00", "NNVGR(ms)");
-            reportThread->addMarks("argname01", "SDNN(ms)");
-            reportThread->addMarks("argname02", "PNN50(%)");
-            reportThread->addMarks("argname03", "RMSSD(ms)");
-            reportThread->addMarks("argvalue00", 0 == count ? "-" : QString::number(DatCa::cNnvgr(hrvalues)));
-            reportThread->addMarks("argvalue01", 0 == count ? "-" : QString::number(DatCa::cSdnn(hrvalues)));
-            reportThread->addMarks("argvalue02", 0 == count ? "-" : QString::number(DatCa::cPnn50(hrvalues)));
-            reportThread->addMarks("argvalue03", 0 == count ? "-" : QString::number(DatCa::cRmssd(hrvalues)));
-            reportThread->addMarks("arglimits00", getScope(HrvArg::Nnvgr, m_pBodyValue->age));
-            reportThread->addMarks("arglimits01", getScope(HrvArg::Sdnn, m_pBodyValue->age));
-            reportThread->addMarks("arglimits02", getScope(HrvArg::Pnn50, m_pBodyValue->age));
-            reportThread->addMarks("arglimits03", getScope(HrvArg::Rmssd, m_pBodyValue->age));
-            reportThread->addMarks("argevaluation", tr("说明：\n"
-                "1.心血管疾病患者（房颤、早搏、高血压、糖尿病等）心率变异性数据通常会偏高，高于正常值范围；\n"
-                "2.同年龄段，女性心率变异性数据普遍略高于男性；\n"
-                "3.运动人群心率变异值高于普通人群；\n"
-                "4.心率变异性会随着年龄的增长而逐渐下降；\n"
-                "5.测量姿势不正确，心电图存在干扰，都会影响心率变异性的准确性。"));
         }
         else {  // 单体位
             if (m_pHospitalInfo->cMode == Check_Mode::Hypertension) {
@@ -597,6 +599,10 @@ QString DataManagement::saveReport(QDateTime curTime, QString position, bool rec
     reportThread->addMarks("hospital" , m_pHospitalInfo->hospitalName);
     reportThread->addMarks("time" , curTime.toString("yyyy-MM-dd hh:mm"));
     reportThread->addMarks("doctor" , m_pHospitalInfo->doctorName);
+    // hospital logo
+    if (m_pHospitalInfo->pType == Printer_Type::General && QFile::exists(m_filePath.hospitalLogo())) {
+        reportThread->addPic("logo", m_filePath.hospitalLogo());
+    }
     // 患者基本信息
     reportThread->addMarks("name" , m_pBodyValue->name);
     reportThread->addMarks("sex", (0 == m_pBodyValue->sex) ? tr("男") : tr("女"));

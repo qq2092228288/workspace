@@ -8,13 +8,15 @@ PlrtTableWidget::PlrtTableWidget(QWidget *parent)
       m_rows{4},
       m_columns{9}
 {
+    setWindowFlags(Qt::FramelessWindowHint | Qt::Dialog);
+
     mainLayout = new QGridLayout(this);
     // 列名
     m_headerText<<""<<"HR"<<"SI"<<"CI"<<"SV"<<"CO"<<"DO2"<<"TFC"<<"ISI";
     setWindowTitle(tr("被动抬腿试验"));
     double zoom = QApplication::primaryScreen()->availableSize().width()/1920.0;
     setMinimumSize(1000*zoom, 400*zoom);
-    setStyleSheet(QString("PlrtTableWidget{background-color:#FFFFFF;}"));
+    setStyleSheet(QString("PlrtTableWidget{background-color:#EEFFFF;border-radius:10px;}"));
 
     QFont headerFont;
     headerFont.setPixelSize(25*zoom);
@@ -41,8 +43,43 @@ PlrtTableWidget::PlrtTableWidget(QWidget *parent)
             }
         }
     }
+
+    m_pEditBpBtn = new QPushButton(tr("抬腿后血压"), this);
+//    m_pStartBtn = new QPushButton(tr("开始"), this);
+    m_pStopBtn = new QPushButton(tr("终止"), this);
+    m_pPauseBtn = new QPushButton(tr("开始"), this);
+    m_pTimer = new QTimer(this);
+    m_pProgressBar = new QProgressBar(this);
+
+    mainLayout->addWidget(m_pEditBpBtn, rowCount() + 1, 0, Qt::AlignLeft);
+//    mainLayout->addWidget(m_pStartBtn, rowCount() + 1, count - 3, Qt::AlignRight);
+    mainLayout->addWidget(m_pStopBtn, rowCount() + 1, 3, Qt::AlignRight);
+    mainLayout->addWidget(m_pPauseBtn, rowCount() + 1, 4, Qt::AlignRight);
+    mainLayout->addWidget(m_pProgressBar, rowCount() + 2, 0, 1, m_headerText.count());
+
+    m_pProgressBar->setAlignment(Qt::AlignCenter);
+    m_pProgressBar->setStyleSheet(QString("QProgressBar{"
+                                          "font:9pt;"
+                                          "border-radius:5px;"
+                                          "text-align:center;"
+                                          "border:1px solid #E8EDF2;"
+                                          "background-color: rgb(255, 255, 255);"
+                                          "border-color: rgb(180, 180, 180);"
+                                      "}"
+                                      "QProgressBar:chunk{"
+                                          "border-radius:5px;"
+                                          "background-color:#1ABC9C;"
+                                      "}"));
     // PLRT单位
     labels().at(getLabelNumber(3, 0))->setText("%");
+
+    connect(m_pEditBpBtn, &QPushButton::clicked, this, &PlrtTableWidget::editBp);
+//    connect(m_pStartBtn, &QPushButton::clicked, this, &PlrtTableWidget::startSlot);
+    connect(m_pStopBtn, &QPushButton::clicked, this, &PlrtTableWidget::stopSlot);
+    connect(m_pPauseBtn, &QPushButton::clicked, this, &PlrtTableWidget::pauseSlot);
+    connect(m_pTimer, &QTimer::timeout, this, &PlrtTableWidget::timeroutSlot);
+
+    setProcessBarTxt(0);
 }
 
 int PlrtTableWidget::rowCount() const
@@ -60,6 +97,18 @@ QStringList PlrtTableWidget::header() const
     return m_headerText;
 }
 
+void PlrtTableWidget::setCountDown(const int &sec)
+{
+    if (sec < 2 || sec > 3600) {
+        QMessageBox::warning(this, tr("警告！"), tr("设置的时间要在1~3600秒之间！"));
+        return;
+    }
+    m_sec = sec;
+    m_pProgressBar->setRange(0, m_sec);
+    m_pProgressBar->setValue(0);
+    m_pTimer->setInterval(1000);
+}
+
 void PlrtTableWidget::clear()
 {
     for (int row = 1; row < rowCount(); ++row) {
@@ -71,6 +120,7 @@ void PlrtTableWidget::clear()
             }
         }
     }
+    m_pProgressBar->setValue(0);
 }
 
 void PlrtTableWidget::setPic(const PosType &fpos, const PosType &spos)
@@ -82,8 +132,10 @@ void PlrtTableWidget::setPic(const PosType &fpos, const PosType &spos)
     double fZoom = 1.0*fLabel->width()/QPixmap(getPicFileName(fpos)).width();
     double sZoom = 1.0*sLabel->width()/QPixmap(getPicFileName(spos)).width();
 
-    fLabel->setPixmap(fPixmap.scaled(fPixmap.width()*fZoom, fPixmap.height()*fZoom, Qt::IgnoreAspectRatio, Qt::SmoothTransformation));
-    sLabel->setPixmap(sPixmap.scaled(sPixmap.width()*sZoom, sPixmap.height()*sZoom, Qt::IgnoreAspectRatio, Qt::SmoothTransformation));
+    fLabel->setPixmap(fPixmap.scaled(fPixmap.width()*fZoom - 5, fPixmap.height()*fZoom,
+                                     Qt::IgnoreAspectRatio, Qt::SmoothTransformation));
+    sLabel->setPixmap(sPixmap.scaled(sPixmap.width()*sZoom - 5, sPixmap.height()*sZoom,
+                                     Qt::IgnoreAspectRatio, Qt::SmoothTransformation));
 }
 
 void PlrtTableWidget::setPos(const QString &fpos, const QString &spos)
@@ -132,6 +184,77 @@ void PlrtTableWidget::setData(const QString &name, const double &fdata, const do
         return;
     }
     setPlrtData(type, fdata, sdata);
+}
+
+void PlrtTableWidget::closeEvent(QCloseEvent *event)
+{
+    event->accept();
+    m_pProgressBar->setValue(0);
+}
+
+void PlrtTableWidget::mouseMoveEvent(QMouseEvent *event)
+{
+    if (m_mousePress) {
+        move(event->globalPos() - m_mousePoint);
+    }
+    event->accept();
+}
+
+void PlrtTableWidget::mousePressEvent(QMouseEvent *event)
+{
+    if (event->button() == Qt::LeftButton) {
+        m_mousePress = true;
+        m_mousePoint = event->pos();
+    }
+    event->accept();
+}
+
+void PlrtTableWidget::mouseReleaseEvent(QMouseEvent *event)
+{
+    m_mousePress = false;
+    event->accept();
+}
+
+//void PlrtTableWidget::startSlot()
+//{
+//    m_pTimer->start();
+//    emit status(TestS::Started);
+//}
+
+void PlrtTableWidget::timeroutSlot()
+{
+    int value = m_pProgressBar->value();
+    m_pProgressBar->setValue(++value);
+    setProcessBarTxt(--m_sec);
+    if (value == m_pProgressBar->maximum()) {
+        close();
+        emit status(TestS::Completed);
+    }
+}
+
+void PlrtTableWidget::stopSlot()
+{
+    close();
+    if (m_pTimer->isActive()) {
+        pauseSlot();
+    }
+    m_pProgressBar->setValue(0);
+    setProcessBarTxt(0);
+    emit status(TestS::Stopped);
+}
+
+void PlrtTableWidget::pauseSlot()
+{
+    if (m_pTimer->isActive()) {
+        m_pTimer->stop();
+        m_pPauseBtn->setText("开始");
+        emit status(TestS::Paused);
+    }
+    else {
+        m_pTimer->start();
+        m_pPauseBtn->setText("暂停");
+        emit status(TestS::Started);
+    }
 }
 
 QString PlrtTableWidget::labelQss(LabelStatus status)
@@ -197,4 +320,10 @@ int PlrtTableWidget::getLabelNumber(const int &row, const int &col)
 void PlrtTableWidget::dataWarning(const PaType &type, bool w)
 {
     labels().at(getLabelNumber(3, type))->setStyleSheet(labelQss(w ? LabelStatus::Warning : LabelStatus::Normal));
+}
+
+void PlrtTableWidget::setProcessBarTxt(const int &value)
+{
+    m_pProgressBar->setFormat(QString("试验剩余时间 %1:%2").arg(value/60, 2, 10, QLatin1Char('0'))
+                              .arg(value%60, 2, 10, QLatin1Char('0')));
 }

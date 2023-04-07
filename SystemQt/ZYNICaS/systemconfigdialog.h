@@ -66,8 +66,11 @@ public:
 protected slots:
     void aboutAppSlot();
     void anotherSetSlot();
+    void selectLogoSlot();
 protected:
     void closeEvent(QCloseEvent *event);
+    bool eventFilter(QObject *obj, QEvent *event);
+    void setHospitalLogo();
 signals:
     void modeChanged(Check_Mode);
 private:
@@ -84,6 +87,8 @@ private:
     QRadioButton *printerRadio;
     QRadioButton *xprinterRadio;
     QCheckBox *tipCheckBox;
+    QPushButton *selectLogoBtn;
+    QLabel *logoLabel;
     QGroupBox *checkModeGroupBox;
     QButtonGroup *modeButtonGroup;
     QRadioButton *generalModeRadio;

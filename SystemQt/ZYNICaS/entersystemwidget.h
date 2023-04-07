@@ -70,6 +70,7 @@ public slots:
     void createReport();
     void clearUiSlot();
     void systemModeChanged(Check_Mode mode);
+    void startupTestSlot();
 private:
     void setCtrlValue(const Type &type, const double &value);
     bool isStartCheck();
@@ -115,6 +116,8 @@ private:
     QRadioButton *lieBtn;           //平躺
     QRadioButton *legLiftBtn;       //抬腿
     QPushButton *recordBtn;         //记录体位
+    QPushButton *startupTestBtn;    //启动试验
+    PlrtTableWidget *plrtWidget;
     QString rPos;
 
     //图形模块
@@ -139,11 +142,10 @@ private:
     QGroupBox *operationGroupBox;
     QPushButton *backBtn;
     QPushButton *reportBtn;
-    QPushButton *plrtBtn;
+//    QPushButton *plrtBtn;
     QPushButton *trendChartBtn;
 //    QPushButton *sudokuBtn;
     QPushButton *auxArgBtn;
-    PlrtTableWidget *plrtWidget;
     TrendChartsWidget *trendChartsWidget;
     AuxArgDialog *auxArgDialog;
 //    DrawSudoku *sudokuDraw;

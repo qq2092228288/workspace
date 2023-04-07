@@ -6,7 +6,7 @@ SystemConfigDialog::SystemConfigDialog(QWidget *parent)
     : QDialog{parent}
 {
     auto &instance = DataManagement::getInstance();
-    setMinimumWidth(500*instance.wZoom());
+    setMinimumSize(500*instance.wZoom(), 800*instance.hZoom());
     this->setWindowTitle(tr("系统配置"));
     setWindowFlags(Qt::CustomizeWindowHint | Qt::WindowCloseButtonHint);
     infoFileName = instance.getPaths().baseInfo();
@@ -25,6 +25,8 @@ SystemConfigDialog::SystemConfigDialog(QWidget *parent)
     printerRadio = new QRadioButton(tr("常规打印机报告"), this);
     xprinterRadio = new QRadioButton(tr("热敏打印机报告"), this);
     tipCheckBox = new QCheckBox(tr("高风险人群提示"), this);
+    selectLogoBtn = new QPushButton(tr("选择logo"), this);
+    logoLabel = new QLabel(this);
     checkModeGroupBox = new QGroupBox(tr("模式配置"), this);
     modeButtonGroup = new QButtonGroup(this);
     generalModeRadio = new QRadioButton(tr("高血压模式"), this);
@@ -52,48 +54,56 @@ SystemConfigDialog::SystemConfigDialog(QWidget *parent)
     printerRadio->setChecked(true);
     generalModeRadio->setChecked(true);
 
-    QVBoxLayout *mainLayout = new QVBoxLayout(this);
-    QGridLayout *gLayout = new QGridLayout(hospitalInfoGroupBox);
-    QVBoxLayout *rLayout = new QVBoxLayout(reportGroupBox);
-    QGridLayout *cLayout = new QGridLayout(checkModeGroupBox);
-    QHBoxLayout *hLayout = new QHBoxLayout(systemInfoGroupBox);
-    QHBoxLayout *pLayout = new QHBoxLayout;
-    QHBoxLayout *btnLayout = new QHBoxLayout;
-    QHBoxLayout *appMsgLayout = new QHBoxLayout;
+    QGridLayout *mainLayout = new QGridLayout(this);
 
-    hospitalInfoGroupBox->setFixedHeight(250*instance.hZoom());
-    mainLayout->addWidget(hospitalInfoGroupBox);
-    mainLayout->addWidget(reportGroupBox);
-    mainLayout->addWidget(checkModeGroupBox);
-    mainLayout->addWidget(systemInfoGroupBox);
-    mainLayout->addWidget(appMsgGroupBox);
-    mainLayout->addLayout(btnLayout);
-    hospitalInfoGroupBox->setLayout(gLayout);
-    reportGroupBox->setLayout(rLayout);
-    systemInfoGroupBox->setLayout(hLayout);
-    appMsgGroupBox->setLayout(appMsgLayout);
-    gLayout->addWidget(hospitalNameLabel, 0, 0);
-    gLayout->addWidget(hospitalNameLineEdit, 0, 1);
-    gLayout->addWidget(roomNameLabel, 1, 0);
-    gLayout->addWidget(roomNameLineEdit, 1, 1);
-    gLayout->addWidget(doctorNameLabel, 2, 0);
-    gLayout->addWidget(doctorNameLineEdit, 2, 1);
-    rLayout->addLayout(pLayout);
-    pLayout->addWidget(printerRadio);
-    pLayout->addWidget(xprinterRadio);
+    mainLayout->addWidget(hospitalInfoGroupBox, 0, 0);
+    mainLayout->addWidget(reportGroupBox, 1, 0);
+    mainLayout->addWidget(checkModeGroupBox, 2, 0);
+    mainLayout->addWidget(systemInfoGroupBox, 3, 0);
+    mainLayout->addWidget(appMsgGroupBox, 4, 0);
+    mainLayout->addWidget(confirmBtn, 5, 0);
+
+    mainLayout->setRowStretch(0, 4);
+    mainLayout->setRowStretch(1, 1);
+    mainLayout->setRowStretch(2, 1);
+    mainLayout->setRowStretch(3, 1);
+    mainLayout->setRowStretch(4, 1);
+    mainLayout->setRowStretch(5, 1);
+
+    QGridLayout *hLayout = new QGridLayout(hospitalInfoGroupBox);
+    QGridLayout *rLayout = new QGridLayout(reportGroupBox);
+    QGridLayout *cLayout = new QGridLayout(checkModeGroupBox);
+    QHBoxLayout *sLayout = new QHBoxLayout(systemInfoGroupBox);
+    QGridLayout *aLayout = new QGridLayout(appMsgGroupBox);
+
+    hLayout->addWidget(hospitalNameLabel, 0, 0);
+    hLayout->addWidget(hospitalNameLineEdit, 0, 1);
+    hLayout->addWidget(roomNameLabel, 1, 0);
+    hLayout->addWidget(roomNameLineEdit, 1, 1);
+    hLayout->addWidget(doctorNameLabel, 2, 0);
+    hLayout->addWidget(doctorNameLineEdit, 2, 1);
+
+    rLayout->addWidget(printerRadio, 0, 0, 1, 2);
+    rLayout->addWidget(xprinterRadio, 0, 2, 1, 2);
+    rLayout->addWidget(tipCheckBox, 1, 0, 1, 2);
+    rLayout->addWidget(selectLogoBtn, 2, 0, Qt::AlignLeft);
+    rLayout->addWidget(logoLabel, 2, 1, Qt::AlignLeft);
+
     cLayout->addWidget(generalModeRadio, 0, 0);
     cLayout->addWidget(professionalModeRadio, 0, 1);
     cLayout->addWidget(criticalModeRadio, 1, 0);
     cLayout->addWidget(healthCheckModeRadio, 1, 1);
-    rLayout->addWidget(tipCheckBox);
-    hLayout->addWidget(serialPortLabel);
-    hLayout->addWidget(serialPortComboBox);
-    hLayout->addStretch();
-    hLayout->addWidget(getIDBtn);
-    appMsgLayout->addWidget(anotherSetBtn, 0, Qt::AlignLeft);
-    appMsgLayout->addWidget(aboutAppBtn, 0, Qt::AlignRight);
-    btnLayout->addWidget(confirmBtn);
 
+    sLayout->addWidget(serialPortLabel);
+    sLayout->addWidget(serialPortComboBox);
+    sLayout->addStretch();
+    sLayout->addWidget(getIDBtn, 0, Qt::AlignRight);
+
+    aLayout->addWidget(anotherSetBtn, 0, 0);
+    aLayout->addWidget(aboutAppBtn, 0, 1, Qt::AlignRight);
+
+    logoLabel->setToolTip(tr("双击删除"));
+    logoLabel->installEventFilter(this);
 
     // 隐藏其它设置按钮
     anotherSetBtn->hide();
@@ -104,6 +114,7 @@ SystemConfigDialog::SystemConfigDialog(QWidget *parent)
     }
     serialPortComboBox->addItems(portNames);
 
+    connect(selectLogoBtn, &QPushButton::clicked, this, &SystemConfigDialog::selectLogoSlot);
     connect(getIDBtn, &QPushButton::clicked, getIdDialog, &GetIdDialog::exec);
     connect(anotherSetBtn, &QPushButton::clicked, this, &SystemConfigDialog::anotherSetSlot);
     connect(aboutAppBtn, &QPushButton::clicked, this, &SystemConfigDialog::aboutAppSlot);
@@ -176,6 +187,7 @@ SystemConfigDialog::SystemConfigDialog(QWidget *parent)
         }
         file.close();
     }
+    setHospitalLogo();
 }
 
 QString SystemConfigDialog::getPortName() const
@@ -246,6 +258,23 @@ void SystemConfigDialog::anotherSetSlot()
     dialog.exec();
 }
 
+void SystemConfigDialog::selectLogoSlot()
+{
+    QString fileName = QFileDialog::getOpenFileName(this, tr("选择图片"),
+                                                    "/home",
+                                                    tr("Images (*.png *.xpm *.jpg *.jpeg *.bmp)"));
+    if (!fileName.isEmpty()) {
+        QImage logo(fileName);
+        int len = logo.height();
+        if (logo.height() > logo.width()) {
+            len = width();
+        }
+        logo.scaled(len, len, Qt::IgnoreAspectRatio, Qt::SmoothTransformation)
+                .save(DataManagement::getInstance().getPaths().hospitalLogo(), "PNG");
+        setHospitalLogo();
+    }
+}
+
 void SystemConfigDialog::closeEvent(QCloseEvent *event)
 {
     event->accept();
@@ -264,4 +293,30 @@ void SystemConfigDialog::closeEvent(QCloseEvent *event)
         file.close();
     }
     updateHospitalInfo();
+}
+
+bool SystemConfigDialog::eventFilter(QObject *obj, QEvent *event)
+{
+    if (event->type() == QEvent::MouseButtonDblClick) {
+        QString logoFileName = DataManagement::getInstance().getPaths().hospitalLogo();
+        if (QFile::exists(logoFileName)) {
+            if (QMessageBox::question(this, tr("提示"), tr("确定删除logo吗？")) == QMessageBox::Yes) {
+                QFile::remove(logoFileName);
+                logoLabel->setPixmap(QPixmap());
+            }
+        }
+        else {
+            QMessageBox::information(this, tr("提示"), tr("未设置logo"));
+        }
+    }
+    return QDialog::eventFilter(obj, event);
+}
+
+void SystemConfigDialog::setHospitalLogo()
+{
+    QPixmap logo(DataManagement::getInstance().getPaths().hospitalLogo());
+    if (!logo.isNull()) {
+        logoLabel->setPixmap(logo.scaled(logoLabel->height(), logoLabel->height(),
+                                         Qt::IgnoreAspectRatio, Qt::SmoothTransformation));
+    }
 }

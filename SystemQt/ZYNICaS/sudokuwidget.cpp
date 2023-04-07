@@ -144,7 +144,7 @@ void SudokuWidget::paintEvent(QPaintEvent *event)
     removePoints(minSsvriPoints, minMin_X, maxMin_X);
     removePoints(maxSsvriPoints, minMax_X, maxMax_X);
     // normal range values
-    painter.setBrush(QColor(50, 205, 50));
+    painter.setBrush(QColor(0, 255, 0));
     painter.setPen(QPen(Qt::black));
     QPolygonF pointList;
     pointList<<getNormalPoint(minLswiPoints, minSi.x1(), maxSi.x1(), minMap.y1(), maxMap.y1(), true);

@@ -4,6 +4,7 @@
 #include "waitingdialog.h"
 #include "datacalculation.h"
 #include "isicurvewidget.h"
+//#include "countdowngizmo.h"
 #include <iostream>
 #include <numeric>
 #include <math.h>
@@ -209,37 +210,39 @@ void EnterSystemWidget::initBPModule()
 
 void EnterSystemWidget::initPosModule()
 {
-    pldGroupBox = new QGroupBox(tr("PLR-被动抬腿试验"),this);
-    manyBtn = new QRadioButton(tr("多体位"),this);
-    singleBtn = new QRadioButton(tr("单体位"),this);
-    halfLieBtn = new QRadioButton(tr("半卧"),this);
-    lieBtn = new QRadioButton(tr("平躺"),this);
-    legLiftBtn = new QRadioButton(tr("抬腿"),this);
-    recordBtn = new QPushButton(tr("记录体位"),this);
+    pldGroupBox = new QGroupBox(tr("PLR-被动抬腿试验"), this);
+    manyBtn = new QRadioButton(tr("多体位"), this);
+    singleBtn = new QRadioButton(tr("单体位"), this);
+    halfLieBtn = new QRadioButton(tr("半卧"), this);
+    lieBtn = new QRadioButton(tr("平躺"), this);
+    legLiftBtn = new QRadioButton(tr("抬腿"), this);
+    recordBtn = new QPushButton(tr("记录体位"), this);
+    startupTestBtn = new QPushButton(tr("启动\n试验"), this);
+    plrtWidget = new PlrtTableWidget(this);
 
-    QVBoxLayout *vLayout = new QVBoxLayout(pldGroupBox);
-    QHBoxLayout *hLayout = new QHBoxLayout;
-    QHBoxLayout *posLayout = new QHBoxLayout;
-    QHBoxLayout *btnLayout = new QHBoxLayout;
-
+    QGridLayout *gLayout = new QGridLayout(pldGroupBox);
     firstColLayout->addWidget(pldGroupBox);
-    vLayout->addLayout(hLayout);
-    vLayout->addLayout(posLayout);
-    hLayout->addWidget(manyBtn);
-    hLayout->addWidget(singleBtn);
-    hLayout->addStretch();
-    posLayout->addWidget(halfLieBtn);
-    posLayout->addWidget(lieBtn);
-    posLayout->addWidget(legLiftBtn);
-    posLayout->addLayout(btnLayout);
-    btnLayout->addWidget(recordBtn);
-    btnLayout->addStretch();
+    gLayout->addWidget(manyBtn, 0, 0);
+    gLayout->addWidget(singleBtn, 0, 1);
+    gLayout->addWidget(halfLieBtn, 1, 0);
+    gLayout->addWidget(lieBtn, 1, 1);
+    gLayout->addWidget(legLiftBtn, 1, 2);
+    gLayout->addWidget(recordBtn, 1, 3);
+    gLayout->addWidget(startupTestBtn, 0, 5, 2, 1, Qt::AlignRight);
+    gLayout->setColumnStretch(0, 1);
+    gLayout->setColumnStretch(1, 1);
+    gLayout->setColumnStretch(2, 1);
+    gLayout->setColumnStretch(3, 1);
+    gLayout->setColumnStretch(4, 2);
+    gLayout->setColumnStretch(5, 1);
+    startupTestBtn->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
-    patternGroup.addButton(manyBtn,0);
+    patternGroup.addButton(manyBtn, 0);
     patternGroup.addButton(singleBtn, 1);
     posGroup.addButton(halfLieBtn, 0);
     posGroup.addButton(lieBtn, 1);
     posGroup.addButton(legLiftBtn, 2);
+
 
     manyBtn->setChecked(true);
     halfLieBtn->setChecked(true);
@@ -300,13 +303,12 @@ void EnterSystemWidget::initDataModule()
 void EnterSystemWidget::initReportModule()
 {
     operationGroupBox = new QGroupBox(this);
-    backBtn = new QPushButton(tr("返回"),this);
+    backBtn = new QPushButton(tr("返回"), this);
     reportBtn = new QPushButton(tr("生成报告"),this);
-    plrtBtn = new QPushButton(tr("PLRT"), this);
+//    plrtBtn = new QPushButton(tr("PLRT"), this);
     trendChartBtn = new QPushButton(tr("趋势图"),this);
 //    sudokuBtn = new QPushButton(tr("血压靶向分析图"),this);
     auxArgBtn = new QPushButton(tr("辅助参数"),this);
-    plrtWidget = new PlrtTableWidget;
     trendChartsWidget = new TrendChartsWidget;
     auxArgDialog = new AuxArgDialog;
 //    sudokuDraw = new DrawSudoku;
@@ -317,7 +319,7 @@ void EnterSystemWidget::initReportModule()
     hLayout->addWidget(backBtn);
     hLayout->addWidget(reportBtn);
     hLayout->addStretch();
-    hLayout->addWidget(plrtBtn);
+//    hLayout->addWidget(plrtBtn);
     hLayout->addWidget(trendChartBtn);
 //    hLayout->addWidget(sudokuBtn);
     hLayout->addWidget(auxArgBtn);
@@ -363,6 +365,33 @@ void EnterSystemWidget::signalsAndSlots()
     connect(&patternGroup, &QButtonGroup::idClicked, this, &EnterSystemWidget::changeMode);
     connect(&posGroup, &QButtonGroup::idClicked, this, &EnterSystemWidget::changePosition);
     connect(recordBtn, &QPushButton::clicked, this, &EnterSystemWidget::recordPosition);
+    connect(startupTestBtn, &QPushButton::clicked, this, &EnterSystemWidget::startupTestSlot);
+    connect(plrtWidget, &PlrtTableWidget::editBp, this, &EnterSystemWidget::showBpDialogSlot);
+    connect(plrtWidget, &PlrtTableWidget::status, this, [=](auto status){
+        switch (status) {
+        case TestS::Started:
+            legLiftBtn->setChecked(true);
+            emit posGroup.idClicked(posGroup.id(legLiftBtn));
+            break;
+        case TestS::Paused:
+            // nothing
+            break;
+        case TestS::Stopped:
+            foreach (auto btn, posGroup.buttons()) {
+                if (btn->text() == rPos) {
+                    btn->setChecked(true);
+                    emit posGroup.idClicked(posGroup.id(btn));
+                    break;
+                }
+            }
+            break;
+        case TestS::Completed:
+            createReport();
+            break;
+        default:
+            break;
+        }
+    });
     // data
     foreach (auto customCtrl, regulator->getAllCustomCtrls()) {
         connect(customCtrl, &CustomCtrl::changeName, this, &EnterSystemWidget::changeShow);
@@ -391,7 +420,7 @@ void EnterSystemWidget::signalsAndSlots()
     // report
     connect(backBtn, &QPushButton::clicked, this, &EnterSystemWidget::close);
     connect(reportBtn, &QPushButton::clicked, this, &EnterSystemWidget::createReport);
-    connect(plrtBtn, &QPushButton::clicked, plrtWidget, &PlrtTableWidget::exec);
+//    connect(plrtBtn, &QPushButton::clicked, plrtWidget, &PlrtTableWidget::exec);
     connect(trendChartBtn, &QPushButton::clicked, trendChartsWidget, &TrendChartsWidget::widgetShow);
     connect(auxArgBtn, &QPushButton::clicked, auxArgDialog, &AuxArgDialog::exec);
 //    connect(sudokuBtn, &QPushButton::clicked, sudokuDraw, &DrawSudoku::exec);
@@ -550,12 +579,20 @@ void EnterSystemWidget::changeMode(const int &id)
 void EnterSystemWidget::recordPosition()
 {
     if (isStartCheck()) {
+        if (0 == regulator->getCustomCtrl(typeName(Type::MAP))->getCurrentValue()) {
+            QMessageBox::information(this, tr("提示"), tr("请先输入血压。"));
+            return;
+        }
+        else if (0 == regulator->getCustomCtrl(typeName(Type::SSVRI))->getCurrentValue()) {
+            QMessageBox::information(this, tr("提示"), tr("数据检测中，请稍后。"));
+            return;
+        }
         emit recordValue();
         rPos = posGroup.checkedButton()->text();
         auto &instance = DataManagement::getInstance();
         instance.recordPosition(rPos);
         setBaseData();
-        QMessageBox::information(this, tr("提示"), tr("已记录体位"));
+        QMessageBox::information(this, tr("提示"), tr("已记录体位。"));
     }
 }
 
@@ -568,7 +605,6 @@ void EnterSystemWidget::changePosition(int id)
                 plrtWidget->setPic(PosType(posGroup.id(btn) + 1), PosType(id + 1));
             }
         }
-//        plrtWidget->setPos(rPos, posGroup.button(id)->text());
     }
     else if(posGroup.button(id)->text() == rPos) {
         recordBtn->show();
@@ -609,6 +645,7 @@ void EnterSystemWidget::createReport()
         instance.reportPreview(instance.getNewReportName());
         if (manyBtn->isChecked()) {
             recordBtn->show();
+            halfLieBtn->setChecked(true);
         }
     }
 }
@@ -649,11 +686,17 @@ void EnterSystemWidget::systemModeChanged(Check_Mode mode)
     switch (mode) {
     case Check_Mode::PhysicalExamination:
         singleBtn->show();
+        startupTestBtn->hide();
+        legLiftBtn->setEnabled(true);
+        legLiftBtn->setToolTip("");
         break;
     default:
         manyBtn->setChecked(true);
         singleBtn->hide();
         recordBtn->show();
+        startupTestBtn->show();
+        legLiftBtn->setEnabled(false);
+        legLiftBtn->setToolTip(tr("如需以“抬腿”体位作为第一体位，请在“系统配置”中选择“体检模式”。"));
         break;
     }
     if (mode == Check_Mode::InternalMedicine) {
@@ -665,6 +708,27 @@ void EnterSystemWidget::systemModeChanged(Check_Mode mode)
         trendChartBtn->hide();
     }
     clearUiSlot();
+}
+
+void EnterSystemWidget::startupTestSlot()
+{
+    if (!isStartCheck()) {
+        return;
+    }
+    else if (patternGroup.checkedId() != 0) {
+        QMessageBox::warning(this, tr("警告"), tr("被动抬腿试验不适用于单体位！"));
+        return;
+    }
+    else if (rPos.isEmpty()) {
+        QMessageBox::warning(this, tr("警告"), tr("请先记录体位！"));
+        return;
+    }
+    else if (rPos == legLiftBtn->text()) {
+        QMessageBox::warning(this, tr("警告"), tr("PLRT抬腿试验第一体位为“半卧”或“平躺”！"));
+        return;
+    }
+    plrtWidget->setCountDown(120);    // 设置试验时间
+    plrtWidget->exec();
 }
 
 void EnterSystemWidget::setCtrlValue(const Type &type, const double &value)
