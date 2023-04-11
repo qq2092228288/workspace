@@ -201,7 +201,7 @@ CustomCtrl::CustomCtrl(Argument arg, QWidget *parent)
     frame->setStyleSheet(QString("QFrame{background-color:#363636;border-radius:%1px;}").arg(fsize));
     mainLabel->setStyleSheet(QString("QLabel{font-size: %1px;color: #ffffff;font-weight:bold;}").arg(msize));
     secondaryLabel->setStyleSheet(QString("QLabel{font-size: %1px;color: #ffffff;}").arg(ssize));
-    valueEdit->setStyleSheet(QString("QLineEdit{font-size:%1px;color:#00ff00;font-weight:bold;"
+    valueEdit->setStyleSheet(QString("QLineEdit{font-size:%1px;color:#00ff7f;font-weight:bold;"
                                      "background:transparent;border-width:0;border-style:outset;}").arg(vsize));
     scopeLabel->setStyleSheet(QString("QLabel{font-size: %1px;color: #ffffff;font-weight:normal;}").arg(scsize));
     unitLabel->setStyleSheet(QString("QLabel{font-size: %1px;color: #ffffff;font-weight:normal;}").arg(usize));
@@ -364,10 +364,10 @@ void CustomCtrl::valueWarning(bool warning)
     if (warning) {
         valueEdit->setStyleSheet(QString("QLineEdit{font-size:%1px;color:#ffd700;font-weight:bold;"
                     "background:transparent;border-width:0;border-style:outset;}").arg(vsize));
-        frame->setStyleSheet(QString("QFrame{background-color:#ff0000;border-radius:%1px;}").arg(fsize));
+        frame->setStyleSheet(QString("QFrame{background-color:#ff6347;border-radius:%1px;}").arg(fsize));
     }
     else {
-        valueEdit->setStyleSheet(QString("QLineEdit{font-size:%1px;color:#00ff00;font-weight:bold;"
+        valueEdit->setStyleSheet(QString("QLineEdit{font-size:%1px;color:#00ff7f;font-weight:bold;"
                     "background:transparent;border-width:0;border-style:outset;}").arg(vsize));
         frame->setStyleSheet(QString("QFrame{background-color:#363636;border-radius:%1px;}").arg(fsize));
     }

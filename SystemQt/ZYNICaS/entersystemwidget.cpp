@@ -583,7 +583,7 @@ void EnterSystemWidget::recordPosition()
             QMessageBox::information(this, tr("提示"), tr("请先输入血压。"));
             return;
         }
-        else if (0 == regulator->getCustomCtrl(typeName(Type::SSVRI))->getCurrentValue()) {
+        else if (0 == regulator->getCustomCtrl(typeName(Type::SV))->getCurrentValue()) {
             QMessageBox::information(this, tr("提示"), tr("数据检测中，请稍后。"));
             return;
         }
@@ -715,7 +715,7 @@ void EnterSystemWidget::startupTestSlot()
     if (!isStartCheck()) {
         return;
     }
-    else if (patternGroup.checkedId() != 0) {
+    else if (patternGroup.checkedId() == 1) {
         QMessageBox::warning(this, tr("警告"), tr("被动抬腿试验不适用于单体位！"));
         return;
     }

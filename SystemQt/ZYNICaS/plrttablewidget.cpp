@@ -227,6 +227,7 @@ void PlrtTableWidget::timeroutSlot()
     m_pProgressBar->setValue(++value);
     setProcessBarTxt(--m_sec);
     if (value == m_pProgressBar->maximum()) {
+        m_pTimer->stop();
         close();
         emit status(TestS::Completed);
     }

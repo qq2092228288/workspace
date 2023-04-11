@@ -177,7 +177,7 @@ private:
     QString preload();
     // 猝死风险提示
     QString riskTip(bool many);
-    QPixmap getQrCodeUrlPixmap(const QString &deviceId, const QString &reportTime);
+//    QPixmap getQrCodeUrlPixmap(const QString &deviceId, const QString &reportTime);
     void addPlrt(const int &num, const Type &type);
     QString posImagePath(const QString &posture);
     QString getScope(const double &init, const double &offset);

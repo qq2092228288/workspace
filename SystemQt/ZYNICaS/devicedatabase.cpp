@@ -225,7 +225,7 @@ void DeviceDatabase::offlineUsed()
             const QString consumableId = sqlQuery.value("id").toString();
             DataList dataList = getDataList(consumableId);
             updateConsumableList(dataList, batchNoUploadCount(consumableId) + 1);
-            tryToUpload();
+//            tryToUpload();
             break;
         }
     }

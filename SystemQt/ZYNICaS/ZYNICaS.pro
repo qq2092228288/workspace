@@ -97,11 +97,11 @@ include(../../commonFiles/base.pri)
 
 INCLUDEPATH += ../ZyTebco \
     ../IdCheck \
-    ../../commonFiles/QRencode
+#    ../../commonFiles/QRencode
 
 LIBS += -L$$PROJECT_LIBDIR -lZyTebco \
     -L$$PROJECT_LIBDIR -lIdCheck \
-    -L$$PROJECT_LIBDIR -lqrencoded
+#    -L$$PROJECT_LIBDIR -lqrencoded
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
