@@ -1,0 +1,8 @@
+# usr configurations
+*.user
+
+# build directory
+build*/
+
+# local file
+commonFiles
