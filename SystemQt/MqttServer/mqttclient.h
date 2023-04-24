@@ -5,6 +5,9 @@
 #include <QtMqtt/qmqttclient.h>
 #include <QtMqtt/qmqttglobal.h>
 #include <QSharedPointer>
+#include <QThread>
+
+#include "topicanalysis.h"
 
 class MqttClient : public QObject
 {
@@ -12,11 +15,15 @@ class MqttClient : public QObject
 public:
     explicit MqttClient(QObject *parent = nullptr);
     void connectToHost();
+    virtual ~MqttClient();
 signals:
 public slots:
-    void messageReceived(const QByteArray &message, const QMqttTopicName &topic);
+    void stateChanged(QMqttClient::ClientState state);
+    void publish(const QMqttTopicName &topic, const QByteArray &message, quint8 qos, bool retain);
 private:
+    QThread *m_thread;
     QMqttClient *m_client;
+    TopicAnalysis_PTR topicAnalysis_PTR;
 };
 typedef QSharedPointer<MqttClient> MqttClient_PTR;
 

@@ -1,4 +1,5 @@
 QT -= gui
+QT += sql
 
 CONFIG += c++17 console
 CONFIG -= app_bundle
@@ -9,7 +10,17 @@ CONFIG -= app_bundle
 
 SOURCES += \
         main.cpp \
-        mqttclient.cpp
+        mqttclient.cpp \
+        singleton.cpp \
+        topicanalysis.cpp
+
+HEADERS += \
+    mqttclient.h \
+    singleton.h \
+    topicanalysis.h \
+    topicstruct.h
+
+include(../../commonFiles/base.pri)
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
@@ -22,6 +33,3 @@ else:unix: LIBS += -LD:/Qt/5.15.2/msvc2019_64/lib/ -lQt5Mqtt
 
 INCLUDEPATH += D:/Qt/5.15.2/msvc2019_64/include
 DEPENDPATH += D:/Qt/5.15.2/msvc2019_64/include
-
-HEADERS += \
-    mqttclient.h
