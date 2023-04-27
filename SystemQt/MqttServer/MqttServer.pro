@@ -15,10 +15,11 @@ SOURCES += \
         topicanalysis.cpp
 
 HEADERS += \
+    databasens.h \
     mqttclient.h \
     singleton.h \
     topicanalysis.h \
-    topicstruct.h
+    topicns.h
 
 include(../../commonFiles/base.pri)
 

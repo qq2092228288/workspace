@@ -1,50 +1,29 @@
 #ifndef SINGLETON_H
 #define SINGLETON_H
 
-#include "qjsonarray.h"
 #include <QObject>
 #include <QMetaEnum>
 #include <QtMqtt/qmqttclient.h>
 #include <QDateTime>
 #include <QJsonObject>
+#include <QJsonArray>
 #include <QJsonDocument>
 #include <QDebug>
 
+#include "topicns.h"
+
 #define TIME_DEBUG()  qDebug()<<Singleton::currentTime()
+
+using namespace TopicNs;
 
 class Singleton : public QObject
 {
     Q_OBJECT
 public:
-    enum class PrimaryTopic
-    {
-        request,                    // client request to server
-        response,                   // server response to client
-        append,                     // admin publish append message to server
-        update,                     // admin publish update message to server
-        remove                      // admin publish remove message to server
-    };
-    Q_ENUM(PrimaryTopic)
-    enum class SecondaryTopic
-    {
-        deviceInfo,                 // client/server request/response device info
-        uploadData,                 // client/server request/response upload data
-        software,                   // client/server request/response software data
-        signIn,                     // admin/server request/response sign in
-        changePassword,             // admin update password
-        device,                     // admin append/update/delete device
-        computer,                   // admin append/update/delete computer
-        combinedDevice,             // admin append/update/delete combined device
-        allocatedConsumables,       // admin append allocated consumables
-        place,                      // admin append/update/delete place
-        agent,                      // admin append/update/delete agent
-        reports                     // admin/server request/response reports
-    };
-    Q_ENUM(SecondaryTopic)
-public:
     static QString currentTime();
     static QString hostname();
     static quint16 port();
+    static QString createUniqueId(const QString &macAddress, const QString &deviceId);
     static QMqttTopicName getTopicName(const PrimaryTopic &pTopic, const SecondaryTopic &sTopic, const QString &id)
     {
         return QMqttTopicName(QString("%1/%2/%3").arg(enumValueToKey(pTopic), enumValueToKey(sTopic), id));
@@ -74,13 +53,15 @@ public:
         }
         return keys;
     }
-    static QByteArray jsonToUtf8(const QJsonObject &json)
+    template <class T>
+    static QString jsonToString(const T &json)
     {
-        return QString(QJsonDocument(json).toJson(QJsonDocument::Compact)).toUtf8();
+        return QString(QJsonDocument(json).toJson(QJsonDocument::Compact));
     }
-    static QByteArray jsonToUtf8(const QJsonArray &json)
+    template <class T>
+    static QByteArray jsonToUtf8(const T &json)
     {
-        return QString(QJsonDocument(json).toJson(QJsonDocument::Compact)).toUtf8();
+        return jsonToString(json).toUtf8();
     }
     static QJsonObject utf8ToJsonObject(const QByteArray &json)
     {

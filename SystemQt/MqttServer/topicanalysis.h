@@ -11,10 +11,11 @@
 #include <QSqlQuery>
 #include <QMutex>
 
-#include "singleton.h"
+#include "databasens.h"
+#include "topicns.h"
 
-typedef Singleton::PrimaryTopic PrimaryTopic;
-typedef Singleton::SecondaryTopic SecondaryTopic;
+using namespace DatabaseEnumNs;
+using namespace TopicNs;
 
 class DatabaseManager
 {
@@ -46,109 +47,26 @@ class TopicAnalysis : public QObject
 public:
     explicit TopicAnalysis(QObject *parent = nullptr);
     void createTables();
-    enum class MessageError
+    enum class DatabaseOperation
     {
-        NoError,
-        TopicInvalid,
-        IsEmpty,
-        IncorrectFormat,
-        NoAnalysis
+        Insert,
+        Update,
+        Delete
     };
-    Q_ENUM(MessageError)
-    enum class AgentInfo
-    {
-        agentId,
-        name,
-        contact,
-        address,
-        remarks
-    };
-    Q_ENUM(AgentInfo)
-    enum class AdministratorInfo
-    {
-        amdinId,
-        password,
-        name,
-        permission,
-        remarks
-    };
-    Q_ENUM(AdministratorInfo)
-    enum class AllocatedConsumables
-    {
-        consumablesId,
-        type,
-        uniqueId,
-        agentId,
-        adminId,
-        count,
-        status,
-        time,
-        receiveTime
-    };
-    Q_ENUM(AllocatedConsumables)
-    enum class CombinedDevice
-    {
-        uniqueId,
-        name,
-        placeId,
-        agentId,
-        status,
-        totalCount,
-        usedCount
-    };
-    Q_ENUM(CombinedDevice)
-    enum class Device
-    {
-        deviceId,
-        type,
-        batch,
-        status,
-        remarks
-    };
-    Q_ENUM(Device)
-    enum class Computer
-    {
-        macAddress,
-        type,
-        systemVersion,
-        batch,
-        status,
-        remarks
-    };
-    Q_ENUM(Computer)
-    enum class ReportInfo
-    {
-        uniqueId,
-        reportTime,
-        data
-    };
-    Q_ENUM(ReportInfo)
-    enum class SoftwareManagement
-    {
-        appId,
-        name,
-        version,
-        path,
-        content,
-        time
-    };
-    Q_ENUM(SoftwareManagement)
-    enum class PlaceInfo
-    {
-        placeId,
-        hostName,
-        secondaryName
-    };
-    Q_ENUM(PlaceInfo)
+    Q_ENUM(DatabaseOperation)
 public slots:
     void messageAnalysis(const QByteArray &message, const QMqttTopicName &topic);
 signals:
     void messagePublish(const QMqttTopicName &topic, const QByteArray &message = QByteArray(),
                         quint8 qos = 0, bool retain = false);
-    void error(const TopicAnalysis::MessageError &);
+    void error(const DatabaseEnumNs::MessageError &);
 private:
-    void request(const QByteArray &message, const SecondaryTopic &sTopic, const QString &uniqueId);
+    void request(const QByteArray &message, const SecondaryTopic &sTopic, const QString &id);
+    void databaseOperation(const QByteArray &message, const SecondaryTopic &sTopic, const DatabaseOperation &type);
     QJsonObject getJsonObject(const QSqlQuery &sqlQuery, const QStringList &keys);
+    void bindValue(QSqlQuery &sqlQuery, const QJsonObject &object);
+    template <class T, class T1>
+    void dbOperation(const QJsonObject &object, const DatabaseOperation &type, const T1 &column);
 private:
     QSqlDatabase m_database;
 };

@@ -6,6 +6,7 @@ MqttClient::MqttClient(QObject *parent)
       topicAnalysis_PTR{new TopicAnalysis}
 {
     qRegisterMetaType<QMqttTopicName>("QMqttTopicName");
+    qRegisterMetaType<MessageError>("MessageError");
 
     m_thread = new QThread;
 
@@ -20,6 +21,10 @@ MqttClient::MqttClient(QObject *parent)
     connect(m_client, &QMqttClient::messageReceived, ptr, &TopicAnalysis::messageAnalysis);
     connect(ptr, &TopicAnalysis::messagePublish, this, &MqttClient::publish);
     connect(m_client, &QMqttClient::stateChanged, this, &MqttClient::stateChanged);
+    connect(ptr, &TopicAnalysis::error, this, [=](const MessageError &error)
+    {
+        qDebug()<<error;
+    });
 
     m_thread->start();
 }
@@ -42,10 +47,10 @@ void MqttClient::stateChanged(QMqttClient::ClientState state)
     qDebug()<<"connect state: "<<state;
     if (QMqttClient::ClientState::Connected == state) {
         // subscribe topics
-        m_client->subscribe(QMqttTopicFilter(Singleton::enumValueToKey(Singleton::PrimaryTopic::request) + "/#"));
-        m_client->subscribe(QMqttTopicFilter(Singleton::enumValueToKey(Singleton::PrimaryTopic::append) + "/#"));
-        m_client->subscribe(QMqttTopicFilter(Singleton::enumValueToKey(Singleton::PrimaryTopic::update) + "/#"));
-        m_client->subscribe(QMqttTopicFilter(Singleton::enumValueToKey(Singleton::PrimaryTopic::remove) + "/#"));
+        m_client->subscribe(QMqttTopicFilter(Singleton::enumValueToKey(PrimaryTopic::request) + "/#"));
+        m_client->subscribe(QMqttTopicFilter(Singleton::enumValueToKey(PrimaryTopic::append) + "/#"));
+        m_client->subscribe(QMqttTopicFilter(Singleton::enumValueToKey(PrimaryTopic::update) + "/#"));
+        m_client->subscribe(QMqttTopicFilter(Singleton::enumValueToKey(PrimaryTopic::remove) + "/#"));
     }
 }
 

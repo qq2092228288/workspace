@@ -1,5 +1,5 @@
 #include "singleton.h"
-
+#include <QCryptographicHash>
 
 QString Singleton::currentTime()
 {
@@ -14,6 +14,12 @@ QString Singleton::hostname()
 quint16 Singleton::port()
 {
     return 1883;
+}
+
+QString Singleton::createUniqueId(const QString &macAddress, const QString &deviceId)
+{
+    QString md5 = QString("macAddress=%1;deviceId=%2").arg(macAddress.toLower(), deviceId.toLower());
+    return QCryptographicHash::hash(md5.toLatin1(), QCryptographicHash::Md5).toHex().toLower();
 }
 
 Singleton::Singleton(QObject *parent)
