@@ -30,7 +30,13 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 
 win32:CONFIG(release, debug|release): LIBS += -LD:/Qt/5.15.2/msvc2019_64/lib/ -lQt5Mqtt
 else:win32:CONFIG(debug, debug|release): LIBS += -LD:/Qt/5.15.2/msvc2019_64/lib/ -lQt5Mqttd
-else:unix: LIBS += -LD:/Qt/5.15.2/msvc2019_64/lib/ -lQt5Mqtt
+else:unix: LIBS += -L/home/ubuntu/Qt5.12.12/5.12.12/gcc_64/lib/ -lQt5Mqtt
 
+win32:{
 INCLUDEPATH += D:/Qt/5.15.2/msvc2019_64/include
 DEPENDPATH += D:/Qt/5.15.2/msvc2019_64/include
+}
+else:unix:{
+INCLUDEPATH += /home/ubuntu/Qt5.12.12/5.12.12/gcc_64/include
+DEPENDPATH += /home/ubuntu/Qt5.12.12/5.12.12/gcc_64/include
+}

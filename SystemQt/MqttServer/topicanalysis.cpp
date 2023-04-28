@@ -5,10 +5,10 @@ TopicAnalysis::TopicAnalysis(QObject *parent)
     : QObject{parent}
 {
     m_database = QSqlDatabase::addDatabase("QODBC");
-    m_database.setHostName("127.0.0.1");
+    m_database.setHostName("localhost");
     m_database.setPort(3306);
     m_database.setDatabaseName("mysql");    // ODBC DSN name
-    m_database.setUserName("root");
+    m_database.setUserName("admin");
     m_database.setPassword("zeyao2022");
 }
 
