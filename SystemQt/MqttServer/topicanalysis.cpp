@@ -1,13 +1,14 @@
 #include "topicanalysis.h"
 #include "singleton.h"
+#include <QSqlError>
 
 TopicAnalysis::TopicAnalysis(QObject *parent)
     : QObject{parent}
 {
-    m_database = QSqlDatabase::addDatabase("QODBC");
+    m_database = QSqlDatabase::addDatabase("QPSQL");
     m_database.setHostName("localhost");
-    m_database.setPort(3306);
-    m_database.setDatabaseName("mysql");    // ODBC DSN name
+    m_database.setPort(5432);
+    m_database.setDatabaseName("zeyao_backend");
     m_database.setUserName("admin");
     m_database.setPassword("zeyao2022");
 }
@@ -16,39 +17,38 @@ void TopicAnalysis::createTables()
 {
     DatabaseManager databaseManager(m_database);
     QSqlQuery sqlQuery(m_database);
-    QString setutf8 = QString("ENGINE=InnoDB DEFAULT character set = utf8");
-    sqlQuery.exec(QString("CREATE TABLE IF NOT EXISTS %1("
+    sqlQuery.exec(QString("CREATE TABLE %1("
                           "%2   char(32)        NOT NULL PRIMARY KEY,"
                           "%3   varchar(32)     NOT NULL,"
                           "%4   varchar(128)    NOT NULL,"
                           "%5   varchar(128)    NOT NULL,"
-                          "%6   longtext)%7")
+                          "%6   text)")
                   .arg(Singleton::enumName<AgentInfo>(),
                        Singleton::enumValueToKey(AgentInfo::agentId),
                        Singleton::enumValueToKey(AgentInfo::name),
                        Singleton::enumValueToKey(AgentInfo::contact),
                        Singleton::enumValueToKey(AgentInfo::address),
-                       Singleton::enumValueToKey(AgentInfo::remarks), setutf8));
-    sqlQuery.exec(QString("CREATE TABLE IF NOT EXISTS %1("
+                       Singleton::enumValueToKey(AgentInfo::remarks)));
+    sqlQuery.exec(QString("CREATE TABLE %1("
                           "%2   varchar(32)     NOT NULL PRIMARY KEY,"
                           "%3   varchar(32)     NOT NULL,"
                           "%4   varchar(32)     NOT NULL,"
-                          "%5   tinyint         NOT NULL DEFAULT 0,"
-                          "%6   longtext)%7")
+                          "%5   smallint        NOT NULL DEFAULT 0,"
+                          "%6   text)")
                   .arg(Singleton::enumName<AdministratorInfo>(),
                        Singleton::enumValueToKey(AdministratorInfo::adminId),
                        Singleton::enumValueToKey(AdministratorInfo::password),
                        Singleton::enumValueToKey(AdministratorInfo::name),
                        Singleton::enumValueToKey(AdministratorInfo::permission),
-                       Singleton::enumValueToKey(AdministratorInfo::remarks), setutf8));
-    sqlQuery.exec(QString("CREATE TABLE IF NOT EXISTS %1("
+                       Singleton::enumValueToKey(AdministratorInfo::remarks)));
+    sqlQuery.exec(QString("CREATE TABLE %1("
                           "%2   char(32)        NOT NULL PRIMARY KEY,"
                           "%3   varchar(32)     NOT NULL,"
                           "%4   char(32)        NOT NULL,"
                           "%5   char(32)        NOT NULL,"
                           "%6   varchar(32)     NOT NULL,"
-                          "%7   int             NOT NULL,"
-                          "%8   datetime(3)     NOT NULL)%9")
+                          "%7   integer         NOT NULL,"
+                          "%8   bigint          NOT NULL)")
                   .arg(Singleton::enumName<AllocatedConsumables>(),
                        Singleton::enumValueToKey(AllocatedConsumables::consumablesId),
                        Singleton::enumValueToKey(AllocatedConsumables::type),
@@ -56,15 +56,15 @@ void TopicAnalysis::createTables()
                        Singleton::enumValueToKey(AllocatedConsumables::agentId),
                        Singleton::enumValueToKey(AllocatedConsumables::adminId),
                        Singleton::enumValueToKey(AllocatedConsumables::count),
-                       Singleton::enumValueToKey(AllocatedConsumables::time), setutf8));
-    sqlQuery.exec(QString("CREATE TABLE IF NOT EXISTS %1("
+                       Singleton::enumValueToKey(AllocatedConsumables::time)));
+    sqlQuery.exec(QString("CREATE TABLE %1("
                           "%2   char(32)        NOT NULL PRIMARY KEY,"
                           "%3   varchar(32)     NOT NULL,"
                           "%4   char(32)        NOT NULL,"
                           "%5   char(32)        NOT NULL,"
-                          "%6   tinyint         NOT NULL DEFAULT 0,"
-                          "%7   int             NOT NULL DEFAULT 0,"
-                          "%8   int             NOT NULL DEFAULT 0)%9")
+                          "%6   smallint        NOT NULL DEFAULT 0,"
+                          "%7   integer         NOT NULL DEFAULT 0,"
+                          "%8   integer         NOT NULL DEFAULT 0)")
                   .arg(Singleton::enumName<CombinedDevice>(),
                        Singleton::enumValueToKey(CombinedDevice::uniqueId),
                        Singleton::enumValueToKey(CombinedDevice::name),
@@ -72,64 +72,64 @@ void TopicAnalysis::createTables()
                        Singleton::enumValueToKey(CombinedDevice::agentId),
                        Singleton::enumValueToKey(CombinedDevice::status),
                        Singleton::enumValueToKey(CombinedDevice::totalCount),
-                       Singleton::enumValueToKey(CombinedDevice::usedCount), setutf8));
-    sqlQuery.exec(QString("CREATE TABLE IF NOT EXISTS %1("
+                       Singleton::enumValueToKey(CombinedDevice::usedCount)));
+    sqlQuery.exec(QString("CREATE TABLE %1("
                           "%2   char(32)        NOT NULL PRIMARY KEY,"
                           "%3   varchar(32)     NOT NULL,"
                           "%4   varchar(64)     NOT NULL,"
-                          "%5   tinyint         NOT NULL DEFAULT 0,"
-                          "%6   longtext)%7")
+                          "%5   smallint        NOT NULL DEFAULT 0,"
+                          "%6   text)")
                   .arg(Singleton::enumName<Device>(),
                        Singleton::enumValueToKey(Device::deviceId),
                        Singleton::enumValueToKey(Device::type),
                        Singleton::enumValueToKey(Device::batch),
                        Singleton::enumValueToKey(Device::status),
-                       Singleton::enumValueToKey(Device::remarks), setutf8));
-    sqlQuery.exec(QString("CREATE TABLE IF NOT EXISTS %1("
-                          "%2   char(17)        NOT NULL PRIMARY KEY,"
+                       Singleton::enumValueToKey(Device::remarks)));
+    sqlQuery.exec(QString("CREATE TABLE %1("
+                          "%2   macaddr         NOT NULL PRIMARY KEY,"
                           "%3   varchar(32)     NOT NULL,"
                           "%4   varchar(32)     NOT NULL,"
                           "%5   varchar(64)     NOT NULL,"
-                          "%6   tinyint         NOT NULL DEFAULT 0,"
-                          "%7   longtext)%8")
+                          "%6   smallint        NOT NULL DEFAULT 0,"
+                          "%7   text)")
                   .arg(Singleton::enumName<Computer>(),
                        Singleton::enumValueToKey(Computer::macAddress),
                        Singleton::enumValueToKey(Computer::type),
                        Singleton::enumValueToKey(Computer::systemVersion),
                        Singleton::enumValueToKey(Computer::batch),
                        Singleton::enumValueToKey(Computer::status),
-                       Singleton::enumValueToKey(Computer::remarks), setutf8));
-    sqlQuery.exec(QString("CREATE TABLE IF NOT EXISTS %1("
+                       Singleton::enumValueToKey(Computer::remarks)));
+    sqlQuery.exec(QString("CREATE TABLE %1("
                           "%2   char(32)        NOT NULL,"
-                          "%3   datetime(3)     NOT NULL,"
-                          "%4   longtext        NOT NULL,"
-                          "PRIMARY KEY(%2,%3))%5")
+                          "%3   bigint          NOT NULL,"
+                          "%4   text            NOT NULL,"
+                          "PRIMARY KEY(%2,%3))")
                   .arg(Singleton::enumName<ReportInfo>(),
                        Singleton::enumValueToKey(ReportInfo::uniqueId),
                        Singleton::enumValueToKey(ReportInfo::reportTime),
-                       Singleton::enumValueToKey(ReportInfo::reportData), setutf8));
-    sqlQuery.exec(QString("CREATE TABLE IF NOT EXISTS %1("
+                       Singleton::enumValueToKey(ReportInfo::reportData)));
+    sqlQuery.exec(QString("CREATE TABLE %1("
                           "%2   varchar(128)    NOT NULL PRIMARY KEY,"
                           "%3   varchar(32)     NOT NULL,"
                           "%4   varchar(32)     NOT NULL,"
                           "%5   varchar(255)    NOT NULL,"
                           "%6   text            NOT NULL,"
-                          "%7   datetime(3)     NOT NULL)%8")
+                          "%7   bigint          NOT NULL)")
                   .arg(Singleton::enumName<SoftwareManagement>(),
                        Singleton::enumValueToKey(SoftwareManagement::appId),
                        Singleton::enumValueToKey(SoftwareManagement::name),
                        Singleton::enumValueToKey(SoftwareManagement::version),
                        Singleton::enumValueToKey(SoftwareManagement::downloadPath),
                        Singleton::enumValueToKey(SoftwareManagement::content),
-                       Singleton::enumValueToKey(SoftwareManagement::time), setutf8));
-    sqlQuery.exec(QString("CREATE TABLE IF NOT EXISTS %1("
+                       Singleton::enumValueToKey(SoftwareManagement::time)));
+    sqlQuery.exec(QString("CREATE TABLE %1("
                           "%2   char(32)        NOT NULL PRIMARY KEY,"
                           "%3   varchar(128)    NOT NULL,"
-                          "%4   varchar(128)    NOT NULL)%5")
+                          "%4   varchar(128)    NOT NULL)")
                   .arg(Singleton::enumName<PlaceInfo>(),
                        Singleton::enumValueToKey(PlaceInfo::placeId),
                        Singleton::enumValueToKey(PlaceInfo::hostName),
-                       Singleton::enumValueToKey(PlaceInfo::secondaryName), setutf8));
+                       Singleton::enumValueToKey(PlaceInfo::secondaryName)));
 }
 
 void TopicAnalysis::messageAnalysis(const QByteArray &message, const QMqttTopicName &topic)

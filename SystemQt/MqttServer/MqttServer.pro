@@ -40,3 +40,6 @@ else:unix:{
 INCLUDEPATH += /home/ubuntu/Qt5.12.12/5.12.12/gcc_64/include
 DEPENDPATH += /home/ubuntu/Qt5.12.12/5.12.12/gcc_64/include
 }
+
+INCLUDEPATH += $$quote(D:/Program Files/PostgreSQL/15/include)
+LIBS += -L$$quote(D:/Program Files/PostgreSQL/15/lib/) -llibpq
