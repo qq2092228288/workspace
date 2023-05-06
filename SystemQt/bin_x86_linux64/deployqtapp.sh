@@ -119,7 +119,7 @@ echo "#!/bin/sh" > $execscript
 echo "export LD_LIBRARY_PATH=\`pwd\`/libs" >> $execscript
 echo "export QT_PLUGIN_PATH=\`pwd\`/plugins" >> $execscript
 # echo "export QT_QPA_FONTDIR=\`pwd\`/fonts" >> $execscript
-echo "./$executable" >> $execscript
+echo "nohup ./$executable &" >> $execscript
  
 # Make executable.
 chmod u+x $execscript

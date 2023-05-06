@@ -23,7 +23,7 @@ MqttClient::MqttClient(QObject *parent)
     connect(m_client, &QMqttClient::stateChanged, this, &MqttClient::stateChanged);
     connect(ptr, &TopicAnalysis::error, this, [=](const MessageError &error)
     {
-        qDebug()<<Singleton::enumValueToKey(error);
+        qDebug()<<Singleton::currentTime()<<Singleton::enumValueToKey(error);
     });
 
     m_thread->start();

@@ -22,6 +22,7 @@ HEADERS += \
     topicns.h
 
 include(../../commonFiles/base.pri)
+include(../../commonFiles/qt-solutions/qtsingleapplication/src/qtsinglecoreapplication.pri)
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

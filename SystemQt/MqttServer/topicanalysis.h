@@ -10,7 +10,6 @@
 #include <QJsonDocument>
 #include <QSqlQuery>
 #include <QMutex>
-#include <libpq-fe.h>
 
 #include "databasens.h"
 #include "topicns.h"
