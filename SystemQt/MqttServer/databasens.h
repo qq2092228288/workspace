@@ -7,12 +7,12 @@ namespace DatabaseEnumNs {
 Q_NAMESPACE
 enum class MessageError
 {
-    NoError,
     TopicInvalid,
     IsEmpty,
     IncorrectFormat,
     NoAnalysis,
-    RequiredDataIsIncomplete
+    RequiredDataIsIncomplete,
+    IllegalId
 };
 Q_ENUM_NS(MessageError)
 enum class AgentInfo

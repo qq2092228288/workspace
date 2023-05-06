@@ -8,12 +8,17 @@ Q_NAMESPACE
 enum class PrimaryTopic
 {
     request,                    // client request to server
-    response,                   // server response to client
     append,                     // admin publish append message to server
     update,                     // admin publish update message to server
-    remove                      // admin publish remove message to server
+    remove,                     // admin publish remove message to server
+    select                      // admin select database to server
 };
 Q_ENUM_NS(PrimaryTopic)
+enum class ResponseTopic
+{
+    response                    // server response to client
+};
+Q_ENUM_NS(ResponseTopic)
 enum class SecondaryTopic
 {
     deviceInfo,                 // client/server request/response device info

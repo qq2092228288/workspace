@@ -84,9 +84,12 @@ do
   cp $dep $libsdir
   echo "Copied dependency "$dep" to "$libsdir
 done
+
+# Qt plugins directory
+qtpluginsdir=/home/ubuntu/Qt5.12.12/5.12.12/gcc_64/plugins
  
 # You will need to change this to point to wherever libqxcb.so lives on your PC.
-qtplatformplugin=/home/ubuntu/Qt5.12.12/5.12.12/gcc_64/plugins/platforms/libqxcb.so #替换到本机下“libqxcb.so”的路径
+qtplatformplugin=$qtpluginsdir/platforms/libqxcb.so #替换到本机下“libqxcb.so”的路径
 qtplatformplugindir=$tardir/platforms
 mkdir $qtplatformplugindir
 echo "Created platforms directory: "$qtplatformplugindir
@@ -100,6 +103,13 @@ do
   echo "Copied qtplatformplugin dependency "$dep" to "$libsdir
 done
 echo "Copied qtplatformplugin dependencies"
+
+# Create the plugins directory.
+pluginsdir=$PWD/$tardir/plugins
+mkdir $pluginsdir
+echo "Created plugins directory: "$pluginsdir
+cp -r $qtpluginsdir/sqldrivers $pluginsdir
+echo "Copied sqldrivers directory"
  
 # Create the run script.
 execscript=$tardir/"run$executable.sh"
@@ -107,6 +117,7 @@ echo "Created run script: "$execscript
  
 echo "#!/bin/sh" > $execscript
 echo "export LD_LIBRARY_PATH=\`pwd\`/libs" >> $execscript
+echo "export QT_PLUGIN_PATH=\`pwd\`/plugins" >> $execscript
 # echo "export QT_QPA_FONTDIR=\`pwd\`/fonts" >> $execscript
 echo "./$executable" >> $execscript
  

@@ -22,9 +22,16 @@ class Singleton : public QObject
 public:
     static QString currentTime();
     static QString hostname();
-    static quint16 port();
+    // mqtt
+    static quint16 mqttPort();
+    // database
+    static quint16 databasePort();
+    static QString databaseName();
+    static QString userName();
+    static QString password();
     static QString createUniqueId(const QString &macAddress, const QString &deviceId);
-    static QMqttTopicName getTopicName(const PrimaryTopic &pTopic, const SecondaryTopic &sTopic, const QString &id)
+    template <class T>
+    static QMqttTopicName getTopicName(const T &pTopic, const SecondaryTopic &sTopic, const QString &id)
     {
         return QMqttTopicName(QString("%1/%2/%3").arg(enumValueToKey(pTopic), enumValueToKey(sTopic), id));
     }

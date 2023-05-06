@@ -12,7 +12,7 @@ MqttClient::MqttClient(QObject *parent)
 
     m_client = new QMqttClient(this);
     m_client->setHostname(Singleton::hostname());
-    m_client->setPort(Singleton::port());
+    m_client->setPort(Singleton::mqttPort());
 
     auto ptr = topicAnalysis_PTR.data();
     ptr->createTables();
@@ -23,7 +23,7 @@ MqttClient::MqttClient(QObject *parent)
     connect(m_client, &QMqttClient::stateChanged, this, &MqttClient::stateChanged);
     connect(ptr, &TopicAnalysis::error, this, [=](const MessageError &error)
     {
-        qDebug()<<error;
+        qDebug()<<Singleton::enumValueToKey(error);
     });
 
     m_thread->start();
@@ -47,10 +47,9 @@ void MqttClient::stateChanged(QMqttClient::ClientState state)
     qDebug()<<"connect state: "<<state;
     if (QMqttClient::ClientState::Connected == state) {
         // subscribe topics
-        m_client->subscribe(QMqttTopicFilter(Singleton::enumValueToKey(PrimaryTopic::request) + "/#"));
-        m_client->subscribe(QMqttTopicFilter(Singleton::enumValueToKey(PrimaryTopic::append) + "/#"));
-        m_client->subscribe(QMqttTopicFilter(Singleton::enumValueToKey(PrimaryTopic::update) + "/#"));
-        m_client->subscribe(QMqttTopicFilter(Singleton::enumValueToKey(PrimaryTopic::remove) + "/#"));
+        foreach (auto key, Singleton::enumKeys<PrimaryTopic>()) {
+            m_client->subscribe(QMqttTopicFilter(key + "/#"));
+        }
     }
 }
 

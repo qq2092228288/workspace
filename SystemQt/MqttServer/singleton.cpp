@@ -8,12 +8,32 @@ QString Singleton::currentTime()
 
 QString Singleton::hostname()
 {
-    return QString("nicas.zeyaotebco.com");
+    return QString("localhost");
 }
 
-quint16 Singleton::port()
+quint16 Singleton::mqttPort()
 {
     return 1883;
+}
+
+quint16 Singleton::databasePort()
+{
+    return 5432;
+}
+
+QString Singleton::databaseName()
+{
+    return QString("zeyao_backend");
+}
+
+QString Singleton::userName()
+{
+    return QString("admin");
+}
+
+QString Singleton::password()
+{
+    return QString("zeyao2022");
 }
 
 QString Singleton::createUniqueId(const QString &macAddress, const QString &deviceId)

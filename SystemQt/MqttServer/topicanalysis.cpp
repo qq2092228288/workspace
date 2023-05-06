@@ -1,21 +1,27 @@
 #include "topicanalysis.h"
 #include "singleton.h"
 #include <QSqlError>
+#include <QSqlRecord>
 
 TopicAnalysis::TopicAnalysis(QObject *parent)
     : QObject{parent}
 {
     m_database = QSqlDatabase::addDatabase("QPSQL");
-    m_database.setHostName("localhost");
-    m_database.setPort(5432);
-    m_database.setDatabaseName("zeyao_backend");
-    m_database.setUserName("admin");
-    m_database.setPassword("zeyao2022");
+    m_database.setHostName(Singleton::hostname());
+    m_database.setPort(Singleton::databasePort());
+    m_database.setDatabaseName(Singleton::databaseName());
+    m_database.setUserName(Singleton::userName());
+    m_database.setPassword(Singleton::password());
 }
 
 void TopicAnalysis::createTables()
 {
-    DatabaseManager databaseManager(m_database);
+    if (m_database.open()) {
+        qDebug()<<"Database opened successfully.";
+    }
+    else {
+        qDebug()<<m_database.lastError();
+    }
     QSqlQuery sqlQuery(m_database);
     sqlQuery.exec(QString("CREATE TABLE %1("
                           "%2   char(32)        NOT NULL PRIMARY KEY,"
@@ -48,7 +54,7 @@ void TopicAnalysis::createTables()
                           "%5   char(32)        NOT NULL,"
                           "%6   varchar(32)     NOT NULL,"
                           "%7   integer         NOT NULL,"
-                          "%8   bigint          NOT NULL)")
+                          "%8   timestamp       NOT NULL)")
                   .arg(Singleton::enumName<AllocatedConsumables>(),
                        Singleton::enumValueToKey(AllocatedConsumables::consumablesId),
                        Singleton::enumValueToKey(AllocatedConsumables::type),
@@ -101,7 +107,7 @@ void TopicAnalysis::createTables()
                        Singleton::enumValueToKey(Computer::remarks)));
     sqlQuery.exec(QString("CREATE TABLE %1("
                           "%2   char(32)        NOT NULL,"
-                          "%3   bigint          NOT NULL,"
+                          "%3   timestamp       NOT NULL,"
                           "%4   text            NOT NULL,"
                           "PRIMARY KEY(%2,%3))")
                   .arg(Singleton::enumName<ReportInfo>(),
@@ -114,7 +120,7 @@ void TopicAnalysis::createTables()
                           "%4   varchar(32)     NOT NULL,"
                           "%5   varchar(255)    NOT NULL,"
                           "%6   text            NOT NULL,"
-                          "%7   bigint          NOT NULL)")
+                          "%7   timestamp       NOT NULL)")
                   .arg(Singleton::enumName<SoftwareManagement>(),
                        Singleton::enumValueToKey(SoftwareManagement::appId),
                        Singleton::enumValueToKey(SoftwareManagement::name),
@@ -150,27 +156,34 @@ void TopicAnalysis::messageAnalysis(const QByteArray &message, const QMqttTopicN
     auto level1 = Singleton::enumKeyToValue<PrimaryTopic>(topic.levels().at(0));
     auto level2 = Singleton::enumKeyToValue<SecondaryTopic>(topic.levels().at(1));
     if (-1 != level1 && -1 != level2) {
-        DatabaseManager databaseManager(m_database);
-
         auto id = topic.levels().at(2);
-        auto sTopic = SecondaryTopic(level2);
-
         switch (PrimaryTopic(level1)) {
         case PrimaryTopic::request:
             // respone to client or admin request and publish message
-            request(message, sTopic, id);
+            if (legalUniqueId(id) || legalAdminId(id)) {
+                emit error(MessageError::IllegalId);
+            }
+            response(message, topic);
             break;
         case PrimaryTopic::append:
             // admin append new data
-            databaseOperation(message, sTopic, DatabaseOperation::Insert);
+            databaseOperation(message, topic, DatabaseOperation::Insert);
             break;
         case PrimaryTopic::update:
             // admin update data
-            databaseOperation(message, sTopic, DatabaseOperation::Update);
+            databaseOperation(message, topic, DatabaseOperation::Update);
             break;
         case PrimaryTopic::remove:
             // admin remove data
-            databaseOperation(message, sTopic, DatabaseOperation::Delete);
+            databaseOperation(message, topic, DatabaseOperation::Delete);
+            break;
+        case PrimaryTopic::select:
+        {
+            auto data = databaseOperation(message, topic, DatabaseOperation::Select);
+            if (!data.isNull()) {
+                emit messagePublish(Singleton::getTopicName(ResponseTopic::response, getSTopic(topic), id), data);
+            }
+        }
             break;
         default:
             emit error(MessageError::NoAnalysis);
@@ -180,11 +193,30 @@ void TopicAnalysis::messageAnalysis(const QByteArray &message, const QMqttTopicN
     else {
         emit error(MessageError::TopicInvalid);
     }
-    emit error(MessageError::NoError);
 }
 
-void TopicAnalysis::request(const QByteArray &message, const SecondaryTopic &sTopic, const QString &id)
+bool TopicAnalysis::legalAdminId(const QString &id)
 {
+    QSqlQuery sqlQuery(m_database);
+    sqlQuery.exec(QString("SELECT * FROM %1 WHERE %2 = '%3'")
+                  .arg(Singleton::enumName<AdministratorInfo>(),
+                       Singleton::enumValueToKey(AdministratorInfo::adminId), id));
+    return sqlQuery.next();
+}
+
+bool TopicAnalysis::legalUniqueId(const QString &id)
+{
+    QSqlQuery sqlQuery(m_database);
+    sqlQuery.exec(QString("SELECT * FROM %1 WHERE %2 = '%3'")
+                  .arg(Singleton::enumName<CombinedDevice>(),
+                       Singleton::enumValueToKey(CombinedDevice::uniqueId), id));
+    return sqlQuery.next();
+}
+
+void TopicAnalysis::response(const QByteArray &message, const QMqttTopicName &topic)
+{
+    auto sTopic = getSTopic(topic);
+    auto id = topic.levels().at(2);
     auto object = QJsonDocument::fromJson(message).object();
     QByteArray data;
     QSqlQuery sqlQuery(m_database);
@@ -207,7 +239,7 @@ void TopicAnalysis::request(const QByteArray &message, const SecondaryTopic &sTo
         auto reprotData = object.value(reportDataString);
         // insert valid data, if exist, ignore
         if (reprotTime.type() != QJsonValue::Undefined && reprotData != QJsonValue::Undefined) {
-            databaseOperation(message, sTopic, DatabaseOperation::Insert);
+            databaseOperation(message, topic, DatabaseOperation::Insert);
             QJsonObject json;
             json.insert(reportTimeString, reprotTime.toString());
             data = Singleton::jsonToUtf8(json);
@@ -309,48 +341,51 @@ void TopicAnalysis::request(const QByteArray &message, const SecondaryTopic &sTo
         }
     }
         break;
-    case SecondaryTopic::reports:
-
-        break;
     default:
         emit error(MessageError::NoAnalysis);
         break;
     }
     if (!data.isNull()) {
-        emit messagePublish(Singleton::getTopicName(PrimaryTopic::response, sTopic, id), data);
+        emit messagePublish(Singleton::getTopicName(ResponseTopic::response, sTopic, id), data);
     }
 }
 
-void TopicAnalysis::databaseOperation(const QByteArray &message, const SecondaryTopic &sTopic,
-                                      const DatabaseOperation &type)
+QByteArray TopicAnalysis::databaseOperation(const QByteArray &message, const QMqttTopicName &topic,
+                                            const DatabaseOperation &type)
 {
+    auto sTopic = getSTopic(topic);
     auto object = QJsonDocument::fromJson(message).object();
     switch (sTopic) {
     case SecondaryTopic::uploadData:
-        dbOperation<ReportInfo>(object, type, ReportInfo::uniqueId);
+        dbOperation<ReportInfo>(object, type, Singleton::enumValueToKey(ReportInfo::uniqueId)
+                                + "," + Singleton::enumValueToKey(ReportInfo::reportTime));
         break;
     case SecondaryTopic::device:
-        dbOperation<Device>(object, type, Device::deviceId);
+        return dbOperation(object, type, Device::deviceId);
         break;
     case SecondaryTopic::computer:
-        dbOperation<Computer>(object, type, Computer::macAddress);
+        return dbOperation(object, type, Computer::macAddress);
         break;
     case SecondaryTopic::combinedDevice:
-        dbOperation<CombinedDevice>(object, type, CombinedDevice::uniqueId);
+        return dbOperation(object, type, CombinedDevice::uniqueId);
         break;
     case SecondaryTopic::allocatedConsumables:
-        dbOperation<AllocatedConsumables>(object, type, AllocatedConsumables::consumablesId);
+        return dbOperation(object, type, AllocatedConsumables::consumablesId);
         break;
     case SecondaryTopic::place:
-        dbOperation<PlaceInfo>(object, type, PlaceInfo::placeId);
+        return dbOperation(object, type, PlaceInfo::placeId);
         break;
     case SecondaryTopic::agent:
-        dbOperation<AgentInfo>(object, type, AgentInfo::agentId);
+        return dbOperation(object, type, AgentInfo::agentId);
+        break;
+    case SecondaryTopic::reports:
+        return dbOperation(object, type, ReportInfo::uniqueId);
         break;
     default:
         emit error(MessageError::NoAnalysis);
         break;
     }
+    return QByteArray();
 }
 
 QJsonObject TopicAnalysis::getJsonObject(const QSqlQuery &sqlQuery, const QStringList &keys)
@@ -406,8 +441,13 @@ void TopicAnalysis::bindValue(QSqlQuery &sqlQuery, const QJsonObject &object)
     }
 }
 
-template<class T, class T1>
-void TopicAnalysis::dbOperation(const QJsonObject &object, const DatabaseOperation &type, const T1 &column)
+SecondaryTopic TopicAnalysis::getSTopic(const QMqttTopicName &topic) const
+{
+    return SecondaryTopic(Singleton::enumKeyToValue<SecondaryTopic>(topic.levels().at(1)));
+}
+
+template <class T>
+QByteArray TopicAnalysis::dbOperation(const QJsonObject &object, const DatabaseOperation &type, const QString &primaryKey)
 {
     QStringList keys = Singleton::enumKeys<T>();
     keys.sort();
@@ -415,23 +455,34 @@ void TopicAnalysis::dbOperation(const QJsonObject &object, const DatabaseOperati
     okeys.sort();
     if (keys != okeys) {
         emit error(MessageError::RequiredDataIsIncomplete);
-        return;
+        return QByteArray();
     }
-    QString columnName = Singleton::enumValueToKey(column);
     QSqlQuery sqlQuery(m_database);
     auto tableName = Singleton::enumName<T>();
     switch (type) {
+    case DatabaseOperation::Select:
+    {
+        auto value = object.value(primaryKey).toString();
+        if (value == "*" || value.isEmpty()) { // select all
+            sqlQuery.prepare(QString("SELECT * FROM %1").arg(tableName));
+        }
+        else {
+            sqlQuery.prepare(QString("SELECT * FROM %1 WHERE %2 = ?").arg(tableName, primaryKey));
+            sqlQuery.addBindValue(value);
+        }
+    }
+        break;
     case DatabaseOperation::Insert:
     {
         QStringList strs;
         foreach (auto str, okeys) {
             strs<<(":" + str);
         }
-        sqlQuery.prepare(QString("INSERT IGNORE INTO %1(%2) VALUES(%3)")
-                         .arg(tableName, okeys.join(", "), strs.join(", ")));
+        sqlQuery.prepare(QString("INSERT INTO %1(%2) VALUES(%3) ON CONFLICT(%4) DO NOTHING")
+                         .arg(tableName, okeys.join(", "), strs.join(", "), primaryKey));
         bindValue(sqlQuery, object);
-        break;
     }
+        break;
     case DatabaseOperation::Update:
     {
         QStringList strs;
@@ -439,16 +490,28 @@ void TopicAnalysis::dbOperation(const QJsonObject &object, const DatabaseOperati
             strs<<QString("%1=:%1").arg(str);
         }
         sqlQuery.prepare(QString("UPDATE %1 SET %2 WHERE %3 = :%3")
-                         .arg(tableName, strs.join(", "), columnName));
+                         .arg(tableName, strs.join(", "), primaryKey));
         bindValue(sqlQuery, object);
     }
         break;
     case DatabaseOperation::Delete:
-        sqlQuery.prepare(QString("DELETE FROM %1 WHERE %2 = ?").arg(tableName, columnName));
-        sqlQuery.addBindValue(object.value(columnName).toString());
+        sqlQuery.prepare(QString("DELETE FROM %1 WHERE %2 = ?").arg(tableName, primaryKey));
+        sqlQuery.addBindValue(object.value(primaryKey).toString());
         break;
     }
     sqlQuery.exec();
+    QJsonArray array;
+    while (sqlQuery.next()) {
+        // send select data
+        array.append(getJsonObject(sqlQuery, Singleton::enumKeys<T>()));
+    }
+    if (!array.isEmpty())
+        return Singleton::jsonToUtf8(array);
+    return QByteArray();
 }
 
-
+template<class T>
+QByteArray TopicAnalysis::dbOperation(const QJsonObject &object, const DatabaseOperation &type, const T &column)
+{
+    return dbOperation<T>(object, type, Singleton::enumValueToKey(column));
+}

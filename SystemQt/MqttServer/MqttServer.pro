@@ -28,18 +28,25 @@ qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
-win32:CONFIG(release, debug|release): LIBS += -LD:/Qt/5.15.2/msvc2019_64/lib/ -lQt5Mqtt
-else:win32:CONFIG(debug, debug|release): LIBS += -LD:/Qt/5.15.2/msvc2019_64/lib/ -lQt5Mqttd
-else:unix: LIBS += -L/home/ubuntu/Qt5.12.12/5.12.12/gcc_64/lib/ -lQt5Mqtt
+win32:{
+    COMPILATION_CHAIN_DIR = D:/Qt/5.15.2/msvc2019_64
+}
+unix:{
+    COMPILATION_CHAIN_DIR = /home/ubuntu/Qt5.12.12/5.12.12/gcc_64
+}
+
+win32:CONFIG(release, debug|release): LIBS += -L$$COMPILATION_CHAIN_DIR/lib/ -lQt5Mqtt
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$COMPILATION_CHAIN_DIR/lib/ -lQt5Mqttd
+else:unix: LIBS += -L$$COMPILATION_CHAIN_DIR/lib/ -lQt5Mqtt
 
 win32:{
-INCLUDEPATH += D:/Qt/5.15.2/msvc2019_64/include
-DEPENDPATH += D:/Qt/5.15.2/msvc2019_64/include
+    INCLUDEPATH += $$COMPILATION_CHAIN_DIR/include
+    DEPENDPATH += $$COMPILATION_CHAIN_DIR/include
+# postgresql
+    INCLUDEPATH += $$quote(D:/Program Files/PostgreSQL/15/include)
+    LIBS += -L$$quote(D:/Program Files/PostgreSQL/15/lib/) -llibpq
 }
 else:unix:{
-INCLUDEPATH += /home/ubuntu/Qt5.12.12/5.12.12/gcc_64/include
-DEPENDPATH += /home/ubuntu/Qt5.12.12/5.12.12/gcc_64/include
+    INCLUDEPATH += $$COMPILATION_CHAIN_DIR/include
+    DEPENDPATH += $$COMPILATION_CHAIN_DIR/include
 }
-
-INCLUDEPATH += $$quote(D:/Program Files/PostgreSQL/15/include)
-LIBS += -L$$quote(D:/Program Files/PostgreSQL/15/lib/) -llibpq

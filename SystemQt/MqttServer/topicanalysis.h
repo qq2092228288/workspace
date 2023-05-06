@@ -50,6 +50,7 @@ public:
     void createTables();
     enum class DatabaseOperation
     {
+        Select,
         Insert,
         Update,
         Delete
@@ -62,12 +63,17 @@ signals:
                         quint8 qos = 0, bool retain = false);
     void error(const DatabaseEnumNs::MessageError &);
 private:
-    void request(const QByteArray &message, const SecondaryTopic &sTopic, const QString &id);
-    void databaseOperation(const QByteArray &message, const SecondaryTopic &sTopic, const DatabaseOperation &type);
+    bool legalAdminId(const QString &id);
+    bool legalUniqueId(const QString &id);
+    void response(const QByteArray &message, const QMqttTopicName &topic);
+    QByteArray databaseOperation(const QByteArray &message, const QMqttTopicName &topic, const DatabaseOperation &type);
     QJsonObject getJsonObject(const QSqlQuery &sqlQuery, const QStringList &keys);
     void bindValue(QSqlQuery &sqlQuery, const QJsonObject &object);
-    template <class T, class T1>
-    void dbOperation(const QJsonObject &object, const DatabaseOperation &type, const T1 &column);
+    SecondaryTopic getSTopic(const QMqttTopicName &topic) const;
+    template <class T>
+    QByteArray dbOperation(const QJsonObject &object, const DatabaseOperation &type, const QString &primaryKey);
+    template <class T>
+    QByteArray dbOperation(const QJsonObject &object, const DatabaseOperation &type, const T &column);
 private:
     QSqlDatabase m_database;
 };
