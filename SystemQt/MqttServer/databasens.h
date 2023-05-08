@@ -30,6 +30,7 @@ enum class AdministratorInfo
     password,
     name,
     permission,
+    uniqueIds,
     remarks
 };
 Q_ENUM_NS(AdministratorInfo)
@@ -77,7 +78,8 @@ Q_ENUM_NS(Computer)
 enum class ReportInfo
 {
     uniqueId,
-    reportTime,
+    time,
+    type,
     reportData
 };
 Q_ENUM_NS(ReportInfo)

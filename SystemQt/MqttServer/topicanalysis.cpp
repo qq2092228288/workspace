@@ -40,12 +40,14 @@ void TopicAnalysis::createTables()
                           "%3   varchar(32)     NOT NULL,"
                           "%4   varchar(32)     NOT NULL,"
                           "%5   smallint        NOT NULL DEFAULT 0,"
-                          "%6   text)")
+                          "%6   text,"
+                          "%7   text)")
                   .arg(Singleton::enumName<AdministratorInfo>(),
                        Singleton::enumValueToKey(AdministratorInfo::adminId),
                        Singleton::enumValueToKey(AdministratorInfo::password),
                        Singleton::enumValueToKey(AdministratorInfo::name),
                        Singleton::enumValueToKey(AdministratorInfo::permission),
+                       Singleton::enumValueToKey(AdministratorInfo::uniqueIds),
                        Singleton::enumValueToKey(AdministratorInfo::remarks)));
     sqlQuery.exec(QString("CREATE TABLE %1("
                           "%2   char(32)        NOT NULL PRIMARY KEY,"
@@ -108,11 +110,13 @@ void TopicAnalysis::createTables()
     sqlQuery.exec(QString("CREATE TABLE %1("
                           "%2   char(32)        NOT NULL,"
                           "%3   timestamp       NOT NULL,"
-                          "%4   text            NOT NULL,"
+                          "%4   smallint        NOT NULL,"
+                          "%5   text            NOT NULL,"
                           "PRIMARY KEY(%2,%3))")
                   .arg(Singleton::enumName<ReportInfo>(),
                        Singleton::enumValueToKey(ReportInfo::uniqueId),
-                       Singleton::enumValueToKey(ReportInfo::reportTime),
+                       Singleton::enumValueToKey(ReportInfo::time),
+                       Singleton::enumValueToKey(ReportInfo::type),
                        Singleton::enumValueToKey(ReportInfo::reportData)));
     sqlQuery.exec(QString("CREATE TABLE %1("
                           "%2   varchar(128)    NOT NULL PRIMARY KEY,"
@@ -233,7 +237,7 @@ void TopicAnalysis::response(const QByteArray &message, const QMqttTopicName &to
         break;
     case SecondaryTopic::uploadData:
     {
-        auto reportTimeString = Singleton::enumValueToKey(ReportInfo::reportTime);
+        auto reportTimeString = Singleton::enumValueToKey(ReportInfo::time);
         auto reportDataString = Singleton::enumValueToKey(ReportInfo::reportData);
         auto reprotTime = object.value(reportTimeString);
         auto reprotData = object.value(reportDataString);
@@ -358,7 +362,7 @@ QByteArray TopicAnalysis::databaseOperation(const QByteArray &message, const QMq
     switch (sTopic) {
     case SecondaryTopic::uploadData:
         dbOperation<ReportInfo>(object, type, Singleton::enumValueToKey(ReportInfo::uniqueId)
-                                + "," + Singleton::enumValueToKey(ReportInfo::reportTime));
+                                + "," + Singleton::enumValueToKey(ReportInfo::time));
         break;
     case SecondaryTopic::device:
         return dbOperation(object, type, Device::deviceId);
