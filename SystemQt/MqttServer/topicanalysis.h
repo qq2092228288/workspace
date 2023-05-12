@@ -8,7 +8,6 @@
 #include <QJsonObject>
 #include <QJsonArray>
 #include <QJsonDocument>
-#include <QSqlQuery>
 #include <QMutex>
 
 #include "databasens.h"

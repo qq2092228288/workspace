@@ -1,5 +1,5 @@
 QT -= gui
-QT += sql
+QT += sql websockets webchannel
 
 CONFIG += c++17 console
 CONFIG -= app_bundle
@@ -9,20 +9,27 @@ CONFIG -= app_bundle
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+    ../../commonFiles/webchannel/shared/websocketclientwrapper.cpp \
+    ../../commonFiles/webchannel/shared/websockettransport.cpp \
+        htmlserver.cpp \
         main.cpp \
         mqttclient.cpp \
         singleton.cpp \
-        topicanalysis.cpp
+        topicanalysis.cpp \
 
 HEADERS += \
+    ../../commonFiles/webchannel/shared/websocketclientwrapper.h \
+    ../../commonFiles/webchannel/shared/websockettransport.h \
     databasens.h \
+    htmlserver.h \
     mqttclient.h \
     singleton.h \
     topicanalysis.h \
-    topicns.h
+    topicns.h \
 
 include(../../commonFiles/base.pri)
 include(../../commonFiles/qt-solutions/qtsingleapplication/src/qtsinglecoreapplication.pri)
+INCLUDEPATH += ../../commonFiles/webchannel/shared
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

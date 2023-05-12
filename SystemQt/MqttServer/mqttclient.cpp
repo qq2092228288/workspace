@@ -23,15 +23,10 @@ MqttClient::MqttClient(QObject *parent)
     connect(m_client, &QMqttClient::stateChanged, this, &MqttClient::stateChanged);
     connect(ptr, &TopicAnalysis::error, this, [=](const MessageError &error)
     {
-        qDebug()<<Singleton::currentTime()<<Singleton::enumValueToKey(error);
+        TIME_DEBUG()<<Singleton::enumValueToKey(error);
     });
 
     m_thread->start();
-}
-
-void MqttClient::connectToHost()
-{
-    m_client->connectToHost();
 }
 
 MqttClient::~MqttClient()
@@ -42,9 +37,14 @@ MqttClient::~MqttClient()
     delete m_client;
 }
 
+void MqttClient::connectToHost()
+{
+    m_client->connectToHost();
+}
+
 void MqttClient::stateChanged(QMqttClient::ClientState state)
 {
-    qDebug()<<"connect state: "<<state;
+    TIME_DEBUG()<<"connect state: "<<state;
     if (QMqttClient::ClientState::Connected == state) {
         // subscribe topics
         foreach (auto key, Singleton::enumKeys<PrimaryTopic>()) {

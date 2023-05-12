@@ -14,10 +14,10 @@ class MqttClient : public QObject
     Q_OBJECT
 public:
     explicit MqttClient(QObject *parent = nullptr);
-    void connectToHost();
     virtual ~MqttClient();
 signals:
 public slots:
+    void connectToHost();
     void stateChanged(QMqttClient::ClientState state);
     void publish(const QMqttTopicName &topic, const QByteArray &message, quint8 qos, bool retain);
 private:

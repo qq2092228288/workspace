@@ -16,6 +16,11 @@ quint16 Singleton::mqttPort()
     return 1883;
 }
 
+quint16 Singleton::listenPort()
+{
+    return 18088;
+}
+
 quint16 Singleton::databasePort()
 {
     return 5432;
@@ -42,8 +47,18 @@ QString Singleton::createUniqueId(const QString &macAddress, const QString &devi
     return QCryptographicHash::hash(md5.toLatin1(), QCryptographicHash::Md5).toHex().toLower();
 }
 
+void Singleton::setDatabase(QSqlDatabase *database)
+{
+    m_database = database;
+}
+
+QSqlDatabase Singleton::database()
+{
+    return *m_database;
+}
+
 Singleton::Singleton(QObject *parent)
-    : QObject{parent}
+    : QObject{parent},m_database{nullptr}
 {
 
 }

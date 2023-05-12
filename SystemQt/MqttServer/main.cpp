@@ -1,16 +1,24 @@
 #include <QCoreApplication>
 #include <qtsinglecoreapplication.h>
-#include "mqttclient.h"
 
+#include "singleton.h"
+#include "mqttclient.h"
+#include "htmlserver.h"
 
 int main(int argc, char *argv[])
 {
-    QtSingleCoreApplication a("my QtSingleCoreApplication", argc, argv);
+    QtSingleCoreApplication a("zeyao server", argc, argv);
     if (a.isRunning()) {
-        qDebug("The program is currently running.");
+        TIME_DEBUG()<<"The program is currently running.";
         return EXIT_SUCCESS;
     }
-    MqttClient_PTR client(new MqttClient);
-    client->connectToHost();
+    // mqtt
+    MqttClient_PTR mqttClient(new MqttClient);
+    mqttClient->connectToHost();
+
+    // html
+    HtmlServer_PTR htmlServer(new HtmlServer);
+    htmlServer->startListening();
+
     return a.exec();
 }

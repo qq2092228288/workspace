@@ -1,7 +1,5 @@
 #include "topicanalysis.h"
 #include "singleton.h"
-#include <QSqlError>
-#include <QSqlRecord>
 
 TopicAnalysis::TopicAnalysis(QObject *parent)
     : QObject{parent}
@@ -12,15 +10,17 @@ TopicAnalysis::TopicAnalysis(QObject *parent)
     m_database.setDatabaseName(Singleton::databaseName());
     m_database.setUserName(Singleton::userName());
     m_database.setPassword(Singleton::password());
+
+    Singleton::getInstance()->setDatabase(&m_database);
 }
 
 void TopicAnalysis::createTables()
 {
     if (m_database.open()) {
-        qDebug()<<"Database opened successfully.";
+        TIME_DEBUG()<<"Database opened successfully.";
     }
     else {
-        qDebug()<<m_database.lastError();
+        TIME_DEBUG()<<m_database.lastError();
     }
     QSqlQuery sqlQuery(m_database);
     sqlQuery.exec(QString("CREATE TABLE %1("

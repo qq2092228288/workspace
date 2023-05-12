@@ -8,6 +8,10 @@
 #include <QJsonObject>
 #include <QJsonArray>
 #include <QJsonDocument>
+#include <QSqlDatabase>
+#include <QSqlQuery>
+#include <QSqlError>
+#include <QSqlRecord>
 #include <QDebug>
 
 #include "topicns.h"
@@ -24,6 +28,8 @@ public:
     static QString hostname();
     // mqtt
     static quint16 mqttPort();
+    // html
+    static quint16 listenPort();
     // database
     static quint16 databasePort();
     static QString databaseName();
@@ -78,6 +84,11 @@ public:
     {
         return QJsonDocument::fromJson(json).array();
     }
+
+    void setDatabase(QSqlDatabase *database);
+    QSqlDatabase database();
+private:
+    QSqlDatabase *m_database;
 private:
     explicit Singleton(QObject *parent = nullptr);
     virtual ~Singleton();

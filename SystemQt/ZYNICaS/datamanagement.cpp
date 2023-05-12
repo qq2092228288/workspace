@@ -876,12 +876,12 @@ QString DataManagement::reportResult(bool record)
             // 双体位常规打印机报告
             auto isi = m_pRegulator->getCustomCtrl(typeName(Type::ISI));
             auto sv = m_pRegulator->getCustomCtrl(typeName(Type::SV));
-            auto svr = m_pRegulator->getCustomCtrl(typeName(Type::SVR));
+            auto vas = m_pRegulator->getCustomCtrl(typeName(Type::Vas));
             auto map = m_pRegulator->getCustomCtrl(typeName(Type::MAP));
             QString fstr = (isi->getCurrentValue() > isi->getRecordValue() && sv->getCurrentValue() > sv->getRecordValue() ? tr("正常") : tr("异常"));
             QString sstr = (isi->getCurrentValue() <= isi->getMaxValue() && isi->getCurrentValue() >= isi->getMinValue() ? tr("正常") : tr("异常"));
-            QString tstr = (svr->getCurrentValue() <= svr->getMaxValue() && svr->getCurrentValue() >= svr->getMinValue() ? tr("正常") : tr("异常"));
-            if (map->getCurrentValue() < map->getMinValue() && svr->getCurrentValue() > svr->getMaxValue()) {
+            QString tstr = (vas->getCurrentValue() <= vas->getMaxValue() && vas->getCurrentValue() >= vas->getMinValue() ? tr("正常") : tr("异常"));
+            if (map->getCurrentValue() < map->getMinValue() && vas->getCurrentValue() > vas->getMaxValue()) {
                 tstr += tr("(提示：病人血压低，后负荷被动性代偿)");
             }
             result = tr("连续无创血流动力学对高血压病靶向分析报告如下：\n"
