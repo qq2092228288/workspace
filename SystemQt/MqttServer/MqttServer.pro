@@ -9,8 +9,8 @@ CONFIG -= app_bundle
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
-    ../../commonFiles/webchannel/shared/websocketclientwrapper.cpp \
-    ../../commonFiles/webchannel/shared/websockettransport.cpp \
+        $$[QT_INSTALL_EXAMPLES]/webchannel/shared/websocketclientwrapper.cpp \
+        $$[QT_INSTALL_EXAMPLES]/webchannel/shared/websockettransport.cpp \
         htmlserver.cpp \
         main.cpp \
         mqttclient.cpp \
@@ -18,8 +18,8 @@ SOURCES += \
         topicanalysis.cpp \
 
 HEADERS += \
-    ../../commonFiles/webchannel/shared/websocketclientwrapper.h \
-    ../../commonFiles/webchannel/shared/websockettransport.h \
+    $$[QT_INSTALL_EXAMPLES]/webchannel/shared/websocketclientwrapper.h \
+    $$[QT_INSTALL_EXAMPLES]/webchannel/shared/websockettransport.h \
     databasens.h \
     htmlserver.h \
     mqttclient.h \
@@ -29,7 +29,7 @@ HEADERS += \
 
 include(../../commonFiles/base.pri)
 include(../../commonFiles/qt-solutions/qtsingleapplication/src/qtsinglecoreapplication.pri)
-INCLUDEPATH += ../../commonFiles/webchannel/shared
+INCLUDEPATH += $$[QT_INSTALL_EXAMPLES]/webchannel/shared
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
