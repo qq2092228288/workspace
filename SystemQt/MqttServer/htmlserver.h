@@ -5,6 +5,10 @@
 #include <QWebSocketServer>
 #include <QWebChannel>
 #include <QSharedPointer>
+#include <QXmlStreamReader>
+#include <QFile>
+#include <QSqlRecord>
+#include <QSqlQuery>
 
 #include <websocketclientwrapper.h>
 #include <websockettransport.h>
@@ -18,15 +22,33 @@ class HtmlServer : public QObject
     Q_OBJECT
 public:
     explicit HtmlServer(QObject *parent = nullptr);
+    enum class DBOperationError
+    {
+        NoError,
+        SelectError,
+        InsertError,
+        UpdateError,
+        RemoveEroor
+    };
+    Q_ENUM(DBOperationError)
 public slots:
     void startListening();
 public slots:
     /*These slots are invoked from the HTML client side and received by the server.*/
     void loginUi();
     void login(const QString &adminId, const QString &password);
+    void currentTable(const QJsonObject &object, const QString &table);
 signals:
     /*These signal are emitted from the C++ side and received by the HTML client side.*/
     void sendText(const QString &text);
+    void sendUserInfo(const QJsonObject &userInfo);
+private:
+    void mainUi(const QJsonObject &object, QString tableName = QString());
+    QStringList columnNames(const QSqlRecord &record);
+    QString tableDivs(const QStringList &tableNames);
+    QString dataDivs(QSqlQuery &sqlQuery, const QString &tableName);
+    QString xmlToJsonString(const QString &xmlPath);
+    QString htmlJsonString(const QString &data);
 private:
     QWebSocketServer_PTR server_ptr;
     WebSocketClientWrapper_PTR clientWrapper_ptr;

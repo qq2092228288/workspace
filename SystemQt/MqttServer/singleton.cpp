@@ -47,6 +47,32 @@ QString Singleton::createUniqueId(const QString &macAddress, const QString &devi
     return QCryptographicHash::hash(md5.toLatin1(), QCryptographicHash::Md5).toHex().toLower();
 }
 
+QJsonObject Singleton::getJsonObject(const QSqlQuery &sqlQuery, const QStringList &keys)
+{
+    QJsonObject object;
+    foreach (auto key, keys) {
+        auto value = sqlQuery.value(key);
+        switch (value.type()) {
+        case QVariant::Type::Int:
+            object.insert(key, value.toInt());
+            break;
+        case QVariant::Type::Double:
+            object.insert(key, value.toDouble());
+            break;
+        case QVariant::Type::Bool:
+            object.insert(key, value.toBool());
+            break;
+        case QVariant::Type::DateTime:
+            object.insert(key, value.toDateTime().toString("yyyy-MM-ddThh:mm:ss.zzz"));
+            break;
+        default:
+            object.insert(key, value.toString());
+            break;
+        }
+    }
+    return object;
+}
+
 void Singleton::setDatabase(QSqlDatabase *database)
 {
     m_database = database;

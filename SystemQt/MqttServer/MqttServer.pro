@@ -1,5 +1,5 @@
 QT -= gui
-QT += sql websockets webchannel
+QT += core sql websockets webchannel
 
 CONFIG += c++17 console
 CONFIG -= app_bundle
@@ -11,6 +11,7 @@ CONFIG -= app_bundle
 SOURCES += \
         $$[QT_INSTALL_EXAMPLES]/webchannel/shared/websocketclientwrapper.cpp \
         $$[QT_INSTALL_EXAMPLES]/webchannel/shared/websockettransport.cpp \
+    databasens.cpp \
         htmlserver.cpp \
         main.cpp \
         mqttclient.cpp \
@@ -58,3 +59,6 @@ else:unix:{
     INCLUDEPATH += $$COMPILATION_CHAIN_DIR/include
     DEPENDPATH += $$COMPILATION_CHAIN_DIR/include
 }
+
+RESOURCES += \
+    xml.qrc

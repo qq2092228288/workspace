@@ -84,7 +84,7 @@ public:
     {
         return QJsonDocument::fromJson(json).array();
     }
-
+    static QJsonObject getJsonObject(const QSqlQuery &sqlQuery, const QStringList &keys);
     void setDatabase(QSqlDatabase *database);
     QSqlDatabase database();
 private:

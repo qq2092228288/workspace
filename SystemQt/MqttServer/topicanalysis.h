@@ -65,7 +65,6 @@ private:
     bool legalUniqueId(const QString &id);
     void response(const QByteArray &message, const QMqttTopicName &topic);
     QByteArray databaseOperation(const QByteArray &message, const QMqttTopicName &topic, const DatabaseOperation &type);
-    QJsonObject getJsonObject(const QSqlQuery &sqlQuery, const QStringList &keys);
     void bindValue(QSqlQuery &sqlQuery, const QJsonObject &object);
     SecondaryTopic getSTopic(const QMqttTopicName &topic) const;
     template <class T>

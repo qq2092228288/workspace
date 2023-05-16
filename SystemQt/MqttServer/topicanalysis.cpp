@@ -70,12 +70,16 @@ void TopicAnalysis::createTables()
                           "%3   varchar(32)     NOT NULL,"
                           "%4   char(32)        NOT NULL,"
                           "%5   char(32)        NOT NULL,"
-                          "%6   smallint        NOT NULL DEFAULT 0,"
-                          "%7   integer         NOT NULL DEFAULT 0,"
-                          "%8   integer         NOT NULL DEFAULT 0)")
+                          "%6   char(32)        NOT NULL,"
+                          "%7   char(32)        NOT NULL,"
+                          "%8   smallint        NOT NULL DEFAULT 0,"
+                          "%9   integer         NOT NULL DEFAULT 0,"
+                          "%10  integer         NOT NULL DEFAULT 0)")
                   .arg(Singleton::enumName<CombinedDevice>(),
                        Singleton::enumValueToKey(CombinedDevice::uniqueId),
                        Singleton::enumValueToKey(CombinedDevice::name),
+                       Singleton::enumValueToKey(CombinedDevice::deviceId),
+                       Singleton::enumValueToKey(CombinedDevice::macAddress),
                        Singleton::enumValueToKey(CombinedDevice::placeId),
                        Singleton::enumValueToKey(CombinedDevice::agentId),
                        Singleton::enumValueToKey(CombinedDevice::status),
@@ -232,7 +236,7 @@ void TopicAnalysis::response(const QByteArray &message, const QMqttTopicName &to
                            Singleton::enumValueToKey(CombinedDevice::uniqueId),
                            id));
         if (sqlQuery.next()) {
-            data = Singleton::jsonToUtf8(getJsonObject(sqlQuery, Singleton::enumKeys<CombinedDevice>()));
+            data = Singleton::jsonToUtf8(Singleton::getJsonObject(sqlQuery, Singleton::enumKeys<CombinedDevice>()));
         }
         break;
     case SecondaryTopic::uploadData:
@@ -263,7 +267,7 @@ void TopicAnalysis::response(const QByteArray &message, const QMqttTopicName &to
                                appIdString,
                                appId.toString()));
             if (sqlQuery.next()) {
-                data = Singleton::jsonToUtf8(getJsonObject(sqlQuery, Singleton::enumKeys<SoftwareManagement>()));
+                data = Singleton::jsonToUtf8(Singleton::getJsonObject(sqlQuery, Singleton::enumKeys<SoftwareManagement>()));
             }
         }
         else {
@@ -392,32 +396,6 @@ QByteArray TopicAnalysis::databaseOperation(const QByteArray &message, const QMq
     return QByteArray();
 }
 
-QJsonObject TopicAnalysis::getJsonObject(const QSqlQuery &sqlQuery, const QStringList &keys)
-{
-    QJsonObject object;
-    foreach (auto key, keys) {
-        auto value = sqlQuery.value(key);
-        switch (value.type()) {
-        case QVariant::Type::Int:
-            object.insert(key, value.toInt());
-            break;
-        case QVariant::Type::Double:
-            object.insert(key, value.toDouble());
-            break;
-        case QVariant::Type::Bool:
-            object.insert(key, value.toBool());
-            break;
-        case QVariant::Type::DateTime:
-            object.insert(key, value.toDateTime().toString("yyyy-MM-ddThh:mm:ss.zzz"));
-            break;
-        default:
-            object.insert(key, value.toString());
-            break;
-        }
-    }
-    return object;
-}
-
 void TopicAnalysis::bindValue(QSqlQuery &sqlQuery, const QJsonObject &object)
 {
     for (auto it = object.begin(); it != object.end(); ++it) {
@@ -507,7 +485,7 @@ QByteArray TopicAnalysis::dbOperation(const QJsonObject &object, const DatabaseO
     QJsonArray array;
     while (sqlQuery.next()) {
         // send select data
-        array.append(getJsonObject(sqlQuery, Singleton::enumKeys<T>()));
+        array.append(Singleton::getJsonObject(sqlQuery, Singleton::enumKeys<T>()));
     }
     if (!array.isEmpty())
         return Singleton::jsonToUtf8(array);
