@@ -83,8 +83,8 @@ void TopicAnalysis::createTables()
                        Singleton::enumValueToKey(CombinedDevice::placeId),
                        Singleton::enumValueToKey(CombinedDevice::agentId),
                        Singleton::enumValueToKey(CombinedDevice::status),
-                       Singleton::enumValueToKey(CombinedDevice::totalCount),
-                       Singleton::enumValueToKey(CombinedDevice::usedCount)));
+                       Singleton::enumValueToKey(CombinedDevice::totalCount))
+                  .arg(Singleton::enumValueToKey(CombinedDevice::usedCount)));
     sqlQuery.exec(QString("CREATE TABLE %1("
                           "%2   char(32)        NOT NULL PRIMARY KEY,"
                           "%3   varchar(32)     NOT NULL,"
