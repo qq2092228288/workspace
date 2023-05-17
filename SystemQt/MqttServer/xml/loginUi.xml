@@ -1,0 +1,16 @@
+<div class='form-wrapper'>
+    <div class='icon-wrapper'>
+        <img src='./images/logo.png' alt='logo'/>
+    </div>
+    <div class='input-wrapper'  onkeydown='if(event.keyCode==13){login.click()}'>
+        <div class='border-wrapper'>
+            <input type='text' id='username' placeholder='用户名' class='border-item' autocomplete='off'>
+        </div>
+        <div class='border-wrapper'>
+            <input type='password' id='password' placeholder='密码' class='border-item' autocomplete='off'>
+        </div>
+    </div>
+    <div class='action'>
+        <div class='btn' id='login' onclick="(function(){core.login(document.getElementById('username').value, document.getElementById('password').value);})()">登录</div>
+    </div>
+</div>
