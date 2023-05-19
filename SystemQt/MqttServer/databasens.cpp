@@ -40,8 +40,8 @@ QString DatabaseEnumNs::EnumTextCN::cn_AdministratorInfo(const AdministratorInfo
 QString DatabaseEnumNs::EnumTextCN::cn_AllocatedConsumables(const AllocatedConsumables &en)
 {
     switch (en) {
-    case AllocatedConsumables::consumablesId:
-        return "耗材批次编号";
+    case AllocatedConsumables::createTime:
+        return "创建时间";
     case AllocatedConsumables::type:
         return "耗材类型";
     case AllocatedConsumables::uniqueId:
@@ -52,8 +52,6 @@ QString DatabaseEnumNs::EnumTextCN::cn_AllocatedConsumables(const AllocatedConsu
         return "用户名";
     case AllocatedConsumables::count:
         return "耗材数量";
-    case AllocatedConsumables::time:
-        return "创建时间";
     }
     return QString();
 }
@@ -122,12 +120,14 @@ QString DatabaseEnumNs::EnumTextCN::cn_Computer(const Computer &en)
 QString DatabaseEnumNs::EnumTextCN::cn_ReportInfo(const ReportInfo &en)
 {
     switch (en) {
+    case ReportInfo::reportTime:
+        return "报告时间";
     case ReportInfo::uniqueId:
         return "设备编号";
-    case ReportInfo::time:
-        return "报告时间";
-    case ReportInfo::type:
-        return "报告类型";
+    case ReportInfo::name:
+        return "名称";
+    case ReportInfo::modify:
+        return "会诊(0:否, 1:是)";
     case ReportInfo::reportData:
         return "报告数据";
     }
@@ -147,7 +147,7 @@ QString DatabaseEnumNs::EnumTextCN::cn_SoftwareManagement(const SoftwareManageme
         return "下载地址";
     case SoftwareManagement::content:
         return "内容";
-    case SoftwareManagement::time:
+    case SoftwareManagement::createTime:
         return "创建时间";
     }
     return QString();
@@ -166,25 +166,48 @@ QString DatabaseEnumNs::EnumTextCN::cn_PlaceInfo(const PlaceInfo &en)
     return QString();
 }
 
+QString EnumTextCN::cn_EnumName(const QString &en)
+{
+    if (compareEname<AgentInfo>(en))
+        return "经销商";
+    else if (compareEname<AdministratorInfo>(en))
+        return "账号信息";
+    else if (compareEname<AllocatedConsumables>(en))
+        return "耗材分配";
+    else if (compareEname<CombinedDevice>(en))
+        return "设备";
+    else if (compareEname<Device>(en))
+        return "公司设备";
+    else if (compareEname<Computer>(en))
+        return "电脑";
+    else if (compareEname<ReportInfo>(en))
+        return "报告";
+    else if (compareEname<SoftwareManagement>(en))
+        return "软件管理";
+    else if (compareEname<PlaceInfo>(en))
+        return "场所";
+    return "未定义";
+}
+
 QString EnumTextCN::cn_EnumValue(const QString &enumName, const QString &en)
 {
-    if (compare<AgentInfo>(enumName))
+    if (compareEname<AgentInfo>(enumName))
         return cn_AgentInfo(toEnumValue<AgentInfo>(en));
-    else if (compare<AdministratorInfo>(enumName))
+    else if (compareEname<AdministratorInfo>(enumName))
         return cn_AdministratorInfo(toEnumValue<AdministratorInfo>(en));
-    else if (compare<AllocatedConsumables>(enumName))
+    else if (compareEname<AllocatedConsumables>(enumName))
         return cn_AllocatedConsumables(toEnumValue<AllocatedConsumables>(en));
-    else if (compare<CombinedDevice>(enumName))
+    else if (compareEname<CombinedDevice>(enumName))
         return cn_CombinedDevice(toEnumValue<CombinedDevice>(en));
-    else if (compare<Device>(enumName))
+    else if (compareEname<Device>(enumName))
         return cn_Device(toEnumValue<Device>(en));
-    else if (compare<Computer>(enumName))
+    else if (compareEname<Computer>(enumName))
         return cn_Computer(toEnumValue<Computer>(en));
-    else if (compare<ReportInfo>(enumName))
+    else if (compareEname<ReportInfo>(enumName))
         return cn_ReportInfo(toEnumValue<ReportInfo>(en));
-    else if (compare<SoftwareManagement>(enumName))
+    else if (compareEname<SoftwareManagement>(enumName))
         return cn_SoftwareManagement(toEnumValue<SoftwareManagement>(en));
-    else if (compare<PlaceInfo>(enumName))
+    else if (compareEname<PlaceInfo>(enumName))
         return cn_PlaceInfo(toEnumValue<PlaceInfo>(en));
     return en;
 }

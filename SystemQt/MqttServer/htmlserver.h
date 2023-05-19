@@ -38,15 +38,17 @@ public slots:
     void loginUi();
     void login(const QString &adminId, const QString &password);
     void currentTable(const QJsonObject &object, const QString &table);
+    void execSqlStatement(const QJsonObject &object, const QString &tableName, const QString &statement);
 signals:
     /*These signal are emitted from the C++ side and received by the HTML client side.*/
     void sendText(const QString &text);
     void sendUserInfo(const QJsonObject &userInfo);
 private:
-    void mainUi(const QJsonObject &object, QString tableName = QString());
-    QStringList columnNames(const QSqlRecord &record);
+    bool userInfoCheck(const QJsonObject &userInfo);
+    void mainUi(const QJsonObject &object, QString tableName);
+    static QStringList columnNames(const QSqlRecord &record);
     QString tableDivs(const QStringList &tableNames);
-    QString dataDivs(QSqlQuery &sqlQuery, const QString &tableName);
+    QString dataList(QSqlQuery &sqlQuery, const int &permission, bool show);
     QString xmlToJsonString(const QString &xmlPath);
     QString htmlJsonString(const QString &data);
 private:

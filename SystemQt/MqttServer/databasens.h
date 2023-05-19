@@ -46,13 +46,12 @@ enum class AdministratorInfo
 Q_ENUM_NS(AdministratorInfo)
 enum class AllocatedConsumables
 {
-    consumablesId,
+    createTime,
     type,
     uniqueId,
     agentId,
     adminId,
     count,
-    time
 };
 Q_ENUM_NS(AllocatedConsumables)
 enum class CombinedDevice
@@ -89,9 +88,10 @@ enum class Computer
 Q_ENUM_NS(Computer)
 enum class ReportInfo
 {
+    reportTime,
     uniqueId,
-    time,
-    type,
+    name,
+    modify,
     reportData
 };
 Q_ENUM_NS(ReportInfo)
@@ -102,7 +102,7 @@ enum class SoftwareManagement
     version,
     downloadPath,
     content,
-    time
+    createTime
 };
 Q_ENUM_NS(SoftwareManagement)
 enum class PlaceInfo
@@ -124,56 +124,12 @@ public:
     static QString cn_ReportInfo(const ReportInfo &en);
     static QString cn_SoftwareManagement(const SoftwareManagement &en);
     static QString cn_PlaceInfo(const PlaceInfo &en);
-    template<class T>
-    static QString cn_EnumName()
-    {
-        if (std::is_same<T, AgentInfo>::value)
-            return "经销商";
-        else if (std::is_same<T, AdministratorInfo>::value)
-            return "账号信息";
-        else if (std::is_same<T, AllocatedConsumables>::value)
-            return "耗材分配";
-        else if (std::is_same<T, CombinedDevice>::value)
-            return "设备";
-        else if (std::is_same<T, Device>::value)
-            return "公司设备";
-        else if (std::is_same<T, Computer>::value)
-            return "电脑";
-        else if (std::is_same<T, ReportInfo>::value)
-            return "报告";
-        else if (std::is_same<T, SoftwareManagement>::value)
-            return "软件管理";
-        else if (std::is_same<T, PlaceInfo>::value)
-            return "场所";
-        return "未定义";
-    }
-    static QString cn_EnumName(const QString &en)
-    {
-        if (compare<AgentInfo>(en))
-            return "经销商";
-        else if (compare<AdministratorInfo>(en))
-            return "账号信息";
-        else if (compare<AllocatedConsumables>(en))
-            return "耗材分配";
-        else if (compare<CombinedDevice>(en))
-            return "设备";
-        else if (compare<Device>(en))
-            return "公司设备";
-        else if (compare<Computer>(en))
-            return "电脑";
-        else if (compare<ReportInfo>(en))
-            return "报告";
-        else if (compare<SoftwareManagement>(en))
-            return "软件管理";
-        else if (compare<PlaceInfo>(en))
-            return "场所";
-        return "未定义";
-    }
+    static QString cn_EnumName(const QString &en);
     static QString cn_EnumValue(const QString &enumName, const QString &en);
     template<class T>
-    static bool compare(const QString &en)
+    static bool compareEname(const QString &name)
     {
-        return (0 == en.compare(QString(QMetaEnum::fromType<T>().enumName()), Qt::CaseInsensitive));
+        return (0 == name.compare(QString(QMetaEnum::fromType<T>().enumName()), Qt::CaseInsensitive));
     }
     template <class T>
     static T toEnumValue(const QString &key)
@@ -182,15 +138,26 @@ public:
     }
     // en change to enum key(case insensitive)
     template <class T>
-    static QString toEnumKey(const QString &en)
+    static QString toEnumKey(const QString &key)
     {
         auto meta = QMetaEnum::fromType<T>();
         for (int index = 0; index < meta.keyCount(); ++index) {
-            if (0 == en.compare(QString(meta.key(index)), Qt::CaseInsensitive)) {
+            if (0 == key.compare(QString(meta.key(index)), Qt::CaseInsensitive)) {
                 return QString(meta.key(index));
             }
         }
-        return en;
+        return key;
+    }
+    template <class T>
+    static bool compareEkey(const QString &ekey)
+    {
+        auto meta = QMetaEnum::fromType<T>();
+        for (int index = 0; index < meta.keyCount(); ++index) {
+            if (0 == ekey.compare(QString(meta.key(index)), Qt::CaseInsensitive)) {
+                return true;
+            }
+        }
+        return false;
     }
 };
 }

@@ -24,7 +24,7 @@ void TopicAnalysis::createTables()
     }
     QSqlQuery sqlQuery(m_database);
     sqlQuery.exec(QString("CREATE TABLE %1("
-                          "%2   char(32)        NOT NULL PRIMARY KEY,"
+                          "%2   uuid            NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),"
                           "%3   varchar(32)     NOT NULL,"
                           "%4   varchar(128)    NOT NULL,"
                           "%5   varchar(128)    NOT NULL,"
@@ -50,21 +50,19 @@ void TopicAnalysis::createTables()
                        Singleton::enumValueToKey(AdministratorInfo::uniqueIds),
                        Singleton::enumValueToKey(AdministratorInfo::remarks)));
     sqlQuery.exec(QString("CREATE TABLE %1("
-                          "%2   char(32)        NOT NULL PRIMARY KEY,"
+                          "%2   timestamp(3)    NOT NULL PRIMARY KEY DEFAULT now(),"
                           "%3   varchar(32)     NOT NULL,"
                           "%4   char(32)        NOT NULL,"
                           "%5   char(32)        NOT NULL,"
                           "%6   varchar(32)     NOT NULL,"
-                          "%7   integer         NOT NULL,"
-                          "%8   timestamp       NOT NULL)")
+                          "%7   integer         NOT NULL)")
                   .arg(Singleton::enumName<AllocatedConsumables>(),
-                       Singleton::enumValueToKey(AllocatedConsumables::consumablesId),
+                       Singleton::enumValueToKey(AllocatedConsumables::createTime),
                        Singleton::enumValueToKey(AllocatedConsumables::type),
                        Singleton::enumValueToKey(AllocatedConsumables::uniqueId),
                        Singleton::enumValueToKey(AllocatedConsumables::agentId),
                        Singleton::enumValueToKey(AllocatedConsumables::adminId),
-                       Singleton::enumValueToKey(AllocatedConsumables::count),
-                       Singleton::enumValueToKey(AllocatedConsumables::time)));
+                       Singleton::enumValueToKey(AllocatedConsumables::count)));
     sqlQuery.exec(QString("CREATE TABLE %1("
                           "%2   char(32)        NOT NULL PRIMARY KEY,"
                           "%3   varchar(32)     NOT NULL,"
@@ -112,15 +110,17 @@ void TopicAnalysis::createTables()
                        Singleton::enumValueToKey(Computer::status),
                        Singleton::enumValueToKey(Computer::remarks)));
     sqlQuery.exec(QString("CREATE TABLE %1("
-                          "%2   char(32)        NOT NULL,"
-                          "%3   timestamp       NOT NULL,"
-                          "%4   smallint        NOT NULL,"
-                          "%5   text            NOT NULL,"
+                          "%2   timestamp(3)    NOT NULL,"
+                          "%3   char(32)        NOT NULL,"
+                          "%4   text            NOT NULL,"
+                          "%5   smallint        NOT NULL DEFAULT 0,"
+                          "%6   text            NOT NULL,"
                           "PRIMARY KEY(%2,%3))")
                   .arg(Singleton::enumName<ReportInfo>(),
+                       Singleton::enumValueToKey(ReportInfo::reportTime),
                        Singleton::enumValueToKey(ReportInfo::uniqueId),
-                       Singleton::enumValueToKey(ReportInfo::time),
-                       Singleton::enumValueToKey(ReportInfo::type),
+                       Singleton::enumValueToKey(ReportInfo::name),
+                       Singleton::enumValueToKey(ReportInfo::modify),
                        Singleton::enumValueToKey(ReportInfo::reportData)));
     sqlQuery.exec(QString("CREATE TABLE %1("
                           "%2   varchar(128)    NOT NULL PRIMARY KEY,"
@@ -128,16 +128,16 @@ void TopicAnalysis::createTables()
                           "%4   varchar(32)     NOT NULL,"
                           "%5   varchar(255)    NOT NULL,"
                           "%6   text            NOT NULL,"
-                          "%7   timestamp       NOT NULL)")
+                          "%7   timestamp(3)    NOT NULL DEFAULT now())")
                   .arg(Singleton::enumName<SoftwareManagement>(),
                        Singleton::enumValueToKey(SoftwareManagement::appId),
                        Singleton::enumValueToKey(SoftwareManagement::name),
                        Singleton::enumValueToKey(SoftwareManagement::version),
                        Singleton::enumValueToKey(SoftwareManagement::downloadPath),
                        Singleton::enumValueToKey(SoftwareManagement::content),
-                       Singleton::enumValueToKey(SoftwareManagement::time)));
+                       Singleton::enumValueToKey(SoftwareManagement::createTime)));
     sqlQuery.exec(QString("CREATE TABLE %1("
-                          "%2   char(32)        NOT NULL PRIMARY KEY,"
+                          "%2   uuid            NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),"
                           "%3   varchar(128)    NOT NULL,"
                           "%4   varchar(128)    NOT NULL)")
                   .arg(Singleton::enumName<PlaceInfo>(),
@@ -241,7 +241,7 @@ void TopicAnalysis::response(const QByteArray &message, const QMqttTopicName &to
         break;
     case SecondaryTopic::uploadData:
     {
-        auto reportTimeString = Singleton::enumValueToKey(ReportInfo::time);
+        auto reportTimeString = Singleton::enumValueToKey(ReportInfo::reportTime);
         auto reportDataString = Singleton::enumValueToKey(ReportInfo::reportData);
         auto reprotTime = object.value(reportTimeString);
         auto reprotData = object.value(reportDataString);
@@ -322,7 +322,7 @@ void TopicAnalysis::response(const QByteArray &message, const QMqttTopicName &to
                 QJsonObject oldPasswordJson;
                 oldPasswordJson.insert(oldPasswordString, oldPassword.toString());
                 oldPasswordJson.insert(Singleton::enumValueToKey(RemarksType::mtime),
-                                       QDateTime::currentDateTime().toString("yyyyMMddhhmmss"));
+                                       QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss"));
                 remarks.append(oldPasswordJson);
                 sqlQuery.exec(QString("UPDATE %1 SET %2 = '%3', %4 = '%5' WHERE %6 = '%7'")
                               .arg(Singleton::enumName<AdministratorInfo>(),
@@ -366,7 +366,7 @@ QByteArray TopicAnalysis::databaseOperation(const QByteArray &message, const QMq
     switch (sTopic) {
     case SecondaryTopic::uploadData:
         dbOperation<ReportInfo>(object, type, Singleton::enumValueToKey(ReportInfo::uniqueId)
-                                + "," + Singleton::enumValueToKey(ReportInfo::time));
+                                + "," + Singleton::enumValueToKey(ReportInfo::reportTime));
         break;
     case SecondaryTopic::device:
         return dbOperation(object, type, Device::deviceId);
@@ -378,7 +378,7 @@ QByteArray TopicAnalysis::databaseOperation(const QByteArray &message, const QMq
         return dbOperation(object, type, CombinedDevice::uniqueId);
         break;
     case SecondaryTopic::allocatedConsumables:
-        return dbOperation(object, type, AllocatedConsumables::consumablesId);
+        return dbOperation(object, type, AllocatedConsumables::createTime);
         break;
     case SecondaryTopic::place:
         return dbOperation(object, type, PlaceInfo::placeId);

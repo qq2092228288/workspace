@@ -63,7 +63,7 @@ QJsonObject Singleton::getJsonObject(const QSqlQuery &sqlQuery, const QStringLis
             object.insert(key, value.toBool());
             break;
         case QVariant::Type::DateTime:
-            object.insert(key, value.toDateTime().toString("yyyy-MM-ddThh:mm:ss.zzz"));
+            object.insert(key, value.toDateTime().toString("yyyy-MM-dd hh:mm:ss.zzz"));
             break;
         default:
             object.insert(key, value.toString());

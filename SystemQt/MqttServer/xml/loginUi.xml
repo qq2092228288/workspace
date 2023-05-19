@@ -11,6 +11,6 @@
         </div>
     </div>
     <div class='action'>
-        <div class='btn' id='login' onclick="(function(){core.login(document.getElementById('username').value, document.getElementById('password').value);})()">登录</div>
+        <div class='btn' id='login' onclick="loginBtnClick()">登录</div>
     </div>
 </div>

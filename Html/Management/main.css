@@ -19,7 +19,7 @@
     border: 2px solid #0e92b3;
     text-align: center;
     line-height: 50px;
-    border-radius: 10px;
+    border-radius: 30px;
     cursor: pointer;
 }
 
@@ -41,12 +41,87 @@
     width: 100%;
     background-color: rgba(25, 35, 80, 0.8);
     table-layout: fixed;
+    word-break:break-all;
     border: 1px solid #0e92b3;
     border-radius: 10px;
     padding: 20px;
 }
+
+table tbody {
+    display: block;
+    height: 700px;
+    overflow-y: scroll;
+}
+ 
+table thead,
+tbody tr {
+    display: table;
+    width: 100%;
+    table-layout: fixed;/*重要  表格固定算法*/
+}
+ 
+table thead {/*留出滚动条的位置*/
+    width: calc(100% - 1em)
+}
+ 
+table thead th {
+    background-color:#0ba5e2;
+    border-radius: 10px;
+}
+
+table tbody tr td {
+    border-radius: 5px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow:ellipsis;
+}
+
+/* 滚动条宽度 */
+tbody::-webkit-scrollbar {
+    width: 10px;
+}
+/* 滚动条背景色和圆角 */
+tbody::-webkit-scrollbar-thumb {
+    background-image: linear-gradient(120deg, #0a0ef7 0%, #06f012 100%);
+    border-radius: 10px;
+}
+/* 滚动轨道背景色 */
+tbody::-webkit-scrollbar-track {
+    background-color:#eaeff1;
+    border-radius: 10px;
+}
+
 .data-wrapper .table .cap {
+    background-color:#0ba5e2;
     border: 1px solid #0e92b3;
     border-radius: 10px;
     padding: 5px;
+}
+
+.data-wrapper .table .cell {
+    text-align: center;
+}
+
+.data-wrapper .table .cell-btn {
+    border: 1px solid #0e92b3;
+    text-transform: uppercase;
+    border-radius: 5px;
+    text-align: center;
+    cursor: pointer;
+}
+
+.data-wrapper .table .cell-btn:hover {
+    background-image: linear-gradient(120deg, #84fab0 0%, #8fd3f4 100%);
+}
+
+#ck1{
+    display:none;
+    position:fixed;
+    top:20%;
+    left:20%;
+    width:50%;
+    height:80px;
+    z-index:9999;
+    background-color:skyblue;
+    border-radius:5px;
 }

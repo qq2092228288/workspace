@@ -1,5 +1,6 @@
 <RCC>
     <qresource prefix="/">
         <file>xml/loginUi.xml</file>
+        <file>xml/mainUi.xml</file>
     </qresource>
 </RCC>
