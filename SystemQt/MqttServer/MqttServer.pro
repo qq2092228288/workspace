@@ -12,6 +12,7 @@ SOURCES += \
         $$[QT_INSTALL_EXAMPLES]/webchannel/shared/websocketclientwrapper.cpp \
         $$[QT_INSTALL_EXAMPLES]/webchannel/shared/websockettransport.cpp \
     databasens.cpp \
+    htmlclient.cpp \
         htmlserver.cpp \
         main.cpp \
         mqttclient.cpp \
@@ -22,6 +23,7 @@ HEADERS += \
     $$[QT_INSTALL_EXAMPLES]/webchannel/shared/websocketclientwrapper.h \
     $$[QT_INSTALL_EXAMPLES]/webchannel/shared/websockettransport.h \
     databasens.h \
+    htmlclient.h \
     htmlserver.h \
     mqttclient.h \
     singleton.h \

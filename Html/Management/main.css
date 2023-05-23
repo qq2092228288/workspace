@@ -49,7 +49,7 @@
 
 table tbody {
     display: block;
-    height: 700px;
+    height: calc(75vh);
     overflow-y: scroll;
 }
  
@@ -112,16 +112,4 @@ tbody::-webkit-scrollbar-track {
 
 .data-wrapper .table .cell-btn:hover {
     background-image: linear-gradient(120deg, #84fab0 0%, #8fd3f4 100%);
-}
-
-#ck1{
-    display:none;
-    position:fixed;
-    top:20%;
-    left:20%;
-    width:50%;
-    height:80px;
-    z-index:9999;
-    background-color:skyblue;
-    border-radius:5px;
 }

@@ -33,9 +33,8 @@ function connect_server(url) {
             core.sendText.connect(function(message) {
                 try {
                     // set html from server
-                    var json = JSON.parse(message);
+                    let json = JSON.parse(message);
                     document.body.innerHTML = json.html;
-                    currentTableName = "ReportInfo";
                 } catch (error) {
                     alert(message);
                 }
@@ -43,6 +42,9 @@ function connect_server(url) {
             core.sendUserInfo.connect(function(message) {
                 // get user info when login succeeded
                 userInfo = message;
+            });
+            core.sendReport.connect(function(reprot) {
+                console.log(reprot);
             });
             // get login ui
             core.loginUi();
@@ -87,15 +89,13 @@ function loginBtnClick() {
  * @description get the table data
  * @param {string} id button id
  */
-function tablesBtnClick(tableName) {
+function tablesBtnClick(id) {
     var elements = document.getElementsByClassName('btn');
     let array = [];
     Array.prototype.forEach.call(elements, function (element) {
         array.push(element.id);
     });
-    core.currentTable(userInfo, tableName);
-    // current table name id
-    currentTableName = tableName;
+    core.currentTable(userInfo, id);
 }
 /**
  * @description click tbody element
@@ -110,16 +110,56 @@ function tbodyClick(event) {
         }
     }
     else if (element.className == 'cell-btn') {
-        if (element.id == 'append') {
-        }else if (element.id == 'delete') {
-            var pkey = document.getElementsByTagName('th')[0].id;
-            var pval = element.parentNode.parentNode.children[0].textContent;
-            var str = 'DELETE FROM ' + currentTableName + ' WHERE ' + pkey + '=\'' + pval + '\';';
-            if (confirm("确定删除此条数据吗？")) {
-                core.execSqlStatement(userInfo, currentTableName, str);
+        var headers = document.getElementsByTagName('th');
+        var rowdata = element.parentNode.parentNode.children;
+        var tableName = document.getElementsByTagName('caption')[0].id;
+        try {
+            if (element.id == 'append') {
+                let data = [];
+                for (let i = 0; i < rowdata.length - 1; ++i) {
+                    data.push(sqlValue(rowdata[i].textContent));
+                }
+                let arr = ['INSERT INTO', tableName, 'VALUES (', data.toString(), ')'];
+                core.execSqlStatement(userInfo, tableName, arr.join(' '));
+            }else if (element.id == 'delete') {
+                let arr = ['DELETE FROM', tableName, 'WHERE', sqlPair(headers[0].id, rowdata[0].textContent)];
+                if (confirm('确定要删除此数据吗?')) {
+                    core.execSqlStatement(userInfo, tableName, arr.join(' '));
+                }
+            }else if (element.id == 'update') {
+                let dlist = [];
+                for (let i = 1; i < rowdata.length - 1; ++i) {
+                    dlist.push(sqlPair(headers[i].id, rowdata[i].textContent));
+                }
+                let arr = ['UPDATE', tableName, 'SET', dlist.toString(), 'WHERE', sqlPair(headers[0].id, rowdata[0].textContent)];
+                if (confirm('确定要修改此数据吗?')) {
+                    core.execSqlStatement(userInfo, tableName, arr.join(' '));
+                }
+            }else if (element.id == 'show') {
+                let arr = ['SELECT * FROM', tableName, 'WHERE', sqlPair(headers[0].id, rowdata[0].textContent), 'AND', sqlPair(headers[1].id, rowdata[1].textContent)];
+                core.execSqlStatement(userInfo, tableName, arr.join(' '));
             }
-        }else if (element.id == 'update') {
-        }else if (element.id == 'show') {
+        } catch (error) {
+            console.error("update error: " + error);
         }
     }
+}
+/**
+ * 
+ * @param {string} key 
+ * @param {string/int} value 
+ * @returns {string} key='value'
+ */
+function sqlPair(key, value) {
+    return (key + '=' + sqlValue(value));
+}
+/**
+ * 
+ * @param {string} value 
+ * @returns {string}
+ */
+function sqlValue(value) {
+    if (value == 'default')
+        return value;
+    return ('\'' + value.trim() + '\'');
 }
