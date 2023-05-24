@@ -62,7 +62,11 @@ signals:
     void error(const DatabaseEnumNs::MessageError &);
 private:
     bool legalAdminId(const QString &id);
+#if ENABLE_COMBINE_DEVICE
     bool legalUniqueId(const QString &id);
+#else
+    bool legalDeviceId(const QString &id);
+#endif
     void response(const QByteArray &message, const QMqttTopicName &topic);
     QByteArray databaseOperation(const QByteArray &message, const QMqttTopicName &topic, const DatabaseOperation &type);
     void bindValue(QSqlQuery &sqlQuery, const QJsonObject &object);

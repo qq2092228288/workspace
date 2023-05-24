@@ -22,15 +22,20 @@ QString DatabaseEnumNs::EnumTextCN::cn_AdministratorInfo(const AdministratorInfo
 {
     switch (en) {
     case AdministratorInfo::adminId:
-        return "用户名";
+        return "用户编号";
     case AdministratorInfo::password:
         return "密码";
     case AdministratorInfo::name:
         return "姓名";
     case AdministratorInfo::permission:
         return "权限";
+#if ENABLE_COMBINE_DEVICE
     case AdministratorInfo::uniqueIds:
         return "关联的设备编号";
+#else
+    case AdministratorInfo::deviceIds:
+        return "关联的设备编号";
+#endif
     case AdministratorInfo::remarks:
         return "备注";
     }
@@ -44,18 +49,23 @@ QString DatabaseEnumNs::EnumTextCN::cn_AllocatedConsumables(const AllocatedConsu
         return "创建时间";
     case AllocatedConsumables::type:
         return "耗材类型";
+#if ENABLE_COMBINE_DEVICE
     case AllocatedConsumables::uniqueId:
         return "设备编号";
+#else
+    case AllocatedConsumables::deviceId:
+        return "设备编号";
+#endif
     case AllocatedConsumables::agentId:
         return "经销商编号";
     case AllocatedConsumables::adminId:
-        return "用户名";
+        return "用户编号";
     case AllocatedConsumables::count:
         return "耗材数量";
     }
     return QString();
 }
-
+#if ENABLE_COMBINE_DEVICE
 QString DatabaseEnumNs::EnumTextCN::cn_CombinedDevice(const CombinedDevice &en)
 {
     switch (en) {
@@ -80,24 +90,35 @@ QString DatabaseEnumNs::EnumTextCN::cn_CombinedDevice(const CombinedDevice &en)
     }
     return QString();
 }
-
+#endif
 QString DatabaseEnumNs::EnumTextCN::cn_Device(const Device &en)
 {
     switch (en) {
     case Device::deviceId:
-        return "公司设备编号";
-    case Device::type:
-        return "设备类型";
+        return "设备编号";
+#if ENABLE_COMBINE_DEVICE
     case Device::batch:
         return "批次";
-    case Device::status:
-        return "当前状态";
     case Device::remarks:
         return "备注";
+#else
+    case Device::password:
+        return "密码";
+    case Device::placeId:
+        return "场所编号";
+    case Device::agentId:
+        return "经销商编号";
+    case Device::adminId:
+        return "用户编号";
+#endif
+    case Device::type:
+        return "设备类型";
+    case Device::status:
+        return "状态(未激活:0, 激活:1)";
     }
     return QString();
 }
-
+#if ENABLE_COMBINE_DEVICE
 QString DatabaseEnumNs::EnumTextCN::cn_Computer(const Computer &en)
 {
     switch (en) {
@@ -116,14 +137,19 @@ QString DatabaseEnumNs::EnumTextCN::cn_Computer(const Computer &en)
     }
     return QString();
 }
-
+#endif
 QString DatabaseEnumNs::EnumTextCN::cn_ReportInfo(const ReportInfo &en)
 {
     switch (en) {
     case ReportInfo::reportTime:
         return "报告时间";
+#if ENABLE_COMBINE_DEVICE
     case ReportInfo::uniqueId:
         return "设备编号";
+#else
+    case ReportInfo::deviceId:
+        return "设备编号";
+#endif
     case ReportInfo::name:
         return "名称";
     case ReportInfo::modify:
@@ -174,12 +200,16 @@ QString EnumTextCN::cn_EnumName(const QString &en)
         return "账号信息";
     else if (compareEname<AllocatedConsumables>(en))
         return "耗材分配";
+#if ENABLE_COMBINE_DEVICE
     else if (compareEname<CombinedDevice>(en))
-        return "设备";
+        return "组合设备";
+#endif
     else if (compareEname<Device>(en))
-        return "公司设备";
+        return "设备";
+#if ENABLE_COMBINE_DEVICE
     else if (compareEname<Computer>(en))
         return "电脑";
+#endif
     else if (compareEname<ReportInfo>(en))
         return "报告";
     else if (compareEname<SoftwareManagement>(en))
@@ -197,12 +227,16 @@ QString EnumTextCN::cn_EnumValue(const QString &enumName, const QString &en)
         return cn_AdministratorInfo(toEnumValue<AdministratorInfo>(en));
     else if (compareEname<AllocatedConsumables>(enumName))
         return cn_AllocatedConsumables(toEnumValue<AllocatedConsumables>(en));
+#if ENABLE_COMBINE_DEVICE
     else if (compareEname<CombinedDevice>(enumName))
         return cn_CombinedDevice(toEnumValue<CombinedDevice>(en));
+#endif
     else if (compareEname<Device>(enumName))
         return cn_Device(toEnumValue<Device>(en));
+#if ENABLE_COMBINE_DEVICE
     else if (compareEname<Computer>(enumName))
         return cn_Computer(toEnumValue<Computer>(en));
+#endif
     else if (compareEname<ReportInfo>(enumName))
         return cn_ReportInfo(toEnumValue<ReportInfo>(en));
     else if (compareEname<SoftwareManagement>(enumName))

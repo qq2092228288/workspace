@@ -43,8 +43,8 @@ function connect_server(url) {
                 // get user info when login succeeded
                 userInfo = message;
             });
-            core.sendReport.connect(function(reprot) {
-                console.log(reprot);
+            core.sendReport.connect(function(report) {
+                showReport(report);
             });
             // get login ui
             core.loginUi();
@@ -163,3 +163,77 @@ function sqlValue(value) {
         return value;
     return ('\'' + value.trim() + '\'');
 }
+
+function showReport(report) {
+    // console.log(report);
+    new MyLayer({
+        top:"10%",
+        left:"10%",
+        width:"80%",
+        height:"80%",
+        title:"报告时间：" + report.reporttime + " 报告名称：" + report.name,
+        content:report.reportdata,
+        // url: "http://localhost:8080/"
+    }).openLayer();
+}
+
+/**
+ * @param options 弹窗基本配置信息
+ * @constructor 构造方法
+ */
+
+ function MyLayer(options) {
+    this.options = options ;
+  }
+  
+  /**
+   * 打开弹窗
+   */
+
+   MyLayer.prototype.openLayer = function () {
+     // 弹框窗div 绝对定位、设置zindex值1001
+    var background_layer = document.createElement("div");
+    background_layer.setAttribute("class", "background-layer");
+    // 弹框顶层div 绝对定位、设置zindex值1002
+    var open_layer = document.createElement("div");
+    open_layer.setAttribute("class", "open-layer");
+    // 弹框标题行p---两个子节点--标题节点span---span_title--关闭节点span_close
+    var div_toolBar = document.createElement("div");
+    div_toolBar.setAttribute("class", "tool-bar");
+    //标题节点span---span_title 子节点有一个文本节点
+    var span_title = document.createElement("span");
+    span_title.setAttribute("class", "span-title");
+    var span_title_content = document.createTextNode(this.options.title === undefined ? "" : this.options.title);
+    span_title.appendChild(span_title_content);
+    div_toolBar.appendChild(span_title);
+    // 关闭节点span_close 添加关闭点击事件，子节点也有一个文本节点
+    var span_close = document.createElement("span");
+    span_close.setAttribute("class", "span-close");
+    span_close.onclick = function () {
+        open_layer.style.display = "none";
+        background_layer.style.display = "none";
+    };
+    var span_close_content = document.createTextNode("关闭");
+    span_close.appendChild(span_close_content);
+    div_toolBar.appendChild(span_close);
+    open_layer.appendChild(div_toolBar);
+    // 内容div 添加到open_layer中
+    var div_content = document.createElement("div");
+    div_content.style.textAlign = "center";
+    var content_area = document.createTextNode(this.options.content === undefined ? "" : this.options.content);
+    div_content.appendChild(content_area);
+    open_layer.appendChild(div_content);
+    // 内嵌页面iframe，添加到open_layer中
+    // var iframe = document.createElement("iframe");
+    // iframe.src = this.options.url === undefined ? "" : this.options.url;
+    // iframe.style.width = "100%";
+    // iframe.style.height = "100%";
+    // open_layer.appendChild(iframe);
+    
+    // open_layer, background_layer添加到网页中
+    document.body.appendChild(open_layer);
+    document.body.appendChild(background_layer);
+    // 在调用MyLayer实例的openLayer方法时显示弹框
+    open_layer.style.display = "block" ;
+    background_layer.style.display = "block";
+};

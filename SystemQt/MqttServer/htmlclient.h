@@ -8,6 +8,10 @@
 #include <QSharedPointer>
 #include <websockettransport.h>
 
+#include "databasens.h"
+
+using namespace DatabaseEnumNs;
+
 typedef QSharedPointer<QWebChannel> QWebChannel_PTR;
 
 class HtmlClient : public QObject
@@ -29,6 +33,7 @@ signals:
 private:
     bool userInfoCheck(const QJsonObject &userInfo);
     void mainUi(const QJsonObject &object, const QString &tableName);
+    QStringList softManagementUi(const UserPermissions &permission);
     static QStringList columnNames(const QSqlRecord &record);
     QString xmlToJsonString(const QString &xmlPath);
     QString htmlJsonString(const QString &data);

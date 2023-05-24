@@ -28,8 +28,12 @@ enum class SecondaryTopic
     changePassword,             // admin request/response change password
     reports,                    // admin/server request/response reports
     device,                     // admin append/update/delete device
+#if ENABLE_COMBINE_DEVICE
     computer,                   // admin append/update/delete computer
+#endif
+#if ENABLE_COMBINE_DEVICE
     combinedDevice,             // admin append/update/delete combined device
+#endif
     allocatedConsumables,       // admin append allocated consumables
     place,                      // admin append/update/delete place
     agent                       // admin append/update/delete agent

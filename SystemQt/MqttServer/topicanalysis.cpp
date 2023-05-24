@@ -47,29 +47,38 @@ void TopicAnalysis::createTables()
                        Singleton::enumValueToKey(AdministratorInfo::password),
                        Singleton::enumValueToKey(AdministratorInfo::name),
                        Singleton::enumValueToKey(AdministratorInfo::permission),
+#if ENABLE_COMBINE_DEVICE
                        Singleton::enumValueToKey(AdministratorInfo::uniqueIds),
+#else
+                       Singleton::enumValueToKey(AdministratorInfo::deviceIds),
+#endif
                        Singleton::enumValueToKey(AdministratorInfo::remarks)));
     sqlQuery.exec(QString("CREATE TABLE %1("
                           "%2   timestamp(3)    NOT NULL PRIMARY KEY DEFAULT now(),"
                           "%3   varchar(32)     NOT NULL,"
-                          "%4   char(32)        NOT NULL,"
-                          "%5   char(32)        NOT NULL,"
+                          "%4   varchar(32)     NOT NULL,"
+                          "%5   varchar(32)     NOT NULL,"
                           "%6   varchar(32)     NOT NULL,"
                           "%7   integer         NOT NULL)")
                   .arg(Singleton::enumName<AllocatedConsumables>(),
                        Singleton::enumValueToKey(AllocatedConsumables::createTime),
                        Singleton::enumValueToKey(AllocatedConsumables::type),
+#if ENABLE_COMBINE_DEVICE
                        Singleton::enumValueToKey(AllocatedConsumables::uniqueId),
+#else
+                       Singleton::enumValueToKey(AllocatedConsumables::deviceId),
+#endif
                        Singleton::enumValueToKey(AllocatedConsumables::agentId),
                        Singleton::enumValueToKey(AllocatedConsumables::adminId),
                        Singleton::enumValueToKey(AllocatedConsumables::count)));
+#if ENABLE_COMBINE_DEVICE
     sqlQuery.exec(QString("CREATE TABLE %1("
-                          "%2   char(32)        NOT NULL PRIMARY KEY,"
+                          "%2   varchar(32)     NOT NULL PRIMARY KEY,"
                           "%3   varchar(32)     NOT NULL,"
-                          "%4   char(32)        NOT NULL,"
-                          "%5   char(32)        NOT NULL,"
-                          "%6   char(32)        NOT NULL,"
-                          "%7   char(32)        NOT NULL,"
+                          "%4   varchar(32)     NOT NULL,"
+                          "%5   varchar(32)     NOT NULL,"
+                          "%6   varchar(32)     NOT NULL,"
+                          "%7   varchar(32)     NOT NULL,"
                           "%8   smallint        NOT NULL DEFAULT 0,"
                           "%9   integer         NOT NULL DEFAULT 0,"
                           "%10  integer         NOT NULL DEFAULT 0)")
@@ -84,17 +93,36 @@ void TopicAnalysis::createTables()
                        Singleton::enumValueToKey(CombinedDevice::totalCount))
                   .arg(Singleton::enumValueToKey(CombinedDevice::usedCount)));
     sqlQuery.exec(QString("CREATE TABLE %1("
-                          "%2   char(32)        NOT NULL PRIMARY KEY,"
+                          "%2   varchar(32)     NOT NULL PRIMARY KEY,"
                           "%3   varchar(32)     NOT NULL,"
                           "%4   varchar(64)     NOT NULL,"
                           "%5   smallint        NOT NULL DEFAULT 0,"
-                          "%6   text)")
+                          "%6   text            NOT NULL)")
                   .arg(Singleton::enumName<Device>(),
                        Singleton::enumValueToKey(Device::deviceId),
                        Singleton::enumValueToKey(Device::type),
                        Singleton::enumValueToKey(Device::batch),
                        Singleton::enumValueToKey(Device::status),
                        Singleton::enumValueToKey(Device::remarks)));
+#else
+    sqlQuery.exec(QString("CREATE TABLE %1("
+                          "%2   varchar(32)     NOT NULL PRIMARY KEY,"
+                          "%3   varchar(32)     NOT NULL,"
+                          "%4   uuid            NOT NULL,"
+                          "%5   uuid            NOT NULL,"
+                          "%6   varchar(32)     NOT NULL,"
+                          "%7   varchar(32)     NOT NULL,"
+                          "%8   smallint        NOT NULL DEFAULT 0)")
+                  .arg(Singleton::enumName<Device>(),
+                       Singleton::enumValueToKey(Device::deviceId),
+                       Singleton::enumValueToKey(Device::password),
+                       Singleton::enumValueToKey(Device::placeId),
+                       Singleton::enumValueToKey(Device::agentId),
+                       Singleton::enumValueToKey(Device::adminId),
+                       Singleton::enumValueToKey(Device::type),
+                       Singleton::enumValueToKey(Device::status)));
+#endif
+#if ENABLE_COMBINE_DEVICE
     sqlQuery.exec(QString("CREATE TABLE %1("
                           "%2   macaddr         NOT NULL PRIMARY KEY,"
                           "%3   varchar(32)     NOT NULL,"
@@ -109,16 +137,21 @@ void TopicAnalysis::createTables()
                        Singleton::enumValueToKey(Computer::batch),
                        Singleton::enumValueToKey(Computer::status),
                        Singleton::enumValueToKey(Computer::remarks)));
+#endif
     sqlQuery.exec(QString("CREATE TABLE %1("
                           "%2   timestamp(3)    NOT NULL,"
-                          "%3   char(32)        NOT NULL,"
+                          "%3   varchar(32)     NOT NULL,"
                           "%4   text            NOT NULL,"
                           "%5   smallint        NOT NULL DEFAULT 0,"
                           "%6   text            NOT NULL,"
                           "PRIMARY KEY(%2,%3))")
                   .arg(Singleton::enumName<ReportInfo>(),
                        Singleton::enumValueToKey(ReportInfo::reportTime),
+#if ENABLE_COMBINE_DEVICE
                        Singleton::enumValueToKey(ReportInfo::uniqueId),
+#else
+                       Singleton::enumValueToKey(ReportInfo::deviceId),
+#endif
                        Singleton::enumValueToKey(ReportInfo::name),
                        Singleton::enumValueToKey(ReportInfo::modify),
                        Singleton::enumValueToKey(ReportInfo::reportData)));
@@ -168,9 +201,15 @@ void TopicAnalysis::messageAnalysis(const QByteArray &message, const QMqttTopicN
         switch (PrimaryTopic(level1)) {
         case PrimaryTopic::request:
             // respone to client or admin request and publish message
+#if ENABLE_COMBINE_DEVICE
             if (legalUniqueId(id) || legalAdminId(id)) {
                 emit error(MessageError::IllegalId);
             }
+#else
+            if (legalDeviceId(id) || legalAdminId(id)) {
+                emit error(MessageError::IllegalId);
+            }
+#endif
             response(message, topic);
             break;
         case PrimaryTopic::append:
@@ -212,6 +251,7 @@ bool TopicAnalysis::legalAdminId(const QString &id)
     return sqlQuery.next();
 }
 
+#if ENABLE_COMBINE_DEVICE
 bool TopicAnalysis::legalUniqueId(const QString &id)
 {
     QSqlQuery sqlQuery(m_database);
@@ -220,7 +260,16 @@ bool TopicAnalysis::legalUniqueId(const QString &id)
                        Singleton::enumValueToKey(CombinedDevice::uniqueId), id));
     return sqlQuery.next();
 }
-
+#else
+bool TopicAnalysis::legalDeviceId(const QString &id)
+{
+    QSqlQuery sqlQuery(m_database);
+    sqlQuery.exec(QString("SELECT * FROM %1 WHERE %2 = '%3'")
+                  .arg(Singleton::enumName<Device>(),
+                       Singleton::enumValueToKey(Device::deviceId), id));
+    return sqlQuery.next();
+}
+#endif
 void TopicAnalysis::response(const QByteArray &message, const QMqttTopicName &topic)
 {
     auto sTopic = getSTopic(topic);
@@ -231,6 +280,7 @@ void TopicAnalysis::response(const QByteArray &message, const QMqttTopicName &to
     switch (sTopic) {
     case SecondaryTopic::deviceInfo:
         // first upload offline used data, then get device info
+#if ENABLE_COMBINE_DEVICE
         sqlQuery.exec(QString("SELECT * FROM %1 WHERE %2 = '%3'")
                       .arg(Singleton::enumName<CombinedDevice>(),
                            Singleton::enumValueToKey(CombinedDevice::uniqueId),
@@ -238,6 +288,15 @@ void TopicAnalysis::response(const QByteArray &message, const QMqttTopicName &to
         if (sqlQuery.next()) {
             data = Singleton::jsonToUtf8(Singleton::getJsonObject(sqlQuery, Singleton::enumKeys<CombinedDevice>()));
         }
+#else
+        sqlQuery.exec(QString("SELECT * FROM %1 WHERE %2 = '%3'")
+                      .arg(Singleton::enumName<Device>(),
+                           Singleton::enumValueToKey(Device::deviceId),
+                           id));
+        if (sqlQuery.next()) {
+            data = Singleton::jsonToUtf8(Singleton::getJsonObject(sqlQuery, Singleton::enumKeys<Device>()));
+        }
+#endif
         break;
     case SecondaryTopic::uploadData:
     {
@@ -365,18 +424,27 @@ QByteArray TopicAnalysis::databaseOperation(const QByteArray &message, const QMq
     auto object = QJsonDocument::fromJson(message).object();
     switch (sTopic) {
     case SecondaryTopic::uploadData:
+#if ENABLE_COMBINE_DEVICE
         dbOperation<ReportInfo>(object, type, Singleton::enumValueToKey(ReportInfo::uniqueId)
                                 + "," + Singleton::enumValueToKey(ReportInfo::reportTime));
+#else
+        dbOperation<ReportInfo>(object, type, Singleton::enumValueToKey(ReportInfo::deviceId)
+                                + "," + Singleton::enumValueToKey(ReportInfo::reportTime));
+#endif
         break;
     case SecondaryTopic::device:
         return dbOperation(object, type, Device::deviceId);
         break;
+#if ENABLE_COMBINE_DEVICE
     case SecondaryTopic::computer:
         return dbOperation(object, type, Computer::macAddress);
         break;
+#endif
+#if ENABLE_COMBINE_DEVICE
     case SecondaryTopic::combinedDevice:
         return dbOperation(object, type, CombinedDevice::uniqueId);
         break;
+#endif
     case SecondaryTopic::allocatedConsumables:
         return dbOperation(object, type, AllocatedConsumables::createTime);
         break;
@@ -387,7 +455,11 @@ QByteArray TopicAnalysis::databaseOperation(const QByteArray &message, const QMq
         return dbOperation(object, type, AgentInfo::agentId);
         break;
     case SecondaryTopic::reports:
+#if ENABLE_COMBINE_DEVICE
         return dbOperation(object, type, ReportInfo::uniqueId);
+#else
+        return dbOperation(object, type, ReportInfo::deviceId);
+#endif
         break;
     default:
         emit error(MessageError::NoAnalysis);

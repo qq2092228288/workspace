@@ -1,8 +1,7 @@
 #include "htmlclient.h"
 #include "singleton.h"
-#include "databasens.h"
 
-using namespace DatabaseEnumNs;
+
 
 HtmlClient::HtmlClient(WebSocketTransport *client, QObject *parent)
     : QObject{parent},
@@ -101,8 +100,8 @@ bool HtmlClient::userInfoCheck(const QJsonObject &userInfo)
 {
     QStringList w;
     for (auto it = userInfo.begin(); it != userInfo.end(); ++it) {
-        w<<(it.key() + "='" + (QJsonValue::Double == it.value().type() ? QString::number(it.value().toDouble()) :
-                                                                         it.value().toString()) + "'");
+        w<<(it.key() + "='" + (QJsonValue::Double == it.value().type() ?
+            QString::number(it.value().toDouble()) : it.value().toString()) + "'");
     }
     QSqlQuery sqlQuery(Singleton::getInstance()->database());
     sqlQuery.exec(QString("SELECT * FROM %1 WHERE %2").arg(Singleton::enumName<AdministratorInfo>(), w.join(" AND ")));
@@ -124,9 +123,13 @@ void HtmlClient::mainUi(const QJsonObject &object, const QString &tableName)
         tableNames<<Singleton::enumName<AgentInfo>()
                   <<Singleton::enumName<AdministratorInfo>()
                   <<Singleton::enumName<AllocatedConsumables>()
+#if ENABLE_COMBINE_DEVICE
                   <<Singleton::enumName<CombinedDevice>()
+#endif
                   <<Singleton::enumName<Device>()
+#if ENABLE_COMBINE_DEVICE
                   <<Singleton::enumName<Computer>()
+#endif
                   <<Singleton::enumName<ReportInfo>()
                   <<Singleton::enumName<PlaceInfo>();
         break;
@@ -143,6 +146,7 @@ void HtmlClient::mainUi(const QJsonObject &object, const QString &tableName)
         QStringList columns = Singleton::enumKeys<ReportInfo>();
         columns.removeLast();
         if (UserPermissions::ReportSelectAndModify == permission || UserPermissions::ReportSelect == permission) {
+#if ENABLE_COMBINE_DEVICE
             QString uniqueIds = object.value(Singleton::enumValueToKey(AdministratorInfo::uniqueIds)
                                              .toLower()).toString().replace("{","'").replace("}","'");
             sqlQuery.exec(QString("SELECT %1 FROM %2 WHERE %3 IN(%4) ORDER BY %5 desc")
@@ -151,6 +155,16 @@ void HtmlClient::mainUi(const QJsonObject &object, const QString &tableName)
                                Singleton::enumValueToKey(ReportInfo::uniqueId),
                                uniqueIds,
                                Singleton::enumValueToKey(ReportInfo::reportTime)));
+#else
+            QString uniqueIds = object.value(Singleton::enumValueToKey(AdministratorInfo::deviceIds)
+                                             .toLower()).toString().replace("{","'").replace("}","'");
+            sqlQuery.exec(QString("SELECT %1 FROM %2 WHERE %3 IN(%4) ORDER BY %5 desc")
+                          .arg(columns.join(","),
+                               tableName,
+                               Singleton::enumValueToKey(ReportInfo::deviceId),
+                               uniqueIds,
+                               Singleton::enumValueToKey(ReportInfo::reportTime)));
+#endif
         }
         else {
             sqlQuery.exec(QString("SELECT %1 FROM %2 ORDER BY %3 desc")
@@ -261,6 +275,53 @@ void HtmlClient::mainUi(const QJsonObject &object, const QString &tableName)
     mhtml<<QString("</table>");
     mhtml<<QString("</div>");
     emit sendText(htmlJsonString(mhtml.join("")));
+}
+
+QStringList HtmlClient::softManagementUi(const UserPermissions &permission)
+{
+    QString tableName = Singleton::enumName<SoftwareManagement>();
+    QStringList mhtml;
+    // right data
+    mhtml<<QString("<div class='data-wrapper'>");
+    // table
+    mhtml<<QString("<table class='table' border='2'>");
+    // caption
+    mhtml<<QString("<caption id='%1' class='cap'>%2</caption>").arg(tableName, EnumTextCN::cn_EnumName(tableName));
+    // thead
+    mhtml<<QString("<thead>");
+    mhtml<<QString("<tr>");
+    // headers
+    QSqlQuery sqlQuery(Singleton::getInstance()->database());
+    sqlQuery.exec(QString("SELECT * FROM %1").arg(tableName));
+    auto record = sqlQuery.record();
+    for (int i = 0; i < record.count(); ++i) {
+        mhtml<<QString("<th id='%1'>%2</th>").arg(record.fieldName(i), EnumTextCN::cn_EnumValue(tableName, record.fieldName(i)));
+    }
+    mhtml<<QString("<th width='95px'>操作</th>");
+    mhtml<<QString("</tr>");
+    mhtml<<QString("</thead>");
+    // tbody
+    mhtml<<QString("<tbody onclick='tbodyClick(event)'>");
+    // append
+    if (UserPermissions::SuperAdministrator == permission || UserPermissions::SecondaryAdministrator == permission) {
+        mhtml<<QString("<tr>");
+        for (int i = 0; i < record.count(); ++i) {
+            if (0 == record.fieldName(i).compare(Singleton::enumValueToKey(SoftwareManagement::createTime), Qt::CaseInsensitive)) {
+                mhtml<<QString("<td align='center'>default</td>");
+            }
+            else {
+                mhtml<<QString("<td contenteditable='true'></td>");
+            }
+        }
+        mhtml<<QString("<td class='cell' width='100px'><button id='append' class='cell-btn'>新增</button></td>");
+        mhtml<<QString("</tr>");
+    }
+    // data
+
+    mhtml<<QString("</tbody>");
+    mhtml<<QString("</table>");
+    mhtml<<QString("</div>");
+    return mhtml;
 }
 
 QStringList HtmlClient::columnNames(const QSqlRecord &record)

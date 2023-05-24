@@ -5,6 +5,8 @@
 #include <QMetaEnum>
 #include <QDebug>
 
+#define ENABLE_COMBINE_DEVICE 0
+
 namespace DatabaseEnumNs {
 Q_NAMESPACE
 enum class MessageError
@@ -40,7 +42,11 @@ enum class AdministratorInfo
     password,
     name,
     permission,
+#if ENABLE_COMBINE_DEVICE
     uniqueIds,
+#else
+    deviceIds,
+#endif
     remarks
 };
 Q_ENUM_NS(AdministratorInfo)
@@ -48,12 +54,17 @@ enum class AllocatedConsumables
 {
     createTime,
     type,
+#if ENABLE_COMBINE_DEVICE
     uniqueId,
+#else
+    deviceId,
+#endif
     agentId,
     adminId,
     count,
 };
 Q_ENUM_NS(AllocatedConsumables)
+#if ENABLE_COMBINE_DEVICE
 enum class CombinedDevice
 {
     uniqueId,
@@ -67,15 +78,25 @@ enum class CombinedDevice
     usedCount
 };
 Q_ENUM_NS(CombinedDevice)
+#endif
 enum class Device
 {
     deviceId,
-    type,
+
+#if ENABLE_COMBINE_DEVICE
     batch,
-    status,
-    remarks
+    remarks,
+#else
+    password,
+    placeId,
+    agentId,
+    adminId,
+#endif
+    type,
+    status
 };
 Q_ENUM_NS(Device)
+#if ENABLE_COMBINE_DEVICE
 enum class Computer
 {
     macAddress,
@@ -86,10 +107,15 @@ enum class Computer
     remarks
 };
 Q_ENUM_NS(Computer)
+#endif
 enum class ReportInfo
 {
     reportTime,
+#if ENABLE_COMBINE_DEVICE
     uniqueId,
+#else
+    deviceId,
+#endif
     name,
     modify,
     reportData
@@ -118,9 +144,13 @@ public:
     static QString cn_AgentInfo(const AgentInfo &en);
     static QString cn_AdministratorInfo(const AdministratorInfo &en);
     static QString cn_AllocatedConsumables(const AllocatedConsumables &en);
+#if ENABLE_COMBINE_DEVICE
     static QString cn_CombinedDevice(const CombinedDevice &en);
+#endif
     static QString cn_Device(const Device &en);
+#if ENABLE_COMBINE_DEVICE
     static QString cn_Computer(const Computer &en);
+#endif
     static QString cn_ReportInfo(const ReportInfo &en);
     static QString cn_SoftwareManagement(const SoftwareManagement &en);
     static QString cn_PlaceInfo(const PlaceInfo &en);
