@@ -84,8 +84,9 @@ void TrendChart::mouseDoubleClickEvent(QMouseEvent *event)
 void TrendChart::clear()
 {
     m_pSeries->clear();
-    m_pAxisX->setRange(QDateTime(), QDateTime());
+    m_pAxisX->setRange(QDateTime::fromMSecsSinceEpoch(0), QDateTime::fromMSecsSinceEpoch(1));
     m_values.clear();
+    m_pLabel->clear();
 }
 
 void TrendChart::addValue(double value)

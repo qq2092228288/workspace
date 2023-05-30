@@ -44,17 +44,26 @@ public:
     template <class T>
     static QString enumName()
     {
-        return QString(QMetaEnum::fromType<T>().enumName());
+        return QString(QMetaEnum::fromType<T>().enumName()).toLower();
     }
     template <class T>
     static QString enumValueToKey(const T &value)
     {
-        return QString(QMetaEnum::fromType<T>().valueToKey(static_cast<int>(value)));
+        return QString(QMetaEnum::fromType<T>().valueToKey(static_cast<int>(value))).toLower();
     }
     template <class T>
     static int enumKeyToValue(const QString &key)
     {
-        return QMetaEnum::fromType<T>().keyToValue(key.toStdString().c_str());
+        QMetaEnum meta = QMetaEnum::fromType<T>();
+        auto value = meta.keyToValue(key.toStdString().c_str());
+        if (-1 == value) {
+            for (int index = 0; index < meta.keyCount(); ++index) {
+                if (0 == key.compare(QString(meta.key(index)), Qt::CaseInsensitive)) {
+                    return meta.keyToValue(meta.key(index));
+                }
+            }
+        }
+        return value;
     }
     template <class T>
     static QStringList enumKeys()
@@ -62,7 +71,7 @@ public:
         QStringList keys;
         auto meta = QMetaEnum::fromType<T>();
         for (int index = 0; index < meta.keyCount(); ++index) {
-            keys<<QString(meta.key(index));
+            keys<<QString(meta.key(index)).toLower();
         }
         return keys;
     }
@@ -84,7 +93,7 @@ public:
     {
         return QJsonDocument::fromJson(json).array();
     }
-    static QJsonObject getJsonObject(const QSqlQuery &sqlQuery, const QStringList &keys);
+    static QJsonObject getJsonObject(const QSqlQuery &sqlQuery);
     void setDatabase(QSqlDatabase *database);
     QSqlDatabase database();
 private:

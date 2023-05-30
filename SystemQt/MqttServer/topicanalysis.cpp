@@ -57,7 +57,7 @@ void TopicAnalysis::createTables()
                           "%2   timestamp(3)    NOT NULL PRIMARY KEY DEFAULT now(),"
                           "%3   varchar(32)     NOT NULL,"
                           "%4   varchar(32)     NOT NULL,"
-                          "%5   varchar(32)     NOT NULL,"
+                          "%5   uuid            NOT NULL,"
                           "%6   varchar(32)     NOT NULL,"
                           "%7   integer         NOT NULL)")
                   .arg(Singleton::enumName<AllocatedConsumables>(),
@@ -201,15 +201,10 @@ void TopicAnalysis::messageAnalysis(const QByteArray &message, const QMqttTopicN
         switch (PrimaryTopic(level1)) {
         case PrimaryTopic::request:
             // respone to client or admin request and publish message
-#if ENABLE_COMBINE_DEVICE
-            if (legalUniqueId(id) || legalAdminId(id)) {
-                emit error(MessageError::IllegalId);
-            }
-#else
-            if (legalDeviceId(id) || legalAdminId(id)) {
-                emit error(MessageError::IllegalId);
-            }
-#endif
+//            if (!legalDeviceId(id) && !legalAdminId(id)) {
+//                emit error(MessageError::IllegalId);
+//                return;
+//            }
             response(message, topic);
             break;
         case PrimaryTopic::append:
@@ -251,16 +246,6 @@ bool TopicAnalysis::legalAdminId(const QString &id)
     return sqlQuery.next();
 }
 
-#if ENABLE_COMBINE_DEVICE
-bool TopicAnalysis::legalUniqueId(const QString &id)
-{
-    QSqlQuery sqlQuery(m_database);
-    sqlQuery.exec(QString("SELECT * FROM %1 WHERE %2 = '%3'")
-                  .arg(Singleton::enumName<CombinedDevice>(),
-                       Singleton::enumValueToKey(CombinedDevice::uniqueId), id));
-    return sqlQuery.next();
-}
-#else
 bool TopicAnalysis::legalDeviceId(const QString &id)
 {
     QSqlQuery sqlQuery(m_database);
@@ -269,7 +254,7 @@ bool TopicAnalysis::legalDeviceId(const QString &id)
                        Singleton::enumValueToKey(Device::deviceId), id));
     return sqlQuery.next();
 }
-#endif
+
 void TopicAnalysis::response(const QByteArray &message, const QMqttTopicName &topic)
 {
     auto sTopic = getSTopic(topic);
@@ -280,35 +265,35 @@ void TopicAnalysis::response(const QByteArray &message, const QMqttTopicName &to
     switch (sTopic) {
     case SecondaryTopic::deviceInfo:
         // first upload offline used data, then get device info
-#if ENABLE_COMBINE_DEVICE
-        sqlQuery.exec(QString("SELECT * FROM %1 WHERE %2 = '%3'")
-                      .arg(Singleton::enumName<CombinedDevice>(),
-                           Singleton::enumValueToKey(CombinedDevice::uniqueId),
-                           id));
+        sqlQuery.prepare(QString("SELECT *, "
+                                 "(SELECT SUM(%1) AS totalCount FROM %2 WHERE %3 = ?), "
+                                 "(SELECT COUNT(*) AS usedCount FROM %4 WHERE %3 = ?)"
+                                 "FROM %5 WHERE %3 = ? AND %6 = ?")
+                         .arg(Singleton::enumValueToKey(AllocatedConsumables::count),
+                              Singleton::enumName<AllocatedConsumables>(),
+                              Singleton::enumValueToKey(Device::deviceId),
+                              Singleton::enumName<ReportInfo>(),
+                              Singleton::enumName<Device>(),
+                              Singleton::enumValueToKey(Device::password)));
+        sqlQuery.addBindValue(id);
+        sqlQuery.addBindValue(id);
+        sqlQuery.addBindValue(id);
+        sqlQuery.addBindValue(object.value(Singleton::enumValueToKey(Device::password)).toString());
+        sqlQuery.exec();
         if (sqlQuery.next()) {
-            data = Singleton::jsonToUtf8(Singleton::getJsonObject(sqlQuery, Singleton::enumKeys<CombinedDevice>()));
+            data = Singleton::jsonToUtf8(Singleton::getJsonObject(sqlQuery));
         }
-#else
-        sqlQuery.exec(QString("SELECT * FROM %1 WHERE %2 = '%3'")
-                      .arg(Singleton::enumName<Device>(),
-                           Singleton::enumValueToKey(Device::deviceId),
-                           id));
-        if (sqlQuery.next()) {
-            data = Singleton::jsonToUtf8(Singleton::getJsonObject(sqlQuery, Singleton::enumKeys<Device>()));
-        }
-#endif
         break;
     case SecondaryTopic::uploadData:
     {
         auto reportTimeString = Singleton::enumValueToKey(ReportInfo::reportTime);
-        auto reportDataString = Singleton::enumValueToKey(ReportInfo::reportData);
-        auto reprotTime = object.value(reportTimeString);
-        auto reprotData = object.value(reportDataString);
+        auto reportTime = object.value(reportTimeString);
+        auto reportData = object.value(Singleton::enumValueToKey(ReportInfo::reportData));
         // insert valid data, if exist, ignore
-        if (reprotTime.type() != QJsonValue::Undefined && reprotData != QJsonValue::Undefined) {
+        if (reportTime.type() != QJsonValue::Undefined && reportData != QJsonValue::Undefined) {
             databaseOperation(message, topic, DatabaseOperation::Insert);
             QJsonObject json;
-            json.insert(reportTimeString, reprotTime.toString());
+            json.insert(reportTimeString, reportTime.toString());
             data = Singleton::jsonToUtf8(json);
         }
         else {
@@ -326,7 +311,7 @@ void TopicAnalysis::response(const QByteArray &message, const QMqttTopicName &to
                                appIdString,
                                appId.toString()));
             if (sqlQuery.next()) {
-                data = Singleton::jsonToUtf8(Singleton::getJsonObject(sqlQuery, Singleton::enumKeys<SoftwareManagement>()));
+                data = Singleton::jsonToUtf8(Singleton::getJsonObject(sqlQuery));
             }
         }
         else {
@@ -557,7 +542,7 @@ QByteArray TopicAnalysis::dbOperation(const QJsonObject &object, const DatabaseO
     QJsonArray array;
     while (sqlQuery.next()) {
         // send select data
-        array.append(Singleton::getJsonObject(sqlQuery, Singleton::enumKeys<T>()));
+        array.append(Singleton::getJsonObject(sqlQuery));
     }
     if (!array.isEmpty())
         return Singleton::jsonToUtf8(array);

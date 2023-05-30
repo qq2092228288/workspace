@@ -583,7 +583,7 @@ void EnterSystemWidget::recordPosition()
             QMessageBox::information(this, tr("提示"), tr("请先输入血压。"));
             return;
         }
-        else if (0 == regulator->getCustomCtrl(typeName(Type::SV))->getCurrentValue()) {
+        else if (0 == regulator->getCustomCtrl(typeName(Type::SSVRI))->getCurrentValue()) {
             QMessageBox::information(this, tr("提示"), tr("数据检测中，请稍后。"));
             return;
         }

@@ -31,7 +31,7 @@ void HtmlClient::login(const QString &adminId, const QString &password)
     sqlQuery.addBindValue(password);
     sqlQuery.exec();
     if (sqlQuery.next()) {
-        auto userInfo = Singleton::getJsonObject(sqlQuery, columnNames(sqlQuery.record()));
+        auto userInfo = Singleton::getJsonObject(sqlQuery);
         emit sendUserInfo(userInfo);
         mainUi(userInfo, Singleton::enumName<ReportInfo>());
     }
@@ -87,7 +87,7 @@ void HtmlClient::execSqlStatement(const QJsonObject &object, const QString &tabl
         }
         else {
             if (0 == sql.indexOf("select ", 0, Qt::CaseInsensitive) && sqlQuery.next()) {
-                emit sendReport(Singleton::getJsonObject(sqlQuery, columnNames(sqlQuery.record())));
+                emit sendReport(Singleton::getJsonObject(sqlQuery));
             }
             else {
                mainUi(object, tableName);
@@ -118,10 +118,10 @@ void HtmlClient::mainUi(const QJsonObject &object, const QString &tableName)
     QStringList tableNames;
     switch (permission) {
     case UserPermissions::SuperAdministrator:
-        tableNames<<Singleton::enumName<SoftwareManagement>();
+        tableNames<<Singleton::enumName<SoftwareManagement>()
+                  <<Singleton::enumName<AdministratorInfo>();
     case UserPermissions::SecondaryAdministrator:
         tableNames<<Singleton::enumName<AgentInfo>()
-                  <<Singleton::enumName<AdministratorInfo>()
                   <<Singleton::enumName<AllocatedConsumables>()
 #if ENABLE_COMBINE_DEVICE
                   <<Singleton::enumName<CombinedDevice>()
@@ -156,13 +156,13 @@ void HtmlClient::mainUi(const QJsonObject &object, const QString &tableName)
                                uniqueIds,
                                Singleton::enumValueToKey(ReportInfo::reportTime)));
 #else
-            QString uniqueIds = object.value(Singleton::enumValueToKey(AdministratorInfo::deviceIds)
+            QString deviceIds = object.value(Singleton::enumValueToKey(AdministratorInfo::deviceIds)
                                              .toLower()).toString().replace("{","'").replace("}","'");
             sqlQuery.exec(QString("SELECT %1 FROM %2 WHERE %3 IN(%4) ORDER BY %5 desc")
                           .arg(columns.join(","),
                                tableName,
                                Singleton::enumValueToKey(ReportInfo::deviceId),
-                               uniqueIds,
+                               deviceIds,
                                Singleton::enumValueToKey(ReportInfo::reportTime)));
 #endif
         }
@@ -192,34 +192,38 @@ void HtmlClient::mainUi(const QJsonObject &object, const QString &tableName)
     // right data
     mhtml<<QString("<div class='data-wrapper'>");
     // table
-    mhtml<<QString("<table class='table' border='2'>");
+    mhtml<<QString("<table class='data-table' border='2'>");
     // caption
     mhtml<<QString("<caption id='%1' class='cap'>%2</caption>").arg(tableName, EnumTextCN::cn_EnumName(tableName));
     // thead
     mhtml<<QString("<thead>");
-    mhtml<<QString("<tr>");
+    mhtml<<QString("<tr class='data-tr'>");
     // headers
     auto record = sqlQuery.record();
     for (int i = 0; i < record.count(); ++i) {
-        mhtml<<QString("<th id='%1'>%2</th>").arg(record.fieldName(i), EnumTextCN::cn_EnumValue(tableName, record.fieldName(i)));
+        mhtml<<QString("<th class='data-th' id='%1'>%2</th>").arg(record.fieldName(i), EnumTextCN::cn_EnumValue(tableName, record.fieldName(i)));
     }
-    mhtml<<QString("<th width='95px'>操作</th>");
+    mhtml<<QString("<th class='data-th' width='95px'>操作</th>");
     mhtml<<QString("</tr>");
     mhtml<<QString("</thead>");
     // tbody
-    mhtml<<QString("<tbody onclick='tbodyClick(event)'>");
+    mhtml<<QString("<tbody class='data-tbody' onclick='tbodyClick(event)'>");
     // data
     bool uneditable = false;
     if (EnumTextCN::compareEname<ReportInfo>(tableName)) {
         uneditable = true;
     }
     if (!uneditable) {  // this row is insert data
-        mhtml<<QString("<tr>");
+        mhtml<<QString("<tr class='data-tr'>");
         for (int i = 0; i < record.count(); ++i) {
-            if (uneditable || record.fieldName(i).indexOf("time", 0, Qt::CaseInsensitive) >= 0 ||
-                    (i == 0 && (record.fieldName(i).compare(Singleton::enumValueToKey(AgentInfo::agentId), Qt::CaseInsensitive) == 0 ||
-                                record.fieldName(i).compare(Singleton::enumValueToKey(PlaceInfo::placeId), Qt::CaseInsensitive) == 0))) {
+            auto fname = record.fieldName(i);
+            if (uneditable || fname.indexOf("time", 0, Qt::CaseInsensitive) >= 0 ||
+                    (i == 0 && (fname.compare(Singleton::enumValueToKey(AgentInfo::agentId), Qt::CaseInsensitive) == 0 ||
+                                fname.compare(Singleton::enumValueToKey(PlaceInfo::placeId), Qt::CaseInsensitive) == 0))) {
                 mhtml<<QString("<td align='center'>default</td>");
+            }
+            else if (0 != i && 0 == fname.compare(Singleton::enumValueToKey(AdministratorInfo::adminId), Qt::CaseInsensitive)) {
+                mhtml<<QString("<td>%1</td>").arg(object.value(Singleton::enumValueToKey(AdministratorInfo::adminId).toLower()).toString());
             }
             else {
                 mhtml<<QString("<td contenteditable='true'></td>");
@@ -229,29 +233,25 @@ void HtmlClient::mainUi(const QJsonObject &object, const QString &tableName)
         mhtml<<QString("</tr>");
     }
     while (sqlQuery.next()) {
-        mhtml<<QString("<tr>");
+        mhtml<<QString("<tr class='data-tr'>");
         for (int i = 0; i < record.count(); ++i) {
             auto value = sqlQuery.value(i);
             QString property = (uneditable || 0 == i || EnumTextCN::compareEname<AllocatedConsumables>(tableName)) ?
                         QString() : QString(" contenteditable='true'");
             switch (value.type()) {
             case QVariant::Type::Int:
-                mhtml<<QString("<td%1>%2</td>").arg(property).arg(value.toInt());
-                break;
-            case QVariant::Type::Double:
-                mhtml<<QString("<td%1>%2</td>").arg(property).arg(value.toDouble());
-                break;
-            case QVariant::Type::Bool:
-                mhtml<<QString("<td%1>%2</td>").arg(property).arg(value.toBool());
+                if (record.fieldName(i) == Singleton::enumValueToKey(AdministratorInfo::permission))
+                    mhtml<<QString("<td class='data-td'>%1</td>").arg(value.toInt());
+                else mhtml<<QString("<td class='data-td'%1>%2</td>").arg(property).arg(value.toInt());
                 break;
             case QVariant::Type::DateTime:
-                mhtml<<QString("<td>%1</td>").arg(value.toDateTime().toString("yyyy-MM-dd hh:mm:ss.zzz"));
+                mhtml<<QString("<td class='data-td'>%1</td>").arg(value.toDateTime().toString("yyyy-MM-dd hh:mm:ss.zzz"));
                 break;
             default:
-                if (!uneditable && i == 1 && record.fieldName(i)
-                        .compare(Singleton::enumValueToKey(AdministratorInfo::password), Qt::CaseInsensitive) == 0)
-                    mhtml<<QString("<td>%1</td>").arg(value.toString());
-                else mhtml<<QString("<td%1>%2</td>").arg(property, value.toString());
+                if (record.fieldName(i) == Singleton::enumValueToKey(AdministratorInfo::adminId) ||
+                    record.fieldName(i) == Singleton::enumValueToKey(AdministratorInfo::password))
+                    mhtml<<QString("<td class='data-td'>%1</td>").arg(value.toString());
+                else mhtml<<QString("<td class='data-td'%1>%2</td>").arg(property, value.toString());
                 break;
             }
         }

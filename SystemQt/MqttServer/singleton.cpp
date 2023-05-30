@@ -47,11 +47,13 @@ QString Singleton::createUniqueId(const QString &macAddress, const QString &devi
     return QCryptographicHash::hash(md5.toLatin1(), QCryptographicHash::Md5).toHex().toLower();
 }
 
-QJsonObject Singleton::getJsonObject(const QSqlQuery &sqlQuery, const QStringList &keys)
+QJsonObject Singleton::getJsonObject(const QSqlQuery &sqlQuery)
 {
     QJsonObject object;
-    foreach (auto key, keys) {
-        auto value = sqlQuery.value(key);
+    auto record = sqlQuery.record();
+    for (int index = 0; index < record.count(); ++index) {
+        auto value = sqlQuery.value(index);
+        auto key = record.fieldName(index);
         switch (value.type()) {
         case QVariant::Type::Int:
             object.insert(key, value.toInt());
