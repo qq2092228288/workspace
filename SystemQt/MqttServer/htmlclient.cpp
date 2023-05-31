@@ -81,9 +81,8 @@ void HtmlClient::execSqlStatement(const QJsonObject &object, const QString &tabl
         }
         QSqlQuery sqlQuery(Singleton::getInstance()->database());
         sqlQuery.exec(sql);
-        QString lasterror = sqlQuery.lastError().text();
-        if (!lasterror.isEmpty()) {
-            emit sendText(lasterror);
+        if (sqlQuery.lastError().type() != QSqlError::NoError) {
+            emit sendText(sqlQuery.lastError().text());
         }
         else {
             if (0 == sql.indexOf("select ", 0, Qt::CaseInsensitive) && sqlQuery.next()) {
