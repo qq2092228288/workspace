@@ -641,7 +641,7 @@ void EnterSystemWidget::createReport()
         QDateTime curTime = temp.secondPosture.cTime.isValid() ? temp.secondPosture.cTime : temp.firstPosture.cTime;
         temp.reportConclusion = instance.saveReport(curTime, posGroup.checkedButton()->text(), !rPos.isEmpty());
         waiting.exec();
-        emit createdReport(temp.structToJsonString());
+        emit createdReport(curTime.toMSecsSinceEpoch(), temp.structToJsonString());
         instance.reportPreview(instance.getNewReportName());
         if (manyBtn->isChecked()) {
             recordBtn->show();
@@ -765,10 +765,12 @@ void EnterSystemWidget::setBaseData()
     baseData.patient.hb = QString::number(bodyValue.hb);
     // 场所信息
     auto hospitalInfo = DataManagement::getInstance().getHospitalInfo();
-    baseData.place.placeId = hospitalInfo->place2Name;
-    baseData.place.place1Id = hospitalInfo->place1Id;
-    baseData.place.place2Id = hospitalInfo->place2Id;
-    baseData.place.deviceId = hospitalInfo->deviceId;
+//    baseData.place.placeId = hospitalInfo->place2Name;
+//    baseData.place.place1Id = hospitalInfo->place1Id;
+//    baseData.place.place2Id = hospitalInfo->place2Id;
+//    baseData.place.deviceId = hospitalInfo->deviceId;
+    baseData.place.primaryPlace = hospitalInfo->hospitalName;
+    baseData.place.secondaryPlace = hospitalInfo->roomName;
     baseData.place.inspector = hospitalInfo->doctorName.isEmpty() ? "unknown" : hospitalInfo->doctorName;
 //    baseData.sudokuPix = sudokuDraw->grab();
     baseData.sudokuPix = sudokuWidget->grab();

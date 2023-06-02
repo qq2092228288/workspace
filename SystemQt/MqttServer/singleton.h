@@ -25,6 +25,7 @@ class Singleton : public QObject
     Q_OBJECT
 public:
     static QString currentTime();
+    static QString serverAddress();
     static QString hostname();
     // mqtt
     static quint16 mqttPort();

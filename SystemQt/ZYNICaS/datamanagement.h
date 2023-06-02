@@ -16,9 +16,10 @@
 //#include "drawsudoku.h"
 #include "zytebco.h"
 #include "createreportthread.h"
-#include "httppost.h"
-#include "reportdatabase.h"
-#include "devicedatabase.h"
+//#include "httppost.h"
+//#include "reportdatabase.h"
+//#include "devicedatabase.h"
+#include "mqttclient.h"
 
 // 文件路径
 class MyFilePath
@@ -139,11 +140,12 @@ public:
     Args &getArgs();
     CustomCtrlRegulator *getRegulator() const;
     HospitalInfo *getHospitalInfo() const;
-    HttpPost *httpPost() const;
+//    HttpPost *httpPost() const;
     QString getMac() const;
-    ReportDataBase *reportDataBase() const;
-    DeviceDatabase *deviceDatabase() const;
-    int surplus() const;
+//    ReportDataBase *reportDataBase() const;
+//    DeviceDatabase *deviceDatabase() const;
+//    int surplus() const;
+    MqttClient *mqttClient() const;
 public:
     void setHospitalInfo(HospitalInfo *hospitalInfo);
     void setBodyValue(BodyValue *bodyValue);
@@ -151,8 +153,8 @@ public:
     // 心阻抗图
     void setdZ(QChartView *dZ);
     void setSudoku(QWidget *sudoku);
-    void setReportDataBase(ReportDataBase *reportDataBase);
-    void setDeviceDatabase(DeviceDatabase *deviceDatabase);
+//    void setReportDataBase(ReportDataBase *reportDataBase);
+//    void setDeviceDatabase(DeviceDatabase *deviceDatabase);
 public slots:
     void recordPosition(QString position);
     QString saveReport(QDateTime curTime, QString position, bool record);
@@ -160,7 +162,7 @@ public slots:
     void reportPreview(const QString &path);
     void reportPrintOut(const QString &path);
     void customCtrlTimer(bool start);
-    void requestConsumableList();
+//    void requestConsumableList();
 private:
     void saveInfo(Cdata &cdata, bool second = false);
     QString flag(CustomCtrl *customCtrl, bool second);
@@ -203,9 +205,10 @@ private:
     // 屏幕大小
     QSize m_winSize;
 //    IdCheck *m_pIdCheck;
-    HttpPost *m_pHttpPost;
-    ReportDataBase *m_pReportDataBase;
-    DeviceDatabase *m_pDeviceDatabase;
+//    HttpPost *m_pHttpPost;
+//    ReportDataBase *m_pReportDataBase;
+//    DeviceDatabase *m_pDeviceDatabase;
+    MqttClient *m_client;
 };
 
 #endif // DATAMANAGEMENT_H

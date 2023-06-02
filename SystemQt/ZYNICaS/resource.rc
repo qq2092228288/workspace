@@ -30,6 +30,7 @@ VS_VERSION_INFO VERSIONINFO
                 VALUE "OriginalFilename", "YZNICaS.exe\0"
 				VALUE "ProductName", "无创血流动力学检测系统\0"
                 VALUE "OrganizationDomain", "http://zeyaotebco.com/\0"
+                VALUE "AppId", "92FB908B-79F3-4B31-9499-5E57A7239285"
 			END
 		END
 		BLOCK "VarFileInfo"

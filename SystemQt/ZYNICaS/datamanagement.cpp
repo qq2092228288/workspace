@@ -185,7 +185,8 @@ DataManagement::DataManagement()
     m_pTebco = new ZyTebco;
     reportThread = new CreateReportThread;
 //    m_pIdCheck = new IdCheck;
-    m_pHttpPost = new HttpPost;
+//    m_pHttpPost = new HttpPost;
+    m_client = new MqttClient;
 }
 
 DataManagement::~DataManagement()
@@ -193,12 +194,13 @@ DataManagement::~DataManagement()
     reportThread->quit();
     reportThread->wait();
     delete m_pTebco;
-    delete m_pHttpPost;
+//    delete m_pHttpPost;
     delete reportThread;
     // delete temp dir
 //    QDir dir(m_filePath.tempDir());
 //    dir.removeRecursively();
 //    qDebug()<<"~DataManagement()";
+    delete m_client;
 }
 
 ZyTebco *DataManagement::getTebco() const
@@ -348,10 +350,10 @@ HospitalInfo *DataManagement::getHospitalInfo() const
     return m_pHospitalInfo;
 }
 
-HttpPost *DataManagement::httpPost() const
-{
-    return m_pHttpPost;
-}
+//HttpPost *DataManagement::httpPost() const
+//{
+//    return m_pHttpPost;
+//}
 
 QString DataManagement::getMac() const
 {
@@ -367,20 +369,25 @@ QString DataManagement::getMac() const
     return QString();
 }
 
-ReportDataBase *DataManagement::reportDataBase() const
+MqttClient *DataManagement::mqttClient() const
 {
-    return m_pReportDataBase;
+    return m_client;
 }
 
-DeviceDatabase *DataManagement::deviceDatabase() const
-{
-    return m_pDeviceDatabase;
-}
+//ReportDataBase *DataManagement::reportDataBase() const
+//{
+//    return m_pReportDataBase;
+//}
 
-int DataManagement::surplus() const
-{
-    return (deviceDatabase()->getConsumableSurplus() + IdCheck::getCurrentConsumables());
-}
+//DeviceDatabase *DataManagement::deviceDatabase() const
+//{
+//    return m_pDeviceDatabase;
+//}
+
+//int DataManagement::surplus() const
+//{
+//    return (deviceDatabase()->getConsumableSurplus() + IdCheck::getCurrentConsumables());
+//}
 
 void DataManagement::setHospitalInfo(HospitalInfo *hospitalInfo)
 {
@@ -407,15 +414,15 @@ void DataManagement::setSudoku(QWidget *sudoku)
     this->m_pSudoku = sudoku;
 }
 
-void DataManagement::setReportDataBase(ReportDataBase *reportDataBase)
-{
-    this->m_pReportDataBase = reportDataBase;
-}
+//void DataManagement::setReportDataBase(ReportDataBase *reportDataBase)
+//{
+//    this->m_pReportDataBase = reportDataBase;
+//}
 
-void DataManagement::setDeviceDatabase(DeviceDatabase *deviceDatabase)
-{
-    this->m_pDeviceDatabase = deviceDatabase;
-}
+//void DataManagement::setDeviceDatabase(DeviceDatabase *deviceDatabase)
+//{
+//    this->m_pDeviceDatabase = deviceDatabase;
+//}
 
 void DataManagement::recordPosition(QString position)
 {
@@ -668,12 +675,12 @@ void DataManagement::customCtrlTimer(bool start)
     }
 }
 
-void DataManagement::requestConsumableList()
-{
-    if (m_pHttpPost != nullptr && m_pDeviceDatabase != nullptr) {
-        emit onlineConsumableList("1", "10000", m_pDeviceDatabase->getDeviceInfo("deviceId"), nullptr, nullptr);
-    }
-}
+//void DataManagement::requestConsumableList()
+//{
+//    if (m_pHttpPost != nullptr && m_pDeviceDatabase != nullptr) {
+//        emit onlineConsumableList("1", "10000", m_pDeviceDatabase->getDeviceInfo("deviceId"), nullptr, nullptr);
+//    }
+//}
 
 void DataManagement::saveInfo(Cdata &cdata, bool second)
 {

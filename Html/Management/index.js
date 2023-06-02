@@ -402,12 +402,16 @@ function reportTable(position, bodyInfo, reportConclusion, table) {
     tr_header.appendChild(th_fp);
     try {
         var sdata = position[1].data;
-        var th_sp = document.createElement("th");
-        th_sp.setAttribute("class", "report-th");
-        th_sp.textContent = positionCn(sdata[getValue(DataType.Pos)]);
-        tr_header.appendChild(th_sp);
-    } catch (error) {
+        if (Object.keys(sdata).length > 0) {
+            var posCn = positionCn(sdata[getValue(DataType.Pos)]);
+            var th_sp = document.createElement("th");
+            th_sp.setAttribute("class", "report-th");
+            th_sp.textContent = posCn;
+            tr_header.appendChild(th_sp);
+        }
         
+    } catch (error) {
+        console.error(error);
     }
     var th_range = document.createElement("th");
     th_range.setAttribute("class", "report-th");
@@ -427,14 +431,16 @@ function reportTable(position, bodyInfo, reportConclusion, table) {
     var arr_hr = [fpd.hr, fpd.sbp, fpd.dbp, fpd.map];
     // 第二体位数据
     try {
-        let spd = positionData(bodyInfo, sdata);
-        arr_co.push(spd.co, spd.ci, spd.do2, spd.sv, spd.si, spd.hrv);
-        arr_tfc.push(spd.tfc, spd.edi, spd.svv, spd.vol);
-        arr_svr.push(spd.svr, spd.ssvr, spd.ssvri, spd.svri, spd.vas);
-        arr_pep.push(spd.pep, spd.lvet, spd.lsw, spd.lswi, spd.lcw, spd.lcwi, spd.str, spd.epci, spd.isi, spd.ino);
-        arr_hr.push(spd.hr, spd.sbp, spd.dbp, spd.map);
+        if (Object.keys(sdata).length > 0) {
+            let spd = positionData(bodyInfo, sdata);
+            arr_co.push(spd.co, spd.ci, spd.do2, spd.sv, spd.si, spd.hrv);
+            arr_tfc.push(spd.tfc, spd.edi, spd.svv, spd.vol);
+            arr_svr.push(spd.svr, spd.ssvr, spd.ssvri, spd.svri, spd.vas);
+            arr_pep.push(spd.pep, spd.lvet, spd.lsw, spd.lswi, spd.lcw, spd.lcwi, spd.str, spd.epci, spd.isi, spd.ino);
+            arr_hr.push(spd.hr, spd.sbp, spd.dbp, spd.map);
+        }
     } catch (error) {
-
+        console.log(error);
     }
     getTableRowElement(
         tbody,
@@ -497,7 +503,7 @@ function positionCn(pos) {
     else if (pos == 3) {
         return "抬腿";
     }
-    return "未知";
+    return null;
 }
 /**
  * 
@@ -539,7 +545,7 @@ function getTableRowElement(tbody, content, type, data) {
             let td_sd = document.createElement("td");
             td_sd.setAttribute("class", "report-td");
             td_sd.textContent = actualValue(data[type.length + index].toFixed(dtype.getFixed(key)));
-            tr.appendChild(td_sd)
+            tr.appendChild(td_sd);
         }
         // 正常值范围
         let td_range = document.createElement("td");
@@ -564,7 +570,7 @@ function getTableRowElement(tbody, content, type, data) {
  * @returns 
  */
 function actualValue(value) {
-    if (valueInvalid(value)) {
+    if (valueInvalid(value) || isNaN(value)) {
         return "-";
     }
     return value;
@@ -576,6 +582,9 @@ function actualValue(value) {
  * @returns 
  */
 function positionData(bodyInfo, pdata) {
+    if (pdata.length == 0) {
+        return {};
+    }
     // 身体数据
     var age = bodyInfo.age;
     var height = bodyInfo.height;

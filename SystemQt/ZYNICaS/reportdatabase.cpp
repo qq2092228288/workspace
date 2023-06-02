@@ -24,7 +24,7 @@ ReportDataBase::ReportDataBase(QObject *parent)
         qWarning("数据库打开失败！");
     }
 
-    connect(DataManagement::getInstance().httpPost(), &HttpPost::finished, this, &ReportDataBase::dataUploaded);
+//    connect(DataManagement::getInstance().httpPost(), &HttpPost::finished, this, &ReportDataBase::dataUploaded);
 }
 
 ReportDataBase::~ReportDataBase()

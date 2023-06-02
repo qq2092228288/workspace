@@ -1,6 +1,7 @@
 #include "mainwidget.h"
 #include "datamanagement.h"
-#include "idcheck.h"
+//#include "idcheck.h"
+#include "updateappdialog.h"
 
 MainWidget::MainWidget(QWidget *parent)
     : QWidget{parent}
@@ -99,6 +100,14 @@ void MainWidget::paintEvent(QPaintEvent *event)
     painter.drawPixmap(10, 10, pixmap.scaled(pixmap.size()*instance.zoom()));
 }
 
+void MainWidget::newVersion(const QJsonObject &object)
+{
+    UpdateAppDialog dialog(object);
+    connect(&dialog, &UpdateAppDialog::installNewApp, &dialog, &UpdateAppDialog::close);
+    connect(&dialog, &UpdateAppDialog::installNewApp, this, &MainWidget::close);
+    dialog.exec();
+}
+
 //bool MainWidget::nativeEvent(const QByteArray &eventType, void *message, long *result)
 //{
 //    Q_UNUSED(eventType);
@@ -118,7 +127,15 @@ void MainWidget::paintEvent(QPaintEvent *event)
 
 void MainWidget::enterBtnSlot()
 {
-    int surplus = DataManagement::getInstance().surplus();
+//    int surplus = DataManagement::getInstance().surplus();
+//    if (surplus <= 0) {
+//        QMessageBox::warning(this, tr("警告！"), tr("有效验证码已使用完，请联系厂家！"));
+//        return;
+//    }
+//    else if (surplus <= 20) {
+//        QMessageBox::warning(this, tr("警告！"), tr("有效验证码剩余 %1 ，请注意！").arg(surplus));
+//    }
+    auto surplus = DataManagement::getInstance().mqttClient()->surplus();
     if (surplus <= 0) {
         QMessageBox::warning(this, tr("警告！"), tr("有效验证码已使用完，请联系厂家！"));
         return;
@@ -166,18 +183,29 @@ void MainWidget::demoBtnSlot()
     enterSystemWidget->showMaximized();
 }
 
-void MainWidget::createdReportSlot(const QString &baseDataString)
+void MainWidget::createdReportSlot(const qint64 &timestamp, const QString &baseDataString)
 {
-    auto &instance = DataManagement::getInstance();
-    instance.reportDataBase()->insert(QDateTime::currentMSecsSinceEpoch(), 0, baseDataString);
-    IdCheck idCheck(this);
-    if (idCheck.getCurrentConsumables() <= 0) {
-        instance.deviceDatabase()->offlineUsed();
-    }
-    else {
-        idCheck.consumablesUsed();
-    }
-    int surplus = instance.surplus();
+//    auto &instance = DataManagement::getInstance();
+//    instance.reportDataBase()->insert(QDateTime::currentMSecsSinceEpoch(), 0, baseDataString);
+//    IdCheck idCheck(this);
+//    if (idCheck.getCurrentConsumables() <= 0) {
+//        instance.deviceDatabase()->offlineUsed();
+//    }
+//    else {
+//        idCheck.consumablesUsed();
+//    }
+//    int surplus = instance.surplus();
+//    if (surplus <= 0) {
+//        QMessageBox::warning(this, tr("警告！"), tr("有效验证码已使用完，请联系厂家！"));
+//        enterSystemWidget->hide();
+//        this->show();
+//    }
+//    else if (surplus <= 20) {
+//        QMessageBox::warning(this, tr("警告！"), tr("有效验证码剩余 %1 ，请注意！").arg(surplus));
+//    }
+    auto client = DataManagement::getInstance().mqttClient();
+    client->insert(timestamp, 0, baseDataString);
+    auto surplus = client->surplus();
     if (surplus <= 0) {
         QMessageBox::warning(this, tr("警告！"), tr("有效验证码已使用完，请联系厂家！"));
         enterSystemWidget->hide();
@@ -187,3 +215,4 @@ void MainWidget::createdReportSlot(const QString &baseDataString)
         QMessageBox::warning(this, tr("警告！"), tr("有效验证码剩余 %1 ，请注意！").arg(surplus));
     }
 }
+

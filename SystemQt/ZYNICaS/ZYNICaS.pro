@@ -18,6 +18,8 @@ RC_FILE = resource.rc
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+    ../MqttServer/databasens.cpp \
+    ../MqttServer/singleton.cpp \
     anothersetdialog.cpp \
     auxargdialog.cpp \
     baseargwidget.cpp \
@@ -37,8 +39,10 @@ SOURCES += \
     httppost.cpp \
     infoeditdialog.cpp \
     isicurvewidget.cpp \
+    logindialog.cpp \
     main.cpp \
     mainwidget.cpp \
+    mqttclient.cpp \
     personalinfodialog.cpp \
     plrttablewidget.cpp \
     reportdatabase.cpp \
@@ -52,9 +56,13 @@ SOURCES += \
     threadserivce.cpp \
     trendchart.cpp \
     trendchartswidget.cpp \
+    updateappdialog.cpp \
     waitingdialog.cpp
 
 HEADERS += \
+    ../MqttServer/databasens.h \
+    ../MqttServer/singleton.h \
+    ../MqttServer/topicns.h \
     MyStruct.h \
     anothersetdialog.h \
     auxargdialog.h \
@@ -75,7 +83,9 @@ HEADERS += \
     httppost.h \
     infoeditdialog.h \
     isicurvewidget.h \
+    logindialog.h \
     mainwidget.h \
+    mqttclient.h \
     personalinfodialog.h \
     plrttablewidget.h \
     reportdatabase.h \
@@ -89,6 +99,7 @@ HEADERS += \
     threadserivce.h \
     trendchart.h \
     trendchartswidget.h \
+    updateappdialog.h \
     waitingdialog.h
 
 
@@ -107,6 +118,18 @@ LIBS += -L$$PROJECT_LIBDIR -lZyTebco \
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
+
+win32:{
+    COMPILATION_CHAIN_DIR = D:/Qt/5.15.2/msvc2019_64
+}
+unix:{
+    COMPILATION_CHAIN_DIR = /home/ubuntu/Qt5.12.12/5.12.12/gcc_64
+}
+
+win32:CONFIG(release, debug|release): LIBS += -L$$COMPILATION_CHAIN_DIR/lib/ -lQt5Mqtt
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$COMPILATION_CHAIN_DIR/lib/ -lQt5Mqttd
+else:unix: LIBS += -L$$COMPILATION_CHAIN_DIR/lib/ -lQt5Mqtt
+INCLUDEPATH += ../MqttServer
 
 DISTFILES +=
 

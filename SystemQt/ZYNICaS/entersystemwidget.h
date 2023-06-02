@@ -79,7 +79,7 @@ private:
 signals:
     void recordValue();
     void widgetClose();
-    void createdReport(const QString &baseDataString);
+    void createdReport(const qint64 &timestamp, const QString &baseDataString);
     void startDemoMode(bool);
 private:
     QTimer *timer;

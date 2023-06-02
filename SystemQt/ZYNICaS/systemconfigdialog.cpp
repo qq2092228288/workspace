@@ -197,19 +197,19 @@ QString SystemConfigDialog::getPortName() const
 
 void SystemConfigDialog::updateHospitalInfo()
 {
-    auto database = DataManagement::getInstance().deviceDatabase();
+//    auto database = DataManagement::getInstance().deviceDatabase();
 //    QString place1Name = database->getDeviceInfo("place1Name");
 //    QString place2Name = database->getDeviceInfo("place2Name");
 //    hospitalNameLineEdit->setText(place1Name);
 //    roomNameLineEdit->setText(place2Name);
     hospitalInfo.hospitalName = hospitalNameLineEdit->text();
     hospitalInfo.roomName = roomNameLineEdit->text();
-    hospitalInfo.place1Name = database->getDeviceInfo("place1Name");
-    hospitalInfo.place2Name = database->getDeviceInfo("place2Name");
+//    hospitalInfo.place1Name = database->getDeviceInfo("place1Name");
+//    hospitalInfo.place2Name = database->getDeviceInfo("place2Name");
     hospitalInfo.doctorName = doctorNameLineEdit->text();
-    hospitalInfo.place1Id = database->getDeviceInfo("place1Id");
-    hospitalInfo.place2Id = database->getDeviceInfo("place2Id");
-    hospitalInfo.deviceId = database->getDeviceInfo("deviceId");
+//    hospitalInfo.place1Id = database->getDeviceInfo("place1Id");
+//    hospitalInfo.place2Id = database->getDeviceInfo("place2Id");
+//    hospitalInfo.deviceId = database->getDeviceInfo("deviceId");
     hospitalInfo.pType = Printer_Type(printerButtonGroup->checkedId());
     hospitalInfo.tip = tipCheckBox->isChecked();
     hospitalInfo.cMode = Check_Mode(modeButtonGroup->checkedId());

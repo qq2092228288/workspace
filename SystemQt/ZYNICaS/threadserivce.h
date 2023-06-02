@@ -11,16 +11,17 @@ class ThreadSerivce : public QObject
     Q_OBJECT
 public:
     QThread *getThread();
-    void objectMoveToThread(QObject *object);
-public slots:
-
+    bool objectMoveToThread(QObject *object);
+    int getMaxThreads() const;
+    bool setMaxThreads(int max);
+private slots:
+    void objectDestroyed(QObject *obj);
 private:
     QMutex mutex;
+    int maxThreads;
     QList<QThread *> threadList;
-private slots:
-
 signals:
-
+    void error(QString);
 private:
     explicit ThreadSerivce();
     virtual ~ThreadSerivce();

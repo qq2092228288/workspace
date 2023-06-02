@@ -283,6 +283,9 @@ void TopicAnalysis::response(const QByteArray &message, const QMqttTopicName &to
         if (sqlQuery.next()) {
             data = Singleton::jsonToUtf8(Singleton::getJsonObject(sqlQuery));
         }
+        else {
+            data = QString("登陆失败，请确认信息是否正确！").toUtf8();
+        }
         break;
     case SecondaryTopic::uploadData:
     {

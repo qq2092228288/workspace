@@ -22,6 +22,8 @@ public:
     explicit MainWidget(QWidget *parent = nullptr);
     virtual ~MainWidget();
     virtual void paintEvent(QPaintEvent *event);
+public slots:
+    void newVersion(const QJsonObject &object);
 //    bool nativeEvent(const QByteArray &eventType, void *message, long *result);
 signals:
     // Windows 消息，设备插拔 wParam(0x8000)已插入设备或介质，现在可用。wParam(0x8004)设备或介质已被移出。
@@ -29,7 +31,7 @@ signals:
 private slots:
     void enterBtnSlot();
     void demoBtnSlot();
-    void createdReportSlot(const QString &baseDataString);
+    void createdReportSlot(const qint64 &timestamp, const QString &baseDataString);
 private:
     QVBoxLayout *mainLayout;
     QLabel *titleLabel;
@@ -44,5 +46,6 @@ private:
     SystemConfigDialog *configDialog;
     EnterSystemWidget *enterSystemWidget;
 };
+typedef QSharedPointer<MainWidget> MainWidget_PTR;
 
 #endif // MAINWIDGET_H

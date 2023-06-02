@@ -25,10 +25,12 @@ struct PatientInfo
 
 struct PlaceInfo
 {
-    QString placeId;            // 场所ID
-    QString place1Id;           // 一级场所
-    QString place2Id;           // 二级场所
-    QString deviceId;           // 设备ID
+//    QString placeId;            // 场所ID
+//    QString place1Id;           // 一级场所
+//    QString place2Id;           // 二级场所
+//    QString deviceId;           // 设备ID
+    QString primaryPlace;
+    QString secondaryPlace;
     QString inspector;          // 检查人员
 };
 
@@ -53,10 +55,12 @@ struct BaseData
         QJsonObject jBaseData;
 
         QJsonObject jPlace;
-        jPlace.insert("placeId", place.placeId);
-        jPlace.insert("place1Id", place.place1Id);
-        jPlace.insert("place2Id", place.place2Id);
-        jPlace.insert("deviceId", place.deviceId);
+//        jPlace.insert("placeId", place.placeId);
+//        jPlace.insert("place1Id", place.place1Id);
+//        jPlace.insert("place2Id", place.place2Id);
+//        jPlace.insert("deviceId", place.deviceId);
+        jPlace.insert("primaryPlace", place.primaryPlace);
+        jPlace.insert("secondaryPlace", place.secondaryPlace);
         jPlace.insert("inspector", place.inspector);
         jBaseData.insert("place", jPlace);
 

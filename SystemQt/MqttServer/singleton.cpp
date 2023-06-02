@@ -6,6 +6,11 @@ QString Singleton::currentTime()
     return QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss.zzz");
 }
 
+QString Singleton::serverAddress()
+{
+    return QString("120.78.134.255");
+}
+
 QString Singleton::hostname()
 {
     return QString("localhost");

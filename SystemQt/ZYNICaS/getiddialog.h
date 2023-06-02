@@ -18,7 +18,7 @@ public:
     explicit GetIdDialog(QWidget *parent = nullptr);
     void showEvent(QShowEvent *event);
 public slots:
-    void hideCreateDevice(bool isHide);
+//    void hideCreateDevice(bool isHide);
 signals:
     void requestDeviceOnlineNotice(const QString &deviceId);
 private slots:
@@ -26,24 +26,24 @@ private slots:
     // 复制MAC
     void copySlot();
     // 离线获取
-    void usedSlot();
+//    void usedSlot();
     // 创建设备
-    void createDeviceSlot();
+//    void createDeviceSlot();
     // 在线获取
     void onlineGetSlot();
 private:
     QLabel *consumablesLabel;
     QLabel *macLabel;
-    QLabel *codeLabel;
+//    QLabel *codeLabel;
     QLineEdit *consumablesEdit;
     QLineEdit *macEdit;
-    QLineEdit *codeEdit;
+//    QLineEdit *codeEdit;
     QPushButton *copyBtn;
-    QPushButton *usedBtn;
-    QLabel *deviceNameLabel;
-    QLineEdit *deviceNameLineEdit;
-    QPushButton *createDeviceBtn;
-    QPushButton *onlineGetBtn;
+//    QPushButton *usedBtn;
+//    QLabel *deviceNameLabel;
+//    QLineEdit *deviceNameLineEdit;
+//    QPushButton *createDeviceBtn;
+//    QPushButton *onlineGetBtn;
 };
 
 #endif // GETIDDIALOG_H
