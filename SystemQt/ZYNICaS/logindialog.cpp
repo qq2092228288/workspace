@@ -71,6 +71,11 @@ void LoginDialog::serverConnected()
     setWindowTitle(title(true));
 }
 
+void LoginDialog::serverMessage(const QString &message)
+{
+    QMessageBox::warning(this, tr("警告！"), message);
+}
+
 void LoginDialog::loginSlot()
 {
     if (deviceIdEdit->text().isEmpty()) {

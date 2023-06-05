@@ -186,7 +186,6 @@ void MqttClient::publish(const QMqttTopicName &topic, const QByteArray &message,
 
 void MqttClient::messageReceived(const QByteArray &message, const QMqttTopicName &topic)
 {
-//    qDebug()<<QString(message)<<topic;
     if (topic.levelCount() != 3) {
         return;
     }
@@ -269,9 +268,6 @@ QMqttTopicFilter MqttClient::subTopic(const QString &deviceId)
 
 bool MqttClient::compareVersion(QString ver1, QString ver2)
 {
-    if (ver1.isEmpty() || ver2.isEmpty()) {
-        return false;
-    }
     QStringList list1 = ver1.replace(QRegExp("[a-zA-Z() ]"), "").split(".");
     QStringList list2 = ver2.replace(QRegExp("[a-zA-Z() ]"), "").split(".");
     if (list1.count() == list2.count()) {
@@ -284,7 +280,10 @@ bool MqttClient::compareVersion(QString ver1, QString ver2)
             }
         }
     }
-    return true;
+    else {
+        return true;
+    }
+    return false;
 }
 
 void MqttClient::bindValue(QSqlQuery &sqlQuery, const QJsonObject &object)

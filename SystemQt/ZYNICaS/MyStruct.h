@@ -32,6 +32,7 @@ struct PlaceInfo
     QString primaryPlace;
     QString secondaryPlace;
     QString inspector;          // 检查人员
+    QString mac;                // MAC地址
 };
 
 struct TebcoData

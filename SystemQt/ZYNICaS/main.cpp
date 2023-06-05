@@ -80,6 +80,7 @@ int main(int argc, char *argv[])
         QObject::connect(dialog.get(), &LoginDialog::deviceIdAndPassword, client, &MqttClient::login);
         QObject::connect(client, &MqttClient::deviceInfoReceived, dialog.get(), &LoginDialog::loginSucceeded);
         QObject::connect(client, &MqttClient::connected, dialog.get(), &LoginDialog::serverConnected);
+        QObject::connect(client, &MqttClient::messageFromServer, dialog.get(), &LoginDialog::serverMessage);
 
         client->openDatabase();
         dialog->exec();
@@ -89,6 +90,8 @@ int main(int argc, char *argv[])
         else {
             QObject::disconnect(dialog.get(), &LoginDialog::deviceIdAndPassword, client, &MqttClient::login);
             QObject::disconnect(client, &MqttClient::deviceInfoReceived, dialog.get(), &LoginDialog::loginSucceeded);
+            QObject::disconnect(client, &MqttClient::connected, dialog.get(), &LoginDialog::serverConnected);
+            QObject::disconnect(client, &MqttClient::messageFromServer, dialog.get(), &LoginDialog::serverMessage);
         }
         MainWidget_PTR widget(new MainWidget);
         a.mainWidget = widget.get();

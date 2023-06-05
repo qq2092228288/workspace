@@ -772,6 +772,7 @@ void EnterSystemWidget::setBaseData()
     baseData.place.primaryPlace = hospitalInfo->hospitalName;
     baseData.place.secondaryPlace = hospitalInfo->roomName;
     baseData.place.inspector = hospitalInfo->doctorName.isEmpty() ? "unknown" : hospitalInfo->doctorName;
+    baseData.place.mac = DataManagement::getInstance().getMac();
 //    baseData.sudokuPix = sudokuDraw->grab();
     baseData.sudokuPix = sudokuWidget->grab();
 }

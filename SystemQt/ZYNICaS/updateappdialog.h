@@ -4,6 +4,7 @@
 #include <QDialog>
 #include <QJsonObject>
 #include <QLabel>
+#include <QTextBrowser>
 #include <QPushButton>
 #include <QVBoxLayout>
 #include <QProgressBar>
@@ -31,7 +32,7 @@ private slots:
 private:
     static QString toMB(const qint64 &btyes);
 private:
-    QLabel *contentLabel;
+    QTextBrowser *contentBrowser;
     QPushButton *installBtn;
     QPushButton *downloadBtn;
     QProgressBar *progressBar;

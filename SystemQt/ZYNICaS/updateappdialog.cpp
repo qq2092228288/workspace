@@ -11,18 +11,20 @@ UpdateAppDialog::UpdateAppDialog(const QJsonObject &object, QWidget *parent)
 {
     setWindowTitle(tr("有新版本可用"));
     setMinimumSize(400, 300);
-    auto content = object.value(Singleton::enumValueToKey(SoftwareManagement::content)).toString();
-    contentLabel = new QLabel(content, this);
+
+    contentBrowser = new QTextBrowser(this);
     installBtn = new QPushButton(tr("安装"), this);
     downloadBtn = new QPushButton(tr("下载"), this);
     progressBar = new QProgressBar(this);
 
     QGridLayout *gLayout = new QGridLayout(this);
-    gLayout->addWidget(contentLabel, 0, 0, 1, 2, Qt::AlignCenter);
+    gLayout->addWidget(contentBrowser, 0, 0, 1, 2, Qt::AlignCenter);
     gLayout->addWidget(installBtn, 1, 0, Qt::AlignLeft);
     gLayout->addWidget(downloadBtn, 1, 1, Qt::AlignRight);
     gLayout->addWidget(progressBar, 2, 0, 1, 2);
 
+    auto content = object.value(Singleton::enumValueToKey(SoftwareManagement::content)).toString();
+    contentBrowser->setText(content.replace("\\n", "\n"));
     installBtn->setVisible(false);
     progressBar->setAlignment(Qt::AlignCenter);
 
