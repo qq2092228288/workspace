@@ -1,5 +1,5 @@
 QT       += core gui widgets serialport charts axcontainer concurrent
-QT       += printsupport sql network
+QT       += printsupport sql network xml
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 

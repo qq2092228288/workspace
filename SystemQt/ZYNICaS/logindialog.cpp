@@ -8,8 +8,6 @@ LoginDialog::LoginDialog(QWidget *parent)
     setWindowTitle(title(false));
     auto &instance = DataManagement::getInstance();
     setWindowFlags(Qt::CustomizeWindowHint | Qt::WindowCloseButtonHint);
-//    setMinimumSize(200*instance.wZoom(), 200*instance.hZoom());
-//    setMinimumWidth(300*instance.wZoom());
     setFixedSize(300*instance.wZoom(), 300*instance.hZoom());
     this->setStyleSheet(instance.dialogQss(1.3));
 
@@ -35,6 +33,8 @@ LoginDialog::LoginDialog(QWidget *parent)
     loginBtn->setEnabled(false);
 
     connect(loginBtn, &QPushButton::clicked, this, &LoginDialog::loginSlot);
+
+    readDeviceInfo();
 }
 
 QString LoginDialog::deviceId() const
@@ -82,6 +82,7 @@ void LoginDialog::loginSlot()
         return;
     }
     emit deviceIdAndPassword(deviceId(), password());
+    writeDeviceInfo();
 }
 
 void LoginDialog::keyPressEvent(QKeyEvent *e)
@@ -99,4 +100,67 @@ QString LoginDialog::title(bool connected)
         return (title + QString("(服务器未连接)"));
     }
     return title;
+}
+
+void LoginDialog::readDeviceInfo()
+{
+    auto &instance = DataManagement::getInstance();
+    QFile file(instance.getPaths().userAccountInfo());
+    if (file.open(QFile::ReadOnly | QFile::Text)) {
+        QTextStream out(&file);
+        out.setCodec(QTextCodec::codecForName("utf-8"));
+        QRegExp nameExp("(.*)(?:=)");
+        QRegExp valueExp("(?:\")(.*)(?:\")");
+        while (!out.atEnd()) {
+            QString strLine = out.readLine();
+            if (strLine.indexOf(nameExp) >= 0 && strLine.indexOf(valueExp) >= 0) {
+                QString name = nameExp.cap(1);
+                QString value = valueExp.cap(1);
+                if (name == "deviceId") {
+                    deviceIdEdit->setText(value);
+                }
+                else if (name == "password") {
+                    passwordEdit->setText(decryption(value));
+                }
+            }
+        }
+        file.close();
+    }
+}
+
+void LoginDialog::writeDeviceInfo()
+{
+    QFile file(DataManagement::getInstance().getPaths().userAccountInfo());
+    if(file.open(QFile::WriteOnly)){
+        QTextStream in(&file);
+        in.setCodec(QTextCodec::codecForName("utf-8"));
+        in<<QString("deviceId=\"%1\"\n").arg(deviceIdEdit->text());
+        in<<QString("password=\"%1\"\n").arg(encryption(passwordEdit->text()));
+        file.close();
+    }
+}
+
+QString LoginDialog::encryption(const QString &password)
+{
+    QByteArray macArray = DataManagement::getInstance().getMac().replace(":", "").toLatin1();
+    QByteArray pwArray = password.toLatin1();
+    QString ep;
+    auto macCount = macArray.count();
+    auto pwCount = pwArray.count();
+    for (int i = 0; i < pwCount; ++i) {
+        ep.append(char(pwArray[i] ^ macArray[i%macCount]));
+    }
+    return ep;
+}
+
+QString LoginDialog::decryption(const QString &epstring)
+{
+    QByteArray macArray = DataManagement::getInstance().getMac().replace(":", "").toLatin1();
+    QByteArray epArray = epstring.toLatin1();
+    QString password;
+    auto macCount = macArray.count();
+    for (int i = 0; i < epArray.count(); ++i) {
+        password.append(char(epArray[i] ^ macArray[i%macCount]));
+    }
+    return password;
 }

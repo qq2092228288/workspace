@@ -11,6 +11,8 @@
 #include <QMessageBox>
 #include <QSharedPointer>
 #include <QKeyEvent>
+#include <QFile>
+#include <QTextStream>
 
 class LoginDialog : public QDialog
 {
@@ -31,6 +33,10 @@ protected:
     virtual void keyPressEvent(QKeyEvent *e);
 private:
     QString title(bool connected);
+    void readDeviceInfo();
+    void writeDeviceInfo();
+    QString encryption(const QString &password);
+    QString decryption(const QString &epstring);
 private:
     bool exitApp;
     QLabel *logoLabel;

@@ -1,6 +1,6 @@
 #include "datamanagement.h"
 //#include "qrencode.h"
-#include "idcheck.h"
+//#include "idcheck.h"
 #include "datacalculation.h"
 
 MyFilePath::MyFilePath(const QString &path)
@@ -116,6 +116,11 @@ QString MyFilePath::qrCode() const
 QString MyFilePath::hospitalLogo() const
 {
     return initDir() + "hospitalLogo.png";
+}
+
+QString MyFilePath::userAccountInfo() const
+{
+    return initDir() + "userAccountInfo.ini";
 }
 
 Argument::Argument(){}

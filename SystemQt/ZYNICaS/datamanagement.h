@@ -47,6 +47,7 @@ public:
     QString config_zip()        const;
     QString qrCode()            const;
     QString hospitalLogo()      const;
+    QString userAccountInfo()   const;
 private:
     QString appPath;
 };

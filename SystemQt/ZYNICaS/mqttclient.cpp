@@ -279,12 +279,12 @@ bool MqttClient::compareVersion(QString ver1, QString ver2)
             if (list1.at(index).toInt() > list2.at(index).toInt()) {
                 return true;
             }
+            else if (list1.at(index).toInt() < list2.at(index).toInt()) {
+                return false;
+            }
         }
     }
-    else {
-        return true;
-    }
-    return false;
+    return true;
 }
 
 void MqttClient::bindValue(QSqlQuery &sqlQuery, const QJsonObject &object)
