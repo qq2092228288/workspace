@@ -26,6 +26,7 @@ public slots:
     void loginSucceeded(bool succeeded);
     void serverConnected();
     void serverMessage(const QString &message);
+    void sltMessageReceived(const QString &message);
 private slots:
     void loginSlot();
 signals:

@@ -105,6 +105,7 @@ HEADERS += \
 
 include(../../commonFiles/base.pri)
 #include(../../commonFiles/qextserialport/src/qextserialport.pri)
+include(../../commonFiles/qt-solutions/qtsingleapplication/src/qtsingleapplication.pri)
 
 INCLUDEPATH += ../ZyTebco \
     ../IdCheck \

@@ -31,7 +31,7 @@ SystemConfigDialog::SystemConfigDialog(QWidget *parent)
     modeButtonGroup = new QButtonGroup(this);
     generalModeRadio = new QRadioButton(tr("高血压模式"), this);
     professionalModeRadio = new QRadioButton(tr("内科模式"), this);
-    criticalModeRadio = new QRadioButton(tr("重症模式"), this);
+    icuModeRadio = new QRadioButton(tr("重症模式"), this);
     healthCheckModeRadio = new QRadioButton(tr("体检模式"), this);
     systemInfoGroupBox = new QGroupBox(tr("系统配置"), this);
     serialPortLabel = new QLabel(tr("串口设置"), this);
@@ -47,7 +47,7 @@ SystemConfigDialog::SystemConfigDialog(QWidget *parent)
     printerButtonGroup->addButton(xprinterRadio, 1);
     modeButtonGroup->addButton(generalModeRadio, Check_Mode::Hypertension);
     modeButtonGroup->addButton(professionalModeRadio, Check_Mode::InternalMedicine);
-    modeButtonGroup->addButton(criticalModeRadio, Check_Mode::Critical);
+    modeButtonGroup->addButton(icuModeRadio, Check_Mode::IntensiveCareUnit);
     modeButtonGroup->addButton(healthCheckModeRadio, Check_Mode::PhysicalExamination);
 
     serialPortComboBox->setFixedWidth(120*instance.wZoom());
@@ -91,7 +91,7 @@ SystemConfigDialog::SystemConfigDialog(QWidget *parent)
 
     cLayout->addWidget(generalModeRadio, 0, 0);
     cLayout->addWidget(professionalModeRadio, 0, 1);
-    cLayout->addWidget(criticalModeRadio, 1, 0);
+    cLayout->addWidget(icuModeRadio, 1, 0);
     cLayout->addWidget(healthCheckModeRadio, 1, 1);
 
     sLayout->addWidget(serialPortLabel);

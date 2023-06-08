@@ -11,6 +11,7 @@ MqttClient::MqttClient(QObject *parent)
       m_reportsTable{"reports"}
 {
     qRegisterMetaType<QMqttTopicName>("QMqttTopicName");
+    qRegisterMetaType<QMqttClient::ClientState>("ClientState");
     m_client = new QMqttClient(this);
     m_client->setHostname(Singleton::serverAddress());
     m_client->setPort(Singleton::mqttPort());
@@ -89,20 +90,19 @@ void MqttClient::login(const QString &deviceId, const QString &password)
     }
 }
 
-void MqttClient::insert(qint64 time, int upload, QString dataString)
+void MqttClient::insert(qint64 time, QString dataString)
 {
     QSqlQuery sqlQuery(m_database);
     sqlQuery.prepare(QString("INSERT INTO %1(%2) VALUES(?, ?, ?)")
                      .arg(m_reportsTable, Singleton::enumKeys<ReportTable>().join(",")));
     sqlQuery.addBindValue(time);
-    sqlQuery.addBindValue(upload);
+    sqlQuery.addBindValue(0);
     sqlQuery.addBindValue(dataString);
     if (!sqlQuery.exec()) {
         qWarning("数据插入失败！");
+        return;
     }
-    else {
-        uploadReport();
-    }
+    uploadReport();
 }
 
 int MqttClient::surplus()
@@ -144,12 +144,13 @@ void MqttClient::uploadReport()
         object.insert(Singleton::enumValueToKey(ReportInfo::modify), 0);
         object.insert(Singleton::enumValueToKey(ReportInfo::reportData), data);
 
-        m_client->publish(Singleton::getTopicName(PrimaryTopic::request, SecondaryTopic::uploadData, m_deviceId),
+        publish(Singleton::getTopicName(PrimaryTopic::request, SecondaryTopic::uploadData, m_deviceId),
                           Singleton::jsonToUtf8(object),
                           2,
                           false);
-        // 10s
-        QTimer::singleShot(10000, this, &MqttClient::uploadReport);
+        if (sqlQuery.next()) {
+            QTimer::singleShot(10000, this, &MqttClient::uploadReport);
+        }
     }
 }
 
@@ -157,10 +158,21 @@ void MqttClient::getSoftwareInfo()
 {
     QJsonObject object;
     object.insert(Singleton::enumValueToKey(SoftwareManagement::appId), m_appId);
-    m_client->publish(Singleton::getTopicName(PrimaryTopic::request, SecondaryTopic::software, m_deviceId),
-                      Singleton::jsonToUtf8(object),
-                      0,
-                      false);
+    publish(Singleton::getTopicName(PrimaryTopic::request, SecondaryTopic::software, m_deviceId),
+            Singleton::jsonToUtf8(object), 0, false);
+}
+
+void MqttClient::publish(const QMqttTopicName &topic, const QByteArray &message, quint8 qos, bool retain)
+{
+    m_client->publish(topic, message, qos, retain);
+}
+
+void MqttClient::getDeviceInfo()
+{
+    QJsonObject object;
+    object.insert(Singleton::enumValueToKey(Device::password), m_password);
+    publish(Singleton::getTopicName(PrimaryTopic::request, SecondaryTopic::deviceInfo, m_deviceId),
+                      Singleton::jsonToUtf8(object), 2, false);
 }
 
 void MqttClient::connectToHost()
@@ -177,11 +189,6 @@ void MqttClient::stateChanged(QMqttClient::ClientState state)
         // reconnect
         QTimer::singleShot(30*1000, this, &MqttClient::connectToHost);
     }
-}
-
-void MqttClient::publish(const QMqttTopicName &topic, const QByteArray &message, quint8 qos, bool retain)
-{
-    m_client->publish(topic, message, qos, retain);
 }
 
 void MqttClient::messageReceived(const QByteArray &message, const QMqttTopicName &topic)
@@ -235,6 +242,7 @@ void MqttClient::messageReceived(const QByteArray &message, const QMqttTopicName
         }
         // retrieve
         getDeviceInfo();
+        qDebug()<<object;
     }
         break;
     case SecondaryTopic::software:
@@ -249,16 +257,6 @@ void MqttClient::messageReceived(const QByteArray &message, const QMqttTopicName
     default:
         break;
     }
-}
-
-void MqttClient::getDeviceInfo()
-{
-    QJsonObject object;
-    object.insert(Singleton::enumValueToKey(Device::password), m_password);
-    m_client->publish(Singleton::getTopicName(PrimaryTopic::request, SecondaryTopic::deviceInfo, m_deviceId),
-                      Singleton::jsonToUtf8(object),
-                      2,
-                      false);
 }
 
 QMqttTopicFilter MqttClient::subTopic(const QString &deviceId)

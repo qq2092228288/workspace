@@ -37,7 +37,7 @@ enum Check_Mode
 {
     Hypertension,           // 高血压模式
     InternalMedicine,       // 内科模式
-    Critical,               // 重症模式
+    IntensiveCareUnit,      // 重症模式
     PhysicalExamination     // 体检模式
 };
 
@@ -93,7 +93,7 @@ private:
     QButtonGroup *modeButtonGroup;
     QRadioButton *generalModeRadio;
     QRadioButton *professionalModeRadio;
-    QRadioButton *criticalModeRadio;
+    QRadioButton *icuModeRadio;
     QRadioButton *healthCheckModeRadio;
     QGroupBox *systemInfoGroupBox;
     QLabel *serialPortLabel;

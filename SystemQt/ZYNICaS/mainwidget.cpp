@@ -204,7 +204,7 @@ void MainWidget::createdReportSlot(const qint64 &timestamp, const QString &baseD
 //        QMessageBox::warning(this, tr("警告！"), tr("有效验证码剩余 %1 ，请注意！").arg(surplus));
 //    }
     auto client = DataManagement::getInstance().mqttClient();
-    client->insert(timestamp, 0, baseDataString);
+    client->insert(timestamp, baseDataString);
     auto surplus = client->surplus();
     if (surplus <= 0) {
         QMessageBox::warning(this, tr("警告！"), tr("有效验证码已使用完，请联系厂家！"));

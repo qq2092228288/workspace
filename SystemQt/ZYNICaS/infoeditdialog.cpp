@@ -164,6 +164,12 @@ void InfoEditDialog::confirmSlot()
     }
 }
 
+void InfoEditDialog::showHb(bool show)
+{
+    hbLabel->setVisible(show);
+    hbLineEdit->setVisible(show);
+}
+
 void InfoEditDialog::stopCheck()
 {
     if (DataManagement::getInstance().getTebco()->isWorking()) {

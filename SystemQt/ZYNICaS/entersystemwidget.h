@@ -72,6 +72,7 @@ public slots:
     void systemModeChanged(Check_Mode mode);
     void startupTestSlot();
 private:
+    bool detectedData();
     void setCtrlValue(const Type &type, const double &value);
     bool isStartCheck();
     void setBaseData();

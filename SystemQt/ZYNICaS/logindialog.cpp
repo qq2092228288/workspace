@@ -76,6 +76,11 @@ void LoginDialog::serverMessage(const QString &message)
     QMessageBox::warning(this, tr("警告！"), message);
 }
 
+void LoginDialog::sltMessageReceived(const QString &message)
+{
+    QMessageBox::warning(this, tr("提示！"), message);
+}
+
 void LoginDialog::loginSlot()
 {
     if (deviceIdEdit->text().isEmpty()) {

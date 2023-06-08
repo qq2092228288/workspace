@@ -4,7 +4,7 @@
 IsiCurveWidget::IsiCurveWidget(QWidget *parent)
     : QWidget{parent}
 {
-    this->setFixedSize(300, 130);
+    this->setFixedSize(300, 150);
     this->setStyleSheet("IsiCurveWidget{background-color:#ffffff;}");
 }
 
@@ -14,16 +14,24 @@ void IsiCurveWidget::setIsi(const qreal &oldIsi, const qreal &newIsi)
     m_newIsi = newIsi;
 }
 
+void IsiCurveWidget::setSv(const qreal &oldSv, const qreal &newSv)
+{
+    m_oldSv = oldSv;
+    m_newSv = newSv;
+}
+
 void IsiCurveWidget::clear()
 {
     m_oldIsi = 0;
     m_newIsi = 0;
+    m_oldSv = 0;
+    m_newSv = 0;
 }
 
 void IsiCurveWidget::paintEvent(QPaintEvent *event)
 {
     Q_UNUSED(event);
-    const QPoint point(20, height() - 20);
+    const QPoint point(20, height() - 40);
     int len = width() - 40;
     QPainter painter(this);
     // 消除锯齿
@@ -49,29 +57,51 @@ void IsiCurveWidget::paintEvent(QPaintEvent *event)
     // ISI的点
     if (m_oldIsi != 0 && m_newIsi != 0) {
         qreal op, np;
-        QString xText;
+        QString xText("回心血量增加后，泵力");
         if (m_oldIsi < m_newIsi) {
             op = 50;
             np = 100;
-            xText = tr("容量增加");
+            xText += tr("增加");
         }
         else if (m_oldIsi == m_newIsi) {
             op = 75;
             np = 75;
-            xText = tr("容量不变");
+            xText += tr("不变");
         }
         else {
             op = 100;
             np = 50;
-            xText = tr("容量减少");
+            xText += tr("减少");
         }
-        painter.drawText(QPointF(point.x() + 110, point.y() + 15), xText);
+        xText += tr("，搏排量");
+        if (m_oldSv < m_newSv) {
+            xText += tr("增加");
+        }
+        else if (m_oldSv == m_newSv) {
+            xText += tr("不变");
+        }
+        else {
+            xText += tr("减少");
+        }
+        painter.drawText(QPointF(point.x() + 110, point.y() + 15), tr("容量"));
+        painter.drawText(QPointF(point.x(), point.y() + 30), xText);
         QPointF oldPoint(point.x() + getx(op, true), point.y() - op);
         QPointF newPoint(point.x() + getx(np, false), point.y() - np);
         const int radius = 2;
         painter.drawEllipse(oldPoint, radius, radius);
         painter.drawEllipse(newPoint, radius, radius);
-        drawArrow(painter, oldPoint, newPoint);
+        painter.drawPoint(QPointF(point.x() + getx(op, true), point.y() - 2));
+        painter.drawPoint(QPointF(point.x() + getx(np, false), point.y() - 2));
+        const qreal cx = qSqrt(75);
+        if (op == np) {
+            drawArrow(painter, QPointF(oldPoint.x() + 10, oldPoint.y()), QPointF(newPoint.x() - 10, newPoint.y()));
+        }
+        else if (op > np) {
+            drawArrow(painter, QPointF(oldPoint.x() + cx, oldPoint.y() + 5), QPointF(newPoint.x() - cx, newPoint.y() - 5));
+        }
+        else {
+            drawArrow(painter, QPointF(oldPoint.x() + cx, oldPoint.y() - 5), QPointF(newPoint.x() - cx, newPoint.y() + 5));
+        }
     }
 }
 

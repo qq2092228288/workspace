@@ -36,13 +36,15 @@ public:
         usedCount
     };
     Q_ENUM(CountType)
-    bool openDatabase();
 public slots:
+    bool openDatabase();
     void login(const QString &deviceId, const QString &password);
-    void insert(qint64 time, int upload, QString dataString);
+    void insert(qint64 time, QString dataString);
     int surplus();
     void uploadReport();
     void getSoftwareInfo();
+    void publish(const QMqttTopicName &topic, const QByteArray &message, quint8 qos, bool retain);
+    void getDeviceInfo();
 signals:
     void setError();    // Device information has been saved
     void connected();
@@ -53,10 +55,7 @@ signals:
 private slots:
     void connectToHost();
     void stateChanged(QMqttClient::ClientState state);
-    void publish(const QMqttTopicName &topic, const QByteArray &message, quint8 qos, bool retain);
     void messageReceived(const QByteArray &message, const QMqttTopicName &topic);
-    void getDeviceInfo();
-
 private:
     QMqttTopicFilter subTopic(const QString &deviceId);
     bool compareVersion(QString ver1, QString ver2);

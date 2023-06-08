@@ -15,6 +15,7 @@ public:
 public slots:
     // set isi value
     void setIsi(const qreal &oldIsi, const qreal &newIsi);
+    void setSv(const qreal &oldSv, const qreal &newSv);
     // init isi value
     void clear();
 protected:
@@ -26,6 +27,8 @@ signals:
 private:
     qreal m_oldIsi;
     qreal m_newIsi;
+    qreal m_oldSv;
+    qreal m_newSv;
 };
 
 #endif // ISICURVEWIDGET_H

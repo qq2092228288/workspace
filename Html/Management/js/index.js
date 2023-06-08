@@ -2,12 +2,12 @@
  * @description set web 
  */
 document.write("<meta name='viewport' content='width=device-width, initial-scale=1.0'>");
-document.write("<link href='./images/favicon.ico' rel='shortcut icon'>");
+document.write("<link href='images/favicon.ico' rel='shortcut icon'>");
 document.write("<title>泽耀医疗管理系统</title>");
-document.write("<link type='text/css' rel='stylesheet' href='./index.css'></link>");
-document.write("<link type='text/css' rel='stylesheet' href='./main.css'></link>");
-document.write("<link type='text/css' rel='stylesheet' href='./report.css'></link>");
-document.write("<script type='text/javascript' src='./qwebchannel.js'></script>");
+document.write("<link type='text/css' rel='stylesheet' href='css/index.css'></link>");
+document.write("<link type='text/css' rel='stylesheet' href='css/main.css'></link>");
+document.write("<link type='text/css' rel='stylesheet' href='css/report.css'></link>");
+document.write("<script type='text/javascript' src='js/qwebchannel.js'></script>");
 /**
  * @description Html connection to server 
  */
@@ -239,9 +239,9 @@ Report.prototype.openLayer = function () {
 function PrintDiv(ID) {
     var needPrint = document.getElementById(ID);
     var win = window.open("");
-    win.document.write('<html><head><link href="index.css" rel="stylesheet" />'
-        + '<link href="main.css" rel="stylesheet" />'
-        + '<link href="report.css" rel="stylesheet" /></head><body>'
+    win.document.write('<html><head><link href="css/index.css" rel="stylesheet" />'
+        + '<link href="css/main.css" rel="stylesheet" />'
+        + '<link href="css/report.css" rel="stylesheet" /></head><body>'
         + needPrint.outerHTML + '</body>'
         + "</html>");
     win.document.close();

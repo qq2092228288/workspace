@@ -53,6 +53,7 @@ signals:
 public slots:
     void clearSlot();
     void confirmSlot();
+    void showHb(bool show);
 private slots:
     void stopCheck();
     void importPatientInfo(QString id, QString name, int sex, int age, int height, int weight);

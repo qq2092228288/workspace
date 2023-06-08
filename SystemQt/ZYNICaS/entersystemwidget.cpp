@@ -140,6 +140,7 @@ void EnterSystemWidget::showEvent(QShowEvent *event)
         instance.getRegulator()->connectTrendChart(true);
         trendChartBtn->show();
     }
+    infoDialog->showHb(instance.getHospitalInfo()->cMode == Check_Mode::IntensiveCareUnit);
     event->accept();
 }
 
@@ -578,15 +579,7 @@ void EnterSystemWidget::changeMode(const int &id)
 
 void EnterSystemWidget::recordPosition()
 {
-    if (isStartCheck()) {
-        if (0 == regulator->getCustomCtrl(typeName(Type::MAP))->getCurrentValue()) {
-            QMessageBox::information(this, tr("提示"), tr("请先输入血压。"));
-            return;
-        }
-        else if (0 == regulator->getCustomCtrl(typeName(Type::SSVRI))->getCurrentValue()) {
-            QMessageBox::information(this, tr("提示"), tr("数据检测中，请稍后。"));
-            return;
-        }
+    if (isStartCheck() && detectedData()) {
         emit recordValue();
         rPos = posGroup.checkedButton()->text();
         auto &instance = DataManagement::getInstance();
@@ -613,7 +606,7 @@ void EnterSystemWidget::changePosition(int id)
 
 void EnterSystemWidget::createReport()
 {
-    if (isStartCheck()) {
+    if (isStartCheck() && detectedData()) {
         auto &instance = DataManagement::getInstance();
         if (patternGroup.checkedId() == 0 && rPos.isEmpty()) {
             QMessageBox::information(this, tr("提示"), tr("多体位模式需要记录体位！"));
@@ -627,10 +620,12 @@ void EnterSystemWidget::createReport()
         if (instance.getHospitalInfo()->cMode != Check_Mode::PhysicalExamination) {
             trendChartsWidget->saveTrendChartPic();
         }
-        auto isiCtrl = regulator->getCustomCtrl("ISI");
-        if (isiCtrl->getRecordValue() != 0 || isiCtrl->getCurrentValue() != 0) {
+        auto isiCtrl = regulator->getCustomCtrl(typeName(Type::ISI));
+        auto svCtrl = regulator->getCustomCtrl(typeName(Type::SV));
+        if (isiCtrl->getRecordValue() != 0 && svCtrl->getRecordValue() != 0) {
             IsiCurveWidget widget(this);
             widget.setIsi(isiCtrl->getRecordValue(), isiCtrl->getCurrentValue());
+            widget.setSv(svCtrl->getRecordValue(), svCtrl->getCurrentValue());
             widget.grab().save(instance.getPaths().isiCurve());
         }
         WaitingDialog waiting = WaitingDialog(tr("报告生成中···"), this);
@@ -729,6 +724,19 @@ void EnterSystemWidget::startupTestSlot()
     }
     plrtWidget->setCountDown(120);    // 设置试验时间
     plrtWidget->exec();
+}
+
+bool EnterSystemWidget::detectedData()
+{
+    if (0 == regulator->getCustomCtrl(typeName(Type::MAP))->getCurrentValue()) {
+        QMessageBox::information(this, tr("提示"), tr("请先输入血压。"));
+        return false;
+    }
+    else if (0 == regulator->getCustomCtrl(typeName(Type::SSVRI))->getCurrentValue()) {
+        QMessageBox::information(this, tr("提示"), tr("数据检测中，请稍后。"));
+        return false;
+    }
+    return true;
 }
 
 void EnterSystemWidget::setCtrlValue(const Type &type, const double &value)
