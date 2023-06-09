@@ -197,7 +197,11 @@ void ZyTebco::recvInfoSlot()
         if(array.size() == 6) {
             bool ok;
             ushort argVal = array.mid(4,2).toHex().toUShort(&ok,16);
-            emit data(argVal>>12,argVal&0xFFF);
+            uchar type = argVal>>12;
+            auto values = map.value(type);
+            values.enqueue(argVal&0xFFF);
+            map.insert(type, values);
+            emit data(type, values.average());
         }
     }
 //    qDebug()<<array.toHex();

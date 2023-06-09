@@ -4,24 +4,22 @@
 #include <QObject>
 #include <QThread>
 #include <QMutexLocker>
-#include <QDebug>
 
 class ThreadSerivce : public QObject
 {
     Q_OBJECT
 public:
-    QThread *getThread();
     bool objectMoveToThread(QObject *object);
-    int getMaxThreads() const;
-    bool setMaxThreads(int max);
+    bool setMaxcount(int maxcount);
+    void setMaxIdleThreadCount(int maxIdle);
+    int count() const;
 private slots:
     void objectDestroyed(QObject *obj);
 private:
     QMutex mutex;
-    int maxThreads;
+    int maxcount;
+    int maxIdle;
     QList<QThread *> threadList;
-signals:
-    void error(QString);
 private:
     explicit ThreadSerivce();
     virtual ~ThreadSerivce();

@@ -15,7 +15,7 @@ ThreadSerivce ThreadSerivce::instance;
 
 int main(int argc, char *argv[])
 {
-    qRegisterMetaType<QAbstractSocket::SocketError>("QAbstractSocket::SocketError");
+//    qRegisterMetaType<QAbstractSocket::SocketError>("QAbstractSocket::SocketError");
     QtSingleApplication a(QApplication::applicationName(),argc, argv);
     if (!a.isRunning()) {
         // prevent system hibernation

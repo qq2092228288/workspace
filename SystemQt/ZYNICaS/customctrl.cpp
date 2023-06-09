@@ -327,12 +327,12 @@ void CustomCtrl::clear()
 
 void CustomCtrl::setValue(const double &value)
 {
-    aitems.vqueue.enqueue(value);
+//    aitems.vqueue.enqueue(value);
     aitems.values.append(value);
-    valueEdit->setText(QString::number(aitems.vqueue.average(), 'f', digit));
+    valueEdit->setText(QString::number(value, 'f', digit));
     aitems.currentValue = valueEdit->text().toDouble();
     valueWarning(aitems.currentValue < aitems.minValue || aitems.currentValue > aitems.maxValue);
-    emit currentValue(aitems.vqueue.average());
+    emit currentValue(value);
 //    oldAndNewValue.append(value);
 //    if (oldAndNewValue.size() > 2) {
 //        oldAndNewValue.removeFirst();
@@ -386,8 +386,8 @@ void CustomCtrl::recordValueSlot()
 {
     aitems.recordValue = aitems.currentValue;
     dbpaitems.recordValue = dbpaitems.currentValue;
-    aitems.vqueue.clear();
-    dbpaitems.vqueue.clear();
+//    aitems.vqueue.clear();
+//    dbpaitems.vqueue.clear();
     //    emit recordValue(aitems.recordValue);
 }
 

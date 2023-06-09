@@ -1,19 +1,6 @@
 #include "threadserivce.h"
 
 
-QThread *ThreadSerivce::getThread()
-{
-    QMutexLocker locker(&mutex);
-    foreach (auto thread, threadList) {
-        if (!thread->isRunning()) {
-            return thread;
-        }
-    }
-    QThread *thread = new QThread;
-    threadList.append(thread);
-    return thread;
-}
-
 bool ThreadSerivce::objectMoveToThread(QObject *object)
 {
     QMutexLocker locker(&mutex);
@@ -25,8 +12,7 @@ bool ThreadSerivce::objectMoveToThread(QObject *object)
         }
     }
     if (nullptr == thread) {
-        if (threadList.count() >= maxThreads) {
-            emit error(QString("The maximum number of threads has been reached."));
+        if (threadList.count() >= maxcount) {
             return false;
         }
         thread = new QThread;
@@ -38,30 +24,46 @@ bool ThreadSerivce::objectMoveToThread(QObject *object)
     return true;
 }
 
-int ThreadSerivce::getMaxThreads() const
-{
-    return maxThreads;
-}
-
-bool ThreadSerivce::setMaxThreads(int max)
+bool ThreadSerivce::setMaxcount(int maxcount)
 {
     QMutexLocker locker(&mutex);
-    if (threadList.count() > max)
+    if (threadList.count() > maxcount)
         return false;
-    maxThreads = max;
+    this->maxcount = maxcount;
     return true;
+}
+
+void ThreadSerivce::setMaxIdleThreadCount(int maxIdle)
+{
+    this->maxIdle = maxIdle;
+}
+
+int ThreadSerivce::count() const
+{
+    return threadList.count();
 }
 
 void ThreadSerivce::objectDestroyed(QObject *obj)
 {
     QMutexLocker locker(&mutex);
-    auto thread = obj->thread();
-    thread->quit();
-    thread->wait();
+    obj->thread()->quit();
+    obj->thread()->wait();
+    int idleCount = 0;
+    foreach (auto thread, threadList) {
+        if (!thread->isRunning()) {
+            ++idleCount;
+            if (idleCount > maxIdle) {
+                threadList.removeOne(thread);
+                delete thread;
+                thread = nullptr;
+            }
+        }
+    }
 }
 
 ThreadSerivce::ThreadSerivce()
-    : maxThreads{1024}
+    : maxcount{1024},
+      maxIdle{32}
 {
 
 }
@@ -69,12 +71,12 @@ ThreadSerivce::ThreadSerivce()
 ThreadSerivce::~ThreadSerivce()
 {
     foreach (auto thread, threadList) {
-        threadList.removeOne(thread);
         thread->quit();
         thread->wait();
         delete thread;
         thread = nullptr;
     }
+    threadList.clear();
 }
 
 ThreadSerivce &ThreadSerivce::getInstance()

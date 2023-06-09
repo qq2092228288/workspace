@@ -457,7 +457,6 @@ void EnterSystemWidget::changeShow(const QString &current, const QString &change
 
 void EnterSystemWidget::setData(const uchar &type, const short &value)
 {
-    recordDataMap.insert(type, value);
     switch (type) {
     case Type::HR:
         setCtrlValue(Type::HR, DatCa::cHr(value));
@@ -531,6 +530,7 @@ void EnterSystemWidget::setData(const uchar &type, const short &value)
 //        QApplication::beep();
         break;
     }
+    recordDataMap.insert(type, value);
 }
 
 void EnterSystemWidget::showBpDialogSlot()

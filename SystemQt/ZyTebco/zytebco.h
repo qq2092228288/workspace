@@ -22,8 +22,31 @@
 #  define ZYTEBCO_EXPORT Q_DECL_IMPORT
 #endif
 
-
-
+// 记录值队列
+class VQueue : public QQueue<short>
+{
+public:
+    explicit VQueue(int maxcount = INT_MAX) : maxcount(maxcount) {}
+    void enqueue(const short &d)
+    {
+        if (length() == maxcount) QQueue::dequeue();
+        QQueue<short>::enqueue(d);
+    }
+    void append(const short &d)
+    {
+        enqueue(d);
+    }
+    short average() const
+    {
+        return sum()/length();
+    }
+    short sum() const
+    {
+        return std::accumulate(QQueue<short>::begin(), QQueue<short>::end(), 0);
+    }
+private:
+    int maxcount;
+};
 
 class ZYTEBCO_EXPORT ZyTebco : public QObject
 {
@@ -56,6 +79,7 @@ private:
     QTimer *m_pTimer;
     bool working;
     QTimer *m_pDemoDataTimer;
+    QMap<uchar, VQueue> map;
 //    QextSerialPort *m_pExtSerial;
 };
 
