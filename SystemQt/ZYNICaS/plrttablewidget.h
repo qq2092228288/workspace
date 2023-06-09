@@ -20,7 +20,7 @@ typedef enum PlrtArgType
     Ci,
     Sv,
     Co,
-    Do2,
+//    Do2,
     Tfc,
     Isi
 }PaType;
@@ -68,6 +68,8 @@ public slots:
 protected:
     virtual void closeEvent(QCloseEvent *event);
 
+    virtual void showEvent(QShowEvent *event);
+
     virtual void mouseMoveEvent(QMouseEvent *event);
 
     virtual void mousePressEvent(QMouseEvent *event);
@@ -113,8 +115,6 @@ private:
     bool m_mousePress;
     // 行数
     const int m_rows;
-    // 列数
-    const int m_columns;
 
     QGridLayout *mainLayout;
     // 列头

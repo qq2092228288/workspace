@@ -37,8 +37,10 @@ private:
     QString title(bool connected);
     void readDeviceInfo();
     void writeDeviceInfo();
+#if 0
     QString encryption(const QString &password);
     QString decryption(const QString &epstring);
+#endif
 private:
     bool exitApp;
     QLabel *logoLabel;

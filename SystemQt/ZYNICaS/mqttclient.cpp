@@ -242,7 +242,6 @@ void MqttClient::messageReceived(const QByteArray &message, const QMqttTopicName
         }
         // retrieve
         getDeviceInfo();
-        qDebug()<<object;
     }
         break;
     case SecondaryTopic::software:

@@ -225,6 +225,7 @@ void SystemConfigDialog::aboutAppSlot()
     QTextBrowser *textBrowser = new QTextBrowser(&dialog);
     textBrowser->setStyleSheet("background:transparent;border-width:0;border-style:outset");
     vLayout->addWidget(textBrowser);
+    textBrowser->append(tr("软件版本: %1\n").arg(QCoreApplication::applicationVersion()));
     // get app version info
     QFile file(":/resource.rc");
     if (file.open(QIODevice::ReadOnly)) {
@@ -240,9 +241,9 @@ void SystemConfigDialog::aboutAppSlot()
                 else if ("ProductName" == regExp.cap(1)) {
                     textBrowser->append(tr("软件名称: %1\n").arg(regExp.cap(2)));
                 }
-                else if ("ProductVersion" == regExp.cap(1)) {
-                    textBrowser->append(tr("软件版本: %1\n").arg(regExp.cap(2)));
-                }
+//                else if ("ProductVersion" == regExp.cap(1)) {
+//                    textBrowser->append(tr("软件版本: %1\n").arg(regExp.cap(2)));
+//                }
                 else if ("OrganizationDomain" == regExp.cap(1)) {
                     textBrowser->append(tr("公司网站: %1\n").arg(regExp.cap(2)));
                 }

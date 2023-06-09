@@ -16,6 +16,8 @@
 #include <QTextStream>
 #include <QDebug>
 #include <QThread>
+#include <QQueue>
+#include <numeric>
 
 #include "trendchart.h"
 #include "selectitemdialog.h"
@@ -25,8 +27,36 @@ enum Type {
     CO, SV, HRV, EDI, Vol, SVR, SSVR, SSVRI, SVRI, Vas, LVET, LSW, LSWI,
     LCW, LCWI, STR, Ino, SBP, DBP, MAP, CVP, LAP, Dz, Pos, DO2, SVV
 };
+
 QString typeName(const uchar &type);
+
 QString typeName(const Type &type);
+
+// 记录值队列
+class VQueue : public QQueue<double>
+{
+public:
+    explicit VQueue(int maxcount = INT_MAX) : maxcount(maxcount) {}
+    void enqueue(const double &d)
+    {
+        if (length() == maxcount) QQueue::dequeue();
+        QQueue<double>::enqueue(d);
+    }
+    void append(const double &d)
+    {
+        enqueue(d);
+    }
+    double average() const
+    {
+        return sum()/length();
+    }
+    double sum() const
+    {
+        return std::accumulate(QQueue<double>::begin(), QQueue<double>::end(), 0.0);
+    }
+private:
+    int maxcount;
+};
 
 // 范围，记录值，当前值，名称，单位
 struct ArgItems
@@ -39,11 +69,13 @@ struct ArgItems
     QString dataName_cn;
     QString dataUnit;
     QList<double> values;
+    VQueue vqueue = VQueue(5);
     void clear()
     {
         recordValue = 0;
         currentValue = 0;
         values.clear();
+        vqueue.clear();
     }
 };
 
@@ -58,7 +90,7 @@ public:
     // 数据波动
     void startTimer(qreal accuracy);
     void stopTimer();
-    void smoothTransitionTimer(bool isStart);
+//    void smoothTransitionTimer(bool isStart);
 protected:
     void mouseDoubleClickEvent(QMouseEvent *);
 public:
@@ -82,7 +114,7 @@ public slots:
 protected slots:
     void getChangeText(const QString &text);
     void timeoutSlot();
-    void oldAndNewValueTimerSlot();
+//    void oldAndNewValueTimerSlot();
 signals:
     void currentValue(qreal);
     void nameAndValue(const QString &, const double &rVal, const double &cVal);
@@ -105,8 +137,8 @@ private:
     qreal m_accuracy = 1;
     TrendChart *m_pTrendChart;
     // 数据平稳过渡
-    QList<qreal> oldAndNewValue;
-    QTimer *oldAndNewValueTimer;
+//    QList<qreal> oldAndNewValue;
+//    QTimer *oldAndNewValueTimer;
 };
 
 class CustomCtrlRegulator : public QObject

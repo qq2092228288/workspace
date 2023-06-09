@@ -130,7 +130,8 @@ void LoginDialog::readDeviceInfo()
                     deviceIdEdit->setText(value);
                 }
                 else if (name == "password") {
-                    passwordEdit->setText(decryption(value));
+//                    passwordEdit->setText(decryption(value));
+                    passwordEdit->setText(value);
                 }
             }
         }
@@ -145,11 +146,11 @@ void LoginDialog::writeDeviceInfo()
         QTextStream in(&file);
         in.setCodec(QTextCodec::codecForName("utf-8"));
         in<<QString("deviceId=\"%1\"\n").arg(deviceIdEdit->text());
-        in<<QString("password=\"%1\"\n").arg(encryption(passwordEdit->text()));
+        in<<QString("password=\"%1\"\n").arg(passwordEdit->text());
         file.close();
     }
 }
-
+#if 0
 QString LoginDialog::encryption(const QString &password)
 {
     QByteArray macArray = DataManagement::getInstance().getMac().replace(":", "").toLatin1();
@@ -174,3 +175,4 @@ QString LoginDialog::decryption(const QString &epstring)
     }
     return password;
 }
+#endif

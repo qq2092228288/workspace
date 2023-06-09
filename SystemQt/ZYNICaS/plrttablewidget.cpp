@@ -5,14 +5,14 @@
 
 PlrtTableWidget::PlrtTableWidget(QWidget *parent)
     : QDialog{parent},
-      m_rows{4},
-      m_columns{9}
+      m_rows{4}
 {
     setWindowFlags(Qt::FramelessWindowHint | Qt::Dialog);
 
     mainLayout = new QGridLayout(this);
     // 列名
-    m_headerText<<""<<"HR"<<"SI"<<"CI"<<"SV"<<"CO"<<"DO2"<<"TFC"<<"ISI";
+    m_headerText<<""<<"HR"<<"SI"<<"CI"<<"SV"<<"CO"<<"TFC"<<"ISI";
+
     setWindowTitle(tr("被动抬腿试验"));
     double zoom = QApplication::primaryScreen()->availableSize().width()/1920.0;
     setMinimumSize(1000*zoom, 400*zoom);
@@ -55,7 +55,7 @@ PlrtTableWidget::PlrtTableWidget(QWidget *parent)
 //    mainLayout->addWidget(m_pStartBtn, rowCount() + 1, count - 3, Qt::AlignRight);
     mainLayout->addWidget(m_pStopBtn, rowCount() + 1, 3, Qt::AlignRight);
     mainLayout->addWidget(m_pPauseBtn, rowCount() + 1, 4, Qt::AlignRight);
-    mainLayout->addWidget(m_pProgressBar, rowCount() + 2, 0, 1, m_headerText.count());
+    mainLayout->addWidget(m_pProgressBar, rowCount() + 2, 0, 1, columnCount());
 
     m_pProgressBar->setAlignment(Qt::AlignCenter);
     m_pProgressBar->setStyleSheet(QString("QProgressBar{"
@@ -89,7 +89,7 @@ int PlrtTableWidget::rowCount() const
 
 int PlrtTableWidget::columnCount() const
 {
-    return m_columns;
+    return m_headerText.count();
 }
 
 QStringList PlrtTableWidget::header() const
@@ -171,9 +171,9 @@ void PlrtTableWidget::setData(const QString &name, const double &fdata, const do
     else if (name == "CO") {
         type = PaType::Co;
     }
-    else if (name == "DO2") {
-        type = PaType::Do2;
-    }
+//    else if (name == "DO2") {
+//        type = PaType::Do2;
+//    }
     else if (name == "TFC") {
         type = PaType::Tfc;
     }
@@ -190,6 +190,13 @@ void PlrtTableWidget::closeEvent(QCloseEvent *event)
 {
     event->accept();
     m_pProgressBar->setValue(0);
+}
+
+void PlrtTableWidget::showEvent(QShowEvent *event)
+{
+    m_pProgressBar->setValue(0);
+    m_pPauseBtn->setText("开始");
+    event->accept();
 }
 
 void PlrtTableWidget::mouseMoveEvent(QMouseEvent *event)
@@ -315,7 +322,7 @@ QString PlrtTableWidget::getPicFileName(const PosType &type)
 
 int PlrtTableWidget::getLabelNumber(const int &row, const int &col)
 {
-    return (row*header().size() + col);
+    return (row*columnCount() + col);
 }
 
 void PlrtTableWidget::dataWarning(const PaType &type, bool w)

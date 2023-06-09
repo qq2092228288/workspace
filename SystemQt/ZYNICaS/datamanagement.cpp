@@ -691,9 +691,9 @@ void DataManagement::customCtrlTimer(bool start)
     auto hrCtrl = m_pRegulator->getCustomCtrl(typeName(Type::HR));
     auto svCtrl = m_pRegulator->getCustomCtrl(typeName(Type::SV));
     auto isiCtrl = m_pRegulator->getCustomCtrl(typeName(Type::ISI));
-    foreach (auto ctrl, m_pRegulator->getAllCustomCtrls()) {
-        ctrl->smoothTransitionTimer(start);
-    }
+//    foreach (auto ctrl, m_pRegulator->getAllCustomCtrls()) {
+//        ctrl->smoothTransitionTimer(start);
+//    }
     if (hrCtrl == nullptr || svCtrl == nullptr || isiCtrl == nullptr)
         return;
     if (start) {
@@ -920,13 +920,13 @@ QString DataManagement::reportResult(bool record)
             auto hrv = m_pRegulator->getCustomCtrl(typeName(Type::HRV));
             auto map = m_pRegulator->getCustomCtrl(typeName(Type::MAP));
             QString fstr = tr("前负荷(容量负荷)：") + (isi->getCurrentValue() > isi->getRecordValue() && sv->getCurrentValue() > sv->getRecordValue() ?
-                                tr("正常") : tr("偏高(建议使用：减少钠盐摄入，使用利尿剂)，请结合临床分析；"));
+                                tr("正常") : tr("偏高(建议使用：减少钠盐摄入，使用利尿剂)，请结合临床分析"));
             QString tstr = tr("后负荷(张力负荷)：");
             if (vas->getRecordValue() < vas->getMinValue()) {
                 tstr += tr("偏低");
             }
             else if (vas->getRecordValue() > vas->getMaxValue()) {
-                tstr += tr("偏高(建议使用：ACEI，ARB)，请结合临床分析；");
+                tstr += tr("偏高(建议使用：ACEI，ARB)，请结合临床分析");
             }
             else {
                 tstr += tr("正常");
@@ -936,7 +936,7 @@ QString DataManagement::reportResult(bool record)
                 sstr += tr("偏低");
             }
             else if (isi->getRecordValue() > isi->getMaxValue()) {
-                sstr += tr("偏高(建议使用：β阻滞剂类，CCB)，请结合临床分析；");
+                sstr += tr("偏高(建议使用：β阻滞剂类，CCB)，请结合临床分析");
             }
             else {
                 sstr += tr("正常");
@@ -946,7 +946,7 @@ QString DataManagement::reportResult(bool record)
                 hstr += tr("偏低");
             }
             else if (hrv->getRecordValue() > hrv->getMaxValue()) {
-                hstr += tr("偏高(建议使用：β阻滞剂，镇静剂类)，请结合临床分析；");
+                hstr += tr("偏高(建议使用：β阻滞剂，镇静剂类)，请结合临床分析");
             }
             else {
                 hstr += tr("正常");
@@ -956,11 +956,11 @@ QString DataManagement::reportResult(bool record)
             }
             if (m_pHospitalInfo->cMode == Check_Mode::Hypertension) {
                 // 高血压模式
-                result += tr("1.%1\n2.%2\n3.%3\n4.%4\n").arg(fstr, tstr, sstr, hstr);
+                result += tr("1.%1；\n2.%2；\n3.%3；\n4.%4；\n").arg(fstr, tstr, sstr, hstr);
             }
             else if (m_pHospitalInfo->cMode == Check_Mode::InternalMedicine) {
                 // 内科模式
-                result += tr("1.%1\n2.%2\n3.%3\n4.%4\n").arg(fstr, tstr, sstr, hstr);
+                result += tr("1.%1；\n2.%2；\n3.%3；\n4.%4；\n").arg(fstr, tstr, sstr, hstr);
             }
             else if (m_pHospitalInfo->cMode == Check_Mode::IntensiveCareUnit) {
                 // 重症模式
@@ -971,11 +971,11 @@ QString DataManagement::reportResult(bool record)
                         .arg(pevl(Type::CO), pevl(Type::CI), pevl(Type::SV), pevl(Type::SI), pevl(Type::HR),
                              pevl(Type::Vas), pevl(Type::Vol), pevl(Type::Ino), pevl(Type::SBP))
                         .arg(pevl(Type::DBP), pevl(Type::TFC), compare(Type::SV), compare(Type::ISI), preload());
-                result += tr("3.%1%2%3%4").arg(fstr, tstr, sstr, hstr);
+                result += tr("3.%1；\n  %2；\n  %3；\n  %4；").arg(fstr, tstr, sstr, hstr);
             }
             else if (m_pHospitalInfo->cMode == Check_Mode::PhysicalExamination) {
                 // 体检模式
-                result += tr("1.%1\n2.%2\n3.%3\n4.%4\n").arg(fstr, tstr, sstr, hstr);
+                result += tr("1.%1；\n2.%2；\n3.%3；\n4.%4；\n").arg(fstr, tstr, sstr, hstr);
             }
         }
         else if (m_pHospitalInfo->pType == Printer_Type::Thermal) {

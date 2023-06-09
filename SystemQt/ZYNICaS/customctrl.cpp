@@ -136,10 +136,10 @@ CustomCtrl::CustomCtrl(Argument arg, QWidget *parent)
     m_pDialog = new SelectItemDialog(false);
 
     timer = new QTimer(this);
-    oldAndNewValueTimer = new QTimer(this);
+//    oldAndNewValueTimer = new QTimer(this);
 
     connect(timer, &QTimer::timeout,this,&CustomCtrl::timeoutSlot);
-    connect(oldAndNewValueTimer, &QTimer::timeout, this, &CustomCtrl::oldAndNewValueTimerSlot);
+//    connect(oldAndNewValueTimer, &QTimer::timeout, this, &CustomCtrl::oldAndNewValueTimerSlot);
     connect(this, &CustomCtrl::currentValue, this, [=]() {
         if (getRecordValue() != 0 && getCurrentValue() != 0)
             emit nameAndValue(getName(), getRecordValue(), getCurrentValue());
@@ -216,9 +216,9 @@ CustomCtrl::~CustomCtrl()
     if (timer->isActive()){
         timer->stop();
     }
-    if (oldAndNewValueTimer->isActive()) {
-        oldAndNewValueTimer->stop();
-    }
+//    if (oldAndNewValueTimer->isActive()) {
+//        oldAndNewValueTimer->stop();
+//    }
     delete m_pTrendChart;
     delete m_pDialog;
 //    qDebug()<<aitems.dataName<<"~CustomCtrl()";
@@ -239,22 +239,22 @@ void CustomCtrl::stopTimer()
     }
 }
 
-void CustomCtrl::smoothTransitionTimer(bool isStart)
-{
-    if (getName() == "MAP" || getName() == "SBP/DBP") {
-        return;
-    }
-    if (isStart) {
-        if (!oldAndNewValueTimer->isActive()) {
-            oldAndNewValueTimer->start(2500);
-        }
-    }
-    else {
-        if (oldAndNewValueTimer->isActive()) {
-            oldAndNewValueTimer->stop();
-        }
-    }
-}
+//void CustomCtrl::smoothTransitionTimer(bool isStart)
+//{
+//    if (getName() == "MAP" || getName() == "SBP/DBP") {
+//        return;
+//    }
+//    if (isStart) {
+//        if (!oldAndNewValueTimer->isActive()) {
+//            oldAndNewValueTimer->start(2500);
+//        }
+//    }
+//    else {
+//        if (oldAndNewValueTimer->isActive()) {
+//            oldAndNewValueTimer->stop();
+//        }
+//    }
+//}
 
 void CustomCtrl::mouseDoubleClickEvent(QMouseEvent *)
 {
@@ -317,17 +317,22 @@ void CustomCtrl::clear()
     dbpaitems.clear();
     valueEdit->clear();
     m_pTrendChart->clear();
-    oldAndNewValue.clear();
+//    oldAndNewValue.clear();
     valueWarning(false);
 }
 
 void CustomCtrl::setValue(const double &value)
 {
+    aitems.vqueue.enqueue(value);
     aitems.values.append(value);
-    oldAndNewValue.append(value);
-    if (oldAndNewValue.size() > 2) {
-        oldAndNewValue.removeFirst();
-    }
+    valueEdit->setText(QString::number(aitems.vqueue.average(), 'f', digit));
+    aitems.currentValue = valueEdit->text().toDouble();
+    valueWarning(aitems.currentValue < aitems.minValue || aitems.currentValue > aitems.maxValue);
+    emit currentValue(aitems.vqueue.average());
+//    oldAndNewValue.append(value);
+//    if (oldAndNewValue.size() > 2) {
+//        oldAndNewValue.removeFirst();
+//    }
 //    else {
 //        valueEdit->setText(QString::number(value, 'f', digit));
 //        aitems.currentValue = valueEdit->text().toDouble();
@@ -377,6 +382,8 @@ void CustomCtrl::recordValueSlot()
 {
     aitems.recordValue = aitems.currentValue;
     dbpaitems.recordValue = dbpaitems.currentValue;
+    aitems.vqueue.clear();
+    dbpaitems.vqueue.clear();
     //    emit recordValue(aitems.recordValue);
 }
 
@@ -397,26 +404,26 @@ void CustomCtrl::timeoutSlot()
     }
 }
 
-void CustomCtrl::oldAndNewValueTimerSlot()
-{
-    if (oldAndNewValue.size() == 2) {
-        qreal oldValue = oldAndNewValue.at(0);
-        qreal newValue = oldAndNewValue.at(1);
-        if ((oldValue < newValue && newValue/oldValue > 1.1) || (oldValue > newValue && oldValue/newValue > 1.1)) {
-            oldValue += (newValue - oldValue)*0.3;
-        }
-        else {
-            oldValue = newValue;
-        }
-        oldAndNewValue.replace(0, oldValue);
-    }
-    if (!oldAndNewValue.isEmpty()) {
-        valueEdit->setText(QString::number(oldAndNewValue.at(0), 'f', digit));
-        aitems.currentValue = valueEdit->text().toDouble();
-        valueWarning(aitems.currentValue < aitems.minValue || aitems.currentValue > aitems.maxValue);
-        emit currentValue(aitems.currentValue);
-    }
-}
+//void CustomCtrl::oldAndNewValueTimerSlot()
+//{
+//    if (oldAndNewValue.size() == 2) {
+//        qreal oldValue = oldAndNewValue.at(0);
+//        qreal newValue = oldAndNewValue.at(1);
+//        if ((oldValue < newValue && newValue/oldValue > 1.1) || (oldValue > newValue && oldValue/newValue > 1.1)) {
+//            oldValue += (newValue - oldValue)*0.3;
+//        }
+//        else {
+//            oldValue = newValue;
+//        }
+//        oldAndNewValue.replace(0, oldValue);
+//    }
+//    if (!oldAndNewValue.isEmpty()) {
+//        valueEdit->setText(QString::number(oldAndNewValue.at(0), 'f', digit));
+//        aitems.currentValue = valueEdit->text().toDouble();
+//        valueWarning(aitems.currentValue < aitems.minValue || aitems.currentValue > aitems.maxValue);
+//        emit currentValue(aitems.currentValue);
+//    }
+//}
 
 CustomCtrlRegulator::CustomCtrlRegulator(QObject *parent)
     : QObject{parent}
