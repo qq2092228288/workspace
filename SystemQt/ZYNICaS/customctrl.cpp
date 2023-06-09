@@ -141,8 +141,12 @@ CustomCtrl::CustomCtrl(Argument arg, QWidget *parent)
     connect(timer, &QTimer::timeout,this,&CustomCtrl::timeoutSlot);
 //    connect(oldAndNewValueTimer, &QTimer::timeout, this, &CustomCtrl::oldAndNewValueTimerSlot);
     connect(this, &CustomCtrl::currentValue, this, [=]() {
-        if (getRecordValue() != 0 && getCurrentValue() != 0)
-            emit nameAndValue(getName(), getRecordValue(), getCurrentValue());
+        auto rv = getRecordValue();
+        auto cv = getCurrentValue();
+        if (cv != 0) {
+            if (rv == 0) rv = cv;
+            emit nameAndValue(getName(), rv, cv);
+        }
     });
 
     QVBoxLayout *vLayout = new QVBoxLayout(this);
