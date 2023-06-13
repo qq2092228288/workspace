@@ -15,6 +15,7 @@ int main(int argc, char *argv[])
     // mqtt
     MqttClient_PTR mqttClient(new MqttClient);
     mqttClient->connectToHost();
+//    ThreadService::getInstance()->objectMoveToThread(mqttClient.get());
 
     // html
     HtmlServer_PTR htmlServer(new HtmlServer);

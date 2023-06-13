@@ -21,7 +21,8 @@ public slots:
     void publish(const QMqttTopicName &topic, const QByteArray &message, quint8 qos, bool retain);
 private:
     QMqttClient *m_client;
-    TopicAnalysis_PTR topicAnalysis_PTR;
+//    TopicAnalysis_PTR topicAnalysis_PTR;
+    TopicAnalysis *m_analysis;
 };
 typedef QSharedPointer<MqttClient> MqttClient_PTR;
 

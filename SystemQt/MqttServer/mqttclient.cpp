@@ -3,25 +3,29 @@
 #include <threadservice.h>
 
 MqttClient::MqttClient(QObject *parent)
-    : QObject{parent},
-      topicAnalysis_PTR{new TopicAnalysis}
+    : QObject{parent}/*,
+      topicAnalysis_PTR{new TopicAnalysis}*/
 {
     qRegisterMetaType<QMqttTopicName>("QMqttTopicName");
     qRegisterMetaType<MessageError>("MessageError");
     qRegisterMetaType<QMqttClient::ClientState>("ClientState");
 
-    m_client = new QMqttClient(this);
+    m_client = new QMqttClient;
     m_client->setHostname(Singleton::hostname());
     m_client->setPort(Singleton::mqttPort());
+    ThreadService::getInstance()->objectMoveToThread(m_client);
 
-    auto ptr = topicAnalysis_PTR.get();
-    ptr->createTables();
-    ThreadService::getInstance()->objectMoveToThread(ptr);
+    m_analysis = new TopicAnalysis;
+    m_analysis->createTables();
+    ThreadService::getInstance()->objectMoveToThread(m_analysis);
+//    auto ptr = topicAnalysis_PTR.get();
+//    ptr->createTables();
+//    ThreadService::getInstance()->objectMoveToThread(ptr);
 
-    connect(m_client, &QMqttClient::messageReceived, ptr, &TopicAnalysis::messageAnalysis);
-    connect(ptr, &TopicAnalysis::messagePublish, this, &MqttClient::publish);
+    connect(m_client, &QMqttClient::messageReceived, m_analysis, &TopicAnalysis::messageAnalysis);
+    connect(m_analysis, &TopicAnalysis::messagePublish, this, &MqttClient::publish);
     connect(m_client, &QMqttClient::stateChanged, this, &MqttClient::stateChanged);
-    connect(ptr, &TopicAnalysis::error, this, [=](const MessageError &error)
+    connect(m_analysis, &TopicAnalysis::error, this, [=](const MessageError &error)
     {
         TIME_DEBUG()<<Singleton::enumValueToKey(error);
     });
@@ -30,6 +34,7 @@ MqttClient::MqttClient(QObject *parent)
 MqttClient::~MqttClient()
 {
     delete m_client;
+    delete m_analysis;
 }
 
 void MqttClient::connectToHost()
