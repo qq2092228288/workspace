@@ -26,10 +26,10 @@
 class VQueue : public QQueue<short>
 {
 public:
-    explicit VQueue(int maxcount = INT_MAX) : maxcount(maxcount) {}
+    explicit VQueue(int maxcount = 5) : maxcount(maxcount) {}
     void enqueue(const short &d)
     {
-        if (length() == maxcount) QQueue::dequeue();
+        if (length() >= maxcount) QQueue::dequeue();
         QQueue<short>::enqueue(d);
     }
     void append(const short &d)
@@ -62,6 +62,7 @@ public slots:
     bool isWorking();
 //    void hotPlug(bool insert);  // 热插拔
     void startDemoMode(bool start);
+    void clearMap();
 signals:
     void data(uchar, short);
     void ecgValue(uchar);   // ECG

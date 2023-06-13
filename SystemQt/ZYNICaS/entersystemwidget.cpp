@@ -1,6 +1,6 @@
 #include "entersystemwidget.h"
 #include "datamanagement.h"
-#include "threadserivce.h"
+#include <threadservice.h>
 #include "waitingdialog.h"
 #include "datacalculation.h"
 #include "isicurvewidget.h"
@@ -268,9 +268,9 @@ void EnterSystemWidget::initOscModule()
     diffLayout->addWidget(diffDraw->getView());
     admitLayout->addWidget(admitDraw->getView());
 
-    ThreadSerivce::getInstance().objectMoveToThread(ecgDraw);
-    ThreadSerivce::getInstance().objectMoveToThread(diffDraw);
-    ThreadSerivce::getInstance().objectMoveToThread(admitDraw);
+    ThreadService::getInstance()->objectMoveToThread(ecgDraw);
+    ThreadService::getInstance()->objectMoveToThread(diffDraw);
+    ThreadService::getInstance()->objectMoveToThread(admitDraw);
 }
 
 void EnterSystemWidget::initDataModule()
@@ -297,7 +297,7 @@ void EnterSystemWidget::initDataModule()
         customCtrls.at(num)->show();
     }
     dataGLayout->addWidget(sudokuWidget, 2, 3);
-    ThreadSerivce::getInstance().objectMoveToThread(regulator);
+    ThreadService::getInstance()->objectMoveToThread(regulator);
     DataManagement::getInstance().setRegulator(regulator);
 }
 
@@ -585,6 +585,7 @@ void EnterSystemWidget::recordPosition()
         auto &instance = DataManagement::getInstance();
         instance.recordPosition(rPos);
         setBaseData();
+        instance.getTebco()->clearMap();
         QMessageBox::information(this, tr("提示"), tr("已记录体位。"));
     }
 }

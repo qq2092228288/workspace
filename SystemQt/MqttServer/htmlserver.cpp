@@ -1,18 +1,19 @@
 #include "htmlserver.h"
-#include "singleton.h"
+#include <singleton.h>
+#include <threadservice.h>
 #include "htmlclient.h"
 
 HtmlServer::HtmlServer(QObject *parent)
-    : QObject{parent},
-      server_ptr{new QWebSocketServer(QStringLiteral("Html Server"), QWebSocketServer::NonSecureMode)},
-      clientWrapper_ptr{new WebSocketClientWrapper(server_ptr.get())}
+    : QObject{parent}
 {
-    connect(clientWrapper_ptr.get(), &WebSocketClientWrapper::clientConnected, this, &HtmlServer::newClientConnected);
+    server = new QWebSocketServer(QStringLiteral("Html Server"), QWebSocketServer::NonSecureMode, this);
+    clientWrapper = new WebSocketClientWrapper(server, this);
+    connect(clientWrapper, &WebSocketClientWrapper::clientConnected, this, &HtmlServer::newClientConnected);
 }
 
 void HtmlServer::startListening()
 {
-    if (!server_ptr->listen(QHostAddress::Any, Singleton::listenPort())) {
+    if (!server->listen(QHostAddress::Any, Singleton::listenPort())) {
         qFatal("Failed to open web socket server.");
         exit(1) ;
     }
@@ -23,6 +24,18 @@ void HtmlServer::startListening()
 
 void HtmlServer::newClientConnected(WebSocketTransport *client)
 {
-    HtmlClient *newClient = new HtmlClient(client, this);
-    connect(client, &WebSocketTransport::destroyed, newClient, &HtmlClient::deleteLater);
+    HtmlClient *newClient = new HtmlClient(client);
+    connect(client, &WebSocketTransport::destroyed, this, &HtmlServer::clientDestroyed);
+    ThreadService::getInstance()->objectMoveToThread(newClient);
+    map.insert(client, newClient);
+}
+
+void HtmlServer::clientDestroyed(QObject *obj)
+{
+    auto client = map.value(obj);
+    if (client != nullptr) {
+        map.remove(obj);
+        delete client;
+        client = nullptr;
+    }
 }

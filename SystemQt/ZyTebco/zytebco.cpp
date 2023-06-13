@@ -167,6 +167,11 @@ void ZyTebco::startDemoMode(bool start)
     }
 }
 
+void ZyTebco::clearMap()
+{
+    map.clear();
+}
+
 void ZyTebco::handleSerialError(QSerialPort::SerialPortError error)
 {
     qDebug()<<error;

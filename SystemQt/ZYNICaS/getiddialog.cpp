@@ -53,10 +53,10 @@ GetIdDialog::GetIdDialog(QWidget *parent)
 //    connect(usedBtn, &QPushButton::clicked, this, &GetIdDialog::usedSlot);
 //    connect(createDeviceBtn, &QPushButton::clicked, this, &GetIdDialog::createDeviceSlot);
 //    connect(onlineGetBtn, &QPushButton::clicked, this, &GetIdDialog::onlineGetSlot);
-    consumablesEdit->setText(QString::number(instance.mqttClient()->surplus()));
     connect(instance.mqttClient(), &MqttClient::surplusCount, this, [=](int count){
         consumablesEdit->setText(QString::number(count));
     });
+
 
 //    connect(instance.getIdCheck(), &IdCheck::currentConsumables, this, &GetIdDialog::setConsumables);
 
@@ -87,6 +87,7 @@ void GetIdDialog::showEvent(QShowEvent *event)
 {
 //    hideCreateDevice(!DataManagement::getInstance().deviceDatabase()->getDeviceInfo("deviceId").isEmpty());
 //    consumablesEdit->setText(QString::number(DataManagement::getInstance().surplus()));
+    consumablesEdit->setText(QString::number(DataManagement::getInstance().mqttClient()->surplus()));
     event->accept();
 }
 

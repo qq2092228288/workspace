@@ -11,27 +11,28 @@ CONFIG -= app_bundle
 SOURCES += \
         $$[QT_INSTALL_EXAMPLES]/webchannel/shared/websocketclientwrapper.cpp \
         $$[QT_INSTALL_EXAMPLES]/webchannel/shared/websockettransport.cpp \
-    databasens.cpp \
+#    databasens.cpp \
     htmlclient.cpp \
         htmlserver.cpp \
         main.cpp \
         mqttclient.cpp \
-        singleton.cpp \
+#        singleton.cpp \
         topicanalysis.cpp \
 
 HEADERS += \
     $$[QT_INSTALL_EXAMPLES]/webchannel/shared/websocketclientwrapper.h \
     $$[QT_INSTALL_EXAMPLES]/webchannel/shared/websockettransport.h \
-    databasens.h \
+#    databasens.h \
     htmlclient.h \
     htmlserver.h \
     mqttclient.h \
-    singleton.h \
+#    singleton.h \
     topicanalysis.h \
-    topicns.h \
+#    topicns.h \
 
 include(../../commonFiles/base.pri)
 include(../../commonFiles/qt-solutions/qtsingleapplication/src/qtsinglecoreapplication.pri)
+include(../../commonFiles/MqttServerNs/mqttserverns.pri)
 INCLUDEPATH += $$[QT_INSTALL_EXAMPLES]/webchannel/shared
 
 # Default rules for deployment.

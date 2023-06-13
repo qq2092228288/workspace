@@ -5,7 +5,6 @@
 #include <QtMqtt/qmqttclient.h>
 #include <QtMqtt/qmqttglobal.h>
 #include <QSharedPointer>
-#include <QThread>
 
 #include "topicanalysis.h"
 
@@ -21,7 +20,6 @@ public slots:
     void stateChanged(QMqttClient::ClientState state);
     void publish(const QMqttTopicName &topic, const QByteArray &message, quint8 qos, bool retain);
 private:
-    QThread *m_thread;
     QMqttClient *m_client;
     TopicAnalysis_PTR topicAnalysis_PTR;
 };

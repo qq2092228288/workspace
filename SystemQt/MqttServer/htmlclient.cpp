@@ -1,5 +1,5 @@
 #include "htmlclient.h"
-#include "singleton.h"
+#include <singleton.h>
 
 
 

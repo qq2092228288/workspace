@@ -64,6 +64,7 @@ public:
     QString getPortName() const;
     void updateHospitalInfo();
 protected slots:
+    void logoutSlot();
     void aboutAppSlot();
     void anotherSetSlot();
     void selectLogoSlot();
@@ -103,7 +104,8 @@ private:
     QString infoFileName;
     GetIdDialog *getIdDialog;
     QGroupBox *appMsgGroupBox;
-    QPushButton *anotherSetBtn;
+//    QPushButton *anotherSetBtn;
+    QPushButton *logoutBtn;
     QPushButton *aboutAppBtn;
 };
 

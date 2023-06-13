@@ -1,5 +1,6 @@
 #include "mqttclient.h"
-#include "singleton.h"
+#include <singleton.h>
+#include <threadservice.h>
 
 MqttClient::MqttClient(QObject *parent)
     : QObject{parent},
@@ -7,16 +8,15 @@ MqttClient::MqttClient(QObject *parent)
 {
     qRegisterMetaType<QMqttTopicName>("QMqttTopicName");
     qRegisterMetaType<MessageError>("MessageError");
-
-    m_thread = new QThread;
+    qRegisterMetaType<QMqttClient::ClientState>("ClientState");
 
     m_client = new QMqttClient(this);
     m_client->setHostname(Singleton::hostname());
     m_client->setPort(Singleton::mqttPort());
 
-    auto ptr = topicAnalysis_PTR.data();
+    auto ptr = topicAnalysis_PTR.get();
     ptr->createTables();
-    ptr->moveToThread(m_thread);
+    ThreadService::getInstance()->objectMoveToThread(ptr);
 
     connect(m_client, &QMqttClient::messageReceived, ptr, &TopicAnalysis::messageAnalysis);
     connect(ptr, &TopicAnalysis::messagePublish, this, &MqttClient::publish);
@@ -25,15 +25,10 @@ MqttClient::MqttClient(QObject *parent)
     {
         TIME_DEBUG()<<Singleton::enumValueToKey(error);
     });
-
-    m_thread->start();
 }
 
 MqttClient::~MqttClient()
 {
-    m_thread->quit();
-    m_thread->wait();
-    delete m_thread;
     delete m_client;
 }
 

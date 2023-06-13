@@ -922,14 +922,26 @@ QString DataManagement::reportResult(bool record)
             QString fstr = tr("前负荷(容量负荷)：") + (isi->getCurrentValue() > isi->getRecordValue() && sv->getCurrentValue() > sv->getRecordValue() ?
                                 tr("正常") : tr("偏高(建议使用：减少钠盐摄入，使用利尿剂)，请结合临床分析"));
             QString tstr = tr("后负荷(张力负荷)：");
-            if (vas->getRecordValue() < vas->getMinValue()) {
-                tstr += tr("偏低");
+            if (map->getRecordValue() >= map->getMinValue() && map->getRecordValue() <= map->getMaxValue()) {
+                if (vas->getRecordValue() >= vas->getMinValue() && vas->getRecordValue() <= vas->getMaxValue()) {
+                    tstr += tr("正常");
+                }
+                else {
+                    tstr += tr("正常(因血压正常，后负荷有益代偿)");
+                }
             }
-            else if (vas->getRecordValue() > vas->getMaxValue()) {
-                tstr += tr("偏高(建议使用：ACEI，ARB)，请结合临床分析");
+            else if (map->getRecordValue() > map->getMaxValue()) {
+                if (vas->getRecordValue() >= vas->getMinValue() && vas->getRecordValue() <= vas->getMaxValue()) {
+                    tstr += tr("正常");
+                }
+                else if (vas->getRecordValue() > vas->getMaxValue()) {
+                    tstr += tr("偏高(建议使用：ACEI，ARB)，请结合临床分析");
+                }
             }
-            else {
-                tstr += tr("正常");
+            else if (map->getRecordValue() < map->getMinValue()) {
+                if (vas->getRecordValue() <= vas->getMaxValue()) {
+                    tstr += tr("偏低");
+                }
             }
             QString sstr = tr("心肌力(心脏泵力)：");
             if (isi->getRecordValue() < isi->getMinValue()) {
@@ -951,9 +963,7 @@ QString DataManagement::reportResult(bool record)
             else {
                 hstr += tr("正常");
             }
-            if (map->getRecordValue() < map->getMinValue() && vas->getRecordValue() > vas->getMaxValue()) {
-                tstr += tr("(提示：病人血压低，后负荷被动性代偿)");
-            }
+
             if (m_pHospitalInfo->cMode == Check_Mode::Hypertension) {
                 // 高血压模式
                 result += tr("1.%1；\n2.%2；\n3.%3；\n4.%4；\n").arg(fstr, tstr, sstr, hstr);

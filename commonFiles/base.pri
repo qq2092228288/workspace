@@ -2,6 +2,9 @@
 #CONFIG += debug_and_release
 
 #QMAKE_CXXFLAGS += /wd"4819"
+
+include($$PWD/threadservice/threadservice.pri)
+
 win32-msvc* {
     QMAKE_CXXFLAGS += /source-charset:utf-8 /execution-charset:utf-8
 }

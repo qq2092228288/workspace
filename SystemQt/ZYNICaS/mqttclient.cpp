@@ -38,8 +38,8 @@ bool MqttClient::openDatabase()
                            Singleton::enumValueToKey(ReportTable::time),
                            Singleton::enumValueToKey(ReportTable::upload),
                            Singleton::enumValueToKey(ReportTable::data)));
-        // 临时表，存储设备信息，退出即删除
-        sqlQuery.exec(QString("CREATE TEMPORARY TABLE %1("
+        // 存储设备信息
+        sqlQuery.exec(QString("CREATE TABLE %1("
                               "%2 VARCHAR(32) PRIMARY KEY NOT NULL,"
                               "%3 VARCHAR(32) NOT NULL,"
                               "%4 TEXT NOT NULL,"
@@ -59,6 +59,7 @@ bool MqttClient::openDatabase()
                            Singleton::enumValueToKey(Device::status))
                       .arg(Singleton::enumValueToKey(CountType::totalCount),
                            Singleton::enumValueToKey(CountType::usedCount)));
+        setLocalUserInfo();
         return true;
     }
     else {
@@ -67,17 +68,21 @@ bool MqttClient::openDatabase()
     return false;
 }
 
+bool MqttClient::deviceInfoIsEmpty()
+{
+    QSqlQuery sqlQuery(m_database);
+    sqlQuery.exec(QString("SELECT %1, %2 FROM %3")
+                  .arg(Singleton::enumValueToKey(Device::deviceId),
+                       Singleton::enumValueToKey(Device::password),
+                       Singleton::enumName<Device>()));
+    return !sqlQuery.next();
+}
+
 void MqttClient::login(const QString &deviceId, const QString &password)
 {
     if (m_client->state() == QMqttClient::Connected) {
-        QSqlQuery sqlQuery(m_database);
-        sqlQuery.exec(QString("SELECT %1 FROM %2")
-                      .arg(Singleton::enumValueToKey(Device::deviceId), Singleton::enumName<Device>()));
-        if (sqlQuery.next()) {
-            emit setError();
-            return;
-        }
         if (deviceId != m_deviceId) {
+            // 取消订阅原ID
             m_client->unsubscribe(subTopic(m_deviceId));
         }
         m_client->subscribe(subTopic(deviceId));
@@ -87,6 +92,14 @@ void MqttClient::login(const QString &deviceId, const QString &password)
     }
     else {
         qWarning("服务器未连接！");
+    }
+}
+
+void MqttClient::logout()
+{
+    QSqlQuery sqlQuery(m_database);
+    if (sqlQuery.exec(QString("DELETE FROM %1").arg(Singleton::enumName<Device>()))){
+        emit loggedOut();
     }
 }
 
@@ -184,6 +197,12 @@ void MqttClient::stateChanged(QMqttClient::ClientState state)
 {
     if (QMqttClient::Connected == state) {
         emit connected();
+        if (!m_deviceId.isEmpty()) {
+            m_client->subscribe(subTopic(m_deviceId));
+            getDeviceInfo();
+            getSoftwareInfo();
+            uploadReport();
+        }
     }
     else if (QMqttClient::Disconnected == state) {
         // reconnect
@@ -307,5 +326,18 @@ void MqttClient::bindValue(QSqlQuery &sqlQuery, const QJsonObject &object)
         default:
             break;
         }
+    }
+}
+
+void MqttClient::setLocalUserInfo()
+{
+    QSqlQuery sqlQuery(m_database);
+    sqlQuery.exec(QString("SELECT %1, %2 FROM %3")
+                  .arg(Singleton::enumValueToKey(Device::deviceId),
+                       Singleton::enumValueToKey(Device::password),
+                       Singleton::enumName<Device>()));
+    if (sqlQuery.next()) {
+        m_deviceId = sqlQuery.value(0).toString();
+        m_password = sqlQuery.value(1).toString();
     }
 }

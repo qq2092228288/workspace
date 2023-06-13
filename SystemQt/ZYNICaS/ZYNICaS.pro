@@ -1,5 +1,5 @@
 QT       += core gui widgets serialport charts axcontainer concurrent
-QT       += printsupport sql network xml
+QT       += printsupport sql network
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -18,8 +18,6 @@ RC_FILE = resource.rc
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
-    ../MqttServer/databasens.cpp \
-    ../MqttServer/singleton.cpp \
     anothersetdialog.cpp \
     auxargdialog.cpp \
     baseargwidget.cpp \
@@ -53,16 +51,12 @@ SOURCES += \
     sudokuwidget.cpp \
     surplusbaseargsdialog.cpp \
     systemconfigdialog.cpp \
-    threadserivce.cpp \
     trendchart.cpp \
     trendchartswidget.cpp \
     updateappdialog.cpp \
     waitingdialog.cpp
 
 HEADERS += \
-    ../MqttServer/databasens.h \
-    ../MqttServer/singleton.h \
-    ../MqttServer/topicns.h \
     MyStruct.h \
     anothersetdialog.h \
     auxargdialog.h \
@@ -96,7 +90,6 @@ HEADERS += \
     sudokuwidget.h \
     surplusbaseargsdialog.h \
     systemconfigdialog.h \
-    threadserivce.h \
     trendchart.h \
     trendchartswidget.h \
     updateappdialog.h \
@@ -106,6 +99,7 @@ HEADERS += \
 include(../../commonFiles/base.pri)
 #include(../../commonFiles/qextserialport/src/qextserialport.pri)
 include(../../commonFiles/qt-solutions/qtsingleapplication/src/qtsingleapplication.pri)
+include(../../commonFiles/MqttServerNs/mqttserverns.pri)
 
 INCLUDEPATH += ../ZyTebco \
     ../IdCheck \

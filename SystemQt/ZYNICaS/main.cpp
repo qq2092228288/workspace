@@ -3,7 +3,7 @@
 #include <QTextCodec>
 #include <QObject>
 #include "datamanagement.h"
-#include "threadserivce.h"
+#include <threadservice.h>
 //#include "singleapplication.h"
 #include <qtsingleapplication.h>
 #include <QTimer>
@@ -11,7 +11,6 @@
 #include "logindialog.h"
 
 DataManagement DataManagement::instance;
-ThreadSerivce ThreadSerivce::instance;
 
 int main(int argc, char *argv[])
 {
@@ -23,7 +22,7 @@ int main(int argc, char *argv[])
         // data management instance
         auto &ins = DataManagement::getInstance();
         // tebco serialport class move to thread
-        ThreadSerivce::getInstance().objectMoveToThread(ins.getTebco());
+        ThreadService::getInstance()->objectMoveToThread(ins.getTebco());
         // clear old data
         QObject::connect(&ins, &DataManagement::clear, &ins, &DataManagement::clearSlot);
         // open serial port
@@ -48,30 +47,29 @@ int main(int argc, char *argv[])
 
         auto client = ins.mqttClient();
         client->openDatabase();
-        LoginDialog_PTR dialog(new LoginDialog);
-        QObject::connect(&a, &QtSingleApplication::messageReceived, dialog.get(), &LoginDialog::sltMessageReceived);
-        QObject::connect(dialog.get(), &LoginDialog::deviceIdAndPassword, client, &MqttClient::login);
-        QObject::connect(client, &MqttClient::deviceInfoReceived, dialog.get(), &LoginDialog::loginSucceeded);
-        QObject::connect(client, &MqttClient::connected, dialog.get(), &LoginDialog::serverConnected);
-        QObject::connect(client, &MqttClient::messageFromServer, dialog.get(), &LoginDialog::serverMessage);
-        dialog->exec();
-        if (dialog->exitApplication()) {
-            return 0;
-        }
-        else {
-            QObject::disconnect(dialog.get(), &LoginDialog::deviceIdAndPassword, client, &MqttClient::login);
-            QObject::disconnect(client, &MqttClient::deviceInfoReceived, dialog.get(), &LoginDialog::loginSucceeded);
-            QObject::disconnect(client, &MqttClient::connected, dialog.get(), &LoginDialog::serverConnected);
-            QObject::disconnect(client, &MqttClient::messageFromServer, dialog.get(), &LoginDialog::serverMessage);
+        if (client->deviceInfoIsEmpty()) {
+            LoginDialog_PTR dialog(new LoginDialog);
+            QObject::connect(&a, &QtSingleApplication::messageReceived, dialog.get(), &LoginDialog::sltMessageReceived);
+            QObject::connect(dialog.get(), &LoginDialog::deviceIdAndPassword, client, &MqttClient::login);
+            QObject::connect(client, &MqttClient::deviceInfoReceived, dialog.get(), &LoginDialog::loginSucceeded);
+            QObject::connect(client, &MqttClient::connected, dialog.get(), &LoginDialog::serverConnected);
+            QObject::connect(client, &MqttClient::messageFromServer, dialog.get(), &LoginDialog::serverMessage);
+            dialog->exec();
+            if (dialog->exitApplication()) {
+                return 0;
+            }
+            else {
+                QObject::disconnect(dialog.get(), &LoginDialog::deviceIdAndPassword, client, &MqttClient::login);
+                QObject::disconnect(client, &MqttClient::deviceInfoReceived, dialog.get(), &LoginDialog::loginSucceeded);
+                QObject::disconnect(client, &MqttClient::connected, dialog.get(), &LoginDialog::serverConnected);
+                QObject::disconnect(client, &MqttClient::messageFromServer, dialog.get(), &LoginDialog::serverMessage);
+            }
         }
 
         MainWidget_PTR widget(new MainWidget);
         QObject::connect(client, &MqttClient::newVerion, widget.get(), &MainWidget::newVersion);
 
         widget->showMaximized();
-
-        client->getSoftwareInfo();
-        client->uploadReport();
 
         return a.exec();
     }

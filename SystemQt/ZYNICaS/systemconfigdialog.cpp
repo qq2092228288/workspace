@@ -40,7 +40,8 @@ SystemConfigDialog::SystemConfigDialog(QWidget *parent)
     confirmBtn = new QPushButton(tr("确定"), this);
     getIdDialog = new GetIdDialog(this);
     appMsgGroupBox = new QGroupBox(this);
-    anotherSetBtn = new QPushButton(tr("其它设置"), this);
+//    anotherSetBtn = new QPushButton(tr("其它设置"), this);
+    logoutBtn = new QPushButton(tr("退出登录"), this);
     aboutAppBtn = new QPushButton(tr("关于"), this);
 
     printerButtonGroup->addButton(printerRadio, 0);
@@ -99,14 +100,15 @@ SystemConfigDialog::SystemConfigDialog(QWidget *parent)
     sLayout->addStretch();
     sLayout->addWidget(getIDBtn, 0, Qt::AlignRight);
 
-    aLayout->addWidget(anotherSetBtn, 0, 0);
+//    aLayout->addWidget(anotherSetBtn, 0, 0);
+    aLayout->addWidget(logoutBtn, 0, 0, Qt::AlignLeft);
     aLayout->addWidget(aboutAppBtn, 0, 1, Qt::AlignRight);
 
     logoLabel->setToolTip(tr("双击删除"));
     logoLabel->installEventFilter(this);
 
     // 隐藏其它设置按钮
-    anotherSetBtn->hide();
+//    anotherSetBtn->hide();
 
     QStringList portNames;
     for (int var = 1; var <= 20; ++var) {
@@ -116,7 +118,8 @@ SystemConfigDialog::SystemConfigDialog(QWidget *parent)
 
     connect(selectLogoBtn, &QPushButton::clicked, this, &SystemConfigDialog::selectLogoSlot);
     connect(getIDBtn, &QPushButton::clicked, getIdDialog, &GetIdDialog::exec);
-    connect(anotherSetBtn, &QPushButton::clicked, this, &SystemConfigDialog::anotherSetSlot);
+//    connect(anotherSetBtn, &QPushButton::clicked, this, &SystemConfigDialog::anotherSetSlot);
+    connect(logoutBtn, &QPushButton::clicked, this, &SystemConfigDialog::logoutSlot);
     connect(aboutAppBtn, &QPushButton::clicked, this, &SystemConfigDialog::aboutAppSlot);
     connect(confirmBtn, &QPushButton::clicked, this, &SystemConfigDialog::close);
 
@@ -215,6 +218,14 @@ void SystemConfigDialog::updateHospitalInfo()
     hospitalInfo.cMode = Check_Mode(modeButtonGroup->checkedId());
     DataManagement::getInstance().setHospitalInfo(&hospitalInfo);
     emit modeChanged(Check_Mode(modeButtonGroup->checkedId()));
+}
+
+void SystemConfigDialog::logoutSlot()
+{
+    if (QMessageBox::question(this, tr("提示"), tr("退出软件并重新登录？")) == QMessageBox::Yes) {
+        DataManagement::getInstance().mqttClient()->logout();
+        exit(0);
+    }
 }
 
 void SystemConfigDialog::aboutAppSlot()

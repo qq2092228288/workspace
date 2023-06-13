@@ -36,9 +36,11 @@ public:
         usedCount
     };
     Q_ENUM(CountType)
-public slots:
     bool openDatabase();
+    bool deviceInfoIsEmpty();
+public slots:
     void login(const QString &deviceId, const QString &password);
+    void logout();
     void insert(qint64 time, QString dataString);
     int surplus();
     void uploadReport();
@@ -52,6 +54,7 @@ signals:
     void surplusCount(int count);
     void messageFromServer(QString);
     void newVerion(const QJsonObject &);
+    void loggedOut();
 private slots:
     void connectToHost();
     void stateChanged(QMqttClient::ClientState state);
@@ -60,6 +63,7 @@ private:
     QMqttTopicFilter subTopic(const QString &deviceId);
     bool compareVersion(QString ver1, QString ver2);
     void bindValue(QSqlQuery &sqlQuery, const QJsonObject &object);
+    void setLocalUserInfo();
 private:
     QString m_deviceId;
     QString m_password;

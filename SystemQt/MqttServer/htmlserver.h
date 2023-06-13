@@ -6,8 +6,7 @@
 #include <QSharedPointer>
 #include <websocketclientwrapper.h>
 
-typedef QSharedPointer<QWebSocketServer> QWebSocketServer_PTR;
-typedef QSharedPointer<WebSocketClientWrapper> WebSocketClientWrapper_PTR;
+class HtmlClient;
 
 class HtmlServer : public QObject
 {
@@ -18,9 +17,11 @@ public slots:
     void startListening();
 private slots:
     void newClientConnected(WebSocketTransport *client);
+    void clientDestroyed(QObject *obj);
 private:
-    QWebSocketServer_PTR server_ptr;
-    WebSocketClientWrapper_PTR clientWrapper_ptr;
+    QWebSocketServer *server;
+    WebSocketClientWrapper *clientWrapper;
+    QMap<QObject *, HtmlClient *> map;
 };
 typedef QSharedPointer<HtmlServer> HtmlServer_PTR;
 

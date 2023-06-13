@@ -1,7 +1,7 @@
 #include <QCoreApplication>
 #include <qtsinglecoreapplication.h>
-
-#include "singleton.h"
+#include <threadservice.h>
+#include <singleton.h>
 #include "mqttclient.h"
 #include "htmlserver.h"
 
@@ -19,6 +19,7 @@ int main(int argc, char *argv[])
     // html
     HtmlServer_PTR htmlServer(new HtmlServer);
     htmlServer->startListening();
+    ThreadService::getInstance()->objectMoveToThread(htmlServer.get());
 
     return a.exec();
 }

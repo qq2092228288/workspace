@@ -1,5 +1,5 @@
 #include "topicanalysis.h"
-#include "singleton.h"
+#include <singleton.h>
 
 TopicAnalysis::TopicAnalysis(QObject *parent)
     : QObject{parent}
