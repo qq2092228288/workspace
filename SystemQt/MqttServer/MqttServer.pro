@@ -21,10 +21,11 @@ HEADERS += \
     mqttclient.h \
     topicanalysis.h \
 
-include(../../commonFiles/base.pri)
-include(../../commonFiles/qt-solutions/qtsingleapplication/src/qtsinglecoreapplication.pri)
-include(../../commonFiles/MqttServerNs/mqttserverns.pri)
-include(../../commonFiles/webchannel/shared.pri)
+COMMONFILES_DIR = ../../commonFiles
+include($$COMMONFILES_DIR/base.pri)
+include($$COMMONFILES_DIR/qt-solutions/qtsingleapplication/src/qtsinglecoreapplication.pri)
+include($$COMMONFILES_DIR/MqttServerNs/mqttserverns.pri)
+include($$COMMONFILES_DIR/webchannel/shared.pri)
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

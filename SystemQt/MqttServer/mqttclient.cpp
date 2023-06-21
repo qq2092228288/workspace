@@ -18,9 +18,6 @@ MqttClient::MqttClient(QObject *parent)
     m_analysis = new TopicAnalysis;
     m_analysis->createTables();
     ThreadService::getInstance()->objectMoveToThread(m_analysis);
-//    auto ptr = topicAnalysis_PTR.get();
-//    ptr->createTables();
-//    ThreadService::getInstance()->objectMoveToThread(ptr);
 
     connect(m_client, &QMqttClient::messageReceived, m_analysis, &TopicAnalysis::messageAnalysis);
     connect(m_analysis, &TopicAnalysis::messagePublish, this, &MqttClient::publish);
