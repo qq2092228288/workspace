@@ -1,34 +1,36 @@
 <template>
-    <div class="header">
-        <div class="exit-button">
-            <el-button @click="exitBtnClick">退出</el-button>
-        </div>
-    </div>
+  <div class="main">
+    <el-container>
+      <el-aside class="aside">
+        <el-menu router>
+          <TreeMenu />
+        </el-menu>
+      </el-aside>
+      <el-container>
+        <el-main>
+          <router-view/>
+        </el-main>
+      </el-container>
+    </el-container>
+  </div>
 </template>
 
 <script>
-import { AES_Decrypt } from '@/utils/aes.js'
+import TreeMenu from '@/components/TreeMenu.vue'
 
 export default {
-    methods: {
-        exitBtnClick () {
-            this.$router.push({
-                path: '/'
-            })
-        },
-        clickButton () {
-            const data = this.$route.query
-            console.log(AES_Decrypt(data.password))
-        }
-    }
+  name: 'Homepage',
+  components: {
+    TreeMenu
+  }
 }
 </script>
 
 <style scoped lang="less">
-.header {
-    display: flex;
-}
-.exit-button {
-    margin-left: auto;
+// .main {
+//   background-color: white;
+// }
+.aside {
+  width: auto;
 }
 </style>

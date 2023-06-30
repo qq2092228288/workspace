@@ -8,16 +8,74 @@ const routes = [
     meta: {
       title: pageTitle + '-登录'
     },
-    component: () => import(/* webpackChunkName: "login" */ '../views/LoginView.vue')
+    component: () => import('../views/LoginView.vue')
   },
   {
     path: '/homepage',
     name: 'homepage',
     meta: {
       title: pageTitle + '-主页',
-      keepAlive: false
+      keepAlive: true
     },
-    component: () => import(/* webpackChunkName: "homepage" */ '../views/HomepageView.vue')
+    component: () => import('../views/HomepageView.vue'),
+    children: [
+      {
+        path: 'softwaremanagement',
+        name: 'softwaremanagement',
+        meta: {
+          keepAlive: true
+        },
+        component: () => import('../views/menu/SoftwareManagement.vue')
+      },
+      {
+        path: 'administratorinfo',
+        name: 'administratorinfo',
+        meta: {
+          keepAlive: true
+        },
+        component: () => import('../views/menu/AdministratorInfo.vue')
+      },
+      {
+        path: 'agentinfo',
+        name: 'agentinfo',
+        meta: {
+          keepAlive: true
+        },
+        component: () => import('../views/menu/AgentInfo.vue')
+      },
+      {
+        path: 'allocatedconsumables',
+        name: 'allocatedconsumables',
+        meta: {
+          keepAlive: true
+        },
+        component: () => import('../views/menu/AllocatedConsumables.vue')
+      },
+      {
+        path: 'device',
+        name: 'device',
+        meta: {
+          keepAlive: true
+        },
+        component: () => import('../views/menu/Device.vue')
+      },
+      {
+        path: 'placeinfo',
+        name: 'placeinfo',
+        meta: {
+          keepAlive: true
+        },
+        component: () => import('../views/menu/PlaceInfo.vue')
+      },
+      {
+        path: 'reportinfo',
+        name: 'reportinfo',
+        meta: {
+          keepAlive: true
+        },
+        component: () => import('../views/menu/ReportInfo.vue')
+      }
+    ]
   }
 ]
 

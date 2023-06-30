@@ -62,8 +62,8 @@ export default {
     return {
       userInfo: {
         username: '',
-        password: '',
-        remember: false
+        password: ''
+        // remember: false
       },
       rules: {
       username: [{ validator: checkUsername, trigger: onblur }],
@@ -76,45 +76,45 @@ export default {
   },
   methods: {
     loginButtonClick (formName) {
-        this.$refs[formName].validate(valid => {
-            if (!valid) {
-                return
-            }
-        })
-        if (!this.isAuthenticated) {
-            this.puzzleShow = true
+      this.$refs[formName].validate(valid => {
+        if (!valid) {
             return
         }
+      })
+      if (!this.isAuthenticated) {
+        this.puzzleShow = true
+        return
+      }
     },
     /**
      * 点击其它位置关闭拼图验证
      */
     closeCallback () {
-        setTimeout(() => {
-            this.puzzleCount = 0
-            this.puzzleShow = false
-        }, 300)
+      setTimeout(() => {
+        this.puzzleCount = 0
+        this.puzzleShow = false
+      }, 300)
     },
     /**
      * 拼图验证成功
      */
     vCodeSuccessListener () {
-        setTimeout(() => {
-            this.puzzleShow = false
-            this.isAuthenticated = true
-        }, 300)
-        this.$emit('login', this.userInfo)
+      setTimeout(() => {
+        this.puzzleShow = false
+        this.isAuthenticated = true
+      }, 300)
+      this.$emit('login', this.userInfo)
     },
     /**
      * 拼图验证次数检测
      */
     vCodeFailListener () {
-        ++this.puzzleCount
-        if (this.puzzleCount > 3) {
-            this.puzzleShow = false
-            this.puzzleCount = 0
-            alert('验证失败，请重试')
-        }
+      ++this.puzzleCount
+      if (this.puzzleCount > 3) {
+        this.puzzleShow = false
+        this.puzzleCount = 0
+        alert('验证失败，请重试')
+      }
     }
   }
 }
@@ -141,6 +141,6 @@ export default {
   border-radius: .625rem;
   background-color: rgb(52, 152, 245);
   box-shadow: .125rem .125rem .125rem .0625rem gray;
-  margin-top: .3125rem;
+  margin: 0;
 }
 </style>
