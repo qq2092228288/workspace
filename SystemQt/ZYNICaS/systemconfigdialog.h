@@ -53,6 +53,7 @@ struct HospitalInfo
     QString deviceId;
     Printer_Type pType;
     bool tip;
+    bool samePage;
     Check_Mode cMode;
 };
 
@@ -88,6 +89,7 @@ private:
     QRadioButton *printerRadio;
     QRadioButton *xprinterRadio;
     QCheckBox *tipCheckBox;
+    QCheckBox *samePageCheckBox;
     QPushButton *selectLogoBtn;
     QLabel *logoLabel;
     QGroupBox *checkModeGroupBox;

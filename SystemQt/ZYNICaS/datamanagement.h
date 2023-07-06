@@ -38,9 +38,13 @@ public:
     QString psingle_dot()       const;
     QString pmany_dot()         const;
     QString hypertension_dot()  const;
+    QString hypertension1_dot() const;
     QString interMedicine_dot() const;
+    QString interMedicine1_dot()const;
     QString icu_dot()           const;
+    QString icu1_dot()          const;
     QString mPhyExam_dot()      const;
+    QString mPhyExam1_dot()     const;
     QString sPhyExam_dot()      const;
     QString record_dz()         const;
     QString current_dz()        const;

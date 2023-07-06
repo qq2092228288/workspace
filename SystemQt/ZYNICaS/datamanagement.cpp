@@ -69,9 +69,19 @@ QString MyFilePath::hypertension_dot() const
     return appPath + "dot/hypertensionTemplate.dot";
 }
 
+QString MyFilePath::hypertension1_dot() const
+{
+    return appPath + "dot/hypertensionTemplate1.dot";
+}
+
 QString MyFilePath::interMedicine_dot() const
 {
     return appPath + "dot/interMedicineTemplate.dot";
+}
+
+QString MyFilePath::interMedicine1_dot() const
+{
+    return appPath + "dot/interMedicineTemplate1.dot";
 }
 
 QString MyFilePath::icu_dot() const
@@ -79,9 +89,19 @@ QString MyFilePath::icu_dot() const
     return appPath + "dot/icuTemplate.dot";
 }
 
+QString MyFilePath::icu1_dot() const
+{
+    return appPath + "dot/icuTemplate1.dot";
+}
+
 QString MyFilePath::mPhyExam_dot() const
 {
     return appPath + "dot/manyPhyExamTemplate.dot";
+}
+
+QString MyFilePath::mPhyExam1_dot() const
+{
+    return appPath + "dot/manyPhyExamTemplate1.dot";
 }
 
 QString MyFilePath::sPhyExam_dot() const
@@ -476,14 +496,27 @@ QString DataManagement::saveReport(QDateTime curTime, QString position, bool rec
                     || m_pHospitalInfo->cMode == Check_Mode::InternalMedicine
                     || m_pHospitalInfo->cMode == Check_Mode::IntensiveCareUnit) {
                 // 报告dot
-                if (m_pHospitalInfo->cMode == Check_Mode::Hypertension) {
-                    reportThread->setOpenArg(m_filePath.hypertension_dot(), false);
+                if (m_pHospitalInfo->samePage) {
+                    if (m_pHospitalInfo->cMode == Check_Mode::Hypertension) {
+                        reportThread->setOpenArg(m_filePath.hypertension_dot(), false);
+                    }
+                    else if (m_pHospitalInfo->cMode == Check_Mode::InternalMedicine) {
+                        reportThread->setOpenArg(m_filePath.interMedicine_dot(), false);
+                    }
+                    else if (m_pHospitalInfo->cMode == Check_Mode::IntensiveCareUnit) {
+                        reportThread->setOpenArg(m_filePath.icu_dot(), false);
+                    }
                 }
-                else if (m_pHospitalInfo->cMode == Check_Mode::InternalMedicine) {
-                    reportThread->setOpenArg(m_filePath.interMedicine_dot(), false);
-                }
-                else if (m_pHospitalInfo->cMode == Check_Mode::IntensiveCareUnit) {
-                    reportThread->setOpenArg(m_filePath.icu_dot(), false);
+                else {
+                    if (m_pHospitalInfo->cMode == Check_Mode::Hypertension) {
+                        reportThread->setOpenArg(m_filePath.hypertension1_dot(), false);
+                    }
+                    else if (m_pHospitalInfo->cMode == Check_Mode::InternalMedicine) {
+                        reportThread->setOpenArg(m_filePath.interMedicine1_dot(), false);
+                    }
+                    else if (m_pHospitalInfo->cMode == Check_Mode::IntensiveCareUnit) {
+                        reportThread->setOpenArg(m_filePath.icu1_dot(), false);
+                    }
                 }
                 // PLRT
                 reportThread->addMarks("plrttitle", tr("被动抬腿试验"));
@@ -537,7 +570,12 @@ QString DataManagement::saveReport(QDateTime curTime, QString position, bool rec
                     "5.测量姿势不正确，心电图存在干扰，都会影响心率变异性的准确性。"));
             }
             else if (m_pHospitalInfo->cMode == Check_Mode::PhysicalExamination) {
-                reportThread->setOpenArg(m_filePath.mPhyExam_dot(), false);
+                if (m_pHospitalInfo->samePage) {
+                    reportThread->setOpenArg(m_filePath.mPhyExam_dot(), false);
+                }
+                else {
+                    reportThread->setOpenArg(m_filePath.mPhyExam1_dot(), false);
+                }
             }
             reportThread->addMarks("rpos", (m_recordInfo.pos));
             // 记录体位
@@ -910,7 +948,14 @@ QString DataManagement::reportResult(bool record)
                         m_pRegulator->getCustomCtrl("MAP")->getRecordValue() == 0)) {
         return nullptr;
     }
-    QString result = tr("连续无创血流动力学对高血压病靶向分析报告如下：\n");
+    QString result;
+    if (m_pHospitalInfo->cMode == Check_Mode::Hypertension ||
+            m_pHospitalInfo->cMode == Check_Mode::PhysicalExamination) {
+        result = tr("连续无创血流动力学对高血压病靶向分析报告如下：\n");
+    }
+    else {
+        result = tr("连续无创血流动力学分析报告如下：\n");
+    }
     if (record) {   // 双体位
         if (m_pHospitalInfo->pType == Printer_Type::General) {
             // 双体位常规打印机报告

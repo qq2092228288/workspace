@@ -25,6 +25,7 @@ SystemConfigDialog::SystemConfigDialog(QWidget *parent)
     printerRadio = new QRadioButton(tr("常规打印机报告"), this);
     xprinterRadio = new QRadioButton(tr("热敏打印机报告"), this);
     tipCheckBox = new QCheckBox(tr("高风险人群提示"), this);
+    samePageCheckBox = new QCheckBox(tr("双体位同页"), this);
     selectLogoBtn = new QPushButton(tr("选择logo"), this);
     logoLabel = new QLabel(this);
     checkModeGroupBox = new QGroupBox(tr("模式配置"), this);
@@ -87,6 +88,7 @@ SystemConfigDialog::SystemConfigDialog(QWidget *parent)
     rLayout->addWidget(printerRadio, 0, 0, 1, 2);
     rLayout->addWidget(xprinterRadio, 0, 2, 1, 2);
     rLayout->addWidget(tipCheckBox, 1, 0, 1, 2);
+    rLayout->addWidget(samePageCheckBox, 1, 2, 1, 2);
     rLayout->addWidget(selectLogoBtn, 2, 0, Qt::AlignLeft);
     rLayout->addWidget(logoLabel, 2, 1, Qt::AlignLeft);
 
@@ -136,6 +138,7 @@ SystemConfigDialog::SystemConfigDialog(QWidget *parent)
         in<<QString("doctor=\"\"\n");
         in<<QString("printer=\"0\"\n");
         in<<QString("tip=\"0\"\n");
+        in<<QString("samepage=\"0\"\n");
         in<<QString("mode=\"0\"\n");
         in<<QString("serialport=\"COM3\"\n");
         file.close();
@@ -171,6 +174,9 @@ SystemConfigDialog::SystemConfigDialog(QWidget *parent)
                 }
                 else if (name == "tip") {
                     tipCheckBox->setChecked(value.toInt());
+                }
+                else if (name == "samepage") {
+                    samePageCheckBox->setChecked(value.toInt());
                 }
                 else if (name == "mode") {
                     auto btn = modeButtonGroup->button(value.toInt());
@@ -215,6 +221,7 @@ void SystemConfigDialog::updateHospitalInfo()
 //    hospitalInfo.deviceId = database->getDeviceInfo("deviceId");
     hospitalInfo.pType = Printer_Type(printerButtonGroup->checkedId());
     hospitalInfo.tip = tipCheckBox->isChecked();
+    hospitalInfo.samePage = samePageCheckBox->isChecked();
     hospitalInfo.cMode = Check_Mode(modeButtonGroup->checkedId());
     DataManagement::getInstance().setHospitalInfo(&hospitalInfo);
     emit modeChanged(Check_Mode(modeButtonGroup->checkedId()));
@@ -300,6 +307,7 @@ void SystemConfigDialog::closeEvent(QCloseEvent *event)
         in<<QString("doctor=\"%1\"\n").arg(doctorNameLineEdit->text());
         in<<QString("printer=\"%1\"\n").arg(printerButtonGroup->checkedId());
         in<<QString("tip=\"%1\"\n").arg(tipCheckBox->isChecked());
+        in<<QString("samepage=\"%1\"\n").arg(samePageCheckBox->isChecked());
         in<<QString("mode=\"%1\"\n").arg(modeButtonGroup->checkedId());
         in<<QString("serialport=\"%1\"\n").arg(serialPortComboBox->currentText());
         file.close();

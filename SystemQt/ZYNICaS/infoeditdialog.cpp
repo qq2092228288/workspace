@@ -50,7 +50,7 @@ InfoEditDialog::InfoEditDialog(QWidget *parent)
     sexComboBox->addItem(tr("女"));
     sexComboBox->addItem("");
     sexComboBox->setCurrentIndex(2);
-    numLineEdit->setValidator(new QRegExpValidator(QRegExp("^[a-zA-Z0-9]+$"),this));
+//    numLineEdit->setValidator(new QRegExpValidator(QRegExp("^[a-zA-Z0-9]+$"),this));
     ageLineEdit->setValidator(new QRegExpValidator(QRegExp("^([1-9]|(1[0-4])){0,1}[0-9]$"),this));
     heightLineEdit->setValidator(new QRegExpValidator(QRegExp("^([2-9]|[1-2][0-9])[0-9]$"),this));
     weightLineEdit->setValidator(new QRegExpValidator(QRegExp("^([2-9]|[1-2][0-9])[0-9]$"),this));

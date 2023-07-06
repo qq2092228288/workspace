@@ -552,6 +552,11 @@ void EnterSystemWidget::setBPValue(const QString &sbp, const QString &dbp)
             bodyValue.DBP = dbp.toInt();
             BPCtrl->setValues(bodyValue.SBP, bodyValue.DBP);
             MAPCtrl->setValue(bodyValue.MAP(), MAPCtrl->getName());
+            auto SICtrl = regulator->getCustomCtrl(typeName(Type::SI));
+            if (SICtrl != nullptr) {
+                sudokuWidget->setPoint(bodyValue.MAP(), SICtrl->getCurrentValue(),
+                                       SignType(posGroup.checkedId()), rPos.isEmpty());
+            }
         }
         else {
             BPCtrl->clear();
