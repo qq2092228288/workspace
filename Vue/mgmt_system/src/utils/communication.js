@@ -2,6 +2,7 @@ import { QWebChannel } from "./qwebchannel"
 import Router from '@/router'
 import { AES_Encrypt } from "./aes"
 import store from "@/store"
+import { ElMessage } from "element-plus";
 
 /**
  * 连接服务器
@@ -18,21 +19,21 @@ export const ConnectToServer = (url) => {
   // 创建web套接字
   var socket = new WebSocket(baseUrl)
   // 服务器关闭
-  socket.onclose = function () {
+  socket.onclose = function() {
     console.error('服务器关闭')
   }
   // 连接出错
-  socket.onerror = function (error) {
+  socket.onerror = function(error) {
     console.error('服务器出错：' + error)
   }
   // 连接成功
-  socket.onopen = function () {
+  socket.onopen = function() {
     // 创建对象
-    new QWebChannel(socket, function (channel) {
+    new QWebChannel(socket, function(channel) {
       // 客户端的注册对象为core
       window.core = channel.objects.core
       // 连接newData信号
-      core.newData.connect(function (newdata) {
+      window.core.newData.connect(async function(newdata) {
         switch (newdata.type) {
           case NewDataType.LoginSucceeded:  // 登录成功
             let userInfo = newdata.userinfo
@@ -61,15 +62,22 @@ export const ConnectToServer = (url) => {
             break;
           case NewDataType.SendData:  // 获取到服务器的数据
             // 将数据保存到store
-            store.state.data = newdata.data
+            if (store.state.tables !== null) {
+              store.state.tables = await newdata.data
+              location.reload()
+            }
+            else {
+              store.state.tables = await newdata.data
+            }
             break;
           case NewDataType.Relist:  // 重新登录
-            alert('信息过期，请重新登录')
+            alert('用户信息已修改，请重新登录')
             // 跳转路由
             Router.push({
               path: '/'
             })
-            location.reload()
+            break;
+          case NewDataType.ReportData:  // 新建报告页面
             break;
           default:
             break;
@@ -88,7 +96,7 @@ export const HtmlClientCall = (calltype, data) => {
     'type': calltype,
     'data': data
   }
-  return core.htmlCall(obj)
+  return window.core.htmlCall(obj)
 }
 /**
  * 向服务器请求的类型
@@ -105,5 +113,6 @@ export const NewDataType = {
   LoginFailed: 0x02,
   SendData: 0x04,
   Relist: 0x08,
-  ReportData: 0x10
+  ReportData: 0x10,
+  OperationSuccessful: 0x20
 }

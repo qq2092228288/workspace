@@ -47,7 +47,7 @@ void HtmlClient::htmlCall(const QJsonObject &object)
             sendNewData(NewDataType::SendData, getDBData(data.value(ekey(AdministratorInfo::permission)).toInt(-1)));
         }
         else {
-            TIME_DEBUG()<<"false";
+            sendNewData(NewDataType::Relist, QJsonObject());
         }
         break;
     default:
@@ -100,40 +100,91 @@ QJsonObject HtmlClient::getDBData(const int &p)
     QJsonObject object;
     switch (UserPermissions(p)) {
     case UserPermissions::SuperAdministrator:
-        object.insert(ename<SoftwareManagement>(), tableData<SoftwareManagement>());
-        object.insert(ename<AdministratorInfo>(), tableData<AdministratorInfo>());
+        object.insert(ename<SoftwareManagement>(), tableData(getCnColumns<SoftwareManagement>(),
+                          QString("SELECT * FROM %1").arg(ename<SoftwareManagement>())));
+        object.insert(ename<AdministratorInfo>(), tableData(getCnColumns<AdministratorInfo>(),
+                          QString("SELECT * FROM %1").arg(ename<AdministratorInfo>())));
     case UserPermissions::SecondaryAdministrator:
-        object.insert(ename<AgentInfo>(), tableData<AgentInfo>());
-        object.insert(ename<AllocatedConsumables>(), tableData<AllocatedConsumables>());
-        object.insert(ename<Device>(), tableData<Device>());
-        object.insert(ename<PlaceInfo>(), tableData<PlaceInfo>());
+        object.insert(ename<AgentInfo>(), tableData(getCnColumns<AgentInfo>(),
+                          QString("SELECT %1, %2, %3, %4 FROM %5")
+                          .arg(ekey(AgentInfo::name),
+                               ekey(AgentInfo::contact),
+                               ekey(AgentInfo::address),
+                               ekey(AgentInfo::remarks),
+                               ename<AgentInfo>())));
+        object.insert(ename<AllocatedConsumables>(), tableData(getCnColumns<AllocatedConsumables>(),
+                          QString("SELECT a.%1, a.%2, a.%3, b.%4 AS %5, c.%6 AS %7, a.%8 "
+                                  "FROM %9 AS a "
+                                  "LEFT JOIN %10 AS b ON a.%11 = b.%12 "
+                                  "LEFT JOIN %13 AS c ON a.%14 = c.%15 "
+                                  "ORDER BY a.%1 DESC")
+                          .arg(ekey(AllocatedConsumables::createTime),
+                               ekey(AllocatedConsumables::type),
+                               ekey(AllocatedConsumables::deviceId),
+                               ekey(AgentInfo::name),
+                               ekey(NewColumns::AgentName),
+                               ekey(AdministratorInfo::name),
+                               ekey(NewColumns::AdminName),
+                               ekey(AllocatedConsumables::count),
+                               ename<AllocatedConsumables>())
+                          .arg(ename<AgentInfo>(),
+                               ekey(AllocatedConsumables::agentId),
+                               ekey(AgentInfo::agentId),
+                               ename<AdministratorInfo>(),
+                               ekey(AllocatedConsumables::adminId),
+                               ekey(AdministratorInfo::adminId))));
+        object.insert(ename<Device>(), tableData(getCnColumns<Device>(),
+                          QString("SELECT a.%1, a.%2, CONCAT(b.%3, ' ', b.%4) AS %5, c.%6 AS %7, d.%8 AS %9, "
+                                  "a.%10, a.%11, COALESCE(e.%12, 0) AS %12, COALESCE(f.%13, 0) AS %13 "
+                                  "FROM %14 AS a "
+                                  "LEFT JOIN %15 AS b ON a.%16 = b.%17 "
+                                  "LEFT JOIN %18 AS c ON a.%19 = c.%20 "
+                                  "LEFT JOIN %21 AS d ON a.%22 = d.%23 "
+                                  "LEFT JOIN (SELECT %24, SUM(%25) AS %12 FROM %26 GROUP BY %24) AS e ON a.%1 = e.%24 "
+                                  "LEFT JOIN (SELECT %27, COUNT(%27) AS %13 FROM %28 GROUP BY %27) AS f ON a.%1 = f.%27 "
+                                  "ORDER BY a.%1 DESC")
+                          .arg(ekey(Device::deviceId), ekey(Device::password), ekey(PlaceInfo::hostName),
+                               ekey(PlaceInfo::secondaryName), ekey(NewColumns::PlaceName), ekey(AgentInfo::name),
+                               ekey(NewColumns::AgentName), ekey(AdministratorInfo::name), ekey(NewColumns::AdminName))
+                          .arg(ekey(Device::type), ekey(Device::status), ekey(NewColumns::TotalCount),
+                               ekey(NewColumns::UsedCount), ename<Device>(), ename<PlaceInfo>(),
+                               ekey(Device::placeId), ekey(PlaceInfo::placeId), ename<AgentInfo>())
+                          .arg(ekey(Device::agentId), ekey(AgentInfo::agentId), ename<AdministratorInfo>(),
+                               ekey(Device::adminId), ekey(AdministratorInfo::adminId),
+                               ekey(AllocatedConsumables::deviceId), ekey(AllocatedConsumables::count),
+                               ename<AllocatedConsumables>(), ekey(ReportInfo::deviceId))
+                          .arg(ename<ReportInfo>())));
+        object.insert(ename<PlaceInfo>(), tableData(getCnColumns<PlaceInfo>(),
+                          QString("SELECT %1, %2 FROM %3")
+                          .arg(ekey(PlaceInfo::hostName),
+                               ekey(PlaceInfo::secondaryName),
+                               ename<PlaceInfo>())));
     case UserPermissions::ReportSelectAndModify:
     case UserPermissions::ReportSelect:
-    {
-        auto columns = Singleton::enumKeys<ReportInfo>();
-        columns.removeOne(ekey(ReportInfo::reportData));
-        object.insert(ename<ReportInfo>(), tableData<ReportInfo>(columns.join(",")));
-    }
+        object.insert(ename<ReportInfo>(), tableData(getCnColumns<ReportInfo>(),
+                          QString("SELECT %1, %2, %3 FROM %4 ORDER BY %1 DESC")
+                          .arg(ekey(ReportInfo::reportTime),
+                               ekey(ReportInfo::deviceId),
+                               ekey(ReportInfo::modify),
+                               ename<ReportInfo>())));
         break;
     }
     return object;
 }
 
-template <class T>
-QJsonObject HtmlClient::tableData(const QString &columns)
+QJsonObject HtmlClient::tableData(const QStringList &cnNames, const QString &sqlStatement)
 {
     QJsonObject object;
-    auto tableName = ename<T>();
-
     QSqlQuery query(Singleton::getInstance()->database());
-    query.exec(QString("SELECT %1 FROM %2").arg(columns, tableName));
+    query.exec(sqlStatement);
 
-    QJsonArray columnArray;
-    for (int i = 0; i < query.record().count(); ++i) {
-        auto key = query.record().fieldName(i);
-        QJsonObject obj;
-        obj.insert(key, EnumTextCN::cn_EnumValue(tableName, key));
-        columnArray.append(obj);
+    QJsonArray columns;
+    auto record = query.record();
+    for (int i = 0; i < record.count(); ++i) {
+        QJsonObject column;
+        column.insert(ekey(TableData::En), record.fieldName(i));
+        column.insert(ekey(TableData::Cn), cnNames.at(i));
+        columns<<column;
     }
     object.insert(ekey(TableData::Columns), columns);
 
@@ -166,30 +217,104 @@ QJsonObject HtmlClient::getMenus() const
     QJsonArray menu;
     switch (UserPermissions(p)) {
     case UserPermissions::SuperAdministrator:
-        menu.append(getMenu<SoftwareManagement>(TablePermission::AllPermissions));
-        menu.append(getMenu<AdministratorInfo>(TablePermission::AllPermissions));
-        menu.append(getMenu<AgentInfo>(TablePermission::AllPermissions));
-        menu.append(getMenu<AllocatedConsumables>(TablePermission::AllPermissions));
-        menu.append(getMenu<Device>(TablePermission::AllPermissions));
-        menu.append(getMenu<PlaceInfo>(TablePermission::AllPermissions));
-        menu.append(getMenu<ReportInfo>(TablePermission::DeleteSelect));
+        menu.append(getMenu<SoftwareManagement>(TablePermission::InsertDeleteUpdate));
+        menu.append(getMenu<AdministratorInfo>(TablePermission::InsertDeleteUpdate));
+        menu.append(getMenu<AgentInfo>(TablePermission::InsertDeleteUpdate));
+        menu.append(getMenu<AllocatedConsumables>(TablePermission::InsertDeleteUpdate));
+        menu.append(getMenu<Device>(TablePermission::InsertDeleteUpdate));
+        menu.append(getMenu<PlaceInfo>(TablePermission::InsertDeleteUpdate));
+        menu.append(getMenu<ReportInfo>(TablePermission::DeleteView));
         break;
     case UserPermissions::SecondaryAdministrator:
-        menu.append(getMenu<AgentInfo>(TablePermission::NotDelete));
-        menu.append(getMenu<AllocatedConsumables>(TablePermission::NotDelete));
-        menu.append(getMenu<Device>(TablePermission::NotDelete));
-        menu.append(getMenu<PlaceInfo>(TablePermission::NotDelete));
-        menu.append(getMenu<ReportInfo>(TablePermission::SelectOnly));
+        menu.append(getMenu<AgentInfo>(TablePermission::InsertUpdate));
+        menu.append(getMenu<AllocatedConsumables>(TablePermission::InsertUpdate));
+        menu.append(getMenu<Device>(TablePermission::InsertUpdate));
+        menu.append(getMenu<PlaceInfo>(TablePermission::InsertUpdate));
+        menu.append(getMenu<ReportInfo>(TablePermission::View));
         break;
     case UserPermissions::ReportSelectAndModify:
-        menu.append(getMenu<ReportInfo>(TablePermission::UpdateSelect));
+        menu.append(getMenu<ReportInfo>(TablePermission::View));
         break;
     case UserPermissions::ReportSelect:
-        menu.append(getMenu<ReportInfo>(TablePermission::SelectOnly));
+        menu.append(getMenu<ReportInfo>(TablePermission::View));
         break;
     }
     object.insert(ename<Menu>(), menu);
     return object;
+}
+
+QString HtmlClient::cn_NewColumns(const NewColumns &newColumns) const
+{
+    switch (newColumns) {
+    case NewColumns::AgentName:
+        return "经销商姓名";
+    case NewColumns::AdminName:
+        return "创建人";
+    case NewColumns::PlaceName:
+        return "场所名称";
+    case NewColumns::TotalCount:
+        return "总数量";
+    case NewColumns::UsedCount:
+        return "已使用数量";
+    }
+    return nullptr;
+}
+
+template <class T>
+QStringList HtmlClient::getCnColumns() const
+{
+    QStringList cns;
+    if (typeid(T) == typeid(SoftwareManagement)) {
+        cns<<EnumTextCN::cn_SoftwareManagement(SoftwareManagement::appId)
+           <<EnumTextCN::cn_SoftwareManagement(SoftwareManagement::name)
+           <<EnumTextCN::cn_SoftwareManagement(SoftwareManagement::version)
+           <<EnumTextCN::cn_SoftwareManagement(SoftwareManagement::downloadPath)
+           <<EnumTextCN::cn_SoftwareManagement(SoftwareManagement::content)
+           <<EnumTextCN::cn_SoftwareManagement(SoftwareManagement::createTime);
+    }
+    else if (typeid(T) == typeid(AdministratorInfo)) {
+        cns<<EnumTextCN::cn_AdministratorInfo(AdministratorInfo::adminId)
+           <<EnumTextCN::cn_AdministratorInfo(AdministratorInfo::password)
+           <<EnumTextCN::cn_AdministratorInfo(AdministratorInfo::name)
+           <<EnumTextCN::cn_AdministratorInfo(AdministratorInfo::permission)
+           <<EnumTextCN::cn_AdministratorInfo(AdministratorInfo::deviceIds)
+           <<EnumTextCN::cn_AdministratorInfo(AdministratorInfo::remarks);
+    }
+    else if (typeid(T) == typeid(AgentInfo)) {
+        cns<<EnumTextCN::cn_AgentInfo(AgentInfo::name)
+           <<EnumTextCN::cn_AgentInfo(AgentInfo::contact)
+           <<EnumTextCN::cn_AgentInfo(AgentInfo::address)
+           <<EnumTextCN::cn_AgentInfo(AgentInfo::remarks);
+    }
+    else if (typeid(T) == typeid(AllocatedConsumables)) {
+        cns<<EnumTextCN::cn_AllocatedConsumables(AllocatedConsumables::createTime)
+           <<EnumTextCN::cn_AllocatedConsumables(AllocatedConsumables::type)
+           <<EnumTextCN::cn_AllocatedConsumables(AllocatedConsumables::deviceId)
+           <<cn_NewColumns(NewColumns::AgentName)
+           <<cn_NewColumns(NewColumns::AdminName)
+           <<EnumTextCN::cn_AllocatedConsumables(AllocatedConsumables::count);
+    }
+    else if (typeid(T) == typeid(Device)) {
+        cns<<EnumTextCN::cn_Device(Device::deviceId)
+           <<EnumTextCN::cn_Device(Device::password)
+           <<cn_NewColumns(NewColumns::PlaceName)
+           <<cn_NewColumns(NewColumns::AgentName)
+           <<cn_NewColumns(NewColumns::AdminName)
+           <<EnumTextCN::cn_Device(Device::type)
+           <<EnumTextCN::cn_Device(Device::status)
+           <<cn_NewColumns(NewColumns::TotalCount)
+           <<cn_NewColumns(NewColumns::UsedCount);
+    }
+    else if (typeid(T) == typeid(PlaceInfo)) {
+        cns<<EnumTextCN::cn_PlaceInfo(PlaceInfo::hostName)
+           <<EnumTextCN::cn_PlaceInfo(PlaceInfo::secondaryName);
+    }
+    else if (typeid(T) == typeid(ReportInfo)) {
+        cns<<EnumTextCN::cn_ReportInfo(ReportInfo::reportTime)
+           <<EnumTextCN::cn_ReportInfo(ReportInfo::deviceId)
+           <<EnumTextCN::cn_ReportInfo(ReportInfo::modify);
+    }
+    return cns;
 }
 
 template<class T>
@@ -197,31 +322,31 @@ QString HtmlClient::eicon() const
 {
     QString str;
     if (typeid(T) == typeid(SoftwareManagement)) {
-        str = "el-icon-files";
+        str = "StarFilled";
     }
     else if (typeid(T) == typeid(AdministratorInfo)) {
-        str = "el-icon-user";
+        str = "UserFilled";
     }
     else if (typeid(T) == typeid(AgentInfo)) {
-        str = "el-icon-phone";
+        str = "Avatar";
     }
     else if (typeid(T) == typeid(AllocatedConsumables)) {
-        str = "el-icon-goods";
+        str = "WalletFilled";
     }
     else if (typeid(T) == typeid(Device)) {
-        str = "el-icon-monitor";
+        str = "Platform";
     }
     else if (typeid(T) == typeid(PlaceInfo)) {
-        str = "el-icon-place";
+        str = "LocationFilled";
     }
     else if (typeid(T) == typeid(ReportInfo)) {
-        str = "el-icon-document";
+        str = "Document";
     }
     return str;
 }
 
 template<class T>
-QJsonObject HtmlClient::getMenu(const TablePermission &tp) const
+QJsonObject HtmlClient::getMenu(const int &tp) const
 {
     QJsonObject menu;
     menu.insert(ekey(Menu::Id), QUuid::createUuid().toString(QUuid::Id128));

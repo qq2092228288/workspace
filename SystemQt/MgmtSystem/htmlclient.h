@@ -33,7 +33,8 @@ public:
         LoginFailed = 0x02,
         SendData = 0x04,
         Relist = 0x08,
-        ReportData = 0x10
+        ReportData = 0x10,
+        OperationSuccessful = 0x20
     };
     Q_ENUM(NewDataType)
     enum class UserInfo
@@ -42,24 +43,25 @@ public:
         Password
     };
     Q_ENUM(UserInfo)
-    enum class TablePermission
+    enum TablePermission
     {
-        InsertOnly = 0x01,
-        DeleteOnly = 0x02,
-        UpdateOnly = 0x04,
-        SelectOnly = 0x08,
-        DeleteSelect    = DeleteOnly | SelectOnly,
-        UpdateSelect    = UpdateOnly | SelectOnly,
-        NotDelete       = InsertOnly | UpdateOnly | SelectOnly,
-        AllPermissions  = InsertOnly | DeleteOnly | UpdateOnly | SelectOnly
+        Insert = 0x01,
+        Delete = 0x02,
+        Update = 0x04,
+        View = 0x08,
+        InsertUpdate = Insert | Update,
+        DeleteView = Delete | View,
+        InsertDeleteUpdate = Insert | Delete | Update
     };
+    Q_ENUM(TablePermission)
     enum class TableData
     {
         Columns,
-        Data
+        Data,
+        En,
+        Cn
     };
     Q_ENUM(TableData)
-    Q_ENUM(TablePermission)
     enum class Menu
     {
         Id,
@@ -69,6 +71,15 @@ public:
         Icon
     };
     Q_ENUM(Menu)
+    enum class NewColumns
+    {
+        AgentName,
+        AdminName,
+        PlaceName,
+        TotalCount,
+        UsedCount
+    };
+    Q_ENUM(NewColumns)
 public Q_SLOTS:
     /*These slots are invoked from the HTML client side and received by the server.*/
     void htmlCall(const QJsonObject &object);
@@ -84,18 +95,22 @@ private:
 
     QJsonObject getDBData(const int &p);
 
-    template <class T>
-    QJsonObject tableData(const QString &columns = "*");
+    QJsonObject tableData(const QStringList &cnNames, const QString &sqlStatement);
 
     QJsonArray getTableAllData(const QString &tableName, const QString &columns = "*");
 
     QJsonObject getMenus() const;
 
+    QString cn_NewColumns(const NewColumns &newColumns) const;
+
+    template <class T>
+    QStringList getCnColumns() const;
+
     template <class T>
     QString eicon() const;
 
     template <class T>
-    QJsonObject getMenu(const TablePermission &tp) const;
+    QJsonObject getMenu(const int &tp) const;
 
     template <class T>
     int eint(const T &t) const;

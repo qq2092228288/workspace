@@ -2,7 +2,7 @@
   <div class="main">
     <el-container>
       <el-aside class="aside">
-        <el-menu router>
+        <el-menu router :default-openeds="['1']">
           <TreeMenu />
         </el-menu>
       </el-aside>
@@ -27,9 +27,9 @@ export default {
 </script>
 
 <style scoped lang="less">
-// .main {
-//   background-color: white;
-// }
+.main {
+  background-color: white;
+}
 .aside {
   width: auto;
 }

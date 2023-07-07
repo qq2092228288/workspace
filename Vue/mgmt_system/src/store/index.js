@@ -2,9 +2,9 @@ import { createStore } from 'vuex'
 
 export default createStore({
   state: {
-    userInfo: {},
-    menu: [],
-    data: {}
+    userInfo: null,
+    menu: null,
+    tables: null
   },
   getters: {
   },

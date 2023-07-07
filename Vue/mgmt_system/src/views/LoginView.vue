@@ -8,15 +8,12 @@
 
 <script>
 import LoginForm from '@/components/LoginForm.vue'
-import { ConnectToServer, HtmlClientCall, CallType } from '@/utils/communication'
+import { HtmlClientCall, CallType } from '@/utils/communication'
 
 export default {
   name: 'LoginView',
   components: {
     LoginForm
-  },
-  setup () {
-    ConnectToServer('ws://192.168.1.2:18088')
   },
   methods: {
     // 向服务器请求登录

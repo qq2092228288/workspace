@@ -1,14 +1,14 @@
 <template>
   <div>
     <el-form class="main" :rules="rules" :model="userInfo" ref="LoginForm">
-      <el-form-item>
-        <img class="logo" src="../static/images/logo.png" />
-      </el-form-item>
+      <!-- <el-form-item> -->
+      <img class="logo" src="../static/images/logo.png" />
+      <!-- </el-form-item> -->
       <el-form-item prop="username">
-        <el-input type="text" v-model="userInfo.username" placeholder="请输入账号" prefix-icon="el-icon-user" />
+        <el-input type="text" v-model="userInfo.username" placeholder="请输入账号" prefix-icon="User" />
       </el-form-item>
       <el-form-item prop="password">
-        <el-input type="password" v-model="userInfo.password" placeholder="请输入密码" prefix-icon="el-icon-lock" />
+        <el-input type="password" v-model="userInfo.password" placeholder="请输入密码" prefix-icon="Lock" />
       </el-form-item>
       <!-- <el-row type="flex" justify="end">
         <el-checkbox v-model="userInfo.remember" label="记住密码" />
@@ -131,6 +131,10 @@ export default {
 }
 .logo {
   height: 6.25rem;
+  padding: .625rem;
+}
+.el-input {
+  font-size: .9375rem;
 }
 /deep/ .el-form-item {
   display: block !important;
@@ -142,5 +146,8 @@ export default {
   background-color: rgb(52, 152, 245);
   box-shadow: .125rem .125rem .125rem .0625rem gray;
   margin: 0;
+}
+.login-button:hover {
+  color: black;
 }
 </style>

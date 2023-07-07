@@ -5,6 +5,8 @@
 </template>
 
 <script>
+import { ConnectToServer } from './utils/communication';
+
 export default {
   // 缓存vuex数据
   created () {
@@ -16,6 +18,10 @@ export default {
     window.addEventListener('beforeunload', () => {
       sessionStorage.setItem('store', JSON.stringify(this.$store.state));
     });
+  },
+  // 连接服务器
+  setup () {
+    ConnectToServer('ws://192.168.1.2:18088')
   }
 }
 </script>
