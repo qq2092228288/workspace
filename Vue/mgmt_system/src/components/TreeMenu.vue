@@ -14,7 +14,7 @@
             {{  menu.name }}
           </el-menu-item>
         </el-sub-menu>
-        <el-sub-menu index="2">
+        <el-sub-menu index="">
           <template #title>
             <el-icon><Tools /></el-icon>
             <span>系统</span>
@@ -23,7 +23,7 @@
             <el-icon><Refresh /></el-icon>
             <span>重新获取</span>
           </el-menu-item>
-          <el-menu-item index="/" @click="logOut">
+          <el-menu-item :index="loginPath" @click="logOut">
             <el-icon><SwitchButton /></el-icon>
             <span>退出登录</span>
           </el-menu-item>
@@ -36,42 +36,36 @@
   </div>
 </template>
 
-<script>
-import { AES_Encrypt } from '@/utils/aes'
-import { HtmlClientCall, CallType } from '@/utils/communication'
+<script setup>
+import { LOGIN_PATH } from '@/router/router-path';
+import { RESET_STATE } from '@/store/mutation-types';
+import { AES_Encrypt } from '@/utils/aes';
+import { HtmlClientCall, HtmlCallType } from '@/utils/communication';
+import { ElMessage } from 'element-plus';
+import { useStore } from 'vuex';
+import { ref } from 'vue';
 
-export default {
-  name: 'TreeMenu',
-  data () {
-    let userInfo = this.$store.state.userInfo
-    return {
-      adminid: userInfo.adminid,
-      password: AES_Encrypt(userInfo.password),
-      treeMenu: this.$store.state.menu,
-      isMenuVisible: true
-    }
-  },
-  methods: {
-    shrinkExpandMenu() {
-      this.isMenuVisible = !this.isMenuVisible
-    },
-    async retrieveData() {
-      try {
-        await HtmlClientCall(CallType.Data, this.$store.state.userInfo)
-      } catch (error) {
-        this.$message({ message: '获取失败，请重新登录', type: 'error', showClose: true })
-      }
-    },
-    logOut() {
-      let state = this.$store.state
-      state.userInfo = null
-      state.menu = null
-      state.tables = null
-      this.$router.push({
-        path: '/'
-      })
-    }
+const store = useStore()
+
+const userInfo = store.state.userInfo
+const adminid = userInfo.adminid
+const password = AES_Encrypt(userInfo.password)
+const treeMenu = store.state.menu
+const isMenuVisible = ref(true)
+const loginPath = LOGIN_PATH
+
+const shrinkExpandMenu = () => {
+  isMenuVisible.value = !isMenuVisible.value
+}
+const retrieveData = async () => {
+  try {
+    await HtmlClientCall(HtmlCallType.SelectData, store.state.userInfo)
+  } catch (error) {
+    ElMessage.error({ message: '获取失败，请重新登录', showClose: true })
   }
+}
+const logOut = () => {
+  store.commit(RESET_STATE)
 }
 </script>
 

@@ -34,7 +34,7 @@ QString DatabaseEnumNs::EnumTextCN::cn_AdministratorInfo(const AdministratorInfo
         return "关联的设备编号";
 #else
     case AdministratorInfo::deviceIds:
-        return "关联的设备编号";
+        return "关联的设备";
 #endif
     case AdministratorInfo::remarks:
         return "备注";

@@ -2,7 +2,7 @@
   <div class="main">
     <el-container>
       <el-aside class="aside">
-        <el-menu router :default-openeds="['1']">
+        <el-menu router :default-openeds="['1']" @select="setCurrentPagePath">
           <TreeMenu />
         </el-menu>
       </el-aside>
@@ -15,15 +15,17 @@
   </div>
 </template>
 
-<script>
-import TreeMenu from '@/components/TreeMenu.vue'
+<script setup>
+import TreeMenu from '@/components/TreeMenu.vue';
+import { SET_CURRENT_PAGE_PATH } from '@/store/mutation-types';
+import { useStore } from 'vuex';
 
-export default {
-  name: 'Homepage',
-  components: {
-    TreeMenu
-  }
+const store = useStore()
+
+const setCurrentPagePath = (index) => {
+  store.commit(SET_CURRENT_PAGE_PATH, index)
 }
+
 </script>
 
 <style scoped lang="less">

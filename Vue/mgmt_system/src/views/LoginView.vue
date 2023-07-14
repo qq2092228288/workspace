@@ -6,21 +6,12 @@
   </div>
 </template>
 
-<script>
-import LoginForm from '@/components/LoginForm.vue'
-import { HtmlClientCall, CallType } from '@/utils/communication'
+<script setup>
+import LoginForm from '@/components/LoginForm.vue';
+import { HtmlClientCall, HtmlCallType } from '@/utils/communication';
 
-export default {
-  name: 'LoginView',
-  components: {
-    LoginForm
-  },
-  methods: {
-    // 向服务器请求登录
-    loginEvent (userInfo) {
-      HtmlClientCall(CallType.Login, userInfo)
-    }
-  }
+const loginEvent = (userInfo) => {
+  HtmlClientCall(HtmlCallType.Login, userInfo)
 }
 
 </script>

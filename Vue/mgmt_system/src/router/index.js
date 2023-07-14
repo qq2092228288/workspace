@@ -1,9 +1,10 @@
 import { createRouter, createWebHashHistory } from 'vue-router'
+import { ADMINISTRATORINFO_PATH, AGENTINFO_PATH, ALLOCATEDCONSUMABLES_PATH, DEVICE_PATH, HOMEPAGE_PATH, LOGIN_PATH, PLACEINFO_PATH, REPORTINFO_PATH, SOFTWAREMANAGEMENT_PATH } from './router-path'
 
 const pageTitle = '泽耀医疗后台管理系统'
 const routes = [
   {
-    path: '/',
+    path: LOGIN_PATH,
     name: 'login',
     meta: {
       title: pageTitle + '-登录'
@@ -11,7 +12,7 @@ const routes = [
     component: () => import('../views/LoginView.vue')
   },
   {
-    path: '/homepage',
+    path: HOMEPAGE_PATH,
     name: 'homepage',
     meta: {
       title: pageTitle + '-主页',
@@ -20,7 +21,7 @@ const routes = [
     component: () => import('../views/HomepageView.vue'),
     children: [
       {
-        path: 'softwaremanagement',
+        path: SOFTWAREMANAGEMENT_PATH,
         name: 'softwaremanagement',
         meta: {
           keepAlive: true
@@ -28,7 +29,7 @@ const routes = [
         component: () => import('../views/menu/SoftwareManagement.vue')
       },
       {
-        path: 'administratorinfo',
+        path: ADMINISTRATORINFO_PATH,
         name: 'administratorinfo',
         meta: {
           keepAlive: true
@@ -36,7 +37,7 @@ const routes = [
         component: () => import('../views/menu/AdministratorInfo.vue')
       },
       {
-        path: 'agentinfo',
+        path: AGENTINFO_PATH,
         name: 'agentinfo',
         meta: {
           keepAlive: true
@@ -44,7 +45,7 @@ const routes = [
         component: () => import('../views/menu/AgentInfo.vue')
       },
       {
-        path: 'allocatedconsumables',
+        path: ALLOCATEDCONSUMABLES_PATH,
         name: 'allocatedconsumables',
         meta: {
           keepAlive: true
@@ -52,7 +53,7 @@ const routes = [
         component: () => import('../views/menu/AllocatedConsumables.vue')
       },
       {
-        path: 'device',
+        path: DEVICE_PATH,
         name: 'device',
         meta: {
           keepAlive: true
@@ -60,7 +61,7 @@ const routes = [
         component: () => import('../views/menu/Device.vue')
       },
       {
-        path: 'placeinfo',
+        path: PLACEINFO_PATH,
         name: 'placeinfo',
         meta: {
           keepAlive: true
@@ -68,7 +69,7 @@ const routes = [
         component: () => import('../views/menu/PlaceInfo.vue')
       },
       {
-        path: 'reportinfo',
+        path: REPORTINFO_PATH,
         name: 'reportinfo',
         meta: {
           keepAlive: true

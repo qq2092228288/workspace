@@ -4,26 +4,23 @@
   </div>
 </template>
 
-<script>
+<script setup>
+import { useStore } from 'vuex';
 import { ConnectToServer } from './utils/communication';
 
-export default {
-  // 缓存vuex数据
-  created () {
-    //在页面加载时读取sessionStorage里的状态信息
-    if (sessionStorage.getItem('store')) {
-      this.$store.replaceState(Object.assign({}, this.$store.state, JSON.parse(sessionStorage.getItem('store'))));
-    }
-    //在页面刷新时将vuex里的信息保存到sessionStorage里
-    window.addEventListener('beforeunload', () => {
-      sessionStorage.setItem('store', JSON.stringify(this.$store.state));
-    });
-  },
-  // 连接服务器
-  setup () {
-    ConnectToServer('ws://192.168.1.2:18088')
-  }
+const store = useStore()
+// 缓存vuex数据 created ()
+//在页面加载时读取sessionStorage里的状态信息
+if (sessionStorage.getItem('store')) {
+  store.replaceState(Object.assign({}, store.state, JSON.parse(sessionStorage.getItem('store'))))
 }
+//在页面刷新时将vuex里的信息保存到sessionStorage里
+window.addEventListener('beforeunload', () => {
+  sessionStorage.setItem('store', JSON.stringify(store.state))
+})
+// 连接服务器
+ConnectToServer('ws://192.168.1.2:18088')
+
 </script>
 
 <style>

@@ -18,7 +18,7 @@ void HtmlClient::htmlCall(const QJsonObject &object)
 {
     auto type = object.value(ekey(JsonData::Type));
     if (!type.isDouble()) {
-        TIME_DEBUG()<<"Incorrect JSON data structure.";
+        TIME_DEBUG()<<"Incorrect JSON data structure: "<<Singleton::jsonToString(object);
         return;
     }
     auto data = object.value(ekey(JsonData::Data)).toObject();
@@ -38,16 +38,57 @@ void HtmlClient::htmlCall(const QJsonObject &object)
                 sendNewData(NewDataType::LoginSucceeded, getMenus());
             }
             else {
-                sendNewData(NewDataType::LoginFailed, QJsonObject());
+                sendNewData(NewDataType::LoginFailed);
             }
         }
         break;
-    case HtmlCallType::Data:
-        if (checkUserInfo(data)) {
+    case HtmlCallType::InsertData:
+        if (UserPermissions::SuperAdministrator == UserPermissions(checkUserInfo(data)) ||
+                UserPermissions::SecondaryAdministrator == UserPermissions(checkUserInfo(data))) {
+            if (insertData(data.value(ename<CommStruct>()).toObject())) {
+                sendNewData(NewDataType::OperationSuccessful);
+            }
+            else {
+                sendNewData(NewDataType::OperationFailed);
+            }
+        }
+        else {
+            sendNewData(NewDataType::InsufficientPermissions);
+        }
+        break;
+    case HtmlCallType::DeleteData:
+        if (UserPermissions::SuperAdministrator == UserPermissions(checkUserInfo(data))) {
+            if (deleteData(data.value(ename<CommStruct>()).toObject())) {
+                sendNewData(NewDataType::OperationSuccessful);
+            }
+            else {
+                sendNewData(NewDataType::OperationFailed);
+            }
+        }
+        else {
+            sendNewData(NewDataType::InsufficientPermissions);
+        }
+        break;
+    case HtmlCallType::UpdateData:
+        if (UserPermissions::SuperAdministrator == UserPermissions(checkUserInfo(data)) ||
+                UserPermissions::SecondaryAdministrator == UserPermissions(checkUserInfo(data))) {
+            if (updateData(data.value(ename<CommStruct>()).toObject())) {
+                sendNewData(NewDataType::OperationSuccessful);
+            }
+            else {
+                sendNewData(NewDataType::OperationFailed);
+            }
+        }
+        else {
+            sendNewData(NewDataType::InsufficientPermissions);
+        }
+        break;
+    case HtmlCallType::SelectData:
+        if (-1 != checkUserInfo(data)) {
             sendNewData(NewDataType::SendData, getDBData(data.value(ekey(AdministratorInfo::permission)).toInt(-1)));
         }
         else {
-            sendNewData(NewDataType::Relist, QJsonObject());
+            sendNewData(NewDataType::Relist);
         }
         break;
     default:
@@ -75,10 +116,10 @@ bool HtmlClient::checkUserInfoStruct(const QJsonObject &userInfo) const
     return false;
 }
 
-bool HtmlClient::checkUserInfo(const QJsonObject &userInfo) const
+int HtmlClient::checkUserInfo(const QJsonObject &userInfo) const
 {
     QStringList filter;
-    foreach (auto key, userInfo.keys()) {
+    foreach (auto key, Singleton::enumKeys<AdministratorInfo>()) {
         auto value = userInfo.value(key);
         if (value.isDouble()) {
             filter<<QString("%1 = '%2'").arg(key).arg(value.toDouble());
@@ -88,11 +129,89 @@ bool HtmlClient::checkUserInfo(const QJsonObject &userInfo) const
         }
     }
     QSqlQuery query(Singleton::getInstance()->database());
-    query.exec(QString("SELECT * FROM %1 WHERE %2").arg(ename<AdministratorInfo>(), filter.join(" AND ")));
+    query.exec(QString("SELECT %1 FROM %2 WHERE %3")
+               .arg(ekey(AdministratorInfo::permission), ename<AdministratorInfo>(), filter.join(" AND ")));
     if (query.next()) {
-        return true;
+        return query.value(0).toInt();
     }
-    return false;
+    return -1;
+}
+
+bool HtmlClient::insertData(const QJsonObject &json) const
+{
+    auto tableName = json.value(ekey(CommStruct::TableName)).toString();
+    auto array = json.value(ekey(CommStruct::Criteria)).toArray();
+    QStringList columns, values;
+    foreach (auto value, array) {
+        auto object = value.toObject();
+        columns<<object.value(ekey(CommStruct::ColumnName)).toString();
+        auto colvalue = object.value(ekey(CommStruct::ColumnValue));
+        if (colvalue.isString()) {
+            auto str = colvalue.toString();
+            values<<("default" == str ? str : QString("'%1'").arg(str));
+        }
+        else {
+            values<<QString("'%1'").arg(colvalue.toDouble());
+        }
+    }
+    QSqlQuery query(Singleton::getInstance()->database());
+    query.exec(QString("INSERT INTO %1(%2) VALUES(%3)").arg(tableName, columns.join(" , "), values.join(" , ")));
+    return (query.lastError().type() == QSqlError::NoError);
+}
+
+bool HtmlClient::deleteData(const QJsonObject &json) const
+{
+    auto tableName = json.value(ekey(CommStruct::TableName)).toString();
+    auto array = json.value(ekey(CommStruct::Criteria)).toArray();
+    QStringList criteria;
+    foreach (auto value, array) {
+        auto object = value.toObject();
+        auto colvalue = object.value(ekey(CommStruct::ColumnValue));
+        if (colvalue.isString()) {
+            criteria<<QString("%1 = '%2'").arg(object.value(ekey(CommStruct::ColumnName)).toString(), colvalue.toString());
+        }
+        else {
+            criteria<<QString("%1 = '%2'").arg(object.value(ekey(CommStruct::ColumnName)).toString())
+                      .arg(colvalue.toDouble());
+        }
+    }
+    QSqlQuery query(Singleton::getInstance()->database());
+    query.exec(QString("DELETE FROM %1 WHERE %2").arg(tableName, criteria.join(" AND ")));
+    return (query.lastError().type() == QSqlError::NoError);
+}
+
+bool HtmlClient::updateData(const QJsonObject &json) const
+{
+    auto tableName = json.value(ekey(CommStruct::TableName)).toString();
+    auto setArray = json.value(ekey(CommStruct::Set)).toArray();
+    QStringList set;
+    foreach (auto value, setArray) {
+        auto object = value.toObject();
+        auto colvalue = object.value(ekey(CommStruct::ColumnValue));
+        if (colvalue.isString()) {
+            set<<QString("%1 = '%2'").arg(object.value(ekey(CommStruct::ColumnName)).toString(), colvalue.toString());
+        }
+        else {
+            set<<QString("%1 = '%2'").arg(object.value(ekey(CommStruct::ColumnName)).toString())
+                 .arg(colvalue.toDouble());
+        }
+    }
+    auto criteriaArray = json.value(ekey(CommStruct::Criteria)).toArray();
+    QStringList criteria;
+    foreach (auto value, criteriaArray) {
+        auto object = value.toObject();
+        auto colvalue = object.value(ekey(CommStruct::ColumnValue));
+        if (colvalue.isString()) {
+            criteria<<QString("%1 = '%2'").arg(object.value(ekey(CommStruct::ColumnName)).toString(), colvalue.toString());
+        }
+        else {
+            criteria<<QString("%1 = '%2'").arg(object.value(ekey(CommStruct::ColumnName)).toString())
+                      .arg(colvalue.toDouble());
+        }
+    }
+    QSqlQuery query(Singleton::getInstance()->database());
+    query.exec(QString("UPDATE %1 SET %2 WHERE %3").arg(tableName, set.join(" , ") , criteria.join(" AND ")));
+    return (query.lastError().type() == QSqlError::NoError);
 }
 
 QJsonObject HtmlClient::getDBData(const int &p)
@@ -101,17 +220,21 @@ QJsonObject HtmlClient::getDBData(const int &p)
     switch (UserPermissions(p)) {
     case UserPermissions::SuperAdministrator:
         object.insert(ename<SoftwareManagement>(), tableData(getCnColumns<SoftwareManagement>(),
-                          QString("SELECT * FROM %1").arg(ename<SoftwareManagement>())));
+                          QString("SELECT %1, %2, %3, %4, %5 FROM %6 ORDER BY %7 DESC")
+                          .arg(ekey(SoftwareManagement::appId),
+                               ekey(SoftwareManagement::name),
+                               ekey(SoftwareManagement::version),
+                               ekey(SoftwareManagement::downloadPath),
+                               ekey(SoftwareManagement::content),
+                               ename<SoftwareManagement>(),
+                               ekey(SoftwareManagement::createTime))));
         object.insert(ename<AdministratorInfo>(), tableData(getCnColumns<AdministratorInfo>(),
-                          QString("SELECT * FROM %1").arg(ename<AdministratorInfo>())));
+                          QString("SELECT * FROM %1 WHERE %2 > %3 ORDER BY %2")
+                          .arg(ename<AdministratorInfo>(), ekey(AdministratorInfo::permission))
+                          .arg(userInfo.value(ekey(AdministratorInfo::permission)).toDouble())));
     case UserPermissions::SecondaryAdministrator:
         object.insert(ename<AgentInfo>(), tableData(getCnColumns<AgentInfo>(),
-                          QString("SELECT %1, %2, %3, %4 FROM %5")
-                          .arg(ekey(AgentInfo::name),
-                               ekey(AgentInfo::contact),
-                               ekey(AgentInfo::address),
-                               ekey(AgentInfo::remarks),
-                               ename<AgentInfo>())));
+                          QString("SELECT * FROM %1").arg(ename<AgentInfo>())));
         object.insert(ename<AllocatedConsumables>(), tableData(getCnColumns<AllocatedConsumables>(),
                           QString("SELECT a.%1, a.%2, a.%3, b.%4 AS %5, c.%6 AS %7, a.%8 "
                                   "FROM %9 AS a "
@@ -134,7 +257,7 @@ QJsonObject HtmlClient::getDBData(const int &p)
                                ekey(AllocatedConsumables::adminId),
                                ekey(AdministratorInfo::adminId))));
         object.insert(ename<Device>(), tableData(getCnColumns<Device>(),
-                          QString("SELECT a.%1, a.%2, CONCAT(b.%3, ' ', b.%4) AS %5, c.%6 AS %7, d.%8 AS %9, "
+                          QString("SELECT a.%1, a.%2, CONCAT(b.%3, '&', b.%4) AS %5, c.%6 AS %7, d.%8 AS %9, "
                                   "a.%10, a.%11, COALESCE(e.%12, 0) AS %12, COALESCE(f.%13, 0) AS %13 "
                                   "FROM %14 AS a "
                                   "LEFT JOIN %15 AS b ON a.%16 = b.%17 "
@@ -155,10 +278,7 @@ QJsonObject HtmlClient::getDBData(const int &p)
                                ename<AllocatedConsumables>(), ekey(ReportInfo::deviceId))
                           .arg(ename<ReportInfo>())));
         object.insert(ename<PlaceInfo>(), tableData(getCnColumns<PlaceInfo>(),
-                          QString("SELECT %1, %2 FROM %3")
-                          .arg(ekey(PlaceInfo::hostName),
-                               ekey(PlaceInfo::secondaryName),
-                               ename<PlaceInfo>())));
+                          QString("SELECT * FROM %1").arg(ename<PlaceInfo>())));
     case UserPermissions::ReportSelectAndModify:
     case UserPermissions::ReportSelect:
         object.insert(ename<ReportInfo>(), tableData(getCnColumns<ReportInfo>(),
@@ -251,7 +371,7 @@ QString HtmlClient::cn_NewColumns(const NewColumns &newColumns) const
     case NewColumns::AdminName:
         return "创建人";
     case NewColumns::PlaceName:
-        return "场所名称";
+        return "场所";
     case NewColumns::TotalCount:
         return "总数量";
     case NewColumns::UsedCount:
@@ -269,8 +389,7 @@ QStringList HtmlClient::getCnColumns() const
            <<EnumTextCN::cn_SoftwareManagement(SoftwareManagement::name)
            <<EnumTextCN::cn_SoftwareManagement(SoftwareManagement::version)
            <<EnumTextCN::cn_SoftwareManagement(SoftwareManagement::downloadPath)
-           <<EnumTextCN::cn_SoftwareManagement(SoftwareManagement::content)
-           <<EnumTextCN::cn_SoftwareManagement(SoftwareManagement::createTime);
+           <<EnumTextCN::cn_SoftwareManagement(SoftwareManagement::content);
     }
     else if (typeid(T) == typeid(AdministratorInfo)) {
         cns<<EnumTextCN::cn_AdministratorInfo(AdministratorInfo::adminId)
@@ -281,7 +400,8 @@ QStringList HtmlClient::getCnColumns() const
            <<EnumTextCN::cn_AdministratorInfo(AdministratorInfo::remarks);
     }
     else if (typeid(T) == typeid(AgentInfo)) {
-        cns<<EnumTextCN::cn_AgentInfo(AgentInfo::name)
+        cns<<EnumTextCN::cn_AgentInfo(AgentInfo::agentId)
+           <<EnumTextCN::cn_AgentInfo(AgentInfo::name)
            <<EnumTextCN::cn_AgentInfo(AgentInfo::contact)
            <<EnumTextCN::cn_AgentInfo(AgentInfo::address)
            <<EnumTextCN::cn_AgentInfo(AgentInfo::remarks);
@@ -306,7 +426,8 @@ QStringList HtmlClient::getCnColumns() const
            <<cn_NewColumns(NewColumns::UsedCount);
     }
     else if (typeid(T) == typeid(PlaceInfo)) {
-        cns<<EnumTextCN::cn_PlaceInfo(PlaceInfo::hostName)
+        cns<<EnumTextCN::cn_PlaceInfo(PlaceInfo::placeId)
+           <<EnumTextCN::cn_PlaceInfo(PlaceInfo::hostName)
            <<EnumTextCN::cn_PlaceInfo(PlaceInfo::secondaryName);
     }
     else if (typeid(T) == typeid(ReportInfo)) {
