@@ -14,6 +14,7 @@ class HtmlClient : public QObject
     Q_OBJECT
 public:
     explicit HtmlClient(WebSocketTransport *client, QObject *parent = nullptr);
+    virtual ~HtmlClient();
     enum class JsonData
     {
         Type,

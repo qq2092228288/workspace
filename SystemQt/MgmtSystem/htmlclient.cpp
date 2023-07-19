@@ -8,10 +8,15 @@ using namespace DatabaseEnumNs;
 
 HtmlClient::HtmlClient(WebSocketTransport *client, QObject *parent)
     : QObject{parent},
-      channel_ptr{new QWebChannel(this)}
+      channel_ptr{new QWebChannel}
 {
     channel_ptr->connectTo(client);
     channel_ptr->registerObject(QStringLiteral("core"), this);
+}
+
+HtmlClient::~HtmlClient()
+{
+    channel_ptr->deleteLater();
 }
 
 void HtmlClient::htmlCall(const QJsonObject &object)
