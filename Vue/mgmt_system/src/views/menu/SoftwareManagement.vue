@@ -140,12 +140,12 @@ const insertDialogConfirmButtonClicked = () => {
     }
   })
   HtmlClientCall(HtmlCallType.InsertData, newdata)
-  // 插入表格的行数据
-  let newrow = {}
-  for (let i = 0, length = insertDialogData.value.length; i < length; ++i) {
-    newrow[insertDialogData.value[i].en] = insertDialogData.value[i].value
-  }
-  tableData.value.unshift(newrow)
+  // // 插入表格的行数据
+  // let newrow = {}
+  // for (let i = 0, length = insertDialogData.value.length; i < length; ++i) {
+  //   newrow[insertDialogData.value[i].en] = insertDialogData.value[i].value
+  // }
+  // tableData.value.unshift(newrow)
   // 初始化
   insertDialogData.value = initData({})
 }
@@ -184,12 +184,12 @@ const updateDialogConfirmButtonClicked = () => {
     }
   })
   HtmlClientCall(HtmlCallType.UpdateData, newdata)
-  // 修改表格的行数据
-  let updaterow = {}
-  for (let i = 0, length = updateDialogData.value.length; i < length; ++i) {
-    updaterow[updateDialogData.value[i].en] = updateDialogData.value[i].value
-  }
-  tableData.value.splice(updateIndex.value, 1, updaterow)
+  // // 修改表格的行数据
+  // let updaterow = {}
+  // for (let i = 0, length = updateDialogData.value.length; i < length; ++i) {
+  //   updaterow[updateDialogData.value[i].en] = updateDialogData.value[i].value
+  // }
+  // tableData.value.splice(updateIndex.value, 1, updaterow)
 }
 
 </script>

@@ -2,7 +2,7 @@
   <div class="login-main">
     <h1>泽耀医疗管理系统</h1>
     <LoginForm class="login-form" @login="loginEvent($event)" />
-    <p class="tail-p">Welcome to Ze Yao Yi Liao Management System.</p>
+    <p class="tail-p">广东泽耀医疗技术有限公司 备案号: <a href="https://beian.miit.gov.cn/" target="_blank">粤ICP备2022137474号</a></p>
   </div>
 </template>
 
@@ -29,10 +29,11 @@ h1 {
 }
 .tail-p {
   position: absolute;
+  margin-bottom: 0;
   bottom: 0;
   left: 50%;
   transform: translate(-50%, -50%);
-  font-size: .3125rem;
+  font-size: .75rem;
 }
 
 </style>

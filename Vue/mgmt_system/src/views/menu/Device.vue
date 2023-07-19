@@ -132,7 +132,7 @@ const type = [
     label: 'YZ-TEBCO-01B'
   },
   {
-    value: 'YZ',
+    value: '其它',
     label: '其它'
   }
 ]
@@ -219,36 +219,36 @@ const insertDialogConfirmButtonClicked = () => {
     }
   })
   HtmlClientCall(HtmlCallType.InsertData, newdata)
-  // 插入表格的行数据
-  let newrow = {
-    totalcount: 0, 
-    usedcount: 0,
-    adminname: store.state.userInfo.name
-  }
-  for (const item of insertDialogData.value) {
-    let key = item.en
-    let value = item.value
-    if (key === 'placename') {
-      for (const item of placeName) {
-        if (item.value === value) {
-          newrow['placename'] =item.label
-          break
-        }
-      }
-    }
-    else if (key === 'agentname') {
-      for (const item of agentName) {
-        if (item.value === value) {
-          newrow['agentname'] = item.label
-          break
-        }
-      }
-    }
-    else {
-      newrow[key] = value
-    }
-  }
-  tableData.value.unshift(newrow)
+  // // 插入表格的行数据
+  // let newrow = {
+  //   totalcount: 0, 
+  //   usedcount: 0,
+  //   adminname: store.state.userInfo.name
+  // }
+  // for (const item of insertDialogData.value) {
+  //   let key = item.en
+  //   let value = item.value
+  //   if (key === 'placename') {
+  //     for (const item of placeName) {
+  //       if (item.value === value) {
+  //         newrow['placename'] =item.label
+  //         break
+  //       }
+  //     }
+  //   }
+  //   else if (key === 'agentname') {
+  //     for (const item of agentName) {
+  //       if (item.value === value) {
+  //         newrow['agentname'] = item.label
+  //         break
+  //       }
+  //     }
+  //   }
+  //   else {
+  //     newrow[key] = value
+  //   }
+  // }
+  // tableData.value.unshift(newrow)
   // 初始化
   insertDialogData.value = initData({})
 }
@@ -304,30 +304,30 @@ const updateDialogConfirmButtonClicked = () => {
     }
   })
   HtmlClientCall(HtmlCallType.UpdateData, newdata)
-  // 修改表格的行数据
-  let updaterow = tableData.value[updateIndex.value]
-  for (const element of updateDialogData.value) {
-    let key = element.en
-    let value = element.value
-    if (key === 'placename') {
-      for (const item of placeName) {
-        if (item.value === value) {
-          value = item.label
-          break
-        }
-      }
-    }
-    else if (key === 'agentname') {
-      for (const item of agentName) {
-        if (item.value === value) {
-          value = item.label
-          break
-        }
-      }
-    }
-    updaterow[key] = value
-  }
-  tableData.value.splice(updateIndex.value, 1, updaterow)
+  // // 修改表格的行数据
+  // let updaterow = tableData.value[updateIndex.value]
+  // for (const element of updateDialogData.value) {
+  //   let key = element.en
+  //   let value = element.value
+  //   if (key === 'placename') {
+  //     for (const item of placeName) {
+  //       if (item.value === value) {
+  //         value = item.label
+  //         break
+  //       }
+  //     }
+  //   }
+  //   else if (key === 'agentname') {
+  //     for (const item of agentName) {
+  //       if (item.value === value) {
+  //         value = item.label
+  //         break
+  //       }
+  //     }
+  //   }
+  //   updaterow[key] = value
+  // }
+  // tableData.value.splice(updateIndex.value, 1, updaterow)
 }
 
 </script>

@@ -19,7 +19,7 @@ window.addEventListener('beforeunload', () => {
   sessionStorage.setItem('store', JSON.stringify(store.state))
 })
 // 连接服务器
-ConnectToServer('ws://192.168.1.2:18088')
+ConnectToServer('ws://nicas.zeyaotebco.com:18088')
 
 </script>
 

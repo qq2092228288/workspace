@@ -97,9 +97,12 @@ public:
 public Q_SLOTS:
     /*These slots are invoked from the HTML client side and received by the server.*/
     void htmlCall(const QJsonObject &object);
+    void getReport(const QJsonObject &object);
+    void consultation(const QJsonObject &object);
 signals:
     /*These signal are emitted from the C++ side and received by the HTML client side.*/
     void newData(const QJsonObject &);
+    void reportData(const QJsonObject &);
 private:
     void sendNewData(const NewDataType &type, const QJsonObject &data = QJsonObject());
     /*Check the structure of logged in user information*/

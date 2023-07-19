@@ -13,7 +13,7 @@
           <ElButton class="operation-button" type="primary" v-if="permission & PType.Update" @click="emit('update-data', scope.row, scope.$index)">
             <ElIcon><Edit /></ElIcon>
           </ElButton>
-          <ElButton class="operation-button" type="success" v-if="permission & PType.View" @click="emit('view-report', scope.row, name)">
+          <ElButton class="operation-button" type="success" v-if="permission & PType.View" @click="emit('view-report', scope.row)">
             <ElIcon><View /></ElIcon>
           </ElButton>
         </template>

@@ -5,13 +5,14 @@ import store from './store'
 import ElementPlus from 'element-plus'
 import 'element-plus/dist/index.css'
 import * as ELIcons from '@element-plus/icons-vue'
+import print from 'vue3-print-nb'
 
 
 const app = createApp(App)
 for (let iconName in ELIcons) {
   app.component(iconName, ELIcons[iconName])
 }
-app.use(store).use(router).use(ElementPlus).mount('#app')
+app.use(store).use(router).use(ElementPlus).use(print).mount('#app')
 
 // 处理改变窗口大小出现错误
 const debounce = (fn, delay) => {

@@ -92,8 +92,67 @@ void HtmlClient::htmlCall(const QJsonObject &object)
         }
         break;
     default:
-        TIME_DEBUG()<<"The value of 'type' is an undefined type.";
+        TIME_DEBUG()<<"The value of 'type' is an undefined type: "<<Singleton::jsonToString(object);;
         break;
+    }
+}
+
+void HtmlClient::getReport(const QJsonObject &object)
+{
+    QSqlQuery query(Singleton::getInstance()->database());
+    auto reportTime = object.value(ekey(ReportInfo::reportTime)).toString();
+    auto deviceId = object.value(ekey(ReportInfo::deviceId)).toString();
+    query.exec(QString("SELECT %1 FROM %2 WHERE %3 = '%4' AND %5 = '%6'")
+               .arg(ekey(ReportInfo::reportData),
+                    ename<ReportInfo>(),
+                    ekey(ReportInfo::reportTime),
+                    reportTime,
+                    ekey(ReportInfo::deviceId),
+                    deviceId));
+    query.next();
+    QJsonObject report;
+    report.insert(ekey(ReportInfo::reportTime), reportTime);
+    report.insert(ekey(ReportInfo::deviceId), deviceId);
+    report.insert(ekey(ReportInfo::reportData), query.value(0).toString());
+    emit reportData(report);
+}
+
+void HtmlClient::consultation(const QJsonObject &object)
+{
+    auto str = QString("reportConclusion");
+    auto reportTime = object.value(ekey(ReportInfo::reportTime)).toString();
+    auto deviceId = object.value(ekey(ReportInfo::deviceId)).toString();
+    auto reportConclusion = object.value(str).toString();
+    if (reportTime.isEmpty() || deviceId.isEmpty() || reportConclusion.isEmpty()) {
+        sendNewData(NewDataType::OperationFailed);
+    }
+    else {
+        QSqlQuery query(Singleton::getInstance()->database());
+        query.exec(QString("SELECT %1 FROM %2 WHERE %3 = '%4' AND %5 = '%6'")
+                   .arg(ekey(ReportInfo::reportData),
+                        ename<ReportInfo>(),
+                        ekey(ReportInfo::reportTime),
+                        reportTime,
+                        ekey(ReportInfo::deviceId),
+                        deviceId));
+        query.next();
+        auto reportData = Singleton::utf8ToJsonObject(query.value(0).toString().toUtf8());
+        reportData.insert(str, reportConclusion);
+        query.exec(QString("UPDATE %1 SET %2 = '1', %3 = '%4' WHERE %5 = '%6' AND %7 = '%8'")
+                   .arg(ename<ReportInfo>(),
+                        ekey(ReportInfo::modify),
+                        ekey(ReportInfo::reportData),
+                        Singleton::jsonToString(reportData),
+                        ekey(ReportInfo::reportTime),
+                        reportTime,
+                        ekey(ReportInfo::deviceId),
+                        deviceId));
+        if (query.lastError().type() == QSqlError::NoError) {
+            sendNewData(NewDataType::OperationSuccessful);
+        }
+        else {
+            sendNewData(NewDataType::OperationFailed);
+        }
     }
 }
 
@@ -282,9 +341,10 @@ QJsonObject HtmlClient::getDBData(const int &p)
     case UserPermissions::ReportSelectAndModify:
     case UserPermissions::ReportSelect:
         object.insert(ename<ReportInfo>(), tableData(getCnColumns<ReportInfo>(),
-                          QString("SELECT %1, %2, %3 FROM %4 ORDER BY %1 DESC")
+                          QString("SELECT %1, %2, %3, %4 FROM %5 ORDER BY %1 DESC")
                           .arg(ekey(ReportInfo::reportTime),
                                ekey(ReportInfo::deviceId),
+                               ekey(ReportInfo::name),
                                ekey(ReportInfo::modify),
                                ename<ReportInfo>())));
         break;
@@ -347,7 +407,7 @@ QJsonObject HtmlClient::getMenus() const
         break;
     case UserPermissions::SecondaryAdministrator:
         menu.append(getMenu<AgentInfo>(TablePermission::InsertUpdate));
-        menu.append(getMenu<AllocatedConsumables>(TablePermission::InsertUpdate));
+        menu.append(getMenu<AllocatedConsumables>(TablePermission::Insert));
         menu.append(getMenu<Device>(TablePermission::InsertUpdate));
         menu.append(getMenu<PlaceInfo>(TablePermission::InsertUpdate));
         menu.append(getMenu<ReportInfo>(TablePermission::View));
@@ -433,6 +493,7 @@ QStringList HtmlClient::getCnColumns() const
     else if (typeid(T) == typeid(ReportInfo)) {
         cns<<EnumTextCN::cn_ReportInfo(ReportInfo::reportTime)
            <<EnumTextCN::cn_ReportInfo(ReportInfo::deviceId)
+           <<EnumTextCN::cn_ReportInfo(ReportInfo::name)
            <<EnumTextCN::cn_ReportInfo(ReportInfo::modify);
     }
     return cns;

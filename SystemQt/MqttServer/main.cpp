@@ -3,7 +3,7 @@
 #include <threadservice.h>
 #include <singleton.h>
 #include "mqttclient.h"
-#include "htmlserver.h"
+//#include "htmlserver.h"
 
 int main(int argc, char *argv[])
 {
@@ -18,9 +18,9 @@ int main(int argc, char *argv[])
 //    ThreadService::getInstance()->objectMoveToThread(mqttClient.get());
 
     // html
-    HtmlServer_PTR htmlServer(new HtmlServer);
-    htmlServer->startListening();
-    ThreadService::getInstance()->objectMoveToThread(htmlServer.get());
+//    HtmlServer_PTR htmlServer(new HtmlServer);
+//    htmlServer->startListening();
+//    ThreadService::getInstance()->objectMoveToThread(htmlServer.get());
 
     return a.exec();
 }

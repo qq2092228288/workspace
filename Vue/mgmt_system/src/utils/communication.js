@@ -1,10 +1,11 @@
-import { QWebChannel } from "./qwebchannel";
+import { QWebChannel } from "./qwebchannel/5.12/qwebchannel";
 import Router from "@/router";
 import store from "@/store";
 import { AES_Encrypt } from "./aes";
 import { ElMessage, ElMessageBox } from "element-plus";
 import { SET_CURRENT_PAGE_PATH, SET_MENU, SET_TABLES, SET_USER_INFO } from "@/store/mutation-types";
 import { HOMEPAGE_PATH, LOGIN_PATH } from "@/router/router-path";
+import reportDialog from "@/components/report-dialog";
 
 /**
  * 连接服务器
@@ -99,17 +100,18 @@ export const ConnectToServer = (url) => {
             break;
           case NewDataType.OperationSuccessful: // 插入/删除/更新数据 操作成功
             ElMessage.success({
+              duration: 300,
               message: '操作成功',
-              showClose: true
+              showClose: true,
+              onClose: () => {
+                HtmlClientCall(HtmlCallType.SelectData, store.state.userInfo)
+              }
             })
             break;
           case NewDataType.OperationFailed: // 操作失败，重新获取数据
             ElMessage.error({
               message: '操作失败',
-              showClose: true,
-              onClose: () => {
-                HtmlClientCall(HtmlCallType.SelectData, store.state.userInfo)
-              }
+              showClose: true
             })
             break;
           case NewDataType.InsufficientPermissions: // 权限不足
@@ -122,6 +124,16 @@ export const ConnectToServer = (url) => {
             break;
         }
       })
+      window.core.reportData.connect(function(reprotdata) {
+        try {
+          reportDialog(reprotdata)
+        } catch (error) {
+          ElMessage.error({
+            message: '数据格式不正确',
+            showClose: true
+          })
+        }
+      })
     })
   }
 }
@@ -131,11 +143,20 @@ export const ConnectToServer = (url) => {
  * @param {JSON} data 
  */
 export const HtmlClientCall = (calltype, data) => {
-  let obj = {
-    'type': calltype,
-    'data': data
-  }
-  return window.core.htmlCall(obj)
+  window.core.htmlCall({
+    type: calltype,
+    data: data
+  })
+}
+/**
+ * 获取报告数据
+ * @param {object} obj 
+ */
+export const getReport = (obj) => {
+  window.core.getReport(obj)
+}
+export const consultation = (obj) => {
+  window.core.consultation(obj)
 }
 /**
  * 向服务器请求的类型
