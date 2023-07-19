@@ -8,7 +8,7 @@ using namespace DatabaseEnumNs;
 
 HtmlClient::HtmlClient(WebSocketTransport *client, QObject *parent)
     : QObject{parent},
-      channel_ptr{new QWebChannel}
+      channel_ptr{new QWebChannel(this)}
 {
     channel_ptr->connectTo(client);
     channel_ptr->registerObject(QStringLiteral("core"), this);

@@ -7,7 +7,7 @@
 #include <QJsonObject>
 
 
-typedef QSharedPointer<QWebChannel> QWebChannel_PTR;
+//typedef QSharedPointer<QWebChannel> QWebChannel_PTR;
 
 class HtmlClient : public QObject
 {
@@ -145,7 +145,7 @@ private:
     template <class T>
     QString ename() const;
 private:
-    QWebChannel_PTR channel_ptr;
+    QWebChannel *channel_ptr;
     QJsonObject userInfo;
 };
 
