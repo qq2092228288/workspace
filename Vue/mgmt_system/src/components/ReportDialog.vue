@@ -1,22 +1,22 @@
 <template>
-  <ElDialog v-model="visible" top="1vh" :show-close="false">
+  <ElDialog v-model="visible" top="1vh" width="700px" :show-close="false">
     <div id="main">
-      <h1>{{ primaryPlace }}</h1>
+      <h1 v-if="primaryPlace !== undefined">{{ primaryPlace }}</h1>
       <!-- <h1>无创心功能监测报告</h1> -->
-      <h2>{{ "科室: " + secondaryPlace }}</h2>
-      <h3>{{ "操作人员: " + inspector }}</h3>
+      <h2 v-if="secondaryPlace !== undefined">{{ "科室: " + secondaryPlace }}</h2>
+      <h3 v-if="inspector !== 'unknown'">{{ "操作人员: " + inspector }}</h3>
       <ElTable :data="patintInfoTable" :show-header="false" border>
         <ElTableColumn v-for="col in patintInfoColumns" :prop="col.colname" :align="col.align" />
       </ElTable>
-      <ElTable :data="tableData" :row-style="{ fontSize: '12px' }" border>
-        <ElTableColumn v-for="col in tableDataColumns" :prop="col.value" :label="col.label" />
+      <ElTable :data="tableData" border>
+        <ElTableColumn v-for="col in tableDataColumns" :prop="col.value" :label="col.label" :width="col.width" />
       </ElTable>
       <ElInput type="textarea" :autosize="{ minRows: 1, maxRows: 10 }" v-model="reportConclusion" />
     </div>
     <ElRow type="flex" justify="end" style="margin-top: 1.25rem;" >
-      <!-- <ElTooltip effect="dark" content="打印报告" >
+      <ElTooltip effect="dark" content="打印报告" >
         <ElButton type="success" :icon="Printer" @click="reportPrint" circle />
-      </ElTooltip> -->
+      </ElTooltip>
       <ElTooltip effect="dark" content="关闭窗口">
         <ElButton type="info" :icon="Close" circle @click="visible = false" />
       </ElTooltip>
@@ -54,20 +54,21 @@ const positionCn = (pos) => {
   return null;
 }
 const reportPrint = () => {
-  // let oldHtml = document.body.innerHTML
-  // document.body.innerHTML = document.getElementById('main').innerHTML
-  // window.print()
-  // document.body.innerHTML = oldHtml
-
-  // printJS({
-  //   printable: 'main',
-  //   type: 'html',
-  //   targetStyles: ['*']
-  // })
-  html2canvas(document.querySelector("#main")).then(canvas => {
-    const imgUrl = canvas.toDataURL('png'); // 获取生成的图片的url
-    console.log(dataURL)
+  printJS({
+    printable: 'main',
+    type: 'html',
+    style: `@page{
+      size: landscape;
+      margin: 0 ;
+    }`
   })
+  // html2canvas(document.querySelector("#main")).then(canvas => {
+  //   const imgUrl = canvas.toDataURL('image/png'); // 获取生成的图片的url
+  //   let save = document.createElement('a')
+  //   save.href = imgUrl
+  //   save.download = 'test'
+  //   save.click()
+  // })
 }
 const props = defineProps({
   reporttime: String,
@@ -106,7 +107,7 @@ const patintInfoTable = [
   },
   {
     col0: '血红蛋白',
-    col1: patientInfo.hb + ' g/dl',
+    col1: patientInfo.hb !== undefined ? patientInfo.hb + ' g/dl' : null,
     col2: '病历号',
     col3: patientInfo.medicalRecordNumber
   }
@@ -140,7 +141,9 @@ const patintInfoColumns = [
 // 数据
 const pdata = ref([])
 for (const pos of reportdata.position) {
-  pdata.value.push(positionData(patientInfo, pos.data))
+  if (Object.keys(pos.data).length !== 0) {
+    pdata.value.push(positionData(patientInfo, pos.data))
+  }
 }
 const datEnum = createDataType(DataType)
 const baseTable = [
@@ -170,7 +173,7 @@ for (const part of baseTable) {
   for (const dtype of part.types) {
     let obj = {
       arg: datEnum.getCn(dtype) + '/' + datEnum.getEn(dtype),
-      limit: datEnum.getMin(dtype) + '~' + datEnum.getMax(dtype),
+      limit: datEnum.getMin(dtype) !== datEnum.getMax(dtype) ? datEnum.getMin(dtype) + '~' + datEnum.getMax(dtype) : '-',
       unit: datEnum.getUnit(dtype)
     }
     if (pdata.value.length >= 1) {
@@ -184,27 +187,32 @@ for (const part of baseTable) {
 }
 const tableDataColumns = ref([{
   value: 'arg',
-  label: '参数'
+  label: '参数',
+  width: pdata.value.length === 2 ? '200px' : '220px'
 }])
 if (pdata.value.length >= 1) {
   tableDataColumns.value.push({
     value: 'fpos',
-    label: positionCn(reportdata.position[0].data[DataType.Pos[0]])
+    label: positionCn(reportdata.position[0].data[DataType.Pos[0]]),
+    width: pdata.value.length === 2 ? '80px' : '100px'
   })
 }
 if (pdata.value.length >= 2) {
   tableDataColumns.value.push({
     value: 'spos',
-    label: positionCn(reportdata.position[1].data[DataType.Pos[0]])
+    label: positionCn(reportdata.position[1].data[DataType.Pos[0]]),
+    width: '80px'
   })
 }
 tableDataColumns.value.push({
   value: 'limit',
-  label: '正常值范围'
+  label: '正常值范围',
+  width: pdata.value.length === 2 ? '120px' : '140px'
 })
 tableDataColumns.value.push({
   value: 'unit',
-  label: '单位'
+  label: '单位',
+  width: 'auto'
 })
 // 报告结论
 const reportConclusion = ref(reportdata.reportConclusion)

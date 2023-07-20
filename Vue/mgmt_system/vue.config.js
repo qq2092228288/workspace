@@ -1,5 +1,7 @@
 const { defineConfig } = require('@vue/cli-service')
 module.exports = defineConfig({
+  publicPath: './',
+  outputDir: 'management',
   transpileDependencies: true,
   chainWebpack: config =>{
     config.plugin('html').tap(args => {
@@ -8,3 +10,4 @@ module.exports = defineConfig({
     })
   }
 })
+

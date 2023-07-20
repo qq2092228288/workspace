@@ -2,37 +2,37 @@
   <div class="tree-menu">
     <transition name="moveL">
       <nav v-if="isMenuVisible">
-        <el-sub-menu index="1">
+        <ElSubMenu index="1">
           <template #title>
-            <el-icon><Menu /></el-icon>
+            <ElIcon><Menu /></ElIcon>
             <span>菜单</span>
           </template>
-          <el-menu-item v-for="menu in treeMenu" 
+          <ElMenuItem v-for="menu in treeMenu" 
             :index="menu.path" 
             :route="{ path: menu.path, query: { adminid: adminid, password: password, title: menu.name } }">
-            <el-icon><component :is="menu.icon" /></el-icon>
-            {{  menu.name }}
-          </el-menu-item>
-        </el-sub-menu>
-        <el-sub-menu index="">
+            <ElIcon><component :is="menu.icon" /></ElIcon>
+            <span>{{  menu.name }}</span>
+          </ElMenuItem>
+        </ElSubMenu>
+        <ElSubMenu index="">
           <template #title>
-            <el-icon><Tools /></el-icon>
+            <ElIcon><Tools /></ElIcon>
             <span>系统</span>
           </template>
-          <el-menu-item :index="this.$route.path" :route="this.$route" @click="retrieveData">
-            <el-icon><Refresh /></el-icon>
+          <ElMenuItem :index="route.path" :route="route" @click="retrieveData">
+            <ElIcon><Refresh /></ElIcon>
             <span>重新获取</span>
-          </el-menu-item>
-          <el-menu-item :index="loginPath" @click="logOut">
-            <el-icon><SwitchButton /></el-icon>
+          </ElMenuItem>
+          <ElMenuItem :index="loginPath" @click="logOut">
+            <ElIcon><SwitchButton /></ElIcon>
             <span>退出登录</span>
-          </el-menu-item>
-        </el-sub-menu>
+          </ElMenuItem>
+        </ElSubMenu>
       </nav>
     </transition>
-    <el-button class="shrink-expand-menu" @click="shrinkExpandMenu">
-      <el-icon><DArrowLeft v-if="isMenuVisible" /><DArrowRight v-else/></el-icon>
-    </el-button>
+    <ElButton class="shrink-expand-menu" @click="shrinkExpandMenu">
+      <ElIcon><DArrowLeft v-if="isMenuVisible" /><DArrowRight v-else/></ElIcon>
+    </ElButton>
   </div>
 </template>
 
@@ -41,11 +41,13 @@ import { LOGIN_PATH } from '@/router/router-path';
 import { RESET_STATE } from '@/store/mutation-types';
 import { AES_Encrypt } from '@/utils/aes';
 import { HtmlClientCall, HtmlCallType } from '@/utils/communication';
-import { ElMessage } from 'element-plus';
+import { ElButton, ElIcon, ElMenuItem, ElMessage, ElSubMenu } from 'element-plus';
 import { useStore } from 'vuex';
 import { ref } from 'vue';
+import { useRoute } from 'vue-router';
 
 const store = useStore()
+const route = useRoute()
 
 const userInfo = store.state.userInfo
 const adminid = userInfo.adminid

@@ -40,7 +40,8 @@ public:
         ReportData = 0x10,
         OperationSuccessful = 0x20,
         OperationFailed = 0x40,
-        InsufficientPermissions = 0x80
+        InsufficientPermissions = 0x80,
+        WithoutRefresh = 0xA0   //操作成功，不刷新页面
     };
     Q_ENUM(NewDataType)
     enum class UserInfo
