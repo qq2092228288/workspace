@@ -26,6 +26,7 @@
 *.so
 *.dylib
 *.dll
+*.dll.manifest
 
 # Compiled Static libraries
 *.lai
