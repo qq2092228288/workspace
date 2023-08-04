@@ -25,6 +25,7 @@ public:
     enum class HtmlCallType
     {
         Login = 0x01,
+        UpdatePassword = 0x02,
         InsertData = 0x10,
         DeleteData = 0x20,
         UpdateData = 0x40,
@@ -111,6 +112,8 @@ private:
     bool checkUserInfoStruct(const QJsonObject &userInfo) const;
     /*Check logged in user information*/
     int checkUserInfo(const QJsonObject &userInfo) const;
+
+    bool updatePassword(const QString &fresh) const;
 
     bool insertData(const QJsonObject &json) const;
 

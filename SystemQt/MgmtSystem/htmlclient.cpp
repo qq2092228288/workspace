@@ -47,6 +47,16 @@ void HtmlClient::htmlCall(const QJsonObject &object)
             }
         }
         break;
+    case HtmlCallType::UpdatePassword:
+        if (-1 != checkUserInfo(data)) {
+            if (updatePassword(data.value("fresh").toString())) {
+                sendNewData(NewDataType::Relist);
+            }
+            else {
+                sendNewData(NewDataType::OperationFailed);
+            }
+        }
+        break;
     case HtmlCallType::InsertData:
         if (UserPermissions::SuperAdministrator == UserPermissions(checkUserInfo(data)) ||
                 UserPermissions::SecondaryAdministrator == UserPermissions(checkUserInfo(data))) {
@@ -96,9 +106,9 @@ void HtmlClient::htmlCall(const QJsonObject &object)
             sendNewData(NewDataType::Relist);
         }
         break;
-    default:
-        TIME_DEBUG()<<"The value of 'type' is an undefined type: "<<Singleton::jsonToString(object);;
-        break;
+//    default:
+//        TIME_DEBUG()<<"The value of 'type' is an undefined type: "<<Singleton::jsonToString(object);;
+//        break;
     }
 }
 
@@ -199,6 +209,28 @@ int HtmlClient::checkUserInfo(const QJsonObject &userInfo) const
         return query.value(0).toInt();
     }
     return -1;
+}
+
+bool HtmlClient::updatePassword(const QString &fresh) const
+{
+    auto adminId = userInfo.value(ekey(AdministratorInfo::adminId)).toString();
+    QSqlQuery query(Singleton::getInstance()->database());
+    query.exec(QString("UPDATE %1 SET %2 = '%3' WHERE %4 = '%5'")
+               .arg(ename<AdministratorInfo>(),
+                    ekey(AdministratorInfo::password),
+                    fresh,
+                    ekey(AdministratorInfo::adminId),
+                    adminId));
+    query.exec(QString("SELECT * FROM %1 WHERE %2 = '%3' AND %4 = '%5'")
+               .arg(ename<AdministratorInfo>(),
+                    ekey(AdministratorInfo::adminId),
+                    adminId,
+                    ekey(AdministratorInfo::password),
+                    fresh));
+    if (query.next()) {
+        return true;
+    }
+    return false;
 }
 
 bool HtmlClient::insertData(const QJsonObject &json) const

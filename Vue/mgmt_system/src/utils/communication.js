@@ -1,4 +1,5 @@
 import { QWebChannel } from "./qwebchannel/5.12/qwebchannel";
+// import { QWebChannel } from "./qwebchannel/5.15/qwebchannel";
 import Router from "@/router";
 import store from "@/store";
 import { AES_Encrypt } from "./aes";
@@ -163,6 +164,7 @@ export const consultation = (obj) => {
  */
 export const HtmlCallType = {
   Login: 0x01,
+  UpdatePassword: 0x02,
   InsertData: 0x10,
   DeleteData: 0x20,
   UpdateData: 0x40,

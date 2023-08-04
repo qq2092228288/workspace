@@ -1,21 +1,30 @@
 <template>
-  <ElDialog v-model="visible" top="1vh" width="700px" :show-close="false">
+  <ElDialog v-model="visible" top="1vh" width="800px" :show-close="false">
     <div id="main">
-      <h1 v-if="primaryPlace !== undefined">{{ primaryPlace }}</h1>
-      <!-- <h1>无创心功能监测报告</h1> -->
-      <h2 v-if="secondaryPlace !== undefined">{{ "科室: " + secondaryPlace }}</h2>
-      <h3 v-if="inspector !== 'unknown'">{{ "操作人员: " + inspector }}</h3>
-      <ElTable :data="patintInfoTable" :show-header="false" border>
+      <h1>无创心功能监测报告</h1>
+      <h1 v-if="strInvalid(primaryPlace)">{{ primaryPlace }}</h1>
+      <h2 v-if="strInvalid(secondaryPlace)">{{ "科室: " + secondaryPlace }}</h2>
+      <h3 v-if="strInvalid(inspector)">{{ "操作人员: " + inspector }}</h3>
+      <ElTable
+        :data="patintInfoTable"
+        :show-header="false"
+        :span-method="infoSpanMethod"
+        border>
         <ElTableColumn v-for="col in patintInfoColumns" :prop="col.colname" :align="col.align" />
       </ElTable>
-      <ElTable :data="tableData" border>
+      <ElTable
+        :data="tableData"
+        :span-method="dataSpanMethod"
+        border>
         <ElTableColumn v-for="col in tableDataColumns" :prop="col.value" :label="col.label" :width="col.width" />
       </ElTable>
-      <ElInput type="textarea" :autosize="{ minRows: 1, maxRows: 10 }" v-model="reportConclusion" />
+      <div class="textarea" contenteditable="true">
+        {{ reportConclusion }}
+      </div>
     </div>
     <ElRow type="flex" justify="end" style="margin-top: 1.25rem;" >
-      <ElTooltip effect="dark" content="打印报告" >
-        <ElButton type="success" :icon="Printer" @click="reportPrint" circle />
+      <ElTooltip effect="dark" content="下载报告" >
+        <ElButton type="success" :icon="Download" @click="reportPrint" :loading="loading" circle />
       </ElTooltip>
       <ElTooltip effect="dark" content="关闭窗口">
         <ElButton type="info" :icon="Close" circle @click="visible = false" />
@@ -28,13 +37,20 @@
 </template>
 
 <script setup>
-import { Check, Close, Printer } from '@element-plus/icons';
-import { ElButton, ElCol, ElDialog, ElInput, ElRow, ElTable, ElTableColumn, ElTooltip } from 'element-plus';
-import { h, ref } from 'vue';
+import { Check, Close, Download } from '@element-plus/icons';
+import { ElButton, ElDialog, ElInput, ElRow, ElTable, ElTableColumn, ElTooltip } from 'element-plus';
+import { ref } from 'vue';
 import { cBsa, createDataType, DataType, intercept, positionData } from '@/utils/tebcoparamcalculation';
 import { consultation } from '@/utils/communication';
-import printJS from 'print-js';
-import html2canvas from 'html2canvas';
+import htmlToPdf from '@/utils/htmltopdf';
+import router from '@/router';
+
+const strInvalid = (str) => {
+  if (str === undefined || str === '' || str === 'unknown') {
+    return false
+  }
+  return true
+}
 
 /**
  * @description return position chinese name
@@ -53,23 +69,12 @@ const positionCn = (pos) => {
   }
   return null;
 }
-const reportPrint = () => {
-  printJS({
-    printable: 'main',
-    type: 'html',
-    style: `@page{
-      size: landscape;
-      margin: 0 ;
-    }`
-  })
-  // html2canvas(document.querySelector("#main")).then(canvas => {
-  //   const imgUrl = canvas.toDataURL('image/png'); // 获取生成的图片的url
-  //   let save = document.createElement('a')
-  //   save.href = imgUrl
-  //   save.download = 'test'
-  //   save.click()
-  // })
+const infoSpanMethod = ({ row, column, rowIndex, columnIndex }) => {
+  if (rowIndex === 2 && columnIndex === 3) {
+    return [1, 3]
+  }
 }
+
 const props = defineProps({
   reporttime: String,
   deviceid: String,
@@ -107,7 +112,7 @@ const patintInfoTable = [
   },
   {
     col0: '血红蛋白',
-    col1: patientInfo.hb !== undefined ? patientInfo.hb + ' g/dl' : null,
+    col1: patientInfo.hb === undefined || patientInfo.hb === '0' ? null : patientInfo.hb + ' g/dl',
     col2: '病历号',
     col3: patientInfo.medicalRecordNumber
   }
@@ -170,8 +175,11 @@ const baseTable = [
 ]
 const tableData = ref([])
 for (const part of baseTable) {
-  for (const dtype of part.types) {
+
+  for (let i = 0, len = part.types.length; i < len; ++i) {
+    const dtype = part.types[i]
     let obj = {
+      class: part.name,
       arg: datEnum.getCn(dtype) + '/' + datEnum.getEn(dtype),
       limit: datEnum.getMin(dtype) !== datEnum.getMax(dtype) ? datEnum.getMin(dtype) + '~' + datEnum.getMax(dtype) : '-',
       unit: datEnum.getUnit(dtype)
@@ -185,45 +193,86 @@ for (const part of baseTable) {
     tableData.value.push(obj)
   }
 }
-const tableDataColumns = ref([{
-  value: 'arg',
-  label: '参数',
-  width: pdata.value.length === 2 ? '200px' : '220px'
-}])
+const tableDataColumns = ref([
+  {
+    value: 'class',
+    label: '',
+    width: '40px'
+  },
+  {
+    value: 'arg',
+    label: '参数',
+    width: pdata.value.length === 2 ? '200px' : '220px'
+  }
+])
 if (pdata.value.length >= 1) {
   tableDataColumns.value.push({
     value: 'fpos',
     label: positionCn(reportdata.position[0].data[DataType.Pos[0]]),
-    width: pdata.value.length === 2 ? '80px' : '100px'
+    width: pdata.value.length === 2 ? '100px' : '120px'
   })
 }
 if (pdata.value.length >= 2) {
   tableDataColumns.value.push({
     value: 'spos',
     label: positionCn(reportdata.position[1].data[DataType.Pos[0]]),
-    width: '80px'
+    width: '100px'
   })
 }
 tableDataColumns.value.push({
   value: 'limit',
   label: '正常值范围',
-  width: pdata.value.length === 2 ? '120px' : '140px'
+  width: pdata.value.length === 2 ? '140px' : '160px'
 })
 tableDataColumns.value.push({
   value: 'unit',
   label: '单位',
   width: 'auto'
 })
+const spanArr = ref([])
+const dataSpanMethod = ({ row, column, rowIndex, columnIndex }) => {
+  if (columnIndex === 0) {
+    if (rowIndex === 0) {
+      return [6, 1]
+    }
+    else if (rowIndex === 6) {
+      return [4, 1]
+    }
+    else if (rowIndex === 10) {
+      return [5, 1]
+    }
+    else if (rowIndex === 15) {
+      return [10, 1]
+    }
+    else if (rowIndex === 25) {
+      return [4, 1]
+    }
+    else {
+      return [0, 0]
+    }
+  }
+}
+
 // 报告结论
 const reportConclusion = ref(reportdata.reportConclusion)
+
 const confirmButtonClicked = () => {
   visible.value = false
-  console.log(reportConclusion.value)
   consultation({
     reporttime: props.reporttime,
     deviceid: props.deviceid,
     reportConclusion: reportConclusion.value
   })
+}
+const loading = ref(false)
+
+const reportPrint = () => {
+  loading.value = true
+  htmlToPdf.getPdf('#main', patientInfo.medicalRecordNumber + '-' + patientInfo.patientName)
+  setTimeout(() => {
+    loading.value = false
+    router.go(0)
+  }, 1000)
 }
 
 </script>
@@ -231,15 +280,51 @@ const confirmButtonClicked = () => {
 <style scoped lang="less">
 #main {
   text-align: center;
+  // padding-left: 15%;
+  // padding-right: 15%;
+  &/deep/ .el-textarea__inner {
+    border: none;
+    resize: none;
+  }
 }
 h1 {
   margin: 0;
+  margin-bottom: .625rem;
 }
 h2 {
   margin: 0;
+  margin-bottom: .9375rem;
 }
 h3 {
   margin-top: 0;
-  margin-bottom: .3125rem;
+  margin-bottom: 1.25rem;
 }
+/**
+改变边框颜色
+ */
+ .el-table {
+  border: 1px solid black;
+  margin: 0 auto;
+}
+/* 表格不出现横向滚动条 */
+::v-deep.el-table th {
+  border: 1px solid black !important;
+  border-right: none !important;
+  border-bottom: none !important;
+  color: black;
+  font-size: 1rem;
+}
+
+::v-deep.el-table td {
+  border: 1px solid black;
+  border-right: none !important;
+}
+
+.textarea {
+  border: 1px solid black;
+  white-space: pre-wrap;
+  text-align: left;
+  padding: .625rem;
+}
+
 </style>

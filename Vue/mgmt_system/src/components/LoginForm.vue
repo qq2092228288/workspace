@@ -10,9 +10,9 @@
       <el-form-item prop="password">
         <el-input type="password" v-model="userInfo.password" placeholder="请输入密码" prefix-icon="Lock"/>
       </el-form-item>
-      <!-- <el-row type="flex" justify="end">
-        <el-checkbox v-model="userInfo.remember" label="记住密码" />
-      </el-row> -->
+      <el-row type="flex" justify="end">
+        <el-checkbox v-model="userInfo.remember" label="记住密码" @change="rememberUserInfo" />
+      </el-row>
       <el-row type="flex" justify="center">
         <el-button class="login-button" type="primary" @click="loginButtonClick">登录</el-button>
       </el-row>
@@ -27,6 +27,7 @@
 import { ref } from 'vue';
 import VCode from 'vue3-puzzle-vcode';
 import { defineEmits } from 'vue';
+import { Base64 } from 'js-base64';
 
 const emit = defineEmits(['login'])
 /**
@@ -59,13 +60,15 @@ let checkPassword = (rule, value, callback) => {
 
 const userInfo = ref({
   username: '',
-  password: ''
-  // remember: false
+  password: '',
+  remember: false
 })
+
 const rules = {
   username: [{ validator: checkUsername, trigger: onblur }],
   password: [{ validator: checkPassword, trigger: onblur }]
 }
+
 const puzzleShow = ref(false)
 const puzzleCount = ref(0)
 // const isAuthenticated = ref(false)
@@ -94,7 +97,7 @@ const vCodeSuccessListener = () => {
     puzzleShow.value = false
     // isAuthenticated.value = true
   }, 300)
-  emit('login', userInfo.value)
+  emit('login', { username: userInfo.value.username, password: userInfo.value.password })
 }
 /**
  * 拼图验证次数检测
@@ -107,6 +110,33 @@ const vCodeFailListener = () => {
     alert('验证失败，请重试')
   }
 }
+
+const getUserInfo = () => {
+  try {
+    let username = localStorage.getItem('username')
+    if (username) {
+      userInfo.value.username = username
+      userInfo.value.password = Base64.decode(localStorage.getItem('password'))
+      userInfo.value.remember = true
+    }
+  } catch (error) {
+    
+  }
+}
+
+const rememberUserInfo = () => {
+  if (userInfo.value.remember === true) {
+    let password = Base64.encode(userInfo.value.password)
+    localStorage.setItem('username', userInfo.value.username)
+    localStorage.setItem('password', password)
+  }
+  else {
+    localStorage.removeItem('username')
+    localStorage.removeItem('password')
+  }
+}
+
+getUserInfo()
 
 </script>
 
