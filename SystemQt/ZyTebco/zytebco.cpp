@@ -102,6 +102,7 @@ void ZyTebco::clearSerial()
     if (m_pSerial->isOpen()) {
         m_pSerial->clear();
     }
+    map.clear();
 }
 
 bool ZyTebco::isWorking()

@@ -18,9 +18,7 @@
         border>
         <ElTableColumn v-for="col in tableDataColumns" :prop="col.value" :label="col.label" :width="col.width" />
       </ElTable>
-      <div class="textarea" contenteditable="true">
-        {{ reportConclusion }}
-      </div>
+      <div class="textarea" contenteditable="true" v-html="reportConclusion" @blur="reportConclusion=$event.target.innerText"></div>
     </div>
     <ElRow type="flex" justify="end" style="margin-top: 1.25rem;" >
       <ElTooltip effect="dark" content="下载报告" >

@@ -190,7 +190,7 @@ bool HtmlClient::checkUserInfoStruct(const QJsonObject &userInfo) const
     return false;
 }
 
-int HtmlClient::checkUserInfo(const QJsonObject &userInfo) const
+int HtmlClient::checkUserInfo(const QJsonObject &userInfo)
 {
     QStringList filter;
     foreach (auto key, Singleton::enumKeys<AdministratorInfo>()) {
@@ -206,6 +206,7 @@ int HtmlClient::checkUserInfo(const QJsonObject &userInfo) const
     query.exec(QString("SELECT %1 FROM %2 WHERE %3")
                .arg(ekey(AdministratorInfo::permission), ename<AdministratorInfo>(), filter.join(" AND ")));
     if (query.next()) {
+        this->userInfo = userInfo;
         return query.value(0).toInt();
     }
     return -1;
@@ -377,6 +378,7 @@ QJsonObject HtmlClient::getDBData(const int &p)
                           QString("SELECT * FROM %1").arg(ename<PlaceInfo>())));
     case UserPermissions::ReportSelectAndModify:
     case UserPermissions::ReportSelect:
+#if 0
         object.insert(ename<ReportInfo>(), tableData(getCnColumns<ReportInfo>(),
                           QString("SELECT %1, %2, %3, %4 FROM %5 ORDER BY %1 DESC")
                           .arg(ekey(ReportInfo::reportTime),
@@ -384,6 +386,69 @@ QJsonObject HtmlClient::getDBData(const int &p)
                                ekey(ReportInfo::name),
                                ekey(ReportInfo::modify),
                                ename<ReportInfo>())));
+#else
+    {
+        QString wstr = userInfo.value(ekey(AdministratorInfo::deviceIds)).toString().replace("{", "'").replace("}", "'");
+        if (wstr == "*") {
+            wstr.clear();
+        }
+        else {
+            wstr = QString("WHERE %1 IN (%2)").arg(ekey(ReportInfo::deviceId), wstr);
+        }
+        QSqlQuery query(Singleton::getInstance()->database());
+        query.exec(QString("SELECT %1, %2, %3, %4 FROM %5 ORDER BY %1 DESC")
+                   .arg(ekey(ReportTable::reportTime),
+                        ekey(ReportTable::deviceId),
+                        ekey(ReportInfo::reportData),
+                        ekey(ReportTable::modify),
+                        ename<ReportInfo>() + " " + wstr));
+        QJsonArray data;
+        while (query.next()) {
+            QJsonObject json;
+            json.insert(ekey(ReportTable::reportTime),
+                        query.value(0).toDateTime().toString("yyyy-MM-dd hh:mm:ss.zzz"));
+            json.insert(ekey(ReportTable::deviceId),
+                        query.value(1).toString());
+            auto reportData = Singleton::utf8ToJsonObject(query.value(2).toString().toUtf8());
+            auto place = reportData.value("place").toObject();
+            json.insert(ekey(ReportTable::primaryPlace),
+                        place.value(ekey(ReportTable::primaryPlace, false)).toString());
+            json.insert(ekey(ReportTable::secondaryPlace),
+                        place.value(ekey(ReportTable::secondaryPlace, false)).toString());
+            auto position = reportData.value("position").toArray();
+            json.insert(ekey(ReportTable::position),
+                        position.at(1).toObject().value("reportTime").isUndefined() ? "单" : "双");
+            auto patientInfo = reportData.value("patientInfo").toObject();
+            json.insert(ekey(ReportTable::medicalRecordNumber),
+                        patientInfo.value(ekey(ReportTable::medicalRecordNumber, false)).toString());
+            json.insert(ekey(ReportTable::patientName),
+                        patientInfo.value(ekey(ReportTable::patientName, false)).toString().mid(0, 1) + "**");
+            json.insert(ekey(ReportTable::sex),
+                        patientInfo.value(ekey(ReportTable::sex, false)).toString());
+            json.insert(ekey(ReportTable::age),
+                        patientInfo.value(ekey(ReportTable::age, false)).toString());
+            json.insert(ekey(ReportTable::height),
+                        patientInfo.value(ekey(ReportTable::height, false)).toString());
+            json.insert(ekey(ReportTable::weight),
+                        patientInfo.value(ekey(ReportTable::weight, false)).toString());
+            json.insert(ekey(ReportTable::modify),
+                        query.value(3).toDouble() == 0 ? "否" : "是");
+            data.append(json);
+        }
+        QJsonArray columns;
+        for (int i = 0, count = QMetaEnum::fromType<ReportTable>().keyCount(); i < count; ++i) {
+            auto key = ReportTable(i);
+            QJsonObject column;
+            column.insert(ekey(TableData::En), ekey(key));
+            column.insert(ekey(TableData::Cn), cn_NewColumns(key));
+            columns<<column;
+        }
+        QJsonObject reportDataObject;
+        reportDataObject.insert(ekey(TableData::Columns), columns);
+        reportDataObject.insert(ekey(TableData::Data), data);
+        object.insert(ename<ReportInfo>(), reportDataObject);
+    }
+#endif
         break;
     }
     return object;
@@ -473,6 +538,37 @@ QString HtmlClient::cn_NewColumns(const NewColumns &newColumns) const
         return "总数量";
     case NewColumns::UsedCount:
         return "已使用数量";
+    }
+    return nullptr;
+}
+
+QString HtmlClient::cn_NewColumns(const ReportTable &newColumns) const
+{
+    switch (newColumns) {
+    case ReportTable::reportTime:
+        return "报告时间";
+    case ReportTable::deviceId:
+        return "设备编号";
+    case ReportTable::primaryPlace:
+        return "医院";
+    case ReportTable::secondaryPlace:
+        return "科室";
+    case ReportTable::position:
+        return "体位模式";
+    case ReportTable::medicalRecordNumber:
+        return "病历号";
+    case ReportTable::patientName:
+        return "姓名";
+    case ReportTable::sex:
+        return "性别";
+    case ReportTable::age:
+        return "年龄(岁)";
+    case ReportTable::height:
+        return "身高(cm)";
+    case ReportTable::weight:
+        return "体重(kg)";
+    case ReportTable::modify:
+        return "已会诊";
     }
     return nullptr;
 }
@@ -583,9 +679,13 @@ int HtmlClient::eint(const T &t) const
 }
 
 template<class T>
-QString HtmlClient::ekey(const T &t) const
+QString HtmlClient::ekey(const T &t, bool lower) const
 {
-    return Singleton::enumValueToKey(t);
+    auto str = QString(QMetaEnum::fromType<T>().valueToKey(static_cast<int>(t)));
+    if (lower) {
+        return str.toLower();
+    }
+    return str;
 }
 
 template<class T>

@@ -121,7 +121,13 @@ const rules = {
 }
 
 const confirmButtonClicked = () => {
-  console.log(userInfo, changePassword.value)
+  if (changePassword.value.original.trim() === '' || changePassword.value.fresh.trim() === '' || changePassword.value.confirm.trim() === '') {
+    ElMessage.error({
+      message: '密码不能为空',
+      showClose: true
+    })
+    return
+  }
   if (userInfo.password !== changePassword.value.original) {
     ElMessage.warning({
       duration: 3000,

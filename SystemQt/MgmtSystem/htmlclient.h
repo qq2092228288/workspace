@@ -97,6 +97,22 @@ public:
         ColumnValue
     };
     Q_ENUM(CommStruct)
+    enum class ReportTable
+    {
+        reportTime,
+        deviceId,
+        primaryPlace,
+        secondaryPlace,
+        position,
+        medicalRecordNumber,
+        patientName,
+        sex,
+        age,
+        height,
+        weight,
+        modify
+    };
+    Q_ENUM(ReportTable)
 public Q_SLOTS:
     /*These slots are invoked from the HTML client side and received by the server.*/
     void htmlCall(const QJsonObject &object);
@@ -111,7 +127,7 @@ private:
     /*Check the structure of logged in user information*/
     bool checkUserInfoStruct(const QJsonObject &userInfo) const;
     /*Check logged in user information*/
-    int checkUserInfo(const QJsonObject &userInfo) const;
+    int checkUserInfo(const QJsonObject &userInfo);
 
     bool updatePassword(const QString &fresh) const;
 
@@ -132,6 +148,8 @@ private:
 
     QString cn_NewColumns(const NewColumns &newColumns) const;
 
+    QString cn_NewColumns(const ReportTable &newColumns) const;
+
     template <class T>
     QStringList getCnColumns() const;
 
@@ -145,7 +163,7 @@ private:
     int eint(const T &t) const;
 
     template <class T>
-    QString ekey(const T &t) const;
+    QString ekey(const T &t, bool lower = true) const;
 
     template <class T>
     QString ename() const;

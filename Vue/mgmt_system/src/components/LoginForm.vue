@@ -28,6 +28,7 @@ import { ref } from 'vue';
 import VCode from 'vue3-puzzle-vcode';
 import { defineEmits } from 'vue';
 import { Base64 } from 'js-base64';
+import { ElMessage } from 'element-plus';
 
 const emit = defineEmits(['login'])
 /**
@@ -73,12 +74,33 @@ const puzzleShow = ref(false)
 const puzzleCount = ref(0)
 // const isAuthenticated = ref(false)
 
+const rememberUserInfo = () => {
+  if (userInfo.value.remember === true) {
+    let password = Base64.encode(userInfo.value.password)
+    localStorage.setItem('username', userInfo.value.username)
+    localStorage.setItem('password', password)
+  }
+  else {
+    localStorage.removeItem('username')
+    localStorage.removeItem('password')
+  }
+}
+
 const loginButtonClick = () => {
   // if (!isAuthenticated.value) {
   //   puzzleShow.value = true
   //   return
   // }
-  puzzleShow.value = true
+  if (userInfo.value.username.trim() === '' || userInfo.value.password.trim() === '') {
+    ElMessage.error({
+      message: '账号密码不能为空',
+      showClose: true
+    })
+  }
+  else {
+    rememberUserInfo()
+    puzzleShow.value = true
+  }
 }
 /**
  * 点击其它位置关闭拼图验证
@@ -121,18 +143,6 @@ const getUserInfo = () => {
     }
   } catch (error) {
     
-  }
-}
-
-const rememberUserInfo = () => {
-  if (userInfo.value.remember === true) {
-    let password = Base64.encode(userInfo.value.password)
-    localStorage.setItem('username', userInfo.value.username)
-    localStorage.setItem('password', password)
-  }
-  else {
-    localStorage.removeItem('username')
-    localStorage.removeItem('password')
   }
 }
 
