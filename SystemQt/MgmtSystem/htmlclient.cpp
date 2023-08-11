@@ -417,7 +417,7 @@ QJsonObject HtmlClient::getDBData(const int &p)
                         place.value(ekey(ReportTable::secondaryPlace, false)).toString());
             auto position = reportData.value("position").toArray();
             json.insert(ekey(ReportTable::position),
-                        position.at(1).toObject().value("reportTime").isUndefined() ? "单" : "双");
+                        position.at(1).toObject().value("reportTime").toString().isEmpty() ? "单" : "双");
             auto patientInfo = reportData.value("patientInfo").toObject();
             json.insert(ekey(ReportTable::medicalRecordNumber),
                         patientInfo.value(ekey(ReportTable::medicalRecordNumber, false)).toString());
