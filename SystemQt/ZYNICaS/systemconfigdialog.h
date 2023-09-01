@@ -24,22 +24,8 @@
 #include <QRadioButton>
 #include <QButtonGroup>
 
-
+#include "reportset.h"
 #include "getiddialog.h"
-
-enum Printer_Type
-{
-    General,    // A4纸
-    Thermal     // xprinter热敏纸
-};
-
-enum Check_Mode
-{
-    Hypertension,           // 高血压模式
-    InternalMedicine,       // 内科模式
-    IntensiveCareUnit,      // 重症模式
-    PhysicalExamination     // 体检模式
-};
 
 struct HospitalInfo
 {

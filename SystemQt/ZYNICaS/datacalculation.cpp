@@ -142,7 +142,7 @@ qreal DataCalculation::cLcwi(const qreal &ci, const qreal &map, const qreal &lap
 
 qreal DataCalculation::cDo2(const qreal &co, const qreal &hb)
 {
-    return (isInvalid(co) ? invalid() : 1.34*hb*co*10);
+    return (isInvalid(co, hb) ? invalid() : 1.34*hb*co*10);
 }
 
 qreal DataCalculation::cRr(const qreal &value)

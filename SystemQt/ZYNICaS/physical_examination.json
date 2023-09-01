@@ -1,0 +1,270 @@
+[
+    {
+      "module" : "心排量",
+      "parameters" : [
+        {
+          "cn" : "心输出量",
+          "en" : "CO",
+          "unit" : "L/min",
+          "min" : 3.5,
+          "max" : 9.0,
+          "digit" : 1,
+          "type" : 16
+        },
+        {
+          "cn" : "心脏指数",
+          "en" : "CI",
+          "unit" : "L/min·m²",
+          "min" : 2.0,
+          "max" : 5.0,
+          "digit" : 1,
+          "type" : 8
+        },
+        {
+          "cn" : "搏排量",
+          "en" : "SV",
+          "unit" : "mL/beat",
+          "min" : 50,
+          "max" : 120,
+          "digit" : 1,
+          "type" : 17
+        },
+        {
+          "cn" : "心搏指数",
+          "en" : "SI",
+          "unit" : "mL/beat·m²",
+          "min" : 35,
+          "max" : 65,
+          "digit" : 0,
+          "type" : 7
+        }
+      ]
+    },
+    {
+      "module" : "前负荷容量",
+      "parameters" : [
+        {
+          "cn" : "胸液传导性",
+          "en" : "TFC",
+          "unit" : "1/Ω",
+          "min" : 0.025,
+          "max" : 0.045,
+          "digit" : 3,
+          "type" : 3
+        },
+        {
+          "cn" : "舒张末期指数",
+          "en" : "EDI",
+          "unit" : "mL/beat·m²",
+          "min" : 54,
+          "max" : 130,
+          "digit" : 0,
+          "type" : 19
+        },
+        {
+          "cn" : "血管容积",
+          "en" : "Vol",
+          "unit" : "%",
+          "min" : -50,
+          "max" : 50,
+          "digit" : 0,
+          "type" : 20
+        }
+      ]
+    },
+    {
+      "module" : "后负荷阻力",
+      "parameters" : [
+        {
+          "cn" : "系统阻力",
+          "en" : "SVR",
+          "unit" : "dyn·s·m²/cm⁵",
+          "min" : 742,
+          "max" : 1500,
+          "digit" : 0,
+          "type" : 21
+        },
+        {
+          "cn" : "每搏外周阻力",
+          "en" : "SSVR",
+          "unit" : "dyn·s/cm⁵",
+          "min" : 119.6,
+          "max" : 429.2,
+          "digit" : 1,
+          "type" : 22
+        },
+        {
+          "cn" : "每搏外周阻力指数",
+          "en" : "SSVRI",
+          "unit" : "dyn·s/cm⁵/beat/m²",
+          "min" : 99.7,
+          "max" : 185.1,
+          "digit" : 1,
+          "type" : 23
+        },
+        {
+          "cn" : "系统阻力指数",
+          "en" : "SVRI",
+          "unit" : "dyn·s·m²/cm⁵",
+          "min" : 1337,
+          "max" : 2483,
+          "digit" : 0,
+          "type" : 24
+        },
+        {
+          "cn" : "血管顺应性",
+          "en" : "Vas",
+          "unit" : "%",
+          "min" : -50,
+          "max" : 50,
+          "digit" : 0,
+          "type" : 25
+        }
+      ]
+    },
+    {
+      "module" : "心肌收缩力",
+      "parameters" : [
+        {
+          "cn" : "射血前期",
+          "en" : "PEP",
+          "unit" : "ms",
+          "min" : 50,
+          "max" : 120,
+          "digit" : 0,
+          "type" : 2
+        },
+        {
+          "cn" : "左室射血时间",
+          "en" : "LVET",
+          "unit" : "ms",
+          "min" : 250,
+          "max" : 350,
+          "digit" : 0,
+          "type" : 26
+        },
+        {
+          "cn" : "左心室每搏做功",
+          "en" : "LSW",
+          "unit" : "g·m",
+          "min" : 20,
+          "max" : 90,
+          "digit" : 0,
+          "type" : 27
+        },
+        {
+          "cn" : "每搏做功指数",
+          "en" : "LSWI",
+          "unit" : "g·m/beat/m²",
+          "min" : 39.3,
+          "max" : 73.0,
+          "digit" : 1,
+          "type" : 28
+        },
+        {
+          "cn" : "左心室做功",
+          "en" : "LCW",
+          "unit" : "kg·m",
+          "min" : 5.4,
+          "max" : 10.0,
+          "digit" : 1,
+          "type" : 29
+        },
+        {
+          "cn" : "左心室做功指数",
+          "en" : "LCWI",
+          "unit" : "kg·m/m²",
+          "min" : 1.81,
+          "max" : 7.06,
+          "digit" : 2,
+          "type" : 30
+        },
+        {
+          "cn" : "收缩时间比",
+          "en" : "STR",
+          "unit" : "-",
+          "min" : 0,
+          "max" : 0.4,
+          "digit" : 1,
+          "type" : 31
+        },
+        {
+          "cn" : "射血期收缩指数",
+          "en" : "EPCI",
+          "unit" : "1/s",
+          "min" : 0.038,
+          "max" : 0.076,
+          "digit" : 3,
+          "type" : 4
+        },
+        {
+          "cn" : "变力状态指数",
+          "en" : "ISI",
+          "unit" : "1/s²",
+          "min" : 0.90,
+          "max" : 1.70,
+          "digit" : 2,
+          "type" : 5
+        },
+        {
+          "cn" : "收缩变力性",
+          "en" : "Ino",
+          "unit" : "%",
+          "min" : -50,
+          "max" : 50,
+          "digit" : 0,
+          "type" : 32
+        }
+      ]
+    },
+    {
+      "module" : "常规",
+      "parameters" : [
+        {
+          "cn" : "心率",
+          "en" : "HR",
+          "unit" : "bpm",
+          "min" : 60,
+          "max" : 100,
+          "digit" : 0,
+          "type" : 0
+        },
+        {
+          "cn" : "心率变异性",
+          "en" : "HRV",
+          "unit" : "%",
+          "min" : -50,
+          "max" : 50,
+          "digit" : 0,
+          "type" : 18
+        },
+        {
+          "cn" : "收缩压",
+          "en" : "SBP",
+          "unit" : "mmHg",
+          "min" : 90,
+          "max" : 140,
+          "digit" : 0,
+          "type" : 33
+        },
+        {
+          "cn" : "舒张压",
+          "en" : "DBP",
+          "unit" : "mmHg",
+          "min" : 60,
+          "max" : 90,
+          "digit" : 0,
+          "type" : 34
+        },
+        {
+          "cn" : "平均动脉压",
+          "en" : "MAP",
+          "unit" : "mmHg",
+          "min" : 70,
+          "max" : 105,
+          "digit" : 0,
+          "type" : 35
+        }
+      ]
+    }
+  ]

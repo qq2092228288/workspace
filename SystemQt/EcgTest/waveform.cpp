@@ -7,7 +7,8 @@ bool pred(QPointF f, QPointF s)
 
 Waveform::Waveform(const QString &title, QWidget *parent)
     : QChartView{parent},
-      vqueue{VQueue<QPointF>(500)}
+      vqueue{VQueue<QPointF>(500)},
+      speed{100}
 {
     xAxis = new QValueAxis(this);
     yAxis = new QValueAxis(this);
@@ -49,7 +50,7 @@ Waveform::Waveform(const QString &title, QWidget *parent)
 void Waveform::append(double value)
 {
     vqueue.enqueue(QPointF(count++, value));
-    if (count%100 == 0) {
+    if (count%speed == 0) {
         xAxis->setRange(vqueue.first().x(), count);
         auto pair = std::minmax_element(vqueue.begin(), vqueue.end(), pred);
 //        auto offset = abs((pair.second->y() - pair.first->y()) / 3);
@@ -57,6 +58,11 @@ void Waveform::append(double value)
         yAxis->setRange(pair.first->y(), pair.second->y());
         series->replace(vqueue);
     }
+}
+
+void Waveform::setSpeed(int speed)
+{
+    this->speed = speed;
 }
 
 void Waveform::clear()

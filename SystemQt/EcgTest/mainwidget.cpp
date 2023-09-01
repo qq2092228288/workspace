@@ -24,11 +24,19 @@ MainWidget::MainWidget(QWidget *parent)
     QVBoxLayout *mainLayout = new QVBoxLayout(this);
 
     comboBox = new QComboBox(this);
+    label = new QLabel("速度:", this);
+    lineEdit = new QLineEdit(this);
     operationButton = new QPushButton(openStr, this);
+
+    lineEdit->setFixedWidth(50);
+    lineEdit->setValidator(new QRegExpValidator(QRegExp("[1-9]{1}[0-9]{0,3}$")));
+    lineEdit->setText(QString::number(100));
 
     QHBoxLayout *hLayout = new QHBoxLayout;
     mainLayout->addLayout(hLayout);
     hLayout->addWidget(comboBox);
+    hLayout->addWidget(label);
+    hLayout->addWidget(lineEdit);
     hLayout->addWidget(operationButton);
     hLayout->addStretch();
 
@@ -52,14 +60,19 @@ MainWidget::MainWidget(QWidget *parent)
     connect(ads, &AdsModule::newdata, this, &MainWidget::newdata);
     connect(ads, &AdsModule::connectFailed, this, [=](){
         operationButton->setText(openStr);
+        lineEdit->setEnabled(true);
     });
 }
 
 void MainWidget::operationButtonClicked()
 {
     if (operationButton->text() == openStr) {
+        foreach (auto waveform, waveformMap) {
+            waveform->setSpeed(lineEdit->text().toInt());
+        }
         if (ads->open(comboBox->currentText())) {
             operationButton->setText(closeStr);
+            lineEdit->setEnabled(false);
         }
         else {
             QMessageBox::warning(this, "警告", "串口打开失败");
@@ -68,6 +81,7 @@ void MainWidget::operationButtonClicked()
     else {
         ads->close();
         operationButton->setText(openStr);
+        lineEdit->setEnabled(true);
     }
 }
 

@@ -17,6 +17,7 @@ public:
     explicit Waveform(const QString &title, QWidget *parent = nullptr);
 public slots:
     void append(double value);
+    void setSpeed(int speed);
     void clear();
 signals:
 private:
@@ -26,6 +27,7 @@ private:
 private:
     VQueue<QPointF> vqueue;
     int count;
+    int speed;
 };
 
 #endif // WAVEFORM_H

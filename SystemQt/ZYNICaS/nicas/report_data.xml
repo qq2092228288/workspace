@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<report type="jsonObject">
+  <patientInfo type="jsonObject" name="患者信息">
+    <age type="string">年龄</age>
+    <hb type="string">血红蛋白</hb>
+    <height type="string">身高</height>
+    <medicalRecordNumber type="string">ID</medicalRecordNumber>
+    <patientName type="string">姓名</patientName>
+    <sex type="string">性别</sex>
+    <weight type="string">体重</weight>
+  </patientInfo>
+  <place type="jsonObject" name="场所信息">
+    <inspector type="string">检测人员</inspector>
+    <primaryPlace type="string">主场所</primaryPlace>
+    <secondaryPlace type="string">次场所</secondaryPlace>
+  </place>
+  <position type="jsonArray" name="体位检测数据">
+    <p1 type="jsonObject" name="第一体位">
+      <data type="jsonObject">数据</data>
+      <reportTime type="string">报告时间</reportTime>
+      <waveform type="byteArray">波形数据</waveform>
+      <trendChartData type="byteArray">趋势图数据</trendChartData>
+    </p1>
+    <p2 type="jsonObject" name="第二体位" optional="true">
+      <data type="jsonObject">数据</data>
+      <reportTime type="string">报告时间</reportTime>
+      <waveform type="byteArray">波形数据</waveform>
+      <trendChartData type="byteArray">趋势图数据</trendChartData>
+    </p2>
+  </position>
+  <reportConclusion type="string">报告结论</reportConclusion>
+</report>

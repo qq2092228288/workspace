@@ -20,21 +20,21 @@ RC_FILE = resource.rc
 SOURCES += \
     anothersetdialog.cpp \
     auxargdialog.cpp \
-    baseargwidget.cpp \
-    baseargwidgetsinst.cpp \
+#    baseargwidget.cpp \
+#    baseargwidgetsinst.cpp \
     bpeditdialog.cpp \
     countdowngizmo.cpp \
     createreportthread.cpp \
     customctrl.cpp \
     datacalculation.cpp \
     datamanagement.cpp \
-    devicedatabase.cpp \
+#    devicedatabase.cpp \
     deviceparameters.cpp \
     drawsudoku.cpp \
     drawwaveforms.cpp \
     entersystemwidget.cpp \
     getiddialog.cpp \
-    httppost.cpp \
+#    httppost.cpp \
     infoeditdialog.cpp \
     isicurvewidget.cpp \
     logindialog.cpp \
@@ -43,13 +43,15 @@ SOURCES += \
     mqttclient.cpp \
     personalinfodialog.cpp \
     plrttablewidget.cpp \
-    reportdatabase.cpp \
+#    reportdatabase.cpp \
+    reportdialog.cpp \
+    reportpainter.cpp \
     reportword.cpp \
     selectitemdialog.cpp \
     showreportdialog.cpp \
     singleapplication.cpp \
     sudokuwidget.cpp \
-    surplusbaseargsdialog.cpp \
+#    surplusbaseargsdialog.cpp \
     systemconfigdialog.cpp \
     trendchart.cpp \
     trendchartswidget.cpp \
@@ -60,21 +62,21 @@ HEADERS += \
     MyStruct.h \
     anothersetdialog.h \
     auxargdialog.h \
-    baseargwidget.h \
-    baseargwidgetsinst.h \
+#    baseargwidget.h \
+#    baseargwidgetsinst.h \
     bpeditdialog.h \
     countdowngizmo.h \
     createreportthread.h \
     customctrl.h \
     datacalculation.h \
     datamanagement.h \
-    devicedatabase.h \
-    deviceparameters.h \
+#    devicedatabase.h \
+#    deviceparameters.h \
     drawsudoku.h \
     drawwaveforms.h \
     entersystemwidget.h \
     getiddialog.h \
-    httppost.h \
+#    httppost.h \
     infoeditdialog.h \
     isicurvewidget.h \
     logindialog.h \
@@ -82,24 +84,28 @@ HEADERS += \
     mqttclient.h \
     personalinfodialog.h \
     plrttablewidget.h \
-    reportdatabase.h \
+#    reportdatabase.h \
+    reportdialog.h \
+    reportpainter.h \
+    reportset.h \
     reportword.h \
     selectitemdialog.h \
     showreportdialog.h \
     singleapplication.h \
     sudokuwidget.h \
-    surplusbaseargsdialog.h \
+#    surplusbaseargsdialog.h \
     systemconfigdialog.h \
     trendchart.h \
     trendchartswidget.h \
     updateappdialog.h \
     waitingdialog.h
 
-
 include(../../commonFiles/base.pri)
 #include(../../commonFiles/qextserialport/src/qextserialport.pri)
 include(../../commonFiles/qt-solutions/qtsingleapplication/src/qtsingleapplication.pri)
 include(../../commonFiles/MqttServerNs/mqttserverns.pri)
+nicas.path = ../../commonFiles/nicas
+include(../../commonFiles/nicas.pri)
 
 INCLUDEPATH += ../ZyTebco \
     ../IdCheck \
@@ -126,8 +132,7 @@ else:win32:CONFIG(debug, debug|release): LIBS += -L$$COMPILATION_CHAIN_DIR/lib/ 
 else:unix: LIBS += -L$$COMPILATION_CHAIN_DIR/lib/ -lQt5Mqtt
 INCLUDEPATH += ../MqttServer
 
-DISTFILES +=
-
 RESOURCES += \
+    common.qrc \
     images.qrc \
     version.qrc

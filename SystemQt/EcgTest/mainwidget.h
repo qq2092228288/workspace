@@ -4,6 +4,7 @@
 #include <QWidget>
 #include <QPushButton>
 #include <QComboBox>
+#include <QLineEdit>
 #include <QGridLayout>
 #include "adsmodule.h"
 #include "waveform.h"
@@ -28,6 +29,8 @@ private slots:
 signals:
 private:
     QComboBox *comboBox;
+    QLabel *label;
+    QLineEdit *lineEdit;
     QPushButton *operationButton;
     QString openStr = QString("打开");
     QString closeStr = QString("关闭");
