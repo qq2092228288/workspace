@@ -96,7 +96,7 @@ qreal DataCalculation::cVas(const qreal &ssvri)
     return (isInvalid(ssvri) ? invalid() : percent(ssvri, 137.8));
 }
 
-qreal DataCalculation::cSvv(const qreal &sv, QList<qreal> svList)
+qreal DataCalculation::cSvv(const qreal &sv, QVector<qreal> svList)
 {
     if (svList.size() < 6 || isInvalid(sv)) return invalid();
     svList.removeOne(*std::min_element(svList.begin(), svList.end()));
@@ -173,17 +173,17 @@ qreal DataCalculation::cMap(const qreal &sbp, const qreal &dbp)
     return ((sbp + dbp*2)/3);
 }
 
-qreal DataCalculation::cNnvgr(const QList<qreal> &hrList)
+qreal DataCalculation::cNnvgr(const QVector<qreal> &hrList)
 {
     if (hrList.count() == 0) return invalid();
-    QList<qreal> rrList = getRrList(hrList);
+    QVector<qreal> rrList = getRrList(hrList);
     return (std::accumulate(rrList.begin(), rrList.end(), 0.0)/rrList.size());
 }
 
-qreal DataCalculation::cSdnn(const QList<qreal> &hrList)
+qreal DataCalculation::cSdnn(const QVector<qreal> &hrList)
 {
     if (hrList.count() == 0) return invalid();
-    QList<qreal> rrList = getRrList(hrList);
+    QVector<qreal> rrList = getRrList(hrList);
     double avg = std::accumulate(rrList.begin(), rrList.end(), 0.0)/rrList.size();
     double accum = 0.0;
     foreach (auto rr, rrList) {
@@ -192,9 +192,9 @@ qreal DataCalculation::cSdnn(const QList<qreal> &hrList)
     return (qSqrt(accum/rrList.size()));
 }
 
-qreal DataCalculation::cPnn50(const QList<qreal> &hrList)
+qreal DataCalculation::cPnn50(const QVector<qreal> &hrList)
 {
-    QList<qreal> rrList = getRrList(hrList);
+    QVector<qreal> rrList = getRrList(hrList);
     int mT50ms = 0;
     for (int index = 1; index < rrList.size() - 1; ++index) {
         if (qAbs(rrList.at(index) - rrList.at(index - 1)) > 0.05) {
@@ -204,9 +204,9 @@ qreal DataCalculation::cPnn50(const QList<qreal> &hrList)
     return (mT50ms/rrList.size());
 }
 
-qreal DataCalculation::cRmssd(const QList<qreal> &hrList)
+qreal DataCalculation::cRmssd(const QVector<qreal> &hrList)
 {
-    QList<qreal> rrList = getRrList(hrList);
+    QVector<qreal> rrList = getRrList(hrList);
     if (rrList.size() < 2) return 0;
     double accum = 0.0;
     for (int index = 1; index < rrList.size() - 1; ++index) {
@@ -225,9 +225,9 @@ qreal DataCalculation::perPNJ(const qreal &value1, const qreal &value2)
     return (value1 >= value2 ? (value1/value2 - 1)*100 : (1 - value2/value1)*100);
 }
 
-QList<qreal> DataCalculation::getRrList(const QList<qreal> &hrList)
+QVector<qreal> DataCalculation::getRrList(const QVector<qreal> &hrList)
 {
-    QList<qreal> rrList;
+    QVector<qreal> rrList;
     foreach (auto hr, hrList) {
         rrList<<(60000.0/hr);
     }

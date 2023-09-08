@@ -17,33 +17,28 @@ DataManagement DataManagement::instance;
 
 int main(int argc, char *argv[])
 {
-//    qRegisterMetaType<QAbstractSocket::SocketError>("QAbstractSocket::SocketError");
     QtSingleApplication a(QApplication::applicationName(),argc, argv);
-    QPrinter printer(QPrinter::ScreenResolution);
-    printer.setPageSize(QPageSize(QSizeF(210, 297), QPageSize::Millimeter));
-    QPrintPreviewDialog dialog(&printer);
-    dialog.setWindowTitle("报告预览");
-    dialog.setWindowFlags(Qt::Dialog | Qt::WindowMinMaxButtonsHint | Qt::WindowCloseButtonHint);
-    dialog.resize(QApplication::primaryScreen()->size());
-    QObject::connect(&dialog, &QPrintPreviewDialog::paintRequested, [=](QPrinter *printer) {
-        QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
-        db.setDatabaseName("Reports.db");
-        db.open();
-        QSqlQuery query(db);
-        query.exec(QString("SELECT time, data from reports"));
-        while(query.next()) {
-            if (query.value(0).toLongLong() == 1686643211404) {
-                break;
-            }
-        }
-        ReportPainter painter(ReportInfo(Printer_Type::General,
-                                         Check_Mode::IntensiveCareUnit,
-                                         true,
-                                         QJsonDocument::fromJson(query.value(1).toString().toUtf8()).object()),
-                              printer);
-    });
-    dialog.exec();
-    return 0;
+//    QPrinter printer(QPrinter::ScreenResolution);
+//    printer.setPageSize(QPageSize(QSizeF(72, 297), QPageSize::Millimeter));
+//    QPrintPreviewDialog dialog(&printer);
+//    dialog.setWindowTitle("报告预览");
+//    dialog.setWindowFlags(Qt::Dialog | Qt::WindowMinMaxButtonsHint | Qt::WindowCloseButtonHint);
+//    dialog.resize(1000, 800);
+//    QObject::connect(&dialog, &QPrintPreviewDialog::paintRequested, [=](QPrinter *printer) {
+//        QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
+//        db.setDatabaseName("Reports.db");
+//        db.open();
+//        QSqlQuery query(db);
+//        query.exec(QString("SELECT time, data from reports"));
+//        query.next();
+//        ReportPainter painter(ReportInfo(Printer_Type::Thermal,
+//                                         Check_Mode::IntensiveCareUnit,
+//                                         true,
+//                                         QJsonDocument::fromJson(query.value(1).toString().toUtf8()).object()),
+//                              printer);
+//    });
+//    dialog.exec();
+//    return 0;
     if (!a.isRunning()) {
         // prevent system hibernation
         SetThreadExecutionState(ES_CONTINUOUS | ES_SYSTEM_REQUIRED | ES_DISPLAY_REQUIRED);

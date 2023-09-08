@@ -697,6 +697,12 @@ QString DataManagement::saveReport(QDateTime curTime, QString position, bool rec
     return result;
 }
 
+QString DataManagement::reportCreated(bool record)
+{
+    emit startCheck(false);
+    return reportResult(record);
+}
+
 void DataManagement::clearSlot()
 {
     //断开数据传输

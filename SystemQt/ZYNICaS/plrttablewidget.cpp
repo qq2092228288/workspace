@@ -294,7 +294,7 @@ QString PlrtTableWidget::labelQss(LabelStatus status)
 
 double PlrtTableWidget::dataDigit(const double &value, const int &decimals)
 {
-    return (static_cast<int>((value + 0.5/qPow(10, decimals))*qPow(10, decimals)))/qPow(10, decimals);
+    return (static_cast<int>(value*qPow(10, decimals)))/qPow(10, decimals);
 }
 
 QList<QLabel *> PlrtTableWidget::labels() const

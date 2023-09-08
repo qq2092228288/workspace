@@ -44,6 +44,7 @@ SOURCES += \
     personalinfodialog.cpp \
     plrttablewidget.cpp \
 #    reportdatabase.cpp \
+    reportdatajson.cpp \
     reportdialog.cpp \
     reportpainter.cpp \
     reportword.cpp \
@@ -85,6 +86,7 @@ HEADERS += \
     personalinfodialog.h \
     plrttablewidget.h \
 #    reportdatabase.h \
+    reportdatajson.h \
     reportdialog.h \
     reportpainter.h \
     reportset.h \

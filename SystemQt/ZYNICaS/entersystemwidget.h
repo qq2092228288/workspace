@@ -34,9 +34,10 @@
 #include "sudokuwidget.h"
 #include "customctrl.h"
 #include "trendchartswidget.h"
-#include "MyStruct.h"
+//#include "MyStruct.h"
 #include "systemconfigdialog.h"
 #include "plrttablewidget.h"
+#include "reportdatajson.h"
 
 class EnterSystemWidget : public QWidget
 {
@@ -75,8 +76,8 @@ private:
     bool detectedData();
     void setCtrlValue(const Type &type, const double &value);
     bool isStartCheck();
-    void setBaseData();
-    void setTebcoData(TebcoData &tebcoData);
+//    void setBaseData();
+//    void setTebcoData(TebcoData &tebcoData);
 signals:
     void recordValue();
     void widgetClose();
@@ -137,7 +138,7 @@ private:
 //    QList<QHBoxLayout *> hLayouts;
     SudokuWidget *sudokuWidget;
     qreal efValue = 0;
-    QList<qreal> svValues;
+    QVector<qreal> svValues;
 
     //返回、生成报告、九宫格图、辅助参数
     QGroupBox *operationGroupBox;
@@ -152,8 +153,9 @@ private:
 //    DrawSudoku *sudokuDraw;
 
     // 记录数据
-    QMap<uchar, short> recordDataMap;
-    BaseData baseData;
+//    QMap<uchar, short> recordDataMap;
+//    BaseData baseData;
+    ReportDataJson *reportJson;
 };
 
 #endif // ENTERSYSTEMWIDGET_H

@@ -10,6 +10,7 @@
 #include <QJsonObject>
 #include <QBuffer>
 #include <QUrlQuery>
+#include <QQueue>
 
 
 struct PatientInfo
@@ -39,7 +40,9 @@ struct TebcoData
 {
     QMap<uchar, short> data;    // 原始数据
     QDateTime cTime;            // 记录数据时的时间
-    QPixmap dzPix;              // 心阻抗图
+//    QPixmap dzPix;              // 心阻抗图
+    QJsonArray waveform;
+    QJsonArray allData;
 };
 
 struct BaseData
@@ -48,7 +51,7 @@ struct BaseData
     PatientInfo patient;        // 患者信息
     TebcoData firstPosture;     // 第一体位数据
     TebcoData secondPosture;    // 第二体位数据
-    QPixmap sudokuPix;          // 九宫格图
+//    QPixmap sudokuPix;          // 九宫格图
     QString reportConclusion;   // 报告结论
 //    QList<QPixmap> trendCharts; // 趋势图
     QString structToJsonString()
@@ -80,7 +83,7 @@ struct BaseData
         jPosition.append(getPostureJsonObject(secondPosture));
         jBaseData.insert("position", jPosition);
 
-        jBaseData.insert("pAnalyse", pixmapToJson(sudokuPix));
+//        jBaseData.insert("pAnalyse", pixmapToJson(sudokuPix));
         jBaseData.insert("reportConclusion", reportConclusion);
 
 //        if (!trendCharts.isEmpty()) {
@@ -98,11 +101,13 @@ struct BaseData
 //        jobject.insert("posture", tebcoData.posture);
         jobject.insert("data", dataToJson(tebcoData.data));
         jobject.insert("reportTime", tebcoData.cTime.toString("yyyyMMddHHmmss"));
-        jobject.insert("pDz", pixmapToJson(tebcoData.dzPix));
+//        jobject.insert("pDz", pixmapToJson(tebcoData.dzPix));
 //        jobject.insert("rSbp", tebcoData.bpAuxArgs.sbp);
 //        jobject.insert("rDbp", tebcoData.bpAuxArgs.dbp);
 //        jobject.insert("cvp", tebcoData.bpAuxArgs.cvp);
 //        jobject.insert("lap", tebcoData.bpAuxArgs.lap);
+        jobject.insert("waveform", tebcoData.waveform);
+        jobject.insert("allData", tebcoData.allData);
         return jobject;
     }
     static QJsonObject dataToJson(const QMap<uchar, short> &data)

@@ -197,12 +197,13 @@ void ZyTebco::recvInfoSlot()
     QByteArray array = m_pSerial->readAll();
 //    QByteArray array = m_pExtSerial->readAll();
     if (array.size() == 4 || array.size() == 6) {
+        bool ok;
         emit ecgValue((uchar)array.at(0));
         emit diffValue((uchar)array.at(1));
         emit admitValue((uchar)array.at(2));
+        emit waveform(array.mid(0, 4));
         if(array.size() == 6) {
-            bool ok;
-            ushort argVal = array.mid(4,2).toHex().toUShort(&ok,16);
+            ushort argVal = array.mid(4,2).toHex().toUShort(&ok, 16);
             uchar type = argVal>>12;
             auto values = map.value(type);
             values.enqueue(argVal&0xFFF);

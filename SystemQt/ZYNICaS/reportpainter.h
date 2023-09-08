@@ -58,20 +58,31 @@ public:
         bool paging;
     };
 private:
+    void thermalPage();
     void generalHeader();
     void generalDataPage(int page = 0);
+    void plrPage();
     void generalFooter();
+
     void setFontSize(int pointSize, bool bold = false);
     QRectF drawTableCell(QRectF rect, const QString &txt, int align = Qt::AlignCenter, int offset = 0);
-    QMap<Type, qreal> valueMap(const QJsonObject &data);
-    void drawValue(const QJsonObject &parameter, QMap<Type, qreal> map,
-                    QRectF rect, qreal min, qreal max, qreal _y);
+    QMap<Type, qreal> valueMap(const QJsonObject &data, const QJsonArray &alldata);
+    void drawValue(const QJsonObject &parameter, QMap<Type, qreal> map, QRectF rect, qreal _y);
     QString positionCn(int pos);
-    void drawSudoku(QRectF rect, const QJsonObject &data);
+    void drawWaveform(QRectF rect, int pos, const QJsonArray &waveform);
+    void drawSudoku(QRectF rect, QMap<Type, qreal> fMap, QMap<Type, qreal> sMap = QMap<Type, qreal>());
+    void drawIsiAndSv(QRectF rect, qreal fIsi, qreal fSv, qreal sIsi, qreal sSv);
+    void drawArrow(QPointF start, QPointF end);
     void drawCurve(QList<QPointF> points);
     QPointF intersection(qreal ssvri, qreal lswi, qreal cvp, qreal lap);
-    void positionSymbol(int pos, QPointF point);
+    void positionSymbol(int pos, QPoint point, QColor color);
+    void positionText(int pos, QPoint point, QColor color);
+    qreal actualValue(qreal value, int digit);
+    qreal limits(qreal actual, qreal min, qreal max);
+    QString compare(qreal v1, qreal v2);
+    qreal circleX(qreal y, qreal r, qreal ox, qreal oy, bool negative);
     QRectF rectF(qreal x, qreal y);
+    QString getPicFileName(int pos);
     template <class T>
     QString ekey(const T &t);
 private:

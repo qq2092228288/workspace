@@ -42,7 +42,7 @@ public:
     }
     short sum() const
     {
-        return std::accumulate(QQueue<short>::begin(), QQueue<short>::end(), 0);
+        return std::accumulate(QQueue<short>::constBegin(), QQueue<short>::constEnd(), 0);
     }
 private:
     int maxcount;
@@ -68,6 +68,7 @@ signals:
     void ecgValue(uchar);   // ECG
     void diffValue(uchar);  // dZ/dT
     void admitValue(uchar); // dZ
+    void waveform(QByteArray);// 波形数据
     void openFailed();
 private slots:
     void handleSerialError(QSerialPort::SerialPortError error);

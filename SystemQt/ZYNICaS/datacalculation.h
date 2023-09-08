@@ -26,7 +26,7 @@ public:
     static qreal cSsvr   (const qreal &sv, const qreal &map, const qreal &cvp);
     static qreal cSsvri  (const qreal &si, const qreal &map, const qreal &cvp);
     static qreal cVas    (const qreal &ssvri);
-    static qreal cSvv    (const qreal &sv, QList<qreal> svList);
+    static qreal cSvv    (const qreal &sv, QVector<qreal> svList);
     static qreal cCi     (const qreal &value, const qreal &bsa, const qreal &vept);
     static qreal cCo     (const qreal &ci, const qreal &bsa);
     static qreal cHrv    (const qreal &ci);
@@ -42,14 +42,14 @@ public:
     static qreal cIdealW (const qreal &height, const qreal &sex);
     static qreal cMap    (const qreal &sbp, const qreal &dbp);
     // hrv analyse rr = 60/hr
-    static qreal cNnvgr  (const QList<qreal> &hrList);
-    static qreal cSdnn   (const QList<qreal> &hrList);
-    static qreal cPnn50  (const QList<qreal> &hrList);
-    static qreal cRmssd  (const QList<qreal> &hrList);
+    static qreal cNnvgr  (const QVector<qreal> &hrList);
+    static qreal cSdnn   (const QVector<qreal> &hrList);
+    static qreal cPnn50  (const QVector<qreal> &hrList);
+    static qreal cRmssd  (const QVector<qreal> &hrList);
 private:
     static qreal percent (const qreal &value, const qreal &ideal);
     static qreal perPNJ  (const qreal &value1, const qreal &value2);
-    static QList<qreal> getRrList(const QList<qreal> &hrList);
+    static QVector<qreal> getRrList(const QVector<qreal> &hrList);
     static qreal checkValue(const qreal &value);
     static bool  isInvalid(const qreal &value);
     static bool  isInvalid(const qreal &value1, const qreal &value2);

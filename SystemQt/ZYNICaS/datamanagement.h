@@ -167,6 +167,7 @@ public:
 public slots:
     void recordPosition(QString position);
     QString saveReport(QDateTime curTime, QString position, bool record);
+    QString reportCreated(bool record);
     void clearSlot();
     void reportPreview(const QString &path);
     void reportPrintOut(const QString &path);

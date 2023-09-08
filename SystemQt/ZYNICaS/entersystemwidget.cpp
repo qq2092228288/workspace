@@ -313,6 +313,7 @@ void EnterSystemWidget::initReportModule()
     trendChartsWidget = new TrendChartsWidget;
     auxArgDialog = new AuxArgDialog;
 //    sudokuDraw = new DrawSudoku;
+    reportJson = new ReportDataJson(this);
 
     QHBoxLayout *hLayout = new QHBoxLayout(operationGroupBox);
 
@@ -339,11 +340,13 @@ void EnterSystemWidget::signalsAndSlots()
         bodyValue = bVal;
         nameLineEdit->setText(bodyValue.name);
         numLineEdit->setText(bodyValue.id);
+        // 设置报告数据
+        reportJson->setPatientInfo(bVal.age, bVal.hb, bVal.height, bVal.weight, bVal.sex, bVal.name, bVal.id);
     });
     connect(infoDialog, &InfoEditDialog::updateUi, this, [=](){
         rPos.clear();
-        recordDataMap.clear();
-        baseData = BaseData();
+//        recordDataMap.clear();
+//        baseData = BaseData();
         svValues.clear();
         // 清空波形图
         ecgDraw->clear();
@@ -431,6 +434,9 @@ void EnterSystemWidget::signalsAndSlots()
         DataManagement::getInstance().getArgs().CVP = cvp;
         DataManagement::getInstance().getArgs().LAP = lap;
     });
+    // report data
+    connect(instance.getTebco(), &ZyTebco::waveform, reportJson, &ReportDataJson::appendWaveformData);
+    connect(instance.getTebco(), &ZyTebco::data, reportJson, &ReportDataJson::appendData);
 }
 
 void EnterSystemWidget::timeoutSlot()
@@ -530,7 +536,7 @@ void EnterSystemWidget::setData(const uchar &type, const short &value)
 //        QApplication::beep();
         break;
     }
-    recordDataMap.insert(type, value);
+//    recordDataMap.insert(type, value);
 }
 
 void EnterSystemWidget::showBpDialogSlot()
@@ -576,7 +582,8 @@ void EnterSystemWidget::changeMode(const int &id)
             manyBtn->setChecked(true);
             return;
         }
-        baseData = BaseData();
+//        baseData = BaseData();
+        reportJson->clear();
         rPos.clear();
         recordBtn->setVisible(false);
     }
@@ -589,7 +596,8 @@ void EnterSystemWidget::recordPosition()
         rPos = posGroup.checkedButton()->text();
         auto &instance = DataManagement::getInstance();
         instance.recordPosition(rPos);
-        setBaseData();
+//        setBaseData();
+        reportJson->appendPosition(bodyValue.SBP, bodyValue.DBP, bodyValue.CVP, bodyValue.LAP, posGroup.checkedId() + 1);
         instance.getTebco()->clearMap();
         QMessageBox::information(this, tr("提示"), tr("已记录体位。"));
     }
@@ -636,13 +644,18 @@ void EnterSystemWidget::createReport()
         }
         WaitingDialog waiting = WaitingDialog(tr("报告生成中···"), this);
         connect(&instance, &DataManagement::clear, &waiting, &WaitingDialog::close);
-        setBaseData();
-        BaseData temp = baseData;
+//        setBaseData();
+//        BaseData temp = baseData;
         // when second position time is valid, report time is equal to the second position time
-        QDateTime curTime = temp.secondPosture.cTime.isValid() ? temp.secondPosture.cTime : temp.firstPosture.cTime;
-        temp.reportConclusion = instance.saveReport(curTime, posGroup.checkedButton()->text(), !rPos.isEmpty());
+//        QDateTime curTime = temp.secondPosture.cTime.isValid() ? temp.secondPosture.cTime : temp.firstPosture.cTime;
+//        temp.reportConclusion = instance.saveReport(curTime, posGroup.checkedButton()->text(), !rPos.isEmpty());
+        reportJson->appendPosition(bodyValue.SBP, bodyValue.DBP, bodyValue.CVP, bodyValue.LAP, posGroup.checkedId() + 1);
+        QDateTime curTime = QDateTime::fromString(reportJson->getReportTime(), "yyyyMMddhhmmss");
+        reportJson->setReportConclusion(instance.reportCreated(!rPos.isEmpty()));
         waiting.exec();
-        emit createdReport(curTime.toMSecsSinceEpoch(), temp.structToJsonString());
+//        emit createdReport(curTime.toMSecsSinceEpoch(), temp.structToJsonString());
+        emit createdReport(curTime.toMSecsSinceEpoch(), reportJson->getJsonString());
+        reportJson->clear();
         instance.reportPreview(instance.getNewReportName());
         if (manyBtn->isChecked()) {
             recordBtn->show();
@@ -654,8 +667,8 @@ void EnterSystemWidget::createReport()
 void EnterSystemWidget::clearUiSlot()
 {
     rPos.clear();
-    recordDataMap.clear();
-    baseData = BaseData();
+//    recordDataMap.clear();
+//    baseData = BaseData();
     svValues.clear();
     // 清空界面个人信息
     numLineEdit->clear();
@@ -760,49 +773,49 @@ bool EnterSystemWidget::isStartCheck()
     return true;
 }
 
-void EnterSystemWidget::setBaseData()
-{
-    // 原始数据
-    if (patternGroup.checkedId() == 1 || !recordBtn->isHidden()) {
-        setTebcoData(baseData.firstPosture);
-    }
-    else {
-        setTebcoData(baseData.secondPosture);
-    }
-    // 个人信息
-    baseData.patient.patientName = bodyValue.name;
-    baseData.patient.medicalRecordNumber = bodyValue.id;
-    baseData.patient.sex = (bodyValue.sex == 0 ? QString("男") : QString("女"));
-    baseData.patient.age = QString::number(bodyValue.age);
-    baseData.patient.height = QString::number(bodyValue.height);
-    baseData.patient.weight = QString::number(bodyValue.weight);
-    baseData.patient.hb = QString::number(bodyValue.hb);
-    // 场所信息
-    auto hospitalInfo = DataManagement::getInstance().getHospitalInfo();
-//    baseData.place.placeId = hospitalInfo->place2Name;
-//    baseData.place.place1Id = hospitalInfo->place1Id;
-//    baseData.place.place2Id = hospitalInfo->place2Id;
-//    baseData.place.deviceId = hospitalInfo->deviceId;
-    baseData.place.primaryPlace = hospitalInfo->hospitalName;
-    baseData.place.secondaryPlace = hospitalInfo->roomName;
-    baseData.place.inspector = hospitalInfo->doctorName.isEmpty() ? "unknown" : hospitalInfo->doctorName;
-    baseData.place.mac = DataManagement::getInstance().getMac();
-//    baseData.sudokuPix = sudokuDraw->grab();
-    baseData.sudokuPix = sudokuWidget->grab();
-}
+//void EnterSystemWidget::setBaseData()
+//{
+//    // 原始数据
+//    if (patternGroup.checkedId() == 1 || !recordBtn->isHidden()) {
+//        setTebcoData(baseData.firstPosture);
+//    }
+//    else {
+//        setTebcoData(baseData.secondPosture);
+//    }
+//    // 个人信息
+//    baseData.patient.patientName = bodyValue.name;
+//    baseData.patient.medicalRecordNumber = bodyValue.id;
+//    baseData.patient.sex = (bodyValue.sex == 0 ? QString("男") : QString("女"));
+//    baseData.patient.age = QString::number(bodyValue.age);
+//    baseData.patient.height = QString::number(bodyValue.height);
+//    baseData.patient.weight = QString::number(bodyValue.weight);
+//    baseData.patient.hb = QString::number(bodyValue.hb);
+//    // 场所信息
+//    auto hospitalInfo = DataManagement::getInstance().getHospitalInfo();
+////    baseData.place.placeId = hospitalInfo->place2Name;
+////    baseData.place.place1Id = hospitalInfo->place1Id;
+////    baseData.place.place2Id = hospitalInfo->place2Id;
+////    baseData.place.deviceId = hospitalInfo->deviceId;
+//    baseData.place.primaryPlace = hospitalInfo->hospitalName;
+//    baseData.place.secondaryPlace = hospitalInfo->roomName;
+//    baseData.place.inspector = hospitalInfo->doctorName.isEmpty() ? "unknown" : hospitalInfo->doctorName;
+//    baseData.place.mac = DataManagement::getInstance().getMac();
+////    baseData.sudokuPix = sudokuDraw->grab();
+////    baseData.sudokuPix = sudokuWidget->grab();
+//}
 
-void EnterSystemWidget::setTebcoData(TebcoData &tebcoData)
-{
-    recordDataMap.insert(Type::SBP, bodyValue.SBP);
-    recordDataMap.insert(Type::DBP, bodyValue.DBP);
-    recordDataMap.insert(Type::CVP, bodyValue.CVP);
-    recordDataMap.insert(Type::LAP, bodyValue.LAP);
-    // 体位
-    recordDataMap.insert(Type::Pos, posGroup.checkedId() + 1);
-    // 原始的数据
-    tebcoData.data = recordDataMap;
-    // 保存时间
-    tebcoData.cTime = QDateTime::currentDateTime();
-    // 心阻抗图
-    tebcoData.dzPix = admitDraw->getView()->grab();
-}
+//void EnterSystemWidget::setTebcoData(TebcoData &tebcoData)
+//{
+//    recordDataMap.insert(Type::SBP, bodyValue.SBP);
+//    recordDataMap.insert(Type::DBP, bodyValue.DBP);
+//    recordDataMap.insert(Type::CVP, bodyValue.CVP);
+//    recordDataMap.insert(Type::LAP, bodyValue.LAP);
+//    // 体位
+//    recordDataMap.insert(Type::Pos, posGroup.checkedId() + 1);
+//    // 原始的数据
+//    tebcoData.data = recordDataMap;
+//    // 保存时间
+//    tebcoData.cTime = QDateTime::currentDateTime();
+//    // 心阻抗图
+////    tebcoData.dzPix = admitDraw->getView()->grab();
+//}

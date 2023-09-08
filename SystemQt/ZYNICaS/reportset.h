@@ -48,6 +48,15 @@ public:
         QJsonDocument doc = QJsonDocument::fromJson(file.readAll());
         return doc.array();
     }
+    static QJsonArray xprinter()
+    {
+        QFile file(":/xprinter_report.json");
+        if (!file.open(QIODevice::ReadOnly)) {
+            return QJsonArray();
+        }
+        QJsonDocument doc = QJsonDocument::fromJson(file.readAll());
+        return doc.array();
+    }
     static QJsonObject find(int type)
     {
         auto arr = array(Check_Mode::IntensiveCareUnit);
@@ -68,12 +77,26 @@ class ReportDataName : public QObject
 {
     Q_OBJECT
 public:
+    enum ReportJson
+    {
+        module,
+        parameters,
+        cn,
+        en,
+        unit,
+        min,
+        max,
+        digit,
+        type
+    };
+    Q_ENUM(ReportJson)
     enum ReportData
     {
         patientInfo,
         place,
         position,
-        reportConclusion
+        reportConclusion,
+        startTime
     };
     Q_ENUM(ReportData)
     enum PatientInfoStruct
@@ -91,13 +114,16 @@ public:
     {
         inspector,
         primaryPlace,
-        secondaryPlace
+        secondaryPlace,
+        mac
     };
     Q_ENUM(PlaceStruct)
     enum PositionStruct
     {
         data,
-        reportTime
+        reportTime,
+        allData,
+        waveform
     };
     Q_ENUM(PositionStruct)
     template <class T>

@@ -77,7 +77,7 @@ struct ArgItems
     QString dataName;
     QString dataName_cn;
     QString dataUnit;
-    QList<double> values;
+    QVector<double> values;
 //    VQueue vqueue = VQueue(5);
     void clear()
     {

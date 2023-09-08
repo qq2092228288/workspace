@@ -181,10 +181,10 @@ QString SudokuWidget::getSign(const SignType &type) const
 {
     switch (type) {
     case SignType::Circular:
-        return QString("●");
+        return QString("■");
         break;
     case SignType::Square:
-        return QString("■");
+        return QString("●");
         break;
     case SignType::Delta:
         return QString("▲");
