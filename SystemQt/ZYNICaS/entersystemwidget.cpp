@@ -1,10 +1,12 @@
 #include "entersystemwidget.h"
 #include "datamanagement.h"
 #include <threadservice.h>
-#include "waitingdialog.h"
 #include "datacalculation.h"
 #include "isicurvewidget.h"
-//#include "countdowngizmo.h"
+#include <QPrintPreviewDialog>
+#include "reportpainter.h"
+
+
 #include <iostream>
 #include <numeric>
 #include <math.h>
@@ -102,8 +104,6 @@ EnterSystemWidget::EnterSystemWidget(QWidget *parent)
     mainLayout->setColumnStretch(1,7);
 
     instance.setBodyValue(&bodyValue);
-    instance.setdZ(admitDraw->getView());
-    instance.setSudoku(sudokuWidget);
 }
 
 EnterSystemWidget::~EnterSystemWidget()
@@ -400,16 +400,6 @@ void EnterSystemWidget::signalsAndSlots()
     foreach (auto customCtrl, regulator->getAllCustomCtrls()) {
         connect(customCtrl, &CustomCtrl::changeName, this, &EnterSystemWidget::changeShow);
         connect(this, &EnterSystemWidget::recordValue, customCtrl, &CustomCtrl::recordValueSlot);
-//        if (customCtrl->getName() == "SI") {
-//            connect(customCtrl, &CustomCtrl::currentValue, sudokuDraw, [=](qreal si){
-//                sudokuDraw->setSi(posGroup.checkedId(),si,!rPos.isEmpty());
-//            });
-//        }
-//        if (customCtrl->getName() == "MAP") {
-//            connect(customCtrl, &CustomCtrl::currentValue, sudokuDraw, [=](qreal map){
-//                sudokuDraw->setMap(posGroup.checkedId(),map,!rPos.isEmpty());
-//            });
-//        }
         if (customCtrl->getName() == "SI") {
             connect(customCtrl, &CustomCtrl::currentValue, this, [=](qreal si){
                 sudokuWidget->setPoint(bodyValue.MAP(), si, SignType(posGroup.checkedId()), rPos.isEmpty());
@@ -424,10 +414,8 @@ void EnterSystemWidget::signalsAndSlots()
     // report
     connect(backBtn, &QPushButton::clicked, this, &EnterSystemWidget::close);
     connect(reportBtn, &QPushButton::clicked, this, &EnterSystemWidget::createReport);
-//    connect(plrtBtn, &QPushButton::clicked, plrtWidget, &PlrtTableWidget::exec);
     connect(trendChartBtn, &QPushButton::clicked, trendChartsWidget, &TrendChartsWidget::widgetShow);
     connect(auxArgBtn, &QPushButton::clicked, auxArgDialog, &AuxArgDialog::exec);
-//    connect(sudokuBtn, &QPushButton::clicked, sudokuDraw, &DrawSudoku::exec);
     connect(auxArgDialog, &AuxArgDialog::value, this, [=](int cvp, int lap){
         bodyValue.CVP = cvp;
         bodyValue.LAP = lap;
@@ -595,8 +583,6 @@ void EnterSystemWidget::recordPosition()
         emit recordValue();
         rPos = posGroup.checkedButton()->text();
         auto &instance = DataManagement::getInstance();
-        instance.recordPosition(rPos);
-//        setBaseData();
         reportJson->appendPosition(bodyValue.SBP, bodyValue.DBP, bodyValue.CVP, bodyValue.LAP, posGroup.checkedId() + 1);
         instance.getTebco()->clearMap();
         QMessageBox::information(this, tr("提示"), tr("已记录体位。"));
@@ -642,21 +628,30 @@ void EnterSystemWidget::createReport()
             widget.setSv(svCtrl->getRecordValue(), svCtrl->getCurrentValue());
             widget.grab().save(instance.getPaths().isiCurve());
         }
-        WaitingDialog waiting = WaitingDialog(tr("报告生成中···"), this);
-        connect(&instance, &DataManagement::clear, &waiting, &WaitingDialog::close);
-//        setBaseData();
-//        BaseData temp = baseData;
-        // when second position time is valid, report time is equal to the second position time
-//        QDateTime curTime = temp.secondPosture.cTime.isValid() ? temp.secondPosture.cTime : temp.firstPosture.cTime;
-//        temp.reportConclusion = instance.saveReport(curTime, posGroup.checkedButton()->text(), !rPos.isEmpty());
         reportJson->appendPosition(bodyValue.SBP, bodyValue.DBP, bodyValue.CVP, bodyValue.LAP, posGroup.checkedId() + 1);
         QDateTime curTime = QDateTime::fromString(reportJson->getReportTime(), "yyyyMMddhhmmss");
         reportJson->setReportConclusion(instance.reportCreated(!rPos.isEmpty()));
-        waiting.exec();
-//        emit createdReport(curTime.toMSecsSinceEpoch(), temp.structToJsonString());
         emit createdReport(curTime.toMSecsSinceEpoch(), reportJson->getJsonString());
+
+        QPrinter printer(QPrinter::ScreenResolution);
+        printer.setPageSize(QPageSize(QSizeF(210, 297), QPageSize::Millimeter));
+        QPrintPreviewDialog dialog(&printer, this);
+        dialog.setWindowTitle("报告预览");
+        dialog.setWindowFlags(Qt::Dialog | Qt::WindowMinMaxButtonsHint | Qt::WindowCloseButtonHint);
+
+        connect(&dialog, &QPrintPreviewDialog::paintRequested, this, [=](QPrinter *printer) {
+            auto info = DataManagement::getInstance().getHospitalInfo();
+            ReportPainter painter(ReportStruct(info->pType,
+                                               info->cMode,
+                                               !info->samePage,
+                                               reportJson->getJson()),
+                                  printer);
+        });
+        dialog.exec();
+
+
         reportJson->clear();
-        instance.reportPreview(instance.getNewReportName());
+        clearUiSlot();
         if (manyBtn->isChecked()) {
             recordBtn->show();
             halfLieBtn->setChecked(true);

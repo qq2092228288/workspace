@@ -1,7 +1,5 @@
 #include "datamanagement.h"
-//#include "qrencode.h"
-//#include "idcheck.h"
-#include "datacalculation.h"
+
 
 MyFilePath::MyFilePath(const QString &path)
     : appPath{path}
@@ -226,25 +224,13 @@ Argument Arguments::findArgument(const QString &en)
 
 DataManagement::DataManagement()
 {
-    isRecord = false;
     m_pTebco = new ZyTebco;
-    reportThread = new CreateReportThread;
-//    m_pIdCheck = new IdCheck;
-//    m_pHttpPost = new HttpPost;
     m_client = new MqttClient;
 }
 
 DataManagement::~DataManagement()
 {
-    reportThread->quit();
-    reportThread->wait();
     delete m_pTebco;
-//    delete m_pHttpPost;
-    delete reportThread;
-    // delete temp dir
-//    QDir dir(m_filePath.tempDir());
-//    dir.removeRecursively();
-//    qDebug()<<"~DataManagement()";
     delete m_client;
 }
 
@@ -252,11 +238,6 @@ ZyTebco *DataManagement::getTebco() const
 {
     return m_pTebco;
 }
-
-//IdCheck *DataManagement::getIdCheck() const
-//{
-//    return m_pIdCheck;
-//}
 
 void DataManagement::setSize(const QSize &size)
 {
@@ -287,7 +268,7 @@ QFont DataManagement::font(const int &size, const QString &family) const
 
 QSize DataManagement::rectSize(const int &w, const int &h)
 {
-    return QSize(w*wZoom(),h*hZoom());
+    return QSize(w*wZoom(), h*hZoom());
 }
 
 QString DataManagement::dialogQss(const double scale) const
@@ -370,16 +351,6 @@ MyFilePath DataManagement::getPaths() const
     return m_filePath;
 }
 
-bool DataManagement::isRecordPos() const
-{
-    return isRecord;
-}
-
-QString DataManagement::getNewReportName() const
-{
-    return m_newReportName;
-}
-
 Args &DataManagement::getArgs()
 {
     return args;
@@ -394,11 +365,6 @@ HospitalInfo *DataManagement::getHospitalInfo() const
 {
     return m_pHospitalInfo;
 }
-
-//HttpPost *DataManagement::httpPost() const
-//{
-//    return m_pHttpPost;
-//}
 
 QString DataManagement::getMac() const
 {
@@ -419,21 +385,6 @@ MqttClient *DataManagement::mqttClient() const
     return m_client;
 }
 
-//ReportDataBase *DataManagement::reportDataBase() const
-//{
-//    return m_pReportDataBase;
-//}
-
-//DeviceDatabase *DataManagement::deviceDatabase() const
-//{
-//    return m_pDeviceDatabase;
-//}
-
-//int DataManagement::surplus() const
-//{
-//    return (deviceDatabase()->getConsumableSurplus() + IdCheck::getCurrentConsumables());
-//}
-
 void DataManagement::setHospitalInfo(HospitalInfo *hospitalInfo)
 {
     this->m_pHospitalInfo = hospitalInfo;
@@ -449,254 +400,6 @@ void DataManagement::setRegulator(CustomCtrlRegulator *regulator)
     this->m_pRegulator = regulator;
 }
 
-void DataManagement::setdZ(QChartView *dZ)
-{
-    this->m_pdZ = dZ;
-}
-
-void DataManagement::setSudoku(QWidget *sudoku)
-{
-    this->m_pSudoku = sudoku;
-}
-
-//void DataManagement::setReportDataBase(ReportDataBase *reportDataBase)
-//{
-//    this->m_pReportDataBase = reportDataBase;
-//}
-
-//void DataManagement::setDeviceDatabase(DeviceDatabase *deviceDatabase)
-//{
-//    this->m_pDeviceDatabase = deviceDatabase;
-//}
-
-void DataManagement::recordPosition(QString position)
-{
-    m_recordInfo.pos = position;
-//    m_recordInfo.posture = position == tr("半卧") ? "1" : (position == tr("平躺") ? "2" : "3");
-    saveInfo(m_recordInfo);
-    m_pdZ->grab().save(m_filePath.record_dz());
-    isRecord = true;
-}
-
-QString DataManagement::saveReport(QDateTime curTime, QString position, bool record)
-{
-    emit startCheck(false);
-    m_newReportName.clear();
-    m_currentInfo.pos = position;
-    saveInfo(m_currentInfo, record);
-    m_pdZ->grab().save(m_filePath.current_dz());
-    m_pSudoku->grab().save(m_filePath.sudoku());
-
-    reportThread->init();
-    connect(reportThread, &CreateReportThread::finished, this, &DataManagement::clear);
-    // 打开模板
-    if (m_pHospitalInfo->pType == Printer_Type::General) {        // 常规打印机
-        if (record) {   // 多体位
-            if (m_pHospitalInfo->cMode == Check_Mode::Hypertension
-                    || m_pHospitalInfo->cMode == Check_Mode::InternalMedicine
-                    || m_pHospitalInfo->cMode == Check_Mode::IntensiveCareUnit) {
-                // 报告dot
-                if (m_pHospitalInfo->samePage) {
-                    if (m_pHospitalInfo->cMode == Check_Mode::Hypertension) {
-                        reportThread->setOpenArg(m_filePath.hypertension_dot(), false);
-                    }
-                    else if (m_pHospitalInfo->cMode == Check_Mode::InternalMedicine) {
-                        reportThread->setOpenArg(m_filePath.interMedicine_dot(), false);
-                    }
-                    else if (m_pHospitalInfo->cMode == Check_Mode::IntensiveCareUnit) {
-                        reportThread->setOpenArg(m_filePath.icu_dot(), false);
-                    }
-                }
-                else {
-                    if (m_pHospitalInfo->cMode == Check_Mode::Hypertension) {
-                        reportThread->setOpenArg(m_filePath.hypertension1_dot(), false);
-                    }
-                    else if (m_pHospitalInfo->cMode == Check_Mode::InternalMedicine) {
-                        reportThread->setOpenArg(m_filePath.interMedicine1_dot(), false);
-                    }
-                    else if (m_pHospitalInfo->cMode == Check_Mode::IntensiveCareUnit) {
-                        reportThread->setOpenArg(m_filePath.icu1_dot(), false);
-                    }
-                }
-                // PLRT
-                reportThread->addMarks("plrttitle", tr("被动抬腿试验"));
-                reportThread->addPic("plrtfimage", posImagePath(m_recordInfo.pos));
-                reportThread->addPic("plrtsimage", posImagePath(m_currentInfo.pos));
-                reportThread->addMarks("plrtunit", "%");
-                addPlrt(0, Type::HR);
-                addPlrt(1, Type::SI);
-                addPlrt(2, Type::CI);
-                addPlrt(3, Type::SV);
-                addPlrt(4, Type::CO);
-//                addPlrt(5, Type::DO2);
-                addPlrt(5, Type::TFC);
-                addPlrt(6, Type::ISI);
-                reportThread->addMarks("plrtevaluation", tr("被动抬腿试验测试报告的建议：\n"
-                    "1.阳性的判定：被动抬腿试验结束后，SV，SI，CO，CI大于第一体位10%~15%。视同为被动抬腿试验阳性（液体负荷试验阳性）。\n"
-                    "2.阴性的判定：被动抬腿试验结束后，SV，SI，CO，CI小于第一体位10%。视同为被动抬腿试验阴性（液体负荷试验阴性）。\n"
-                    "请结合临床慎重处置液体管理问题。\n"));
-                // 趋势图
-                if (instance.getHospitalInfo()->cMode == Check_Mode::IntensiveCareUnit) {
-                    for (int index = 0; index < m_filePath.trendchartspic().size(); ++index) {
-                        reportThread->addPic(QString("trendchart%1").arg(index, 2, 10, QLatin1Char('0')),
-                                             m_filePath.trendchartspic().at(index));
-                    }
-                }
-                // hrv
-                reportThread->addMarks("hrvtitle", tr("心率变异性分析"));
-                auto hrvalues = m_pRegulator->getCustomCtrl(typeName(Type::HR))->getArgItems().values;
-                int count = hrvalues.count();
-                reportThread->addMarks("hrcount", QString::number(count));
-                reportThread->addMarks("hrmax", 0 == count ? "-" : QString::number(*std::max_element(hrvalues.begin(), hrvalues.end())));
-                reportThread->addMarks("hrmin", 0 == count ? "-" : QString::number(*std::min_element(hrvalues.begin(), hrvalues.end())));
-                reportThread->addMarks("hravg", 0 == count ? "-" : QString::number(std::accumulate(hrvalues.begin(), hrvalues.end(), 0)/count));
-                reportThread->addMarks("argname00", "NNVGR(ms)");
-                reportThread->addMarks("argname01", "SDNN(ms)");
-                reportThread->addMarks("argname02", "PNN50(%)");
-                reportThread->addMarks("argname03", "RMSSD(ms)");
-                reportThread->addMarks("argvalue00", 0 == count ? "-" : QString::number(DatCa::cNnvgr(hrvalues)));
-                reportThread->addMarks("argvalue01", 0 == count ? "-" : QString::number(DatCa::cSdnn(hrvalues)));
-                reportThread->addMarks("argvalue02", 0 == count ? "-" : QString::number(DatCa::cPnn50(hrvalues)));
-                reportThread->addMarks("argvalue03", 0 == count ? "-" : QString::number(DatCa::cRmssd(hrvalues)));
-                reportThread->addMarks("arglimits00", getScope(HrvArg::Nnvgr, m_pBodyValue->age));
-                reportThread->addMarks("arglimits01", getScope(HrvArg::Sdnn, m_pBodyValue->age));
-                reportThread->addMarks("arglimits02", getScope(HrvArg::Pnn50, m_pBodyValue->age));
-                reportThread->addMarks("arglimits03", getScope(HrvArg::Rmssd, m_pBodyValue->age));
-                reportThread->addMarks("argevaluation", tr("说明：\n"
-                    "1.心血管疾病患者（房颤、早搏、高血压、糖尿病等）心率变异性数据通常会偏高，高于正常值范围；\n"
-                    "2.同年龄段，女性心率变异性数据普遍略高于男性；\n"
-                    "3.运动人群心率变异值高于普通人群；\n"
-                    "4.心率变异性会随着年龄的增长而逐渐下降；\n"
-                    "5.测量姿势不正确，心电图存在干扰，都会影响心率变异性的准确性。"));
-            }
-            else if (m_pHospitalInfo->cMode == Check_Mode::PhysicalExamination) {
-                if (m_pHospitalInfo->samePage) {
-                    reportThread->setOpenArg(m_filePath.mPhyExam_dot(), false);
-                }
-                else {
-                    reportThread->setOpenArg(m_filePath.mPhyExam1_dot(), false);
-                }
-            }
-            reportThread->addMarks("rpos", (m_recordInfo.pos));
-            // 记录体位
-            QStringList rList;
-            for (int i = 0; i < 29; ++i) {
-                rList<<QString("r%1").arg(i, 2, 10, QLatin1Char('0'));
-            }
-            reportThread->addBatchMarks(rList, m_recordInfo.values);
-            reportThread->addMarks("rname", (m_recordInfo.pos + tr(" 心阻抗图(dZ)")));
-            // 插入图片
-            reportThread->addPic("rimage",m_filePath.record_dz());
-            auto isiCtrl = m_pRegulator->getCustomCtrl("ISI");
-            if (isiCtrl->getRecordValue() != 0 || isiCtrl->getCurrentValue() != 0) {
-                reportThread->addMarks("aname", (tr("容量@泵力分析图")));
-                reportThread->addPic("aimage", m_filePath.isiCurve());
-            }
-        }
-        else {  // 单体位
-            if (m_pHospitalInfo->cMode == Check_Mode::Hypertension) {
-                reportThread->setOpenArg(m_filePath.single_dot(), false);
-            }
-            else if (m_pHospitalInfo->cMode == Check_Mode::InternalMedicine) {
-                reportThread->setOpenArg(m_filePath.single_dot(), false);
-            }
-            else if (m_pHospitalInfo->cMode == Check_Mode::IntensiveCareUnit) {
-                reportThread->setOpenArg(m_filePath.single_dot(), false);
-            }
-            else if (m_pHospitalInfo->cMode == Check_Mode::PhysicalExamination) {
-                reportThread->setOpenArg(m_filePath.sPhyExam_dot(), false);
-            }
-        }
-        reportThread->addMarks("cpos", (m_currentInfo.pos));
-        QStringList cList;
-        for (int i = 0; i < 29; ++i) {
-            cList<<QString("c%1").arg(i, 2, 10, QLatin1Char('0'));
-        }
-        reportThread->addBatchMarks(cList, m_currentInfo.values);
-        reportThread->addMarks("cname", (m_currentInfo.pos + tr(" 心阻抗图(dZ)")));
-        reportThread->addPic("cimage", m_filePath.current_dz());
-        reportThread->addMarks("room" , m_pHospitalInfo->roomName);
-        // 二维码
-//        getQrCodeUrlPixmap(m_pHospitalInfo->deviceId, curTime.toString("yyyyMMddHHmmss")).save(m_filePath.qrCode());
-//        reportThread->addPic("qrcode", m_filePath.qrCode());
-    }
-    else if (m_pHospitalInfo->pType == Printer_Type::Thermal) {   // 热敏打印机
-        if (record) {
-            reportThread->setOpenArg(m_filePath.xmany_dot(), false);
-            QStringList rList;
-            for (int i = 0; i < 12; ++i) {
-                rList<<QString("r%1").arg(i,2,10,QLatin1Char('0'));
-            }
-            QStringList values;
-            values<<m_recordInfo.values.at(0)
-                  <<m_recordInfo.values.at(1)
-                  <<m_recordInfo.values.at(3)
-                  <<m_recordInfo.values.at(4)
-                  <<m_recordInfo.values.at(9)
-                  <<m_recordInfo.values.at(14)
-                  <<m_recordInfo.values.mid(22, 6);
-            reportThread->addBatchMarks(rList, values);
-        }
-        else {
-            reportThread->setOpenArg(m_filePath.xsingle_dot(), false);
-        }
-        QStringList cList;
-        for (int i = 0; i < 12; ++i) {
-            cList<<QString("c%1").arg(i,2,10,QLatin1Char('0'));
-        }
-        QStringList values;
-        values<<m_currentInfo.values.at(0)
-              <<m_currentInfo.values.at(1)
-              <<m_currentInfo.values.at(3)
-              <<m_currentInfo.values.at(4)
-              <<m_currentInfo.values.at(9)
-              <<m_currentInfo.values.at(14)
-              <<m_currentInfo.values.mid(22, 6);
-        reportThread->addBatchMarks(cList, values);
-    }
-    QString result = reportResult(record);
-    if (result.isEmpty()) {
-        result = "null";
-    }
-    else {
-        reportThread->addMarks("result", result);
-    }
-    // 风险提示
-    if (m_pHospitalInfo->tip) {
-        auto hrv = m_pRegulator->getCustomCtrl(typeName(Type::HRV));
-        if (hrv->getCurrentValue() < hrv->getMinValue()) {
-            reportThread->addMarks("tip", tr("心血管疾患高风险人群提示。"));
-        }
-    }
-    // title
-    reportThread->addMarks("title", tr("无创心功能监测报告"));
-    // dot normal data
-    reportThread->addMarks("sname", tr("血压靶向分析图"));
-    reportThread->addPic("simage", m_filePath.sudoku());
-    // 医院、时间、检查人员
-    reportThread->addMarks("hospital" , m_pHospitalInfo->hospitalName);
-    reportThread->addMarks("time" , curTime.toString("yyyy-MM-dd hh:mm"));
-    reportThread->addMarks("doctor" , m_pHospitalInfo->doctorName);
-    // hospital logo
-    if (m_pHospitalInfo->pType == Printer_Type::General && QFile::exists(m_filePath.hospitalLogo())) {
-        reportThread->addPic("logo", m_filePath.hospitalLogo());
-    }
-    // 患者基本信息
-    reportThread->addMarks("name" , m_pBodyValue->name);
-    reportThread->addMarks("sex", (0 == m_pBodyValue->sex) ? tr("男") : tr("女"));
-    reportThread->addMarks("age" , QString::number(m_pBodyValue->age) + tr(" 岁"));
-    reportThread->addMarks("height" , QString::number(m_pBodyValue->height) + " cm");
-    reportThread->addMarks("weight" , QString::number(m_pBodyValue->weight) + " kg");
-    reportThread->addMarks("number" , m_pBodyValue->id);
-    reportThread->addMarks("area" , QString::number(m_pBodyValue->BSA(), 'f', 1) + " m²");
-    // 保存
-    m_newReportName = QString("%1/%2-%3-%4.docx").arg(m_filePath.reports(),
-                      curTime.toString("yyyyMMddhhmm"), m_pBodyValue->id, m_pBodyValue->name);
-    reportThread->setSaveAs(m_newReportName);
-    reportThread->start();
-    return result;
-}
-
 QString DataManagement::reportCreated(bool record)
 {
     emit startCheck(false);
@@ -708,26 +411,6 @@ void DataManagement::clearSlot()
     //断开数据传输
     m_pTebco->startCheckSlot(false);
     m_pTebco->clearSerial();
-    // 清空保存的信息
-    m_recordInfo = Cdata();
-    m_currentInfo = Cdata();
-    isRecord = false;
-}
-
-void DataManagement::reportPreview(const QString &path)
-{
-    reportThread->init();
-    reportThread->setStartupMode(Mode::PrintPreview);
-    reportThread->setOpenArg(path,true);
-    reportThread->start();
-}
-
-void DataManagement::reportPrintOut(const QString &path)
-{
-    reportThread->init();
-    reportThread->setStartupMode(Mode::PrintOut);
-    reportThread->setOpenArg(path,false);
-    reportThread->start();
 }
 
 void DataManagement::customCtrlTimer(bool start)
@@ -735,9 +418,6 @@ void DataManagement::customCtrlTimer(bool start)
     auto hrCtrl = m_pRegulator->getCustomCtrl(typeName(Type::HR));
     auto svCtrl = m_pRegulator->getCustomCtrl(typeName(Type::SV));
     auto isiCtrl = m_pRegulator->getCustomCtrl(typeName(Type::ISI));
-//    foreach (auto ctrl, m_pRegulator->getAllCustomCtrls()) {
-//        ctrl->smoothTransitionTimer(start);
-//    }
     if (hrCtrl == nullptr || svCtrl == nullptr || isiCtrl == nullptr)
         return;
     if (start) {
@@ -749,121 +429,6 @@ void DataManagement::customCtrlTimer(bool start)
         hrCtrl->stopTimer();
         svCtrl->stopTimer();
         isiCtrl->stopTimer();
-    }
-}
-
-//void DataManagement::requestConsumableList()
-//{
-//    if (m_pHttpPost != nullptr && m_pDeviceDatabase != nullptr) {
-//        emit onlineConsumableList("1", "10000", m_pDeviceDatabase->getDeviceInfo("deviceId"), nullptr, nullptr);
-//    }
-//}
-
-void DataManagement::saveInfo(Cdata &cdata, bool second)
-{
-    cdata.values.clear();
-    auto customCtrls = m_pRegulator->getAllCustomCtrls();
-    foreach (CustomCtrl *customCtrl, customCtrls) {
-        if (customCtrl->getName() != "SBP/DBP") {
-            // 第一体位<<"CO"<<"CI"<<"SV"<<"SI"<<"TFC"<<"EPCI"<<"ISI"(<<"Ino")<<"HR"<<"MAP"(<<"Vol"<<"HRV"<<"Vas")
-            // 第二体位<<"CO"<<"CI"<<"SV"<<"SI"<<"TFC"<<"EPCI"<<"ISI"(<<"Ino")<<"HR"<<"MAP"
-            QStringList list = QStringList()<<"CO"<<"CI"<<"SV"<<"SI"<<"TFC"<<"EPCI"<<"ISI"<<"HR"<<"MAP";
-
-            QString name = customCtrl->getName();
-            double min = customCtrl->getMinValue();
-            double max = customCtrl->getMaxValue();
-            double rValue = customCtrl->getRecordValue();
-            double cValue = customCtrl->getCurrentValue();
-
-            QString str = QString::number(cValue);
-            // list比较
-            if (list.indexOf(name) != -1) {
-                if (!second) {  // 第一体位
-                    if (cValue != 0) {
-                        str = tip(min, max, cValue);
-                    }
-                    else {
-                        str = QString("-");
-                    }
-                }
-                else {  // 第二体位
-                    if (cValue != 0 && rValue != 0) {
-                        str = tip(rValue, cValue);
-                    }
-                    else if (cValue != 0 && rValue == 0) {
-                        str = QString::number(cValue);
-                    }
-                    else {
-                        str = QString("-");
-                    }
-                }
-            }
-            else {
-                if (cValue != 0) {
-                    str = QString::number(cValue);
-                }
-                else if (name == "Ino" || (!second && (name == "HRV" || name == "Vol" || name == "Vas"))
-                         || (name == "SVV" && m_pRegulator->getCustomCtrl("SV")->getCurrentValue() != 0)) {
-                    if (m_pRegulator->getCustomCtrl("HR")->getCurrentValue() != 0) {    // 真实数据
-                        if (!second) {
-                            str = tip(min, max, cValue);
-                        }
-                        else {
-                            str = tip(rValue, cValue);
-                        }
-                    }
-                    else {
-                        str = QString("-");
-                    }
-                }
-                else {
-                    str = QString("-");
-                }
-            }
-            cdata.values<<str;
-        }
-        else {
-            auto sbp = customCtrl->getArgItems();
-            auto dbp = customCtrl->getDbpArgItems();
-            if (!second) {
-                if (sbp.currentValue == 0) {
-                    cdata.values<<QString("-");
-                }
-                else {
-                    cdata.values<<tip(sbp.minValue, sbp.maxValue, sbp.currentValue);
-                }
-                if (dbp.currentValue == 0) {
-                    cdata.values<<QString("-");
-                }
-                else {
-                    cdata.values<<tip(dbp.minValue, dbp.maxValue, dbp.currentValue);
-                }
-            }
-            else {
-                if (sbp.currentValue == 0) {
-                    cdata.values<<QString("-");
-                }
-                else {
-                    if (sbp.recordValue == 0) {
-                        cdata.values<<QString::number(sbp.currentValue);
-                    }
-                    else {
-                        cdata.values<<tip(sbp.recordValue, sbp.currentValue);
-                    }
-                }
-                if (dbp.currentValue == 0) {
-                    cdata.values<<QString("-");
-                }
-                else {
-                    if (dbp.recordValue == 0) {
-                        cdata.values<<QString::number(dbp.currentValue);
-                    }
-                    else {
-                        cdata.values<<tip(dbp.recordValue, dbp.currentValue);
-                    }
-                }
-            }
-        }
     }
 }
 
@@ -924,24 +489,6 @@ QString DataManagement::tip(qreal rValue, qreal cValue)
         return QString("%1 ↑").arg(cValue);
     }
     return QString::number(cValue);
-}
-
-QString DataManagement::mArg(const Type &type, const int &printer, bool isMany)
-{
-    ArgItems items;
-    CustomCtrl *ctrl = m_pRegulator->getCustomCtrl(typeName(type));
-    if (type == Type::SBP || type == Type::DBP) ctrl = m_pRegulator->getCustomCtrl("SBP/DBP");
-    if (ctrl == nullptr) return nullptr;
-    items = ctrl->getArgItems();
-    if (type == Type::DBP) items = ctrl->getDbpArgItems();
-    qreal value = items.currentValue;
-    if (isMany) value = items.recordValue;
-    QString result;
-    if (value > items.maxValue) result = tr("偏高");
-    else if (value < items.minValue) result = tr("偏低");
-    else result = tr("正常");
-    if (printer == 0) return QString("%1(%2)%3;").arg(items.dataName_cn, items.dataName, result);  // 常规
-    return QString("%1%2;").arg(items.dataName, result); // 热敏
 }
 
 QString DataManagement::reportResult(bool record)
@@ -1050,16 +597,8 @@ QString DataManagement::reportResult(bool record)
         }
     }
     else {  // 单体位
-//        result += tr("1.心脏功能：心输出量(CO)%1，搏排量(SV)%2，心搏指数(SI)%3，心脏指数(CI)%4，血管容量(Vol)%5，"
-//                     "血管顺应性(Vas)%6，收缩变力性(Ino)%7；\n"
-//                     "2.血压管理：收缩压(SBP)%8，舒张压(DBP)%9，心率(HR)%10；")
-//                .arg(pevl(Type::CO, false), pevl(Type::SV, false), pevl(Type::SI, false),
-//                     pevl(Type::CI, false), pevl(Type::Vol, false), pevl(Type::Vas, false),
-//                     pevl(Type::Ino, false), pevl(Type::SBP, false), pevl(Type::DBP, false))
-//                .arg(pevl(Type::HR, false));
         auto vol = m_pRegulator->getCustomCtrl(typeName(Type::Vol));
         auto isi = m_pRegulator->getCustomCtrl(typeName(Type::ISI));
-//        auto sv = m_pRegulator->getCustomCtrl(typeName(Type::SV));
         auto vas = m_pRegulator->getCustomCtrl(typeName(Type::Vas));
         auto hrv = m_pRegulator->getCustomCtrl(typeName(Type::HRV));
         auto map = m_pRegulator->getCustomCtrl(typeName(Type::MAP));
@@ -1292,75 +831,3 @@ QString DataManagement::riskTip(bool many)
 //    QRcode_free(qrcode);
 //    return QPixmap::fromImage(mainimg);
 //}
-
-void DataManagement::addPlrt(const int &num, const Type &type)
-{
-    auto ctrl = m_pRegulator->getCustomCtrl(typeName(type));
-    qreal rvalue = ctrl->getRecordValue();
-    qreal cvalue = ctrl->getCurrentValue();
-    reportThread->addMarks(rvalue == 0 ? "-" : QString("plrt0%1").arg(num), QString::number(rvalue));
-    reportThread->addMarks(cvalue == 0 ? "-" : QString("plrt1%1").arg(num), QString::number(cvalue));
-    double percent = static_cast<int>(((cvalue - rvalue)/rvalue + 0.5/qPow(10, 3))*qPow(10, 3))/10.0;
-    reportThread->addMarks(rvalue == 0 || cvalue == 0 ? "-" : QString("plrt2%1").arg(num), QString::number(percent));
-}
-
-QString DataManagement::posImagePath(const QString &posture)
-{
-    QImage image;
-    if (posture == "半卧") {
-        image.load(":/images/halfsleeper.png");
-    }
-    else if (posture == "平躺") {
-        image.load(":/images/lieflat.png");
-    }
-    else if (posture == "抬腿") {
-        image.load(":/images/leglift.png");
-    }
-    QString fileName = m_filePath.tempDir() + posture + ".png";
-    image.save(fileName, "PNG");
-    return fileName;
-}
-
-QString DataManagement::getScope(const double &init, const double &offset)
-{
-    return QString("%1~%2").arg(init - offset).arg(init + offset);
-}
-
-QString DataManagement::getScope(const HrvArg &hrvArg, const int &age)
-{
-    Q_UNUSED(age);
-    QString scope;
-    switch (hrvArg) {
-    case HrvArg::Nnvgr:
-        scope = "-";
-        break;
-    case HrvArg::Sdnn:
-//        if (age < 30) {
-//            scope = getScope(169.92, 41.01);
-//        }
-//        else if (age < 50) {
-//            scope = getScope(148.31, 32.80);
-//        }
-//        else {
-//            scope = getScope(121.19, 29.27);
-//        }
-        scope = getScope(141, 39);
-        break;
-    case HrvArg::Pnn50:
-        scope = getScope(16.7, 12.3);
-        break;
-    case HrvArg::Rmssd:
-//        if (age < 30) {
-//            scope = getScope(12.39, 47.10);
-//        }
-//        else if (age < 50) {
-//            scope = getScope(48.40, 20.90);
-//        }
-//        else {
-//            scope = getScope(40.40, 18.29);
-//        }
-        scope = getScope(39, 15);
-        break;
-    }
-    return scope;
-}

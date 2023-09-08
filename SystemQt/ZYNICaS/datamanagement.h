@@ -15,7 +15,6 @@
 #include "infoeditdialog.h"
 //#include "drawsudoku.h"
 #include "zytebco.h"
-#include "createreportthread.h"
 //#include "httppost.h"
 //#include "reportdatabase.h"
 //#include "devicedatabase.h"
@@ -104,14 +103,6 @@ typedef struct Arguments
     }
 }Args;
 
-enum HrvArg
-{
-    Nnvgr,
-    Sdnn,
-    Pnn50,
-    Rmssd
-};
-
 // 数据管理
 class DataManagement : public QObject
 {
@@ -127,14 +118,10 @@ public:
     static DataManagement &getInstance(){return instance;}
 signals:
     void clear();
-    // 请求耗材列表
-    void onlineConsumableList(const QString &pageNum, const QString &pageSize, const QString &deviceId,
-                              const QString &id, const QString &consumableTypeId);
     void startCheck(bool);
     void sendSerialName(const QString &portName);
 public:
     ZyTebco *getTebco() const;
-//    IdCheck *getIdCheck() const;
     void setSize(const QSize &size);
     qreal wZoom() const;
     qreal hZoom() const;
@@ -144,41 +131,23 @@ public:
     QString dialogQss(const double scale) const;
     void initCurrentPath();
     MyFilePath getPaths() const;
-    bool isRecordPos() const;
-    QString getNewReportName() const;
     Args &getArgs();
     CustomCtrlRegulator *getRegulator() const;
     HospitalInfo *getHospitalInfo() const;
-//    HttpPost *httpPost() const;
     QString getMac() const;
-//    ReportDataBase *reportDataBase() const;
-//    DeviceDatabase *deviceDatabase() const;
-//    int surplus() const;
     MqttClient *mqttClient() const;
 public:
     void setHospitalInfo(HospitalInfo *hospitalInfo);
     void setBodyValue(BodyValue *bodyValue);
     void setRegulator(CustomCtrlRegulator *regulator);
-    // 心阻抗图
-    void setdZ(QChartView *dZ);
-    void setSudoku(QWidget *sudoku);
-//    void setReportDataBase(ReportDataBase *reportDataBase);
-//    void setDeviceDatabase(DeviceDatabase *deviceDatabase);
 public slots:
-    void recordPosition(QString position);
-    QString saveReport(QDateTime curTime, QString position, bool record);
     QString reportCreated(bool record);
     void clearSlot();
-    void reportPreview(const QString &path);
-    void reportPrintOut(const QString &path);
     void customCtrlTimer(bool start);
-//    void requestConsumableList();
 private:
-    void saveInfo(Cdata &cdata, bool second = false);
     QString flag(CustomCtrl *customCtrl, bool second);
     QString tip(qreal min, qreal max, qreal value);
     QString tip(qreal rValue, qreal cValue);
-    QString mArg(const Type &type, const int &printer, bool isMany);
     // 报告结论
     QString reportResult(bool record);
     // 第一体位评价
@@ -190,34 +159,17 @@ private:
     // 猝死风险提示
     QString riskTip(bool many);
 //    QPixmap getQrCodeUrlPixmap(const QString &deviceId, const QString &reportTime);
-    void addPlrt(const int &num, const Type &type);
-    QString posImagePath(const QString &posture);
-    QString getScope(const double &init, const double &offset);
-    QString getScope(const HrvArg &hrvArg, const int &age);
 private:
-    CreateReportThread *reportThread;
     MyFilePath m_filePath;
     HospitalInfo *m_pHospitalInfo;
     BodyValue *m_pBodyValue;
     CustomCtrlRegulator *m_pRegulator;
-    QChartView *m_pdZ;       //阻抗图
-    QWidget *m_pSudoku;      //九宫格图
-    //当前、记录的信息
-    bool isRecord;
-    Cdata m_recordInfo;
-    Cdata m_currentInfo;
-    QImage m_pSudokuImage;
-    QString m_newReportName;
     Args args;
 private:
     // 串口
     ZyTebco *m_pTebco;
     // 屏幕大小
     QSize m_winSize;
-//    IdCheck *m_pIdCheck;
-//    HttpPost *m_pHttpPost;
-//    ReportDataBase *m_pReportDataBase;
-//    DeviceDatabase *m_pDeviceDatabase;
     MqttClient *m_client;
 };
 

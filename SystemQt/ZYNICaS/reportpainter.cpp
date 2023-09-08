@@ -10,7 +10,7 @@
 #include "datamanagement.h"
 #include "reportdatajson.h"
 
-ReportPainter::ReportPainter(const ReportInfo &info, QPrinter *printer)
+ReportPainter::ReportPainter(const ReportStruct &info, QPrinter *printer)
     : QPainter{printer},
       m_info{info},
       m_size{printer->pageRect(QPrinter::DevicePixel).size()},

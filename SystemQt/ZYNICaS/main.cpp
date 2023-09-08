@@ -19,7 +19,7 @@ int main(int argc, char *argv[])
 {
     QtSingleApplication a(QApplication::applicationName(),argc, argv);
 //    QPrinter printer(QPrinter::ScreenResolution);
-//    printer.setPageSize(QPageSize(QSizeF(72, 297), QPageSize::Millimeter));
+//    printer.setPageSize(QPageSize(QSizeF(210, 297), QPageSize::Millimeter));
 //    QPrintPreviewDialog dialog(&printer);
 //    dialog.setWindowTitle("报告预览");
 //    dialog.setWindowFlags(Qt::Dialog | Qt::WindowMinMaxButtonsHint | Qt::WindowCloseButtonHint);
@@ -31,9 +31,9 @@ int main(int argc, char *argv[])
 //        QSqlQuery query(db);
 //        query.exec(QString("SELECT time, data from reports"));
 //        query.next();
-//        ReportPainter painter(ReportInfo(Printer_Type::Thermal,
+//        ReportPainter painter(ReportStruct(Printer_Type::General,
 //                                         Check_Mode::IntensiveCareUnit,
-//                                         true,
+//                                         false,
 //                                         QJsonDocument::fromJson(query.value(1).toString().toUtf8()).object()),
 //                              printer);
 //    });

@@ -9,9 +9,9 @@
 #include "reportset.h"
 #include "customctrl.h"
 
-struct ReportInfo
+struct ReportStruct
 {
-    ReportInfo(Printer_Type type, Check_Mode mode, bool paging, QJsonObject data)
+    ReportStruct(Printer_Type type, Check_Mode mode, bool paging, QJsonObject data)
         : type(type),mode(mode),paging(paging),data(data) {}
     Printer_Type type;
     Check_Mode mode;
@@ -22,7 +22,7 @@ struct ReportInfo
 class ReportPainter : public QPainter
 {
 public:
-    ReportPainter(const ReportInfo &info, QPrinter *printer);
+    ReportPainter(const ReportStruct &info, QPrinter *printer);
     struct ReportTableSet
     {
         ReportTableSet(bool paging):paging(paging){}
@@ -86,7 +86,7 @@ private:
     template <class T>
     QString ekey(const T &t);
 private:
-    ReportInfo m_info;
+    ReportStruct m_info;
     /** General paper size 793x1123 pixels, thermal printer paper size 272x1123 pixels. */
     const QSizeF m_size;
 private:

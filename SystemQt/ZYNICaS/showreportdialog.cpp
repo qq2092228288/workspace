@@ -208,8 +208,6 @@ void ShowReportDialog::printer()
         QMessageBox::information(this,tr("提示"),tr("选择一个文件。"));
         return;
     }
-    auto &instance = DataManagement::getInstance();
-    instance.reportPrintOut(listView->currentPath());
 }
 
 int ShowReportDialog::printWord(const QString &fileName)
