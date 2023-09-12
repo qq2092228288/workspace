@@ -22,6 +22,7 @@ public:
 public slots:
     // 清空
     void clear();
+    void clearCheckData();
     // 患者信息
     void setPatientInfo(int age, float hb, int height, int weight, int sex,
                         const QString &patientName, const QString &medicalRecordNumber);

@@ -13,7 +13,8 @@
 
 #include "entersystemwidget.h"
 #include "systemconfigdialog.h"
-#include "showreportdialog.h"
+//#include "showreportdialog.h"
+
 
 class MainWidget : public QWidget
 {
@@ -42,7 +43,7 @@ private:
     QPushButton *configBtn;         //系统配置
     QPushButton *exitBtn;           //退出系统
 
-    ShowReportDialog *reportDialog;
+//    ShowReportDialog *reportDialog;
     SystemConfigDialog *configDialog;
     EnterSystemWidget *enterSystemWidget;
 };

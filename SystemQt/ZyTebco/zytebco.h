@@ -76,6 +76,8 @@ private slots:
     void recvInfoSlot();
     void demoModeSlot();
 private:
+    void processingData(const QByteArray &array);
+private:
     QMutex mutex;
     QSerialPort *m_pSerial;
     QTimer *m_pTimer;

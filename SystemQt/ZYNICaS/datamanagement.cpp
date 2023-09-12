@@ -12,11 +12,6 @@ QString MyFilePath::initDir() const
     return appPath + "init/";
 }
 
-QString MyFilePath::tempDir() const
-{
-    return appPath + "temp/";
-}
-
 QString MyFilePath::baseInfo() const
 {
     return initDir() + "baseInfo.ini";
@@ -30,125 +25,6 @@ QString MyFilePath::showItems() const
 QString MyFilePath::trendCharts() const
 {
     return initDir() + "trendCharts.ini";
-}
-
-QString MyFilePath::single_dot() const
-{
-    return appPath + "dot/singlePositionTemplate.dot";
-}
-
-QString MyFilePath::many_dot() const
-{
-    return appPath + "dot/manyPositionTemplate.dot";
-}
-
-QString MyFilePath::xsingle_dot() const
-{
-    return appPath + "dot/singlePositionXprinterTemplate.dot";
-}
-
-QString MyFilePath::xmany_dot() const
-{
-    return appPath + "dot/manyPositionXprinterTemplate.dot";
-}
-
-QString MyFilePath::psingle_dot() const
-{
-    return appPath + "dot/singlePositionProTemplate.dot";
-}
-
-QString MyFilePath::pmany_dot() const
-{
-    return appPath + "dot/manyPositionProTemplate.dot";
-}
-
-QString MyFilePath::hypertension_dot() const
-{
-    return appPath + "dot/hypertensionTemplate.dot";
-}
-
-QString MyFilePath::hypertension1_dot() const
-{
-    return appPath + "dot/hypertensionTemplate1.dot";
-}
-
-QString MyFilePath::interMedicine_dot() const
-{
-    return appPath + "dot/interMedicineTemplate.dot";
-}
-
-QString MyFilePath::interMedicine1_dot() const
-{
-    return appPath + "dot/interMedicineTemplate1.dot";
-}
-
-QString MyFilePath::icu_dot() const
-{
-    return appPath + "dot/icuTemplate.dot";
-}
-
-QString MyFilePath::icu1_dot() const
-{
-    return appPath + "dot/icuTemplate1.dot";
-}
-
-QString MyFilePath::mPhyExam_dot() const
-{
-    return appPath + "dot/manyPhyExamTemplate.dot";
-}
-
-QString MyFilePath::mPhyExam1_dot() const
-{
-    return appPath + "dot/manyPhyExamTemplate1.dot";
-}
-
-QString MyFilePath::sPhyExam_dot() const
-{
-    return appPath + "dot/singlePhyExamTemplate.dot";
-}
-
-QString MyFilePath::record_dz() const
-{
-    return tempDir() + "record.png";
-}
-
-QString MyFilePath::current_dz() const
-{
-    return tempDir() + "current.png";
-}
-
-QString MyFilePath::sudoku() const
-{
-    return tempDir() + "sudoku.png";
-}
-
-QString MyFilePath::isiCurve() const
-{
-    return tempDir() + "isicurve.png";
-}
-
-QStringList MyFilePath::trendchartspic() const
-{
-    QStringList list;
-    for (int i = 0; i < 12; ++i) {
-        list<<(tempDir() + QString("trendchart%1.png").arg(i, 2, 10, QLatin1Char('0')));
-    }
-    return list;
-}
-
-QString MyFilePath::reports() const
-{
-    return appPath + "reports";
-}
-
-QString MyFilePath::config_zip() const
-{
-    return initDir() + "config.zip";
-}
-
-QString MyFilePath::qrCode() const
-{
-    return tempDir() + "qrcode.png";
 }
 
 QString MyFilePath::hospitalLogo() const

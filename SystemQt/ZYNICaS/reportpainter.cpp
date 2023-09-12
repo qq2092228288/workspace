@@ -23,7 +23,9 @@ ReportPainter::ReportPainter(const ReportStruct &info, QPrinter *printer)
         // 数据页
         generalDataPage();
         // PLR页
-        if (m_info.mode != Check_Mode::PhysicalExamination) {
+        if (m_info.mode != Check_Mode::PhysicalExamination &&
+                !m_info.data.value(ekey(ReportDataName::position)).toArray()
+                .at(1).toObject().value(ekey(ReportDataName::reportTime)).toString().isEmpty()) {
             m_printer->newPage();
             plrPage();
         }
@@ -141,7 +143,7 @@ void ReportPainter::thermalPage()
         reportTime = position.at(0).toObject().value(ekey(ReportDataName::reportTime)).toString();
     }
     setFontSize(7);
-    drawText(rectF(10, m_size.height() - 35), "报告时间: " + QDateTime::fromString(reportTime, "yyyyMMddhhmmss")
+    drawText(rectF(10, m_size.height() - 35), "报告时间: " + QDateTime::fromString(reportTime, "yyyyMMddhhmmsszzz")
              .toString("yyyy-MM-dd hh:mm:ss"));
     drawText(rectF(m_size.width() - 80, m_size.height() - 35),
              "检测人员: " + place.value(ekey(ReportDataName::inspector)).toString());
@@ -157,11 +159,13 @@ void ReportPainter::generalHeader()
     setFontSize(16, true);
     // 医院LOGO
     QPixmap pixmap(DataManagement::getInstance().getPaths().hospitalLogo());
-    if (pixmap.width() > pixmap.height()) {
-        drawPixmap(QRect(30, 15, 50, pixmap.height() * 50 / pixmap.width()), pixmap);
-    }
-    else {
-        drawPixmap(QRect(30, 15, pixmap.width() * 50 / pixmap.height(), 50), pixmap);
+    if (!pixmap.isNull()) {
+        if (pixmap.width() > pixmap.height()) {
+            drawPixmap(QRect(30, 15, 50, pixmap.height() * 50 / pixmap.width()), pixmap);
+        }
+        else {
+            drawPixmap(QRect(30, 15, pixmap.width() * 50 / pixmap.height(), 50), pixmap);
+        }
     }
     // 医院
     drawText(rectF(0, 10), Qt::AlignHCenter, place.value(ekey(ReportDataName::primaryPlace)).toString());
@@ -265,12 +269,12 @@ void ReportPainter::generalDataPage(int page)
     // 心阻抗图
     drawWaveform(QRectF(rectUnit.topRight().x() + 15, rectUnit.topRight().y(), 748 - rectUnit.topRight().x(), 100),
                  QJsonObject(0 == page ? fdata : sdata).value(QString::number(Type::Pos)).toInt(),
-                 position.at(page).toObject().value(ekey(ReportDataName::waveform)).toArray());
+                 position.at(page).toObject().value(ekey(ReportDataName::waveform)).toArray(), page);
     if (secExist && !m_info.paging) {
         drawWaveform(QRectF(rectUnit.topRight().x() + 15, rectUnit.topRight().y() + 110,
                             748 - rectUnit.topRight().x(), 100),
                      sdata.value(QString::number(Type::Pos)).toInt(),
-                     position.at(1).toObject().value(ekey(ReportDataName::waveform)).toArray());
+                     position.at(1).toObject().value(ekey(ReportDataName::waveform)).toArray(), 1);
     }
     // 血压靶向分析图
     drawSudoku(QRectF(rectUnit.topRight().x() + 23, 400, 720 - rectUnit.topRight().x(), 720 - rectUnit.topRight().x()),
@@ -283,12 +287,11 @@ void ReportPainter::generalDataPage(int page)
         m_printer->newPage();
         generalDataPage(1);
     }
-    if (!m_info.paging || 1 == page) {  // 不分页或者第二页
-        // 容量泵力分析图
-        if (secExist) { // 第二体位存在
-            drawIsiAndSv(QRectF(rectUnit.topRight().x() + 8, 700, 720 - rectUnit.topRight().x(), 100),
-                         fMap.value(Type::ISI), fMap.value(Type::SV), sMap.value(Type::ISI), sMap.value(Type::SV));
-        }
+    if ((!m_info.paging || 1 == page) && secExist) {
+        drawIsiAndSv(QRectF(rectUnit.topRight().x() + 8, 700, 720 - rectUnit.topRight().x(), 100),
+                     fMap.value(Type::ISI), fMap.value(Type::SV), sMap.value(Type::ISI), sMap.value(Type::SV));
+    }
+    if (!m_info.paging || 1 == page || !secExist) {  // 不分页或者第二页
         // 结论
         setFontSize(8);
         drawText(QRectF(set.start().x(), rectArg.bottomLeft().y() + 10,
@@ -353,12 +356,15 @@ void ReportPainter::plrPage()
              "1.阳性的判定：被动抬腿试验结束后，SV，SI，CO，CI大于第一体位10%~15%。视同为被动抬腿试验阳性（液体负荷试验阳性）。\n"
              "2.阴性的判定：被动抬腿试验结束后，SV，SI，CO，CI小于第一体位10%。视同为被动抬腿试验阴性（液体负荷试验阴性）。\n"
              "请结合临床慎重处置液体管理问题。");
+    auto allData = position.at(0).toObject().value(ekey(ReportDataName::allData)).toArray();
+    auto sAllData = position.at(1).toObject().value(ekey(ReportDataName::allData)).toArray();
+    if (allData.isEmpty()) {
+        return;
+    }
     // 心率变异性分析
     setFontSize(16, true);
     drawText(rectF(0, 600), Qt::AlignHCenter, "心率变异性分析");
     setFontSize(11);
-    auto allData = position.at(0).toObject().value(ekey(ReportDataName::allData)).toArray();
-    auto sAllData = position.at(1).toObject().value(ekey(ReportDataName::allData)).toArray();
     foreach (auto data, sAllData) {
         allData<<data;
     }
@@ -415,8 +421,11 @@ void ReportPainter::generalFooter()
         reportTime = position.at(0).toObject().value(ekey(ReportDataName::reportTime)).toString();
     }
     setFontSize(8);
-    drawText(rectF(35, 1055), "报告时间: " + QDateTime::fromString(reportTime, "yyyyMMddhhmmss")
-             .toString("yyyy-MM-dd hh:mm:ss"));
+    auto time = QDateTime::fromString(reportTime, "yyyyMMddhhmmsszzz");
+    if (!time.isValid()) {
+        time = QDateTime::fromString(reportTime, "yyyyMMddhhmmss");
+    }
+    drawText(rectF(35, 1055), "报告时间: " + time.toString("yyyy-MM-dd hh:mm:ss"));
     auto place = m_info.data.value(ekey(ReportDataName::place)).toObject();
     drawText(rectF(640, 1055), "检测人员:  " + place.value(ekey(ReportDataName::inspector)).toString());
     drawText(rectF(35, 1075), "此报告只说明检测当时状态的血流动力学情况，请结合临床具体情况综合分析。");
@@ -473,11 +482,21 @@ QString ReportPainter::positionCn(int pos)
     return QString();
 }
 
-void ReportPainter::drawWaveform(QRectF rect, int pos, const QJsonArray &waveform)
+void ReportPainter::drawWaveform(QRectF rect, int pos, const QJsonArray &waveform, bool index)
 {
+    if (waveform.isEmpty()) {
+        auto const encoded = m_info.data.value(ekey(ReportDataName::position)).toArray()
+                .at(index).toObject().value("pDz").toString().toLatin1();
+        QPixmap pixmap;
+        pixmap.loadFromData(QByteArray::fromBase64(encoded), "PNG");
+        drawPixmap(QRect(rect.x(), rect.y() + 5, rect.width(), rect.height() - 5), pixmap);
+    }
     setFontSize(6);
     drawRect(rect);
     drawText(rect.topLeft().x() + 2, rect.topLeft().y() + 10, positionCn(pos) + QString(" 心阻抗图(dZ)"));
+    if (waveform.isEmpty()) {
+        return;
+    }
     bool ok;
     QVector<int> vector;
     for (int i = 0; i < waveform.count(); ++i) {
@@ -699,6 +718,9 @@ void ReportPainter::drawArrow(QPointF start, QPointF end)
 
 void ReportPainter::drawCurve(QList<QPointF> points)
 {
+    if (points.isEmpty()) {
+        return;
+    }
     QPainterPath path;
     path.moveTo(points.first());
     foreach (auto point, points) {

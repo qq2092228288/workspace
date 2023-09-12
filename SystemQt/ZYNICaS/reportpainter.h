@@ -36,11 +36,11 @@ public:
             case Check_Mode::Hypertension:
                 return 40;
             case Check_Mode::InternalMedicine:
-                return 25;
+                return 26;
             case Check_Mode::IntensiveCareUnit:
                 return 22;
             case Check_Mode::PhysicalExamination:
-                return 25;
+                return 26;
             }
             return -1;
         }
@@ -69,7 +69,7 @@ private:
     QMap<Type, qreal> valueMap(const QJsonObject &data, const QJsonArray &alldata);
     void drawValue(const QJsonObject &parameter, QMap<Type, qreal> map, QRectF rect, qreal _y);
     QString positionCn(int pos);
-    void drawWaveform(QRectF rect, int pos, const QJsonArray &waveform);
+    void drawWaveform(QRectF rect, int pos, const QJsonArray &waveform, bool index);
     void drawSudoku(QRectF rect, QMap<Type, qreal> fMap, QMap<Type, qreal> sMap = QMap<Type, qreal>());
     void drawIsiAndSv(QRectF rect, qreal fIsi, qreal fSv, qreal sIsi, qreal sSv);
     void drawArrow(QPointF start, QPointF end);

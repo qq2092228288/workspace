@@ -2,6 +2,7 @@
 #include "datamanagement.h"
 //#include "idcheck.h"
 #include "updateappdialog.h"
+#include "viewreportdialog.h"
 
 MainWidget::MainWidget(QWidget *parent)
     : QWidget{parent}
@@ -18,7 +19,7 @@ MainWidget::MainWidget(QWidget *parent)
     configBtn = new QPushButton(tr("系统配置"), this);
     exitBtn = new QPushButton(tr("退出系统"), this);
 
-    reportDialog = new ShowReportDialog;
+//    reportDialog = new ShowReportDialog;
     configDialog = new SystemConfigDialog;
     enterSystemWidget = new EnterSystemWidget;
     QObject::connect(enterSystemWidget, &EnterSystemWidget::widgetClose, this, &EnterSystemWidget::showMaximized);
@@ -70,7 +71,11 @@ MainWidget::MainWidget(QWidget *parent)
 
     //按键槽函数关联
     connect(enterBtn, &QPushButton::clicked, this, &MainWidget::enterBtnSlot);
-    connect(reportBtn, &QPushButton::clicked, reportDialog, &ShowReportDialog::exec);
+    connect(reportBtn, &QPushButton::clicked, this, [=](){
+        auto dialog = new ViewReportDialog;
+        dialog->exec();
+        dialog->deleteLater();
+    });
     connect(demoBtn, &QPushButton::clicked, this, &MainWidget::demoBtnSlot);
     connect(configBtn, &QPushButton::clicked, configDialog, &SystemConfigDialog::exec);
     connect(exitBtn, &QPushButton::clicked, this, &MainWidget::close);
@@ -84,7 +89,7 @@ MainWidget::MainWidget(QWidget *parent)
 
 MainWidget::~MainWidget()
 {
-    delete reportDialog;
+//    delete reportDialog;
     delete configDialog;
     delete enterSystemWidget;
     //    qDebug()<<"~MainWidget()";

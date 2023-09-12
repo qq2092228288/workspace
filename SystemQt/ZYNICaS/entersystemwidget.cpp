@@ -2,9 +2,8 @@
 #include "datamanagement.h"
 #include <threadservice.h>
 #include "datacalculation.h"
-#include "isicurvewidget.h"
-#include <QPrintPreviewDialog>
-#include "reportpainter.h"
+
+#include "reportpreviewdialog.h"
 
 
 #include <iostream>
@@ -570,8 +569,7 @@ void EnterSystemWidget::changeMode(const int &id)
             manyBtn->setChecked(true);
             return;
         }
-//        baseData = BaseData();
-        reportJson->clear();
+        reportJson->clearCheckData();
         rPos.clear();
         recordBtn->setVisible(false);
     }
@@ -616,39 +614,15 @@ void EnterSystemWidget::createReport()
             QMessageBox::information(this, tr("提示"), tr("未改变体位！"));
             return;
         }
-        // not physical examination model
-        if (instance.getHospitalInfo()->cMode != Check_Mode::PhysicalExamination) {
-            trendChartsWidget->saveTrendChartPic();
-        }
-        auto isiCtrl = regulator->getCustomCtrl(typeName(Type::ISI));
-        auto svCtrl = regulator->getCustomCtrl(typeName(Type::SV));
-        if (isiCtrl->getRecordValue() != 0 && svCtrl->getRecordValue() != 0) {
-            IsiCurveWidget widget(this);
-            widget.setIsi(isiCtrl->getRecordValue(), isiCtrl->getCurrentValue());
-            widget.setSv(svCtrl->getRecordValue(), svCtrl->getCurrentValue());
-            widget.grab().save(instance.getPaths().isiCurve());
-        }
+
         reportJson->appendPosition(bodyValue.SBP, bodyValue.DBP, bodyValue.CVP, bodyValue.LAP, posGroup.checkedId() + 1);
-        QDateTime curTime = QDateTime::fromString(reportJson->getReportTime(), "yyyyMMddhhmmss");
+        QDateTime curTime = QDateTime::fromString(reportJson->getReportTime(), "yyyyMMddhhmmsszzz");
         reportJson->setReportConclusion(instance.reportCreated(!rPos.isEmpty()));
         emit createdReport(curTime.toMSecsSinceEpoch(), reportJson->getJsonString());
-
+        // 报告预览
         QPrinter printer(QPrinter::ScreenResolution);
-        printer.setPageSize(QPageSize(QSizeF(210, 297), QPageSize::Millimeter));
-        QPrintPreviewDialog dialog(&printer, this);
-        dialog.setWindowTitle("报告预览");
-        dialog.setWindowFlags(Qt::Dialog | Qt::WindowMinMaxButtonsHint | Qt::WindowCloseButtonHint);
-
-        connect(&dialog, &QPrintPreviewDialog::paintRequested, this, [=](QPrinter *printer) {
-            auto info = DataManagement::getInstance().getHospitalInfo();
-            ReportPainter painter(ReportStruct(info->pType,
-                                               info->cMode,
-                                               !info->samePage,
-                                               reportJson->getJson()),
-                                  printer);
-        });
+        ReportPreviewDialog dialog(reportJson->getJson(), instance.getHospitalInfo(), &printer);
         dialog.exec();
-
 
         reportJson->clear();
         clearUiSlot();
@@ -767,50 +741,3 @@ bool EnterSystemWidget::isStartCheck()
     }
     return true;
 }
-
-//void EnterSystemWidget::setBaseData()
-//{
-//    // 原始数据
-//    if (patternGroup.checkedId() == 1 || !recordBtn->isHidden()) {
-//        setTebcoData(baseData.firstPosture);
-//    }
-//    else {
-//        setTebcoData(baseData.secondPosture);
-//    }
-//    // 个人信息
-//    baseData.patient.patientName = bodyValue.name;
-//    baseData.patient.medicalRecordNumber = bodyValue.id;
-//    baseData.patient.sex = (bodyValue.sex == 0 ? QString("男") : QString("女"));
-//    baseData.patient.age = QString::number(bodyValue.age);
-//    baseData.patient.height = QString::number(bodyValue.height);
-//    baseData.patient.weight = QString::number(bodyValue.weight);
-//    baseData.patient.hb = QString::number(bodyValue.hb);
-//    // 场所信息
-//    auto hospitalInfo = DataManagement::getInstance().getHospitalInfo();
-////    baseData.place.placeId = hospitalInfo->place2Name;
-////    baseData.place.place1Id = hospitalInfo->place1Id;
-////    baseData.place.place2Id = hospitalInfo->place2Id;
-////    baseData.place.deviceId = hospitalInfo->deviceId;
-//    baseData.place.primaryPlace = hospitalInfo->hospitalName;
-//    baseData.place.secondaryPlace = hospitalInfo->roomName;
-//    baseData.place.inspector = hospitalInfo->doctorName.isEmpty() ? "unknown" : hospitalInfo->doctorName;
-//    baseData.place.mac = DataManagement::getInstance().getMac();
-////    baseData.sudokuPix = sudokuDraw->grab();
-////    baseData.sudokuPix = sudokuWidget->grab();
-//}
-
-//void EnterSystemWidget::setTebcoData(TebcoData &tebcoData)
-//{
-//    recordDataMap.insert(Type::SBP, bodyValue.SBP);
-//    recordDataMap.insert(Type::DBP, bodyValue.DBP);
-//    recordDataMap.insert(Type::CVP, bodyValue.CVP);
-//    recordDataMap.insert(Type::LAP, bodyValue.LAP);
-//    // 体位
-//    recordDataMap.insert(Type::Pos, posGroup.checkedId() + 1);
-//    // 原始的数据
-//    tebcoData.data = recordDataMap;
-//    // 保存时间
-//    tebcoData.cTime = QDateTime::currentDateTime();
-//    // 心阻抗图
-////    tebcoData.dzPix = admitDraw->getView()->grab();
-//}

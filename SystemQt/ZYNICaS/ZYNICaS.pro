@@ -1,4 +1,4 @@
-QT       += core gui widgets serialport charts axcontainer concurrent
+QT       += core gui widgets serialport charts concurrent
 QT       += printsupport sql network
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
@@ -20,21 +20,17 @@ RC_FILE = resource.rc
 SOURCES += \
     anothersetdialog.cpp \
     auxargdialog.cpp \
-#    baseargwidget.cpp \
-#    baseargwidgetsinst.cpp \
     bpeditdialog.cpp \
     countdowngizmo.cpp \
-    createreportthread.cpp \
+#    createreportthread.cpp \
     customctrl.cpp \
     datacalculation.cpp \
     datamanagement.cpp \
-#    devicedatabase.cpp \
     deviceparameters.cpp \
     drawsudoku.cpp \
     drawwaveforms.cpp \
     entersystemwidget.cpp \
     getiddialog.cpp \
-#    httppost.cpp \
     infoeditdialog.cpp \
     isicurvewidget.cpp \
     logindialog.cpp \
@@ -43,41 +39,32 @@ SOURCES += \
     mqttclient.cpp \
     personalinfodialog.cpp \
     plrttablewidget.cpp \
-#    reportdatabase.cpp \
     reportdatajson.cpp \
     reportdialog.cpp \
     reportpainter.cpp \
-    reportword.cpp \
+    reportpreviewdialog.cpp \
+    reporttablemodel.cpp \
+    scopecalendardialog.cpp \
     selectitemdialog.cpp \
-    showreportdialog.cpp \
-    singleapplication.cpp \
     sudokuwidget.cpp \
-#    surplusbaseargsdialog.cpp \
     systemconfigdialog.cpp \
     trendchart.cpp \
     trendchartswidget.cpp \
     updateappdialog.cpp \
-    waitingdialog.cpp
+    viewreportdialog.cpp \
 
 HEADERS += \
-    MyStruct.h \
     anothersetdialog.h \
     auxargdialog.h \
-#    baseargwidget.h \
-#    baseargwidgetsinst.h \
     bpeditdialog.h \
     countdowngizmo.h \
-    createreportthread.h \
     customctrl.h \
     datacalculation.h \
     datamanagement.h \
-#    devicedatabase.h \
-#    deviceparameters.h \
     drawsudoku.h \
     drawwaveforms.h \
     entersystemwidget.h \
     getiddialog.h \
-#    httppost.h \
     infoeditdialog.h \
     isicurvewidget.h \
     logindialog.h \
@@ -85,22 +72,20 @@ HEADERS += \
     mqttclient.h \
     personalinfodialog.h \
     plrttablewidget.h \
-#    reportdatabase.h \
     reportdatajson.h \
     reportdialog.h \
     reportpainter.h \
+    reportpreviewdialog.h \
     reportset.h \
-    reportword.h \
+    reporttablemodel.h \
+    scopecalendardialog.h \
     selectitemdialog.h \
-    showreportdialog.h \
-    singleapplication.h \
     sudokuwidget.h \
-#    surplusbaseargsdialog.h \
     systemconfigdialog.h \
     trendchart.h \
     trendchartswidget.h \
     updateappdialog.h \
-    waitingdialog.h
+    viewreportdialog.h \
 
 include(../../commonFiles/base.pri)
 #include(../../commonFiles/qextserialport/src/qextserialport.pri)

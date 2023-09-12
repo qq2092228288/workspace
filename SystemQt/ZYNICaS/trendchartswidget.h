@@ -14,7 +14,6 @@ public:
     void changeShow(const QString &current, const QString &change);
 public slots:
     void widgetShow();
-    void saveTrendChartPic();
 signals:
 private:
     QGridLayout *dataGLayout;

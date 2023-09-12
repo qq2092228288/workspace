@@ -66,14 +66,3 @@ void TrendChartsWidget::widgetShow()
         this->setWindowState((this->windowState() & ~Qt::WindowMinimized) | Qt::WindowActive);
     }
 }
-
-void TrendChartsWidget::saveTrendChartPic()
-{
-    auto &instance = DataManagement::getInstance();
-    QStringList fileNames = instance.getPaths().trendchartspic();
-    for (int index = 0; index < trendCharts.size(); ++index) {
-        if (!fileNames.at(index).isEmpty()) {
-            trendCharts.at(index)->grab().save(fileNames.at(index));
-        }
-    }
-}

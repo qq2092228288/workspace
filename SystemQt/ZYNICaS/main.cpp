@@ -9,36 +9,13 @@
 #include <QTimer>
 #include "mqttclient.h"
 #include "logindialog.h"
-#include <QPrintPreviewDialog>
-#include "reportpainter.h"
-#include <QPageSize>
 
 DataManagement DataManagement::instance;
 
 int main(int argc, char *argv[])
 {
     QtSingleApplication a(QApplication::applicationName(),argc, argv);
-//    QPrinter printer(QPrinter::ScreenResolution);
-//    printer.setPageSize(QPageSize(QSizeF(210, 297), QPageSize::Millimeter));
-//    QPrintPreviewDialog dialog(&printer);
-//    dialog.setWindowTitle("报告预览");
-//    dialog.setWindowFlags(Qt::Dialog | Qt::WindowMinMaxButtonsHint | Qt::WindowCloseButtonHint);
-//    dialog.resize(1000, 800);
-//    QObject::connect(&dialog, &QPrintPreviewDialog::paintRequested, [=](QPrinter *printer) {
-//        QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
-//        db.setDatabaseName("Reports.db");
-//        db.open();
-//        QSqlQuery query(db);
-//        query.exec(QString("SELECT time, data from reports"));
-//        query.next();
-//        ReportPainter painter(ReportStruct(Printer_Type::General,
-//                                         Check_Mode::IntensiveCareUnit,
-//                                         false,
-//                                         QJsonDocument::fromJson(query.value(1).toString().toUtf8()).object()),
-//                              printer);
-//    });
-//    dialog.exec();
-//    return 0;
+
     if (!a.isRunning()) {
         // prevent system hibernation
         SetThreadExecutionState(ES_CONTINUOUS | ES_SYSTEM_REQUIRED | ES_DISPLAY_REQUIRED);
@@ -59,14 +36,14 @@ int main(int argc, char *argv[])
         if (!initDir.exists()) {
             initDir.mkpath(ins.getPaths().initDir());
         }
-        QDir tempDir(ins.getPaths().tempDir());
-        if (!tempDir.exists()) {
-            tempDir.mkpath(ins.getPaths().tempDir());
-        }
-        QDir reports(ins.getPaths().reports());
-        if (!reports.exists()) {
-            reports.mkpath(ins.getPaths().reports());
-        }
+//        QDir tempDir(ins.getPaths().tempDir());
+//        if (!tempDir.exists()) {
+//            tempDir.mkpath(ins.getPaths().tempDir());
+//        }
+//        QDir reports(ins.getPaths().reports());
+//        if (!reports.exists()) {
+//            reports.mkpath(ins.getPaths().reports());
+//        }
 
         auto client = ins.mqttClient();
         client->openDatabase();
@@ -88,6 +65,7 @@ int main(int argc, char *argv[])
                 QObject::disconnect(client, &MqttClient::messageFromServer, dialog.get(), &LoginDialog::serverMessage);
             }
         }
+
 
         MainWidget_PTR widget(new MainWidget);
         QObject::connect(client, &MqttClient::newVerion, widget.get(), &MainWidget::newVersion);

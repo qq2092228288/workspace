@@ -194,8 +194,41 @@ void ZyTebco::reConnect()
 
 void ZyTebco::recvInfoSlot()
 {
-    QByteArray array = m_pSerial->readAll();
-//    QByteArray array = m_pExtSerial->readAll();
+    processingData(m_pSerial->readAll());
+}
+
+void ZyTebco::demoModeSlot()
+{
+    QMutexLocker locker(&mutex);
+    if (INDEX >= SIZE) {
+        INDEX = 0;
+    }
+    qint64 value = demoData[INDEX];
+//    if (value < 0xFFFFFFFF) {
+//        emit ecgValue(uchar(value>>24));
+//        emit diffValue(uchar((value&0x00FF0000)>>16));
+//        emit admitValue(uchar((value&0x0000FF00)>>8));
+//    }
+//    else {
+//        emit data((value&0xF000)>>12,value&0xFFF);
+//    }
+    QByteArray array;
+    if (value < 0xFFFFFFFF) {
+        array.resize(4);
+        memcpy(array.data(), &value, 4);
+        array.reserve(4);
+    }
+    else {
+        array.resize(6);
+        memcpy(array.data(), &value, 6);
+    }
+    std::reverse(array.begin(), array.end());
+    processingData(array);
+    ++INDEX;
+}
+
+void ZyTebco::processingData(const QByteArray &array)
+{
     if (array.size() == 4 || array.size() == 6) {
         bool ok;
         emit ecgValue((uchar)array.at(0));
@@ -211,24 +244,5 @@ void ZyTebco::recvInfoSlot()
             emit data(type, values.average());
         }
     }
-//    qDebug()<<array.toHex();
-}
-
-void ZyTebco::demoModeSlot()
-{
-    QMutexLocker locker(&mutex);
-    if (INDEX >= SIZE) {
-        INDEX = 0;
-    }
-    qint64 value = demoData[INDEX];
-    if (value < 0xFFFFFFFF) {
-        emit ecgValue(uchar(value>>24));
-        emit diffValue(uchar((value&0x00FF0000)>>16));
-        emit admitValue(uchar((value&0x0000FF00)>>8));
-    }
-    else {
-        emit data((value&0xF000)>>12,value&0xFFF);
-    }
-    ++INDEX;
 }
 

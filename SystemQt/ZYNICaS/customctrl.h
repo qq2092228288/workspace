@@ -118,12 +118,12 @@ public slots:
     void setValue(const double &value);
     void setValue(const double &value, const QString &name);
     void setValues(const double &value, const double &value1);
-    void valueWarning(bool warning);
+    void setWarning();
+    void valueWarning(int warning);
     void recordValueSlot();
 protected slots:
     void getChangeText(const QString &text);
     void timeoutSlot();
-//    void oldAndNewValueTimerSlot();
 signals:
     void currentValue(qreal);
     void nameAndValue(const QString &, const double &rVal, const double &cVal);
@@ -145,9 +145,6 @@ private:
     // 精度
     qreal m_accuracy = 1;
     TrendChart *m_pTrendChart;
-    // 数据平稳过渡
-//    QList<qreal> oldAndNewValue;
-//    QTimer *oldAndNewValueTimer;
 };
 
 class CustomCtrlRegulator : public QObject

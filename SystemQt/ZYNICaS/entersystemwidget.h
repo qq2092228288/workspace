@@ -30,12 +30,9 @@
 #include "bpeditdialog.h"
 #include "auxargdialog.h"
 #include "drawwaveforms.h"
-//#include "drawsudoku.h"
 #include "sudokuwidget.h"
 #include "customctrl.h"
 #include "trendchartswidget.h"
-//#include "MyStruct.h"
-#include "systemconfigdialog.h"
 #include "plrttablewidget.h"
 #include "reportdatajson.h"
 
@@ -76,8 +73,6 @@ private:
     bool detectedData();
     void setCtrlValue(const Type &type, const double &value);
     bool isStartCheck();
-//    void setBaseData();
-//    void setTebcoData(TebcoData &tebcoData);
 signals:
     void recordValue();
     void widgetClose();

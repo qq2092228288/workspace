@@ -20,9 +20,6 @@ QJsonObject ReportDataJson::getJson()
                     { ReportDataName::ekey(ReportDataName::inspector), info->doctorName },
                     { ReportDataName::ekey(ReportDataName::mac), DataManagement::getInstance().getMac() }
                 });
-    if (getPosition().size() == 1) {
-        appendPosition(0, 0, 0, 0, 0);
-    }
     return json;
 }
 
@@ -136,6 +133,11 @@ void ReportDataJson::clear()
     waveform = QJsonArray();
 }
 
+void ReportDataJson::clearCheckData()
+{
+    json.remove(ReportDataName::ekey(ReportDataName::position));
+}
+
 void ReportDataJson::setPatientInfo(int age, float hb, int height, int weight, int sex,
                                     const QString &patientName, const QString &medicalRecordNumber)
 {
@@ -201,6 +203,6 @@ QJsonArray ReportDataJson::getPosition()
 
 QString ReportDataJson::time() const
 {
-    return QDateTime::currentDateTime().toString("yyyyMMddhhmmss");
+    return QDateTime::currentDateTime().toString("yyyyMMddhhmmsszzz");
 }
 

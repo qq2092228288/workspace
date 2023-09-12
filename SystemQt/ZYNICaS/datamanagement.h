@@ -26,33 +26,9 @@ class MyFilePath
 public:
     MyFilePath(const QString &path = nullptr);
     QString initDir()           const;
-    QString tempDir()           const;
     QString baseInfo()          const;
     QString showItems()         const;
     QString trendCharts()       const;
-    QString single_dot()        const;
-    QString many_dot()          const;
-    QString xsingle_dot()       const;
-    QString xmany_dot()         const;
-    QString psingle_dot()       const;
-    QString pmany_dot()         const;
-    QString hypertension_dot()  const;
-    QString hypertension1_dot() const;
-    QString interMedicine_dot() const;
-    QString interMedicine1_dot()const;
-    QString icu_dot()           const;
-    QString icu1_dot()          const;
-    QString mPhyExam_dot()      const;
-    QString mPhyExam1_dot()     const;
-    QString sPhyExam_dot()      const;
-    QString record_dz()         const;
-    QString current_dz()        const;
-    QString sudoku()            const;
-    QString isiCurve()          const;
-    QStringList trendchartspic()const;
-    QString reports()           const;
-    QString config_zip()        const;
-    QString qrCode()            const;
     QString hospitalLogo()      const;
     QString userAccountInfo()   const;
 private:

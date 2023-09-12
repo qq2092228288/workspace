@@ -322,27 +322,16 @@ void CustomCtrl::clear()
     valueEdit->clear();
     m_pTrendChart->clear();
 //    oldAndNewValue.clear();
-    valueWarning(false);
+    valueWarning(0);
 }
 
 void CustomCtrl::setValue(const double &value)
 {
-//    aitems.vqueue.enqueue(value);
     aitems.values.append(value);
     valueEdit->setText(QString::number(value, 'f', digit));
     aitems.currentValue = valueEdit->text().toDouble();
-    valueWarning(aitems.currentValue < aitems.minValue || aitems.currentValue > aitems.maxValue);
+    setWarning();
     emit currentValue(value);
-//    oldAndNewValue.append(value);
-//    if (oldAndNewValue.size() > 2) {
-//        oldAndNewValue.removeFirst();
-//    }
-//    else {
-//        valueEdit->setText(QString::number(value, 'f', digit));
-//        aitems.currentValue = valueEdit->text().toDouble();
-//        valueWarning(aitems.currentValue < aitems.minValue || aitems.currentValue > aitems.maxValue);
-//        emit currentValue(value);
-    //    }
 }
 
 void CustomCtrl::setValue(const double &value, const QString &name)
@@ -350,7 +339,7 @@ void CustomCtrl::setValue(const double &value, const QString &name)
     if (name == getName()) {
         valueEdit->setText(QString::number(value, 'f', digit));
         aitems.currentValue = valueEdit->text().toDouble();
-        valueWarning(aitems.currentValue < aitems.minValue || aitems.currentValue > aitems.maxValue);
+        setWarning();
         emit currentValue(value);
     }
 }
@@ -361,19 +350,37 @@ void CustomCtrl::setValues(const double &value, const double &value1)
     aitems.currentValue = value;
     dbpaitems.currentValue = value1;
     valueWarning(aitems.currentValue < aitems.minValue || aitems.currentValue > aitems.maxValue ||
-                 dbpaitems.currentValue < dbpaitems.minValue || dbpaitems.currentValue > dbpaitems.maxValue);
+                 dbpaitems.currentValue < dbpaitems.minValue || dbpaitems.currentValue > dbpaitems.maxValue ? 2 : 0);
 }
 
-void CustomCtrl::valueWarning(bool warning)
+void CustomCtrl::setWarning()
+{
+    if (aitems.currentValue < aitems.minValue) {
+        valueWarning(1);
+    }
+    else if (aitems.currentValue > aitems.maxValue) {
+        valueWarning(2);
+    }
+    else {
+        valueWarning(0);
+    }
+}
+
+void CustomCtrl::valueWarning(int warning)
 {
     if (getName() == "DO2") return;
     auto &instance = DataManagement::getInstance();
     int fsize = 10*instance.zoom();
     int vsize = 50*instance.zoom();
-    if (warning) {
-        valueEdit->setStyleSheet(QString("QLineEdit{font-size:%1px;color:#ffd700;font-weight:bold;"
+    if (2 == warning) {
+        valueEdit->setStyleSheet(QString("QLineEdit{font-size:%1px;color:#ffffff;font-weight:bold;"
                     "background:transparent;border-width:0;border-style:outset;}").arg(vsize));
-        frame->setStyleSheet(QString("QFrame{background-color:#ff6347;border-radius:%1px;}").arg(fsize));
+        frame->setStyleSheet(QString("QFrame{background-color:#FF6347;border-radius:%1px;}").arg(fsize));
+    }
+    else if (1 == warning) {
+        valueEdit->setStyleSheet(QString("QLineEdit{font-size:%1px;color:#ffffff;font-weight:bold;"
+                    "background:transparent;border-width:0;border-style:outset;}").arg(vsize));
+        frame->setStyleSheet(QString("QFrame{background-color:#FFC107;border-radius:%1px;}").arg(fsize));
     }
     else {
         valueEdit->setStyleSheet(QString("QLineEdit{font-size:%1px;color:#00ff7f;font-weight:bold;"
@@ -386,9 +393,6 @@ void CustomCtrl::recordValueSlot()
 {
     aitems.recordValue = aitems.currentValue;
     dbpaitems.recordValue = dbpaitems.currentValue;
-//    aitems.vqueue.clear();
-//    dbpaitems.vqueue.clear();
-    //    emit recordValue(aitems.recordValue);
 }
 
 void CustomCtrl::getChangeText(const QString &text)
@@ -404,30 +408,17 @@ void CustomCtrl::timeoutSlot()
     if (aitems.currentValue != 0) {
         qreal temp = aitems.currentValue + QRandomGenerator::global()->bounded(-2,2)/m_accuracy;
         valueEdit->setText(QString::number(temp));
-        valueWarning(temp < aitems.minValue || temp > aitems.maxValue);
+        if (temp < aitems.minValue) {
+            valueWarning(1);
+        }
+        else if (temp > aitems.maxValue) {
+            valueWarning(2);
+        }
+        else {
+            valueWarning(0);
+        }
     }
 }
-
-//void CustomCtrl::oldAndNewValueTimerSlot()
-//{
-//    if (oldAndNewValue.size() == 2) {
-//        qreal oldValue = oldAndNewValue.at(0);
-//        qreal newValue = oldAndNewValue.at(1);
-//        if ((oldValue < newValue && newValue/oldValue > 1.1) || (oldValue > newValue && oldValue/newValue > 1.1)) {
-//            oldValue += (newValue - oldValue)*0.3;
-//        }
-//        else {
-//            oldValue = newValue;
-//        }
-//        oldAndNewValue.replace(0, oldValue);
-//    }
-//    if (!oldAndNewValue.isEmpty()) {
-//        valueEdit->setText(QString::number(oldAndNewValue.at(0), 'f', digit));
-//        aitems.currentValue = valueEdit->text().toDouble();
-//        valueWarning(aitems.currentValue < aitems.minValue || aitems.currentValue > aitems.maxValue);
-//        emit currentValue(aitems.currentValue);
-//    }
-//}
 
 CustomCtrlRegulator::CustomCtrlRegulator(QObject *parent)
     : QObject{parent}
@@ -442,7 +433,6 @@ CustomCtrlRegulator::CustomCtrlRegulator(QObject *parent)
 CustomCtrlRegulator::~CustomCtrlRegulator()
 {
     qDeleteAll(allCustomCtrls.begin(), allCustomCtrls.end());
-//    qDebug()<<"~CustomCtrlRegulator()";
 }
 
 void CustomCtrlRegulator::addCustomCtrl(CustomCtrl *ctrl)
