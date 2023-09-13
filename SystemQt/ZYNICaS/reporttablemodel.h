@@ -10,7 +10,7 @@
 
 struct ReportModelItem
 {
-    ReportModelItem(const qint64 &_time, const QJsonObject &data);
+    ReportModelItem(const qint64 &_time, const int &_modified, const QJsonObject &data);
     qint64 time;
     QString medicalRecordNumber;
     QString patientName;
@@ -19,6 +19,7 @@ struct ReportModelItem
     QString height;
     QString weight;
     QString mode;
+    bool modified;
 };
 
 class ReportTableModel : public QAbstractTableModel

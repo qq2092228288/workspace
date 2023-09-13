@@ -13,9 +13,17 @@
 
 enum ReportState
 {
-    NotUploaded,
-    UploadedToOldServer,    /* 旧服务器已被弃用，数据重新上传 */
-    Uploaded
+    NotUploaded,        /** 未上传 */
+    UploadedToOldServer,/** 旧服务器已被弃用，数据重新上传 */
+    Uploaded,           /** 已上传 */
+    Modified            /** 已会诊 */
+};
+
+enum PullState
+{
+    Pulled,             /** 已拉取 */
+    NotPulling,         /** 不需要拉取 */
+    NoData              /** 已拉取，但无会诊 */
 };
 
 class MqttClient : public QObject
@@ -47,6 +55,7 @@ public slots:
     void getSoftwareInfo();
     void publish(const QMqttTopicName &topic, const QByteArray &message, quint8 qos, bool retain);
     void getDeviceInfo();
+    void pullConclusion();
 signals:
     void setError();    // Device information has been saved
     void connected();
@@ -55,6 +64,7 @@ signals:
     void messageFromServer(QString);
     void newVerion(const QJsonObject &);
     void loggedOut();
+    void pulled(PullState);
 private slots:
     void connectToHost();
     void stateChanged(QMqttClient::ClientState state);

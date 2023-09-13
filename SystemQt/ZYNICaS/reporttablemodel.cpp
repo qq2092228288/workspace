@@ -1,7 +1,7 @@
 #include "reporttablemodel.h"
 #include "reportset.h"
 
-ReportModelItem::ReportModelItem(const qint64 &_time, const QJsonObject &data)
+ReportModelItem::ReportModelItem(const qint64 &_time, const int &_modified, const QJsonObject &data)
     : time(_time)
 {
     auto patientInfo = data.value(ReportDataName::ekey(ReportDataName::patientInfo)).toObject();
@@ -13,12 +13,13 @@ ReportModelItem::ReportModelItem(const qint64 &_time, const QJsonObject &data)
     weight = patientInfo.value(ReportDataName::ekey(ReportDataName::weight)).toString();
     mode = data.value(ReportDataName::ekey(ReportDataName::position)).toArray().at(1).toObject()
             .value(ReportDataName::ekey(ReportDataName::reportTime)).toString().isEmpty() ? "单" : "双";
+    modified = _modified;
 }
 
 ReportTableModel::ReportTableModel(QObject *parent)
     : QAbstractTableModel{parent}
 {
-    m_header<<"报告时间"<<"病历号"<<"姓名"<<"性别"<<"年龄"<<"身高"<<"体重"<<"体位模式";
+    m_header<<"报告时间"<<"病历号"<<"姓名"<<"性别"<<"年龄"<<"身高"<<"体重"<<"体位模式"<<"已会诊";
 }
 
 int ReportTableModel::rowCount(const QModelIndex &parent) const
@@ -59,6 +60,8 @@ QVariant ReportTableModel::data(const QModelIndex &index, int role) const
                 return crow.weight;
             case 7:
                 return crow.mode;
+            case 8:
+                return (crow.modified ? QString("是") : QString("否"));
             }
         }
         return QVariant();

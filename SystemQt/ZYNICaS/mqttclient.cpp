@@ -2,6 +2,7 @@
 #include <singleton.h>
 #include <databasens.h>
 #include <QCoreApplication>
+#include "reportset.h"
 using namespace DatabaseEnumNs;
 
 MqttClient::MqttClient(QObject *parent)
@@ -142,8 +143,10 @@ void MqttClient::uploadReport()
 {
     if (m_client->state() != QMqttClient::Connected) return;
     QSqlQuery sqlQuery(m_database);
-    sqlQuery.exec(QString("SELECT * FROM %1 WHERE %2!=%3")
-                  .arg(m_reportsTable, "upload").arg(ReportState::Uploaded));
+    sqlQuery.exec(QString("SELECT * FROM %1 WHERE %2 < %3")
+                  .arg(m_reportsTable,
+                       Singleton::enumValueToKey(ReportTable::upload))
+                  .arg(ReportState::Uploaded));
     if (sqlQuery.next()) {
         auto data = sqlQuery.value(Singleton::enumValueToKey(ReportTable::data)).toString();
         QJsonObject object;
@@ -185,7 +188,30 @@ void MqttClient::getDeviceInfo()
     QJsonObject object;
     object.insert(Singleton::enumValueToKey(Device::password), m_password);
     publish(Singleton::getTopicName(PrimaryTopic::request, SecondaryTopic::deviceInfo, m_deviceId),
-                      Singleton::jsonToUtf8(object), 2, false);
+            Singleton::jsonToUtf8(object), 2, false);
+}
+
+void MqttClient::pullConclusion()
+{
+    QSqlQuery sqlQuery(m_database);
+    sqlQuery.exec(QString("SELECT %1 FROM %2 WHERE %3 = %4")
+                  .arg(Singleton::enumValueToKey(ReportTable::time),
+                       m_reportsTable,
+                       Singleton::enumValueToKey(ReportTable::upload))
+                  .arg(ReportState::Uploaded));
+    QJsonArray array;
+    while (sqlQuery.next()) {
+        array.append(QDateTime::fromMSecsSinceEpoch(sqlQuery.value(0).toLongLong()).toString("yyyy-MM-dd hh:mm:ss.zzz"));
+    }
+    if (!array.isEmpty()) {
+        publish(Singleton::getTopicName(PrimaryTopic::request, SecondaryTopic::consultation, m_deviceId),
+                          Singleton::jsonToUtf8(QJsonObject{{ Singleton::enumValueToKey(ReportInfo::reportTime), array }}),
+                          2,
+                          false);
+    }
+    else {
+        emit pulled(PullState::NotPulling);
+    }
 }
 
 void MqttClient::connectToHost()
@@ -254,8 +280,12 @@ void MqttClient::messageReceived(const QByteArray &message, const QMqttTopicName
         auto reportTime = object.value(Singleton::enumValueToKey(ReportInfo::reportTime)).toString();
         if (!reportTime.isEmpty()) {
             auto time = QDateTime::fromString(reportTime, "yyyy-MM-dd hh:mm:ss.zzz").toMSecsSinceEpoch();
-            if (!sqlQuery.exec(QString("UPDATE %1 SET upload=%2 WHERE time=%3")
-                               .arg(m_reportsTable).arg(ReportState::Uploaded).arg(time))) {
+            if (!sqlQuery.exec(QString("UPDATE %1 SET %2 = %3 WHERE %4 = %5")
+                               .arg(m_reportsTable,
+                                    Singleton::enumValueToKey(ReportTable::upload))
+                               .arg(ReportState::Uploaded)
+                               .arg(Singleton::enumValueToKey(ReportTable::time))
+                               .arg(time))) {
                 qWarning("数据更新失败！");
             }
         }
@@ -271,6 +301,28 @@ void MqttClient::messageReceived(const QByteArray &message, const QMqttTopicName
             emit newVerion(object);
         }
     }
+        break;
+    case SecondaryTopic::consultation:
+        foreach (auto key, object.keys()) {
+            sqlQuery.exec(QString("SELECT %1 FROM %2 WHERE %3 = '%4'")
+                          .arg(Singleton::enumValueToKey(ReportTable::data),
+                               m_reportsTable,
+                               Singleton::enumValueToKey(ReportTable::time),
+                               key));
+            if (sqlQuery.next()) {
+                auto data = Singleton::utf8ToJsonObject(sqlQuery.value(0).toString().toUtf8());
+                data.insert(ReportDataName::ekey(ReportDataName::reportConclusion), object.value(key).toString());
+                sqlQuery.exec(QString("UPDATE %1 SET %2 = '%3', %4 = '%5' WHERE %6 = '%7'")
+                              .arg(m_reportsTable,
+                                   Singleton::enumValueToKey(ReportTable::data),
+                                   Singleton::jsonToString(data),
+                                   Singleton::enumValueToKey(ReportTable::upload))
+                              .arg(ReportState::Modified)
+                              .arg(Singleton::enumValueToKey(ReportTable::time),
+                                   key));
+            }
+        }
+        emit pulled( object.isEmpty() ? PullState::NoData : PullState::Pulled);
         break;
     default:
         break;

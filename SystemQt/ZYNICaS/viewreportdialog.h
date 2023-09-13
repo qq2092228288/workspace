@@ -24,6 +24,7 @@ private slots:
     void scopeTimeSlot(qint64 start, qint64 end);
     void searchSlot();
     void resettingSlot();
+    void pulledSlot(int state);
     void printPreviewSlot();
     void tableDoubleCilicked(const QModelIndex &index);
 private:
@@ -34,6 +35,7 @@ private:
     QLineEdit *lineEdit;
     QPushButton *searchButton;
     QPushButton *resettingButton;
+    QPushButton *pullButton;
     QPushButton *printPreviewButton;
     ScopeCalendarDialog *calendarDialog;
     QTableView *tableView;
