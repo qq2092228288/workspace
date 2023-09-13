@@ -36,7 +36,8 @@ enum class SecondaryTopic
 #endif
     allocatedConsumables,       // admin append allocated consumables
     place,                      // admin append/update/delete place
-    agent                       // admin append/update/delete agent
+    agent,                      // admin append/update/delete agent
+    consultation                // admin/server request/response report consultation information
 };
 Q_ENUM_NS(SecondaryTopic)
 enum class UserStatus

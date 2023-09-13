@@ -396,6 +396,30 @@ void TopicAnalysis::response(const QByteArray &message, const QMqttTopicName &to
         }
     }
         break;
+    case SecondaryTopic::consultation:
+    {
+        auto times = Singleton::jsonToString(QJsonDocument::fromJson(message).object()
+                                             .value(Singleton::enumValueToKey(ReportInfo::reportTime)).toArray());
+        times.replace("[", "(").replace("]", ")").replace("\"", "'");
+        QSqlQuery sqlQuery(m_database);
+        sqlQuery.exec(QString("SELECT %1, %2 FROM %3 WHERE %4 = '%5' AND %6 = '1' AND %7 IN %8")
+                      .arg(Singleton::enumValueToKey(ReportInfo::reportTime),
+                           Singleton::enumValueToKey(ReportInfo::reportData),
+                           Singleton::enumName<ReportInfo>(),
+                           Singleton::enumValueToKey(ReportInfo::deviceId),
+                           id,
+                           Singleton::enumValueToKey(ReportInfo::modify),
+                           Singleton::enumValueToKey(ReportInfo::reportTime),
+                           times));
+        QJsonObject json;
+        while (sqlQuery.next()) {
+            json.insert(QString::number(sqlQuery.value(0).toDateTime().toMSecsSinceEpoch()),
+                        Singleton::utf8ToJsonObject(sqlQuery.value(1).toString().toUtf8())
+                        .value("reportConclusion").toString());
+        }
+        data = Singleton::jsonToUtf8(json);
+    }
+        break;
     default:
         emit error(MessageError::NoAnalysis);
         break;

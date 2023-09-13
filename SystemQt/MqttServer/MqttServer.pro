@@ -9,15 +9,15 @@ CONFIG -= app_bundle
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
-    htmlclient.cpp \
-    htmlserver.cpp \
+#    htmlclient.cpp \
+#    htmlserver.cpp \
     main.cpp \
     mqttclient.cpp \
     topicanalysis.cpp \
 
 HEADERS += \
-    htmlclient.h \
-    htmlserver.h \
+#    htmlclient.h \
+#    htmlserver.h \
     mqttclient.h \
     topicanalysis.h \
 
