@@ -244,14 +244,19 @@ void MqttClient::messageReceived(const QByteArray &message, const QMqttTopicName
     if (message.isNull()) {
         return;
     }
+    auto level2 = SecondaryTopic(Singleton::enumKeyToValue<SecondaryTopic>(topic.levels().at(1)));
     auto object = QJsonDocument::fromJson(message).object();
     if (object.isEmpty()) {
-        emit messageFromServer(QString(message));
+        if (SecondaryTopic::consultation == level2) {
+            emit pulled(PullState::NoData);
+        }
+        else {
+            emit messageFromServer(QString(message));
+        }
         return;
     }
     QSqlQuery sqlQuery(m_database);
-    auto level2 = Singleton::enumKeyToValue<SecondaryTopic>(topic.levels().at(1));
-    switch (SecondaryTopic(level2)) {
+    switch (level2) {
     case SecondaryTopic::deviceInfo:
     {
         // get device info
@@ -322,7 +327,7 @@ void MqttClient::messageReceived(const QByteArray &message, const QMqttTopicName
                                    key));
             }
         }
-        emit pulled( object.isEmpty() ? PullState::NoData : PullState::Pulled);
+        emit pulled(PullState::Pulled);
         break;
     default:
         break;
