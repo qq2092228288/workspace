@@ -121,11 +121,12 @@ void ViewReportDialog::createdPdfSlot()
 {
     auto index = tableView->currentIndex();
     if (index.isValid()) {
-
         auto object = getReportJson(index);
         if (!object.isEmpty()) {
             auto patientInfo = object.value(ReportDataName::ekey(ReportDataName::patientInfo)).toObject();
             auto fileName = DataManagement::getInstance().getPaths().reports()
+                    + getReportTime(index).toString("yyyyMMddhhmmss")
+                    + "-"
                     + patientInfo.value(ReportDataName::ekey(ReportDataName::medicalRecordNumber)).toString()
                     + "-"
                     + patientInfo.value(ReportDataName::ekey(ReportDataName::patientName)).toString()
@@ -205,7 +206,7 @@ QVector<ReportModelItem> ViewReportDialog::getItems() const
 
 QJsonObject ViewReportDialog::getReportJson(const QModelIndex &index)
 {
-    auto time = model->data(model->index(index.row(), 0)).toDateTime().toMSecsSinceEpoch();
+    auto time = getReportTime(index).toMSecsSinceEpoch();
     QSqlDatabase db;
     if(QSqlDatabase::contains("qt_sql_default_connection"))
         db = QSqlDatabase::database("qt_sql_default_connection");
@@ -220,4 +221,9 @@ QJsonObject ViewReportDialog::getReportJson(const QModelIndex &index)
         }
     }
     return QJsonObject();
+}
+
+QDateTime ViewReportDialog::getReportTime(const QModelIndex &index)
+{
+    return model->data(model->index(index.row(), 0)).toDateTime();
 }

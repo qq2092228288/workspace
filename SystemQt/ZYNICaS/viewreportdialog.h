@@ -31,6 +31,7 @@ private slots:
 private:
     QVector<ReportModelItem> getItems() const;
     QJsonObject getReportJson(const QModelIndex &index);
+    QDateTime getReportTime(const QModelIndex &index);
 private:
     QLabel *searchLabel;
     QComboBox *comboBox;
