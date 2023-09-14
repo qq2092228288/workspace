@@ -15,7 +15,6 @@ DataManagement DataManagement::instance;
 int main(int argc, char *argv[])
 {
     QtSingleApplication a(QApplication::applicationName(),argc, argv);
-
     if (!a.isRunning()) {
         // prevent system hibernation
         SetThreadExecutionState(ES_CONTINUOUS | ES_SYSTEM_REQUIRED | ES_DISPLAY_REQUIRED);

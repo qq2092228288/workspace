@@ -28,7 +28,7 @@ InfoEditDialog::InfoEditDialog(QWidget *parent)
     this->setStyleSheet(instance.dialogQss(1.5));
 
     nameLabel = new QLabel(tr("姓名"), this);
-    numLabel = new QLabel(tr("病历号"), this);
+    numLabel = new QLabel(instance.idName(), this);
     sexLabel = new QLabel(tr("性别"), this);
     ageLabel = new QLabel(tr("年龄"), this);
     heightLabel = new QLabel(tr("身高(cm)"), this);

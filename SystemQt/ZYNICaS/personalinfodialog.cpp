@@ -20,7 +20,7 @@ PersonalInfoDialog::PersonalInfoDialog(QWidget *parent)
     deleteBtn = new QPushButton(tr("删除"),this);
     confirmBtn = new QPushButton(tr("确定"),this);
 
-    comboBox->addItems(QStringList()<<tr("病历号")<<tr("姓名"));
+    comboBox->addItems(QStringList()<<instance.idName()<<tr("姓名"));
     comboBox->setFixedWidth(120*instance.hZoom());
 
     mainLayout->addLayout(hLayout);
@@ -68,7 +68,7 @@ PersonalInfoDialog::PersonalInfoDialog(QWidget *parent)
         m_model->setTable("patient");
         m_model->select();
         // 列名
-        m_model->setHeaderData(m_model->fieldIndex("id"),Qt::Horizontal,"病历号");
+        m_model->setHeaderData(m_model->fieldIndex("id"),Qt::Horizontal,instance.idName());
         m_model->setHeaderData(m_model->fieldIndex("name"),Qt::Horizontal,"姓名");
         m_model->setHeaderData(m_model->fieldIndex("sex"),Qt::Horizontal,"性别");
         m_model->setHeaderData(m_model->fieldIndex("age"),Qt::Horizontal,"年龄");

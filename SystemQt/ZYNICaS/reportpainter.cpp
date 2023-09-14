@@ -153,6 +153,7 @@ void ReportPainter::thermalPage()
 
 void ReportPainter::generalHeader()
 {
+    auto &instance = DataManagement::getInstance();
     auto data = m_info.data;
     // 场所信息
     auto place = data.value(ekey(ReportDataName::place)).toObject();
@@ -190,10 +191,14 @@ void ReportPainter::generalHeader()
     int hvalue2 = 110;
     drawText(rectF( 50, hvalue2), "体表面积:");
     drawText(rectF(125, hvalue2), QString::number(DataCalculation::cBsa(height, weight), 'f', 2) + " m²");
-    drawText(rectF(250, hvalue2), "科 室:");
-    drawText(rectF(300, hvalue2), place.value(ekey(ReportDataName::secondaryPlace)).toString());
-    drawText(rectF(500, hvalue2), "病历号:");
-    drawText(rectF(555, hvalue2), info.value(ekey(ReportDataName::medicalRecordNumber)).toString());
+    QString departmentName = instance.departmentName();
+    if (departmentName.size() == 2) {
+        departmentName.insert(1, ' ');
+    }
+    drawText(rectF(250, hvalue2), departmentName + ":");
+    drawText(rectF(325, hvalue2), place.value(ekey(ReportDataName::secondaryPlace)).toString());
+    drawText(rectF(500, hvalue2), instance.idName() + ":");
+    drawText(rectF(560, hvalue2), info.value(ekey(ReportDataName::medicalRecordNumber)).toString());
     drawLine(QPointF(30, 140), QPointF(m_size.width() - 30, 140));
 }
 

@@ -151,10 +151,11 @@ void EnterSystemWidget::closeEvent(QCloseEvent *event)
 
 void EnterSystemWidget::initInfoModule()
 {
+    auto &instance = DataManagement::getInstance();
     infoGroupBox = new QGroupBox(tr("患者信息"),this);
     editInfoBtn = new QPushButton(tr("编 辑"),this);
     nameLabel = new QLabel(tr("姓名"),this);
-    numLabel = new QLabel(tr("病历号"),this);
+    numLabel = new QLabel(instance.idName(),this);
     nameLineEdit = new QLineEdit(this);
     numLineEdit = new QLineEdit(this);
     infoDialog = new InfoEditDialog;
@@ -168,7 +169,7 @@ void EnterSystemWidget::initInfoModule()
     infoLayout->addWidget(numLineEdit);
     infoLayout->addStretch();
     infoLayout->addWidget(editInfoBtn);
-    auto &instance = DataManagement::getInstance();
+
 //    infoGroupBox->setFixedHeight(nameLineEdit->height()*2*instance.hZoom());
 
     nameLineEdit->setEnabled(false);

@@ -15,11 +15,19 @@ SystemConfigDialog::SystemConfigDialog(QWidget *parent)
 
     hospitalInfoGroupBox = new QGroupBox(tr("信息配置"),this);
     hospitalNameLabel = new QLabel(tr("医院"), this);
-    roomNameLabel = new QLabel(tr("科室"), this);
+    roomNameLabel = new QLabel(instance.departmentName(), this);
     doctorNameLabel = new QLabel(tr("检查人员"), this);
     hospitalNameLineEdit = new QLineEdit(this);
     roomNameLineEdit = new QLineEdit(this);
     doctorNameLineEdit = new QLineEdit(this);
+    titleGroupBox = new QGroupBox(tr("名称配置"), this);
+    roomButtonGroup = new QButtonGroup(this);
+    roomRadio = new QRadioButton(tr("科室"), this);
+    execRoomRadio = new QRadioButton(tr("执行科室"), this);
+    idButtonGroup = new QButtonGroup(this);
+    mNumRadio = new QRadioButton(tr("病历号"), this);
+    oNumRadio = new QRadioButton(tr("门诊号"), this);
+    idRadio = new QRadioButton(tr("编号"), this);
     reportGroupBox = new QGroupBox(tr("报告配置"), this);
     printerButtonGroup = new QButtonGroup(this);
     printerRadio = new QRadioButton(tr("常规打印机报告"), this);
@@ -45,6 +53,11 @@ SystemConfigDialog::SystemConfigDialog(QWidget *parent)
     logoutBtn = new QPushButton(tr("退出登录"), this);
     aboutAppBtn = new QPushButton(tr("关于"), this);
 
+    roomButtonGroup->addButton(roomRadio, 0);
+    roomButtonGroup->addButton(execRoomRadio, 1);
+    idButtonGroup->addButton(mNumRadio, 0);
+    idButtonGroup->addButton(oNumRadio, 1);
+    idButtonGroup->addButton(idRadio, 2);
     printerButtonGroup->addButton(printerRadio, 0);
     printerButtonGroup->addButton(xprinterRadio, 1);
     modeButtonGroup->addButton(generalModeRadio, Check_Mode::Hypertension);
@@ -53,26 +66,31 @@ SystemConfigDialog::SystemConfigDialog(QWidget *parent)
     modeButtonGroup->addButton(healthCheckModeRadio, Check_Mode::PhysicalExamination);
 
     serialPortComboBox->setFixedWidth(120*instance.wZoom());
+    roomRadio->setChecked(true);
+    mNumRadio->setChecked(true);
     printerRadio->setChecked(true);
     generalModeRadio->setChecked(true);
 
     QGridLayout *mainLayout = new QGridLayout(this);
 
     mainLayout->addWidget(hospitalInfoGroupBox, 0, 0);
-    mainLayout->addWidget(reportGroupBox, 1, 0);
-    mainLayout->addWidget(checkModeGroupBox, 2, 0);
-    mainLayout->addWidget(systemInfoGroupBox, 3, 0);
-    mainLayout->addWidget(appMsgGroupBox, 4, 0);
-    mainLayout->addWidget(confirmBtn, 5, 0);
+    mainLayout->addWidget(titleGroupBox, 1, 0);
+    mainLayout->addWidget(reportGroupBox, 2, 0);
+    mainLayout->addWidget(checkModeGroupBox, 3, 0);
+    mainLayout->addWidget(systemInfoGroupBox, 4, 0);
+    mainLayout->addWidget(appMsgGroupBox, 5, 0);
+    mainLayout->addWidget(confirmBtn, 6, 0);
 
-    mainLayout->setRowStretch(0, 4);
+    mainLayout->setRowStretch(0, 3);
     mainLayout->setRowStretch(1, 1);
     mainLayout->setRowStretch(2, 1);
     mainLayout->setRowStretch(3, 1);
     mainLayout->setRowStretch(4, 1);
     mainLayout->setRowStretch(5, 1);
+    mainLayout->setRowStretch(6, 1);
 
     QGridLayout *hLayout = new QGridLayout(hospitalInfoGroupBox);
+    QGridLayout *tLayout = new QGridLayout(titleGroupBox);
     QGridLayout *rLayout = new QGridLayout(reportGroupBox);
     QGridLayout *cLayout = new QGridLayout(checkModeGroupBox);
     QHBoxLayout *sLayout = new QHBoxLayout(systemInfoGroupBox);
@@ -84,6 +102,12 @@ SystemConfigDialog::SystemConfigDialog(QWidget *parent)
     hLayout->addWidget(roomNameLineEdit, 1, 1);
     hLayout->addWidget(doctorNameLabel, 2, 0);
     hLayout->addWidget(doctorNameLineEdit, 2, 1);
+
+    tLayout->addWidget(roomRadio, 0, 0);
+    tLayout->addWidget(execRoomRadio, 0, 1);
+    tLayout->addWidget(mNumRadio, 1, 0);
+    tLayout->addWidget(oNumRadio, 1, 1);
+    tLayout->addWidget(idRadio, 1, 2);
 
     rLayout->addWidget(printerRadio, 0, 0, 1, 2);
     rLayout->addWidget(xprinterRadio, 0, 2, 1, 2);
@@ -136,6 +160,8 @@ SystemConfigDialog::SystemConfigDialog(QWidget *parent)
         in<<QString("hospital=\"\"\n");
         in<<QString("department=\"\"\n");
         in<<QString("doctor=\"\"\n");
+        in<<QString("departmentname=\"科室\"\n");
+        in<<QString("idname=\"病历号\"\n");
         in<<QString("printer=\"0\"\n");
         in<<QString("tip=\"0\"\n");
         in<<QString("samepage=\"0\"\n");
@@ -160,8 +186,27 @@ SystemConfigDialog::SystemConfigDialog(QWidget *parent)
                 else if (name == "department") {
                     roomNameLineEdit->setText(value);
                 }
-                if (name == "doctor") {
+                else if (name == "doctor") {
                     doctorNameLineEdit->setText(value);
+                }
+                else if (name == "departmentname") {
+                    if (execRoomRadio->text() == QString::fromStdString(value.toStdString())) {
+                        execRoomRadio->setChecked(true);
+                    }
+                    else {
+                        roomRadio->setChecked(true);
+                    }
+                }
+                else if (name == "idname") {
+                    if (idRadio->text() == QString::fromStdString(value.toStdString())) {
+                        idRadio->setChecked(true);
+                    }
+                    else if (oNumRadio->text() == QString::fromStdString(value.toStdString())) {
+                        oNumRadio->setChecked(true);
+                    }
+                    else {
+                        mNumRadio->setChecked(true);
+                    }
                 }
                 else if (name == "printer") {
                     auto btn = printerButtonGroup->button(value.toInt());
@@ -305,6 +350,8 @@ void SystemConfigDialog::closeEvent(QCloseEvent *event)
         in<<QString("hospital=\"%1\"\n").arg(hospitalNameLineEdit->text());
         in<<QString("department=\"%1\"\n").arg(roomNameLineEdit->text());
         in<<QString("doctor=\"%1\"\n").arg(doctorNameLineEdit->text());
+        in<<QString("departmentname=\"%1\"\n").arg(roomButtonGroup->checkedButton()->text());
+        in<<QString("idname=\"%1\"\n").arg(idButtonGroup->checkedButton()->text());
         in<<QString("printer=\"%1\"\n").arg(printerButtonGroup->checkedId());
         in<<QString("tip=\"%1\"\n").arg(tipCheckBox->isChecked());
         in<<QString("samepage=\"%1\"\n").arg(samePageCheckBox->isChecked());

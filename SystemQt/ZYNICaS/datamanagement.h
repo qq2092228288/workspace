@@ -112,6 +112,8 @@ public:
     HospitalInfo *getHospitalInfo() const;
     QString getMac() const;
     MqttClient *mqttClient() const;
+    QString departmentName() const;
+    QString idName() const;
 public:
     void setHospitalInfo(HospitalInfo *hospitalInfo);
     void setBodyValue(BodyValue *bodyValue);
@@ -136,6 +138,8 @@ private:
     QString riskTip(bool many);
 //    QPixmap getQrCodeUrlPixmap(const QString &deviceId, const QString &reportTime);
 private:
+    QString m_departmentName;
+    QString m_idName;
     MyFilePath m_filePath;
     HospitalInfo *m_pHospitalInfo;
     BodyValue *m_pBodyValue;

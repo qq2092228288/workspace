@@ -102,6 +102,29 @@ DataManagement::DataManagement()
 {
     m_pTebco = new ZyTebco;
     m_client = new MqttClient;
+    m_departmentName = "科室";
+    m_idName = "病历号";
+    QFile file(m_filePath.baseInfo());
+    if(file.open(QFile::ReadOnly | QFile::Text)) {
+        QTextStream out(&file);
+        out.setCodec(QTextCodec::codecForName("utf-8"));
+        QRegExp nameExp("(.*)(?:=)");
+        QRegExp valueExp("(?:\")(.*)(?:\")");
+        while (!out.atEnd()) {
+            QString strLine = out.readLine();
+            if (strLine.indexOf(nameExp) >= 0 && strLine.indexOf(valueExp) >= 0) {
+                QString name = nameExp.cap(1);
+                QString value = valueExp.cap(1);
+                if (name == "departmentname") {
+                    m_departmentName = QString::fromStdString(value.toStdString());
+                }
+                else if (name == "idname") {
+                    m_idName = QString::fromStdString(value.toStdString());
+                }
+            }
+        }
+        file.close();
+    }
 }
 
 DataManagement::~DataManagement()
@@ -259,6 +282,16 @@ QString DataManagement::getMac() const
 MqttClient *DataManagement::mqttClient() const
 {
     return m_client;
+}
+
+QString DataManagement::departmentName() const
+{
+    return m_departmentName;
+}
+
+QString DataManagement::idName() const
+{
+    return m_idName;
 }
 
 void DataManagement::setHospitalInfo(HospitalInfo *hospitalInfo)

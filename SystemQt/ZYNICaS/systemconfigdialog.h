@@ -70,6 +70,14 @@ private:
     QLineEdit *hospitalNameLineEdit;
     QLineEdit *roomNameLineEdit;
     QLineEdit *doctorNameLineEdit;
+    QGroupBox *titleGroupBox;
+    QButtonGroup *roomButtonGroup;
+    QRadioButton *roomRadio;
+    QRadioButton *execRoomRadio;
+    QButtonGroup *idButtonGroup;
+    QRadioButton *mNumRadio;
+    QRadioButton *oNumRadio;
+    QRadioButton *idRadio;
     QGroupBox *reportGroupBox;
     QButtonGroup *printerButtonGroup;
     QRadioButton *printerRadio;

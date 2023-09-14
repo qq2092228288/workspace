@@ -1,5 +1,6 @@
 #include "reporttablemodel.h"
 #include "reportset.h"
+#include "datamanagement.h"
 
 ReportModelItem::ReportModelItem(const qint64 &_time, const int &_modified, const QJsonObject &data)
     : time(_time)
@@ -19,7 +20,7 @@ ReportModelItem::ReportModelItem(const qint64 &_time, const int &_modified, cons
 ReportTableModel::ReportTableModel(QObject *parent)
     : QAbstractTableModel{parent}
 {
-    m_header<<"报告时间"<<"病历号"<<"姓名"<<"性别"<<"年龄"<<"身高"<<"体重"<<"体位模式"<<"已会诊";
+    m_header<<"报告时间"<<DataManagement::getInstance().idName()<<"姓名"<<"性别"<<"年龄"<<"身高"<<"体重"<<"体位模式"<<"已会诊";
 }
 
 int ReportTableModel::rowCount(const QModelIndex &parent) const
