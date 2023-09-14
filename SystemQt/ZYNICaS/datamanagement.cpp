@@ -17,6 +17,11 @@ QString MyFilePath::baseInfo() const
     return initDir() + "baseInfo.ini";
 }
 
+QString MyFilePath::reports() const
+{
+    return appPath + "reports/";
+}
+
 QString MyFilePath::showItems() const
 {
     return initDir() + "showItems.ini";

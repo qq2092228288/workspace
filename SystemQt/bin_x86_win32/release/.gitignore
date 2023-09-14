@@ -68,3 +68,6 @@ deploy/
 *.qm
 *.prl
 ~$*
+
+# dir
+reports/

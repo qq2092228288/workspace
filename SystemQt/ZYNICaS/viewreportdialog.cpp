@@ -1,6 +1,7 @@
 #include "viewreportdialog.h"
 #include "datamanagement.h"
 #include "reportpreviewdialog.h"
+#include "reportpainter.h"
 
 ViewReportDialog::ViewReportDialog(QWidget *parent)
     : QDialog{parent}
@@ -18,6 +19,7 @@ ViewReportDialog::ViewReportDialog(QWidget *parent)
     searchButton = new QPushButton("搜索", this);
     resettingButton = new QPushButton("重置", this);
     pullButton = new QPushButton("拉取", this);
+    pdfButton = new QPushButton("生成PDF", this);
     printPreviewButton = new QPushButton("打印预览", this);
     calendarDialog = new ScopeCalendarDialog(this);
     tableView = new QTableView(this);
@@ -39,6 +41,7 @@ ViewReportDialog::ViewReportDialog(QWidget *parent)
     hLayout->addStretch();
     hLayout->addWidget(pullButton);
     hLayout->addStretch();
+    hLayout->addWidget(pdfButton);
     hLayout->addWidget(printPreviewButton);
     mainLayout->addWidget(tableView);
 
@@ -57,6 +60,7 @@ ViewReportDialog::ViewReportDialog(QWidget *parent)
     connect(searchButton, &QPushButton::clicked, this, &ViewReportDialog::searchSlot);
     connect(resettingButton, &QPushButton::clicked, this, &ViewReportDialog::resettingSlot);
     connect(pullButton, &QPushButton::clicked, client, &MqttClient::pullConclusion);
+    connect(pdfButton, &QPushButton::clicked, this, &ViewReportDialog::createdPdfSlot);
     connect(client, &MqttClient::pulled, this, &ViewReportDialog::pulledSlot);
     connect(printPreviewButton, &QPushButton::clicked, this, &ViewReportDialog::printPreviewSlot);
     connect(tableView, &QTableView::doubleClicked, this, &ViewReportDialog::tableDoubleCilicked);
@@ -113,6 +117,46 @@ void ViewReportDialog::pulledSlot(int state)
     }
 }
 
+void ViewReportDialog::createdPdfSlot()
+{
+    auto index = tableView->currentIndex();
+    if (index.isValid()) {
+
+        auto object = getReportJson(index);
+        if (!object.isEmpty()) {
+            auto patientInfo = object.value(ReportDataName::ekey(ReportDataName::patientInfo)).toObject();
+            auto fileName = DataManagement::getInstance().getPaths().reports()
+                    + patientInfo.value(ReportDataName::ekey(ReportDataName::medicalRecordNumber)).toString()
+                    + "-"
+                    + patientInfo.value(ReportDataName::ekey(ReportDataName::patientName)).toString()
+                    + ".pdf";
+            QFileInfo fileInfo(fileName);
+            if (fileInfo.isFile()) {
+                if (QMessageBox::question(this, "提示", "此报告已生成PDF文件，是否重新生成？") == QMessageBox::No) {
+                    QDesktopServices::openUrl(QUrl::fromLocalFile(fileName));
+                    return;
+                }
+            }
+            QPrinter printer(QPrinter::ScreenResolution);
+            printer.setOutputFormat(QPrinter::PdfFormat);
+            printer.setOutputFileName(fileName);
+            auto info = DataManagement::getInstance().getHospitalInfo();
+            printer.setPageSize(QPageSize(info->pType == Printer_Type::Thermal ? QSizeF(72, 297) : QSizeF(210, 297),
+                                          QPageSize::Millimeter));
+            printer.setFullPage(true);
+            printer.setPageMargins(QMarginsF(0,0,0,0));
+            ReportPainter painter(ReportStruct(info->pType, info->cMode, !info->samePage, object), &printer);
+            QDesktopServices::openUrl(QUrl::fromLocalFile(fileName));
+        }
+        else {
+            QMessageBox::warning(this, "警告", "报告不存在！");
+        }
+    }
+    else {
+        QMessageBox::information(this, "提示", "请选择一个报告");
+    }
+}
+
 void ViewReportDialog::printPreviewSlot()
 {
     auto index = tableView->currentIndex();
@@ -126,23 +170,15 @@ void ViewReportDialog::printPreviewSlot()
 
 void ViewReportDialog::tableDoubleCilicked(const QModelIndex &index)
 {
-    auto time = model->data(model->index(index.row(), 0)).toDateTime().toMSecsSinceEpoch();
-    QSqlDatabase db;
-    if(QSqlDatabase::contains("qt_sql_default_connection"))
-        db = QSqlDatabase::database("qt_sql_default_connection");
-    else
-        db = QSqlDatabase::addDatabase("QSQLITE");
-    db.setDatabaseName("Reports.db");
-    if (db.open()) {
-        QSqlQuery query(db);
-        query.exec(QString("SELECT data from reports where time = %1").arg(time));
-        if (query.next()) {
-            // 报告预览
-            QPrinter printer(QPrinter::ScreenResolution);
-            ReportPreviewDialog dialog(QJsonDocument::fromJson(query.value(0).toString().toUtf8()).object(),
-                                       DataManagement::getInstance().getHospitalInfo(), &printer);
-            dialog.exec();
-        }
+    auto object = getReportJson(index);
+    if (!object.isEmpty()) {
+        // 报告预览
+        QPrinter printer(QPrinter::ScreenResolution);
+        ReportPreviewDialog dialog(object, DataManagement::getInstance().getHospitalInfo(), &printer);
+        dialog.exec();
+    }
+    else {
+        QMessageBox::warning(this, "警告", "报告不存在！");
     }
 }
 
@@ -165,4 +201,23 @@ QVector<ReportModelItem> ViewReportDialog::getItems() const
         }
     }
     return items;
+}
+
+QJsonObject ViewReportDialog::getReportJson(const QModelIndex &index)
+{
+    auto time = model->data(model->index(index.row(), 0)).toDateTime().toMSecsSinceEpoch();
+    QSqlDatabase db;
+    if(QSqlDatabase::contains("qt_sql_default_connection"))
+        db = QSqlDatabase::database("qt_sql_default_connection");
+    else
+        db = QSqlDatabase::addDatabase("QSQLITE");
+    db.setDatabaseName("Reports.db");
+    if (db.open()) {
+        QSqlQuery query(db);
+        query.exec(QString("SELECT data from reports where time = %1").arg(time));
+        if (query.next()) {
+            return QJsonDocument::fromJson(query.value(0).toString().toUtf8()).object();
+        }
+    }
+    return QJsonObject();
 }

@@ -25,16 +25,19 @@ private slots:
     void searchSlot();
     void resettingSlot();
     void pulledSlot(int state);
+    void createdPdfSlot();
     void printPreviewSlot();
     void tableDoubleCilicked(const QModelIndex &index);
 private:
     QVector<ReportModelItem> getItems() const;
+    QJsonObject getReportJson(const QModelIndex &index);
 private:
     QLabel *searchLabel;
     QComboBox *comboBox;
     QLineEdit *lineEdit;
     QPushButton *searchButton;
     QPushButton *resettingButton;
+    QPushButton *pdfButton;
     QPushButton *pullButton;
     QPushButton *printPreviewButton;
     ScopeCalendarDialog *calendarDialog;

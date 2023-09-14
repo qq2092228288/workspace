@@ -39,10 +39,10 @@ int main(int argc, char *argv[])
 //        if (!tempDir.exists()) {
 //            tempDir.mkpath(ins.getPaths().tempDir());
 //        }
-//        QDir reports(ins.getPaths().reports());
-//        if (!reports.exists()) {
-//            reports.mkpath(ins.getPaths().reports());
-//        }
+        QDir reports(ins.getPaths().reports());
+        if (!reports.exists()) {
+            reports.mkpath(ins.getPaths().reports());
+        }
 
         auto client = ins.mqttClient();
         client->openDatabase();

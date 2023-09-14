@@ -204,6 +204,8 @@ void ReportPainter::generalHeader()
 
 void ReportPainter::generalDataPage(int page)
 {
+    setPen(QPen(QColor(Qt::black), 1));
+    setBrush(Qt::NoBrush);
     // 页眉
     generalHeader();
     // 页脚

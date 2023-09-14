@@ -27,6 +27,7 @@ public:
     MyFilePath(const QString &path = nullptr);
     QString initDir()           const;
     QString baseInfo()          const;
+    QString reports()           const;
     QString showItems()         const;
     QString trendCharts()       const;
     QString hospitalLogo()      const;
