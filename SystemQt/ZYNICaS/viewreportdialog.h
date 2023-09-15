@@ -9,6 +9,7 @@
 #include <QLineEdit>
 #include <QComboBox>
 #include <QCalendarWidget>
+#include <QSqlDatabase>
 #include "reporttablemodel.h"
 #include "scopecalendardialog.h"
 
@@ -24,15 +25,20 @@ private slots:
     void scopeTimeSlot(qint64 start, qint64 end);
     void searchSlot();
     void resettingSlot();
+    void pullingSlot();
     void pulledSlot(int state);
     void createdPdfSlot();
     void printPreviewSlot();
     void tableDoubleCilicked(const QModelIndex &index);
+signals:
+    void pulling(qint64 time);
 private:
-    QVector<ReportModelItem> getItems() const;
+    QVector<ReportModelItem> getItems();
     QJsonObject getReportJson(const QModelIndex &index);
     QDateTime getReportTime(const QModelIndex &index);
+    bool indexIsValid(const QModelIndex &index);
 private:
+    QSqlDatabase m_db;
     QLabel *searchLabel;
     QComboBox *comboBox;
     QLineEdit *lineEdit;

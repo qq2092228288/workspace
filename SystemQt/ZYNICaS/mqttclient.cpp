@@ -191,19 +191,18 @@ void MqttClient::getDeviceInfo()
             Singleton::jsonToUtf8(object), 2, false);
 }
 
-void MqttClient::pullConclusion()
+void MqttClient::pullingConclusion(qint64 time)
 {
     QSqlQuery sqlQuery(m_database);
-    sqlQuery.exec(QString("SELECT %1 FROM %2 WHERE %3 = %4")
+    sqlQuery.exec(QString("SELECT %1 FROM %2 WHERE %3 >= %4 AND %1 = %5")
                   .arg(Singleton::enumValueToKey(ReportTable::time),
                        m_reportsTable,
                        Singleton::enumValueToKey(ReportTable::upload))
-                  .arg(ReportState::Uploaded));
-    QJsonArray array;
-    while (sqlQuery.next()) {
-        array.append(QDateTime::fromMSecsSinceEpoch(sqlQuery.value(0).toLongLong()).toString("yyyy-MM-dd hh:mm:ss.zzz"));
-    }
-    if (!array.isEmpty()) {
+                  .arg(ReportState::Uploaded)
+                  .arg(time));
+    if (sqlQuery.next()) {
+        QJsonArray array;
+        array.append(QDateTime::fromMSecsSinceEpoch(time).toString("yyyy-MM-dd hh:mm:ss.zzz"));
         publish(Singleton::getTopicName(PrimaryTopic::request, SecondaryTopic::consultation, m_deviceId),
                           Singleton::jsonToUtf8(QJsonObject{{ Singleton::enumValueToKey(ReportInfo::reportTime), array }}),
                           2,

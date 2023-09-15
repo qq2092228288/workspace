@@ -55,7 +55,7 @@ public slots:
     void getSoftwareInfo();
     void publish(const QMqttTopicName &topic, const QByteArray &message, quint8 qos, bool retain);
     void getDeviceInfo();
-    void pullConclusion();
+    void pullingConclusion(qint64 time);
 signals:
     void setError();    // Device information has been saved
     void connected();

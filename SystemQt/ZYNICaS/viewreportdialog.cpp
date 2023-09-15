@@ -13,6 +13,12 @@ ViewReportDialog::ViewReportDialog(QWidget *parent)
     //样式表
     setStyleSheet(instance.dialogQss(1));
 
+    if(QSqlDatabase::contains("qt_sql_default_connection"))
+        m_db = QSqlDatabase::database("qt_sql_default_connection");
+    else
+        m_db = QSqlDatabase::addDatabase("QSQLITE");
+    m_db.setDatabaseName("Reports.db");
+
     searchLabel = new QLabel("查找条件:", this);
     comboBox = new QComboBox(this);
     lineEdit = new QLineEdit(this);
@@ -59,7 +65,8 @@ ViewReportDialog::ViewReportDialog(QWidget *parent)
     connect(calendarDialog, &ScopeCalendarDialog::scopeTime, this, &ViewReportDialog::scopeTimeSlot);
     connect(searchButton, &QPushButton::clicked, this, &ViewReportDialog::searchSlot);
     connect(resettingButton, &QPushButton::clicked, this, &ViewReportDialog::resettingSlot);
-    connect(pullButton, &QPushButton::clicked, client, &MqttClient::pullConclusion);
+    connect(pullButton, &QPushButton::clicked, this, &ViewReportDialog::pullingSlot);
+    connect(this, &ViewReportDialog::pulling, client, &MqttClient::pullingConclusion);
     connect(pdfButton, &QPushButton::clicked, this, &ViewReportDialog::createdPdfSlot);
     connect(client, &MqttClient::pulled, this, &ViewReportDialog::pulledSlot);
     connect(printPreviewButton, &QPushButton::clicked, this, &ViewReportDialog::printPreviewSlot);
@@ -101,6 +108,14 @@ void ViewReportDialog::resettingSlot()
     model->updateList(getItems());
 }
 
+void ViewReportDialog::pullingSlot()
+{
+    auto index = tableView->currentIndex();
+    if (indexIsValid(index)) {
+        emit pulling(getReportTime(index).toMSecsSinceEpoch());
+    }
+}
+
 void ViewReportDialog::pulledSlot(int state)
 {
     resettingSlot();
@@ -112,7 +127,7 @@ void ViewReportDialog::pulledSlot(int state)
         QMessageBox::information(this, "提示", "没有需要会诊的报告！");
         break;
     case PullState::NoData:
-        QMessageBox::information(this, "提示", "已拉取，但没有新的已会诊报告！");
+        QMessageBox::information(this, "提示", "该报告没有进行会诊！");
         break;
     }
 }
@@ -120,7 +135,7 @@ void ViewReportDialog::pulledSlot(int state)
 void ViewReportDialog::createdPdfSlot()
 {
     auto index = tableView->currentIndex();
-    if (index.isValid()) {
+    if (indexIsValid(index)) {
         auto object = getReportJson(index);
         if (!object.isEmpty()) {
             auto patientInfo = object.value(ReportDataName::ekey(ReportDataName::patientInfo)).toObject();
@@ -153,19 +168,13 @@ void ViewReportDialog::createdPdfSlot()
             QMessageBox::warning(this, "警告", "报告不存在！");
         }
     }
-    else {
-        QMessageBox::information(this, "提示", "请选择一个报告");
-    }
 }
 
 void ViewReportDialog::printPreviewSlot()
 {
     auto index = tableView->currentIndex();
-    if (index.isValid()) {
+    if (indexIsValid(index)) {
         tableDoubleCilicked(index);
-    }
-    else {
-        QMessageBox::information(this, "提示", "请选择一个报告");
     }
 }
 
@@ -183,17 +192,11 @@ void ViewReportDialog::tableDoubleCilicked(const QModelIndex &index)
     }
 }
 
-QVector<ReportModelItem> ViewReportDialog::getItems() const
+QVector<ReportModelItem> ViewReportDialog::getItems()
 {
     QVector<ReportModelItem> items;
-    QSqlDatabase db;
-    if(QSqlDatabase::contains("qt_sql_default_connection"))
-        db = QSqlDatabase::database("qt_sql_default_connection");
-    else
-        db = QSqlDatabase::addDatabase("QSQLITE");
-    db.setDatabaseName("Reports.db");
-    if (db.open()) {
-        QSqlQuery query(db);
+    if (m_db.open()) {
+        QSqlQuery query(m_db);
         query.exec(QString("SELECT time, upload, data from reports order by time desc"));
         while (query.next()) {
             items.append(ReportModelItem(query.value(0).toLongLong(),
@@ -207,14 +210,8 @@ QVector<ReportModelItem> ViewReportDialog::getItems() const
 QJsonObject ViewReportDialog::getReportJson(const QModelIndex &index)
 {
     auto time = getReportTime(index).toMSecsSinceEpoch();
-    QSqlDatabase db;
-    if(QSqlDatabase::contains("qt_sql_default_connection"))
-        db = QSqlDatabase::database("qt_sql_default_connection");
-    else
-        db = QSqlDatabase::addDatabase("QSQLITE");
-    db.setDatabaseName("Reports.db");
-    if (db.open()) {
-        QSqlQuery query(db);
+    if (m_db.open()) {
+        QSqlQuery query(m_db);
         query.exec(QString("SELECT data from reports where time = %1").arg(time));
         if (query.next()) {
             return QJsonDocument::fromJson(query.value(0).toString().toUtf8()).object();
@@ -226,4 +223,13 @@ QJsonObject ViewReportDialog::getReportJson(const QModelIndex &index)
 QDateTime ViewReportDialog::getReportTime(const QModelIndex &index)
 {
     return model->data(model->index(index.row(), 0)).toDateTime();
+}
+
+bool ViewReportDialog::indexIsValid(const QModelIndex &index)
+{
+    if (!index.isValid()) {
+        QMessageBox::information(this, "提示", "请选择一个报告");
+        return false;
+    }
+    return true;
 }
