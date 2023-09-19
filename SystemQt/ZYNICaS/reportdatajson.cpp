@@ -1,7 +1,10 @@
 #include "reportdatajson.h"
 #include <QDateTime>
+#include <qmath.h>
 #include "datamanagement.h"
 #include "datacalculation.h"
+#include "reportset.h"
+
 
 ReportDataJson::ReportDataJson(QObject *parent)
     : QObject{parent}
@@ -51,10 +54,12 @@ QMap<Type, qreal> ReportDataJson::valueMap(const QJsonObject &info, const QJsonO
     auto dbp = data.value(QString::number(Type::DBP)).toInt();
     auto lap = data.value(QString::number(Type::LAP)).toInt();
     auto cvp = data.value(QString::number(Type::CVP)).toInt();
+
+    auto dMap = ReportParameters::digitMap();
     // 计算值
-    auto bsa = DatCa::cBsa(height, weight);
-    auto vept = DatCa::cVept(height, weight, sex);
-    auto map = DatCa::cMap(sbp, dbp);
+    auto bsa = intercept(DatCa::cBsa(height, weight), 2);
+    auto vept = intercept(DatCa::cVept(height, weight, sex), 0);
+    auto map = intercept(DatCa::cMap(sbp, dbp), dMap.value(Type::MAP));
 
     QMap<Type, qreal> vMap;
     vMap.insert(Type::Pos, data.value(QString::number(Type::Pos)).toInt());
@@ -64,17 +69,17 @@ QMap<Type, qreal> ReportDataJson::valueMap(const QJsonObject &info, const QJsonO
     vMap.insert(Type::CVP, cvp);
     vMap.insert(Type::MAP, map);
 
-    auto lvet = DatCa::cVet(data.value(QString::number(Type::VET)).toInt());
-    auto pep = DatCa::cPep(data.value(QString::number(Type::PEP)).toInt());
-    auto isi = DatCa::cIsi(data.value(QString::number(Type::ISI)).toInt());
+    auto lvet = intercept(DatCa::cVet(data.value(QString::number(Type::VET)).toInt()), dMap.value(Type::LVET));
+    auto pep = intercept(DatCa::cPep(data.value(QString::number(Type::PEP)).toInt()), dMap.value(Type::PEP));
+    auto isi = intercept(DatCa::cIsi(data.value(QString::number(Type::ISI)).toInt()), dMap.value(Type::ISI));
     auto ef = DatCa::cEf(data.value(QString::number(Type::EF)).toInt());
-    auto ino = DatCa::cIno(isi, sex, age);
-    auto si = DatCa::cSi(data.value(QString::number(Type::SI)).toInt(), bsa, vept);
-    auto sv = DatCa::cSv(si, bsa);
-    auto lswi = DatCa::cLswi(si, map, lap);
-    auto ssvri = DatCa::cSsvri(si, map, cvp);
-    auto ci = DatCa::cCi(data.value(QString::number(Type::CI)).toInt(), bsa, vept);
-    auto co = DatCa::cCo(ci, bsa);
+    auto ino = intercept(DatCa::cIno(isi, sex, age), dMap.value(Type::Ino));
+    auto si = intercept(DatCa::cSi(data.value(QString::number(Type::SI)).toInt(), bsa, vept), dMap.value(Type::SI));
+    auto sv = intercept(DatCa::cSv(si, bsa), dMap.value(Type::SV));
+    auto lswi = intercept(DatCa::cLswi(si, map, lap), dMap.value(Type::LSWI));
+    auto ssvri = intercept(DatCa::cSsvri(si, map, cvp), dMap.value(Type::SSVRI));
+    auto ci = intercept(DatCa::cCi(data.value(QString::number(Type::CI)).toInt(), bsa, vept), dMap.value(Type::CI));
+    auto co = intercept(DatCa::cCo(ci, bsa), dMap.value(Type::CO));
     QVector<qreal> svs;
     auto osis = allValue(Type::SI, alldata);
     if (osis.size() > 25) {
@@ -84,33 +89,32 @@ QMap<Type, qreal> ReportDataJson::valueMap(const QJsonObject &info, const QJsonO
         svs<<(vept * value / 3400);
     }
 
-    vMap.insert(Type::HR, DatCa::cHr(data.value(QString::number(Type::HR)).toInt()));
+    vMap.insert(Type::HR, intercept(DatCa::cHr(data.value(QString::number(Type::HR)).toInt()), dMap.value(Type::HR)));
     vMap.insert(Type::LVET, lvet);
     vMap.insert(Type::PEP, pep);
-    vMap.insert(Type::STR, DatCa::cStr(pep, lvet));
-    vMap.insert(Type::TFC, DatCa::cTfc(data.value(QString::number(Type::TFC)).toInt()));
-    vMap.insert(Type::EPCI, DatCa::cEpci(data.value(QString::number(Type::EPCI)).toInt()));
+    vMap.insert(Type::STR, intercept(DatCa::cStr(pep, lvet), dMap.value(Type::STR)));
+    vMap.insert(Type::TFC, intercept(DatCa::cTfc(data.value(QString::number(Type::TFC)).toInt()), dMap.value(Type::TFC)));
+    vMap.insert(Type::EPCI, intercept(DatCa::cEpci(data.value(QString::number(Type::EPCI)).toInt()), dMap.value(Type::EPCI)));
     vMap.insert(Type::ISI, isi);
     vMap.insert(Type::Ino, ino);
     vMap.insert(Type::SI, si);
     vMap.insert(Type::SV, sv);
-    vMap.insert(Type::EDI, DatCa::cEdi(si, ef));
-    vMap.insert(Type::LSW, DatCa::cLsw(sv, map, lap));
+    vMap.insert(Type::EDI, intercept(DatCa::cEdi(si, ef), dMap.value(Type::EDI)));
+    vMap.insert(Type::LSW, intercept(DatCa::cLsw(sv, map, lap), dMap.value(Type::LSW)));
     vMap.insert(Type::LSWI, lswi);
-    vMap.insert(Type::Vol, DatCa::cVol(lswi, ino));
-    vMap.insert(Type::SSVR, DatCa::cSsvr(sv, map, cvp));
-    vMap.insert(Type::SSVRI, DatCa::cSsvri(si, map, cvp));
-    vMap.insert(Type::Vas, DatCa::cVas(ssvri));
-    vMap.insert(Type::SVV, DatCa::cSvv(sv, svs));
+    vMap.insert(Type::Vol, intercept(DatCa::cVol(lswi, ino), dMap.value(Type::Vol)));
+    vMap.insert(Type::SSVR, intercept(DatCa::cSsvr(sv, map, cvp), dMap.value(Type::SSVR)));
+    vMap.insert(Type::SSVRI, ssvri);
+    vMap.insert(Type::Vas, intercept(DatCa::cVas(ssvri), dMap.value(Type::Vas)));
+    vMap.insert(Type::SVV, intercept(DatCa::cSvv(sv, svs), dMap.value(Type::SVV)));
     vMap.insert(Type::CI, ci);
     vMap.insert(Type::CO, co);
-    vMap.insert(Type::HRV, DatCa::cHrv(ci));
-    vMap.insert(Type::SVR, DatCa::cSvr(co, map, cvp));
-    vMap.insert(Type::SVRI, DatCa::cSvri(ci, map, cvp));
-    vMap.insert(Type::LCW, DatCa::cLcw(co, map, lap));
-    vMap.insert(Type::LCWI, DatCa::cLcwi(ci, map, lap));
-    vMap.insert(Type::DO2, DatCa::cDo2(co, hb));
-
+    vMap.insert(Type::HRV, intercept(DatCa::cHrv(ci), dMap.value(Type::HRV)));
+    vMap.insert(Type::SVR, intercept(DatCa::cSvr(co, map, cvp), dMap.value(Type::SVR)));
+    vMap.insert(Type::SVRI, intercept(DatCa::cSvri(ci, map, cvp), dMap.value(Type::SVRI)));
+    vMap.insert(Type::LCW, intercept(DatCa::cLcw(co, map, lap), dMap.value(Type::LCW)));
+    vMap.insert(Type::LCWI, intercept(DatCa::cLcwi(ci, map, lap), dMap.value(Type::LCWI)));
+    vMap.insert(Type::DO2, intercept(DatCa::cDo2(co, hb), dMap.value(Type::DO2)));
     return vMap;
 }
 
@@ -217,3 +221,7 @@ QString ReportDataJson::time() const
     return QDateTime::currentDateTime().toString("yyyyMMddhhmmsszzz");
 }
 
+qreal ReportDataJson::intercept(qreal value, int digit)
+{
+    return DatCa::invalid() != value ? (static_cast<int>(value * qPow(10, digit)))/qPow(10, digit) : value;
+}

@@ -71,6 +71,19 @@ public:
         }
         return QJsonObject();
     }
+    static QMap<int, int> digitMap()
+    {
+        auto arr = array(Check_Mode::IntensiveCareUnit);
+        QMap<int, int> map;
+        foreach (auto group, arr) {
+            auto parameters = group.toObject().value("parameters").toArray();
+            foreach (auto value, parameters) {
+                auto parameter = value.toObject();
+                map.insert(parameter.value("type").toInt(), parameter.value("digit").toInt());
+            }
+        }
+        return map;
+    }
 };
 
 class ReportDataName : public QObject

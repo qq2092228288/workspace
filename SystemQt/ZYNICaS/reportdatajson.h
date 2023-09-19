@@ -6,7 +6,6 @@
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QMap>
-#include "reportset.h"
 #include "customctrl.h"
 
 class ReportDataJson : public QObject
@@ -38,6 +37,7 @@ public slots:
 private:
     QJsonArray getPosition();
     QString time() const;
+    static qreal intercept(qreal value, int digit);
 private:
     QJsonObject json;
     QJsonObject data;

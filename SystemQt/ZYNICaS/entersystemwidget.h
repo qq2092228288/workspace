@@ -35,6 +35,7 @@
 #include "trendchartswidget.h"
 #include "plrttablewidget.h"
 #include "reportdatajson.h"
+#include "reportset.h"
 
 class EnterSystemWidget : public QWidget
 {
