@@ -317,7 +317,7 @@ void ReportPainter::generalDataPage(int page)
                      position.at(1).toObject().value(ekey(ReportDataName::waveform)).toArray(), 1);
     }
     // 血压靶向分析图
-    drawSudoku(QRectF(rectUnit.topRight().x() + 23, 400, 720 - rectUnit.topRight().x(), 720 - rectUnit.topRight().x()),
+    drawSudoku(QRectF(rectUnit.topRight().x() + 23, 410, 720 - rectUnit.topRight().x(), 720 - rectUnit.topRight().x()),
                0 == page ? fMap : sMap, secExist && !m_info.paging ? sMap : QMap<Type, qreal>());
     // 分隔线
     drawLine(QPointF(rectArg.bottomLeft().x(), rectArg.bottomLeft().y() + 10),
@@ -328,7 +328,7 @@ void ReportPainter::generalDataPage(int page)
         generalDataPage(1);
     }
     if ((!m_info.paging || 1 == page) && secExist) {
-        drawIsiAndSv(QRectF(rectUnit.topRight().x() + 8, 660, 720 - rectUnit.topRight().x(), 100),
+        drawIsiAndSv(QRectF(rectUnit.topRight().x() + 8, 670, 720 - rectUnit.topRight().x(), 100),
                      fMap.value(Type::ISI), fMap.value(Type::SV), sMap.value(Type::ISI), sMap.value(Type::SV));
     }
     if (!m_info.paging || 1 == page || !secExist) {  // 不分页或者第二页
