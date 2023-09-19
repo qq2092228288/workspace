@@ -172,8 +172,11 @@ void ReportPainter::generalHeader()
     drawText(rectF(0, 10), Qt::AlignHCenter, place.value(ekey(ReportDataName::primaryPlace)).toString());
     // 标题
     drawText(rectF(0, 33), Qt::AlignHCenter, QString("无创心功能监测报告"));
+    // 会诊医院
     auto consultationPlace = place.value(ekey(ReportDataName::consultationPlace)).toString();
-    drawText(rectF(0, 55), Qt::AlignHCenter, QString("会诊医院: ") + consultationPlace);
+    if (!consultationPlace.isEmpty()) {
+        drawText(rectF(0, 55), Qt::AlignHCenter, QString("会诊医院: ") + consultationPlace);
+    }
     // 个人信息
     setFontSize(12, true);
     auto info = data.value(ekey(ReportDataName::patientInfo)).toObject();
@@ -205,19 +208,28 @@ void ReportPainter::generalHeader()
     if (m_info.mode == Check_Mode::Hypertension) {
         int hvalue3 = 120;
         auto inquiry = data.value(ekey(ReportDataName::inquiry)).toObject();
-        drawText(rectF( 50, hvalue3), "高血压家族史: " +
-                 getConsultation(inquiry.value(ekey(ReportDataName::fhh)).toInt()));
-        drawText(rectF(250, hvalue3), "过量饮酒史: " +
-                 getConsultation(inquiry.value(ekey(ReportDataName::edh)).toInt()));
-        drawText(rectF(500, hvalue3), "长期吸烟史: " +
-                 getConsultation(inquiry.value(ekey(ReportDataName::ltsh)).toInt()));
-        int hvalue4 = 140;
-        drawText(rectF( 50, hvalue4), "长期精神紧张史: " +
-                 getConsultation(inquiry.value(ekey(ReportDataName::lthms)).toInt()));
-        drawText(rectF(250, hvalue4), "坚持服药: " +
-                 getConsultation(inquiry.value(ekey(ReportDataName::ptm)).toInt()));
-        drawText(rectF(500, hvalue4), "活动受限: " +
-                 getConsultation(inquiry.value(ekey(ReportDataName::al)).toInt()));
+        bool show = !inquiry.isEmpty();
+        foreach (auto value, inquiry) {
+            if (0 == value.toInt()) {
+                show = false;
+                break;
+            }
+        }
+        if (show) {
+            drawText(rectF( 50, hvalue3), "高血压家族史: " +
+                     getConsultation(inquiry.value(ekey(ReportDataName::fhh)).toInt()));
+            drawText(rectF(250, hvalue3), "过量饮酒史: " +
+                     getConsultation(inquiry.value(ekey(ReportDataName::edh)).toInt()));
+            drawText(rectF(500, hvalue3), "长期吸烟史: " +
+                     getConsultation(inquiry.value(ekey(ReportDataName::ltsh)).toInt()));
+            int hvalue4 = 140;
+            drawText(rectF( 50, hvalue4), "长期精神紧张史: " +
+                     getConsultation(inquiry.value(ekey(ReportDataName::lthms)).toInt()));
+            drawText(rectF(250, hvalue4), "坚持服药: " +
+                     getConsultation(inquiry.value(ekey(ReportDataName::ptm)).toInt()));
+            drawText(rectF(500, hvalue4), "活动受限: " +
+                     getConsultation(inquiry.value(ekey(ReportDataName::al)).toInt()));
+        }
     }
 
     drawLine(QPointF(30, 162), QPointF(m_size.width() - 30, 162));
