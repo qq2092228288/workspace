@@ -17,9 +17,11 @@ SystemConfigDialog::SystemConfigDialog(QWidget *parent)
     hospitalNameLabel = new QLabel(tr("医院"), this);
     roomNameLabel = new QLabel(instance.departmentName(), this);
     doctorNameLabel = new QLabel(tr("检查人员"), this);
+    consultationHospitalLabel = new QLabel(tr("会诊医院"), this);
     hospitalNameLineEdit = new QLineEdit(this);
     roomNameLineEdit = new QLineEdit(this);
     doctorNameLineEdit = new QLineEdit(this);
+    consultationHospitalLineEdit = new QLineEdit(this);
     titleGroupBox = new QGroupBox(tr("名称配置"), this);
     roomButtonGroup = new QButtonGroup(this);
     roomRadio = new QRadioButton(tr("科室"), this);
@@ -102,6 +104,8 @@ SystemConfigDialog::SystemConfigDialog(QWidget *parent)
     hLayout->addWidget(roomNameLineEdit, 1, 1);
     hLayout->addWidget(doctorNameLabel, 2, 0);
     hLayout->addWidget(doctorNameLineEdit, 2, 1);
+    hLayout->addWidget(consultationHospitalLabel, 3, 0);
+    hLayout->addWidget(consultationHospitalLineEdit, 3, 1);
 
     tLayout->addWidget(roomRadio, 0, 0);
     tLayout->addWidget(execRoomRadio, 0, 1);
@@ -160,6 +164,7 @@ SystemConfigDialog::SystemConfigDialog(QWidget *parent)
         in<<QString("hospital=\"\"\n");
         in<<QString("department=\"\"\n");
         in<<QString("doctor=\"\"\n");
+        in<<QString("consultationhospital=\"\"\n");
         in<<QString("departmentname=\"科室\"\n");
         in<<QString("idname=\"病历号\"\n");
         in<<QString("printer=\"0\"\n");
@@ -188,6 +193,9 @@ SystemConfigDialog::SystemConfigDialog(QWidget *parent)
                 }
                 else if (name == "doctor") {
                     doctorNameLineEdit->setText(value);
+                }
+                else if (name == "consultationhospital") {
+                    consultationHospitalLineEdit->setText(value);
                 }
                 else if (name == "departmentname") {
                     if (execRoomRadio->text() == QString::fromStdString(value.toStdString())) {
@@ -251,19 +259,10 @@ QString SystemConfigDialog::getPortName() const
 
 void SystemConfigDialog::updateHospitalInfo()
 {
-//    auto database = DataManagement::getInstance().deviceDatabase();
-//    QString place1Name = database->getDeviceInfo("place1Name");
-//    QString place2Name = database->getDeviceInfo("place2Name");
-//    hospitalNameLineEdit->setText(place1Name);
-//    roomNameLineEdit->setText(place2Name);
     hospitalInfo.hospitalName = hospitalNameLineEdit->text();
     hospitalInfo.roomName = roomNameLineEdit->text();
-//    hospitalInfo.place1Name = database->getDeviceInfo("place1Name");
-//    hospitalInfo.place2Name = database->getDeviceInfo("place2Name");
     hospitalInfo.doctorName = doctorNameLineEdit->text();
-//    hospitalInfo.place1Id = database->getDeviceInfo("place1Id");
-//    hospitalInfo.place2Id = database->getDeviceInfo("place2Id");
-//    hospitalInfo.deviceId = database->getDeviceInfo("deviceId");
+    hospitalInfo.consultationHospitalName = consultationHospitalLineEdit->text();
     hospitalInfo.pType = Printer_Type(printerButtonGroup->checkedId());
     hospitalInfo.tip = tipCheckBox->isChecked();
     hospitalInfo.samePage = samePageCheckBox->isChecked();
@@ -350,6 +349,7 @@ void SystemConfigDialog::closeEvent(QCloseEvent *event)
         in<<QString("hospital=\"%1\"\n").arg(hospitalNameLineEdit->text());
         in<<QString("department=\"%1\"\n").arg(roomNameLineEdit->text());
         in<<QString("doctor=\"%1\"\n").arg(doctorNameLineEdit->text());
+        in<<QString("consultationhospital=\"%1\"\n").arg(consultationHospitalLineEdit->text());
         in<<QString("departmentname=\"%1\"\n").arg(roomButtonGroup->checkedButton()->text());
         in<<QString("idname=\"%1\"\n").arg(idButtonGroup->checkedButton()->text());
         in<<QString("printer=\"%1\"\n").arg(printerButtonGroup->checkedId());

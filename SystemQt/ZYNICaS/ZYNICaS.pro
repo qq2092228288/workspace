@@ -43,7 +43,6 @@ SOURCES += \
     reportdialog.cpp \
     reportpainter.cpp \
     reportpreviewdialog.cpp \
-    reportprinter.cpp \
     reporttablemodel.cpp \
     scopecalendardialog.cpp \
     selectitemdialog.cpp \
@@ -77,7 +76,6 @@ HEADERS += \
     reportdialog.h \
     reportpainter.h \
     reportpreviewdialog.h \
-    reportprinter.h \
     reportset.h \
     reporttablemodel.h \
     scopecalendardialog.h \

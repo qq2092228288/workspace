@@ -13,7 +13,7 @@
 #include <QKeyEvent>
 #include <QtMath>
 #include <QDoubleValidator>
-
+#include <QGroupBox>
 
 #include "personalinfodialog.h"
 
@@ -31,6 +31,13 @@ struct BodyValue
     //default
     int CVP = 4;
     int LAP = 9;
+    // 问诊
+    int fhh = 0;
+    int edh = 0;
+    int ltsh = 0;
+    int lthms = 0;
+    int ptm = 0;
+    int al = 0;
     //体表面积
     double BSA() const;
 
@@ -54,10 +61,13 @@ public slots:
     void clearSlot();
     void confirmSlot();
     void showHb(bool show);
+    void showInquiry(bool show);
 private slots:
     void stopCheck();
-    void importPatientInfo(QString id, QString name, int sex, int age, int height, int weight);
+    void importPatientInfo(QString id, QString name, int sex, int age, int height, int weight,
+                           int fhh, int edh, int ltsh, int lthms, int ptm, int al);
 private:
+    QGroupBox *baseInfoGroupBox;
     QLabel *nameLabel;
     QLabel *numLabel;
     QLabel *sexLabel;
@@ -72,6 +82,19 @@ private:
     QLineEdit *heightLineEdit;
     QLineEdit *weightLineEdit;
     QLineEdit *hbLineEdit;
+    QGroupBox *inquiryGroupBox;
+    QLabel *fhhLabel;
+    QLabel *edhLabel;
+    QLabel *ltshLabel;
+    QLabel *lthmsLabel;
+    QLabel *ptmLabel;
+    QLabel *alLabel;
+    QComboBox *fhhComboxBox;
+    QComboBox *edhComboxBox;
+    QComboBox *ltshComboxBox;
+    QComboBox *lthmsComboxBox;
+    QComboBox *ptmComboxBox;
+    QComboBox *alComboxBox;
     QPushButton *importBtn;
     QPushButton *clearBtn;
     QPushButton *confirmBtn;

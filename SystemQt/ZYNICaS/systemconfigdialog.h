@@ -32,11 +32,7 @@ struct HospitalInfo
     QString hospitalName;
     QString roomName;
     QString doctorName;
-    QString place1Name;
-    QString place2Name;
-    QString place1Id;
-    QString place2Id;
-    QString deviceId;
+    QString consultationHospitalName;
     Printer_Type pType;
     bool tip;
     bool samePage;
@@ -67,9 +63,11 @@ private:
     QLabel *hospitalNameLabel;
     QLabel *roomNameLabel;
     QLabel *doctorNameLabel;
+    QLabel *consultationHospitalLabel;
     QLineEdit *hospitalNameLineEdit;
     QLineEdit *roomNameLineEdit;
     QLineEdit *doctorNameLineEdit;
+    QLineEdit *consultationHospitalLineEdit;
     QGroupBox *titleGroupBox;
     QButtonGroup *roomButtonGroup;
     QRadioButton *roomRadio;

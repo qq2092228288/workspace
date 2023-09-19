@@ -25,7 +25,8 @@ public slots:
     void clearCheckData();
     // 患者信息
     void setPatientInfo(int age, float hb, int height, int weight, int sex,
-                        const QString &patientName, const QString &medicalRecordNumber);
+                        const QString &patientName, const QString &medicalRecordNumber,
+                        int fhh, int edh, int ltsh, int lthms, int ptm, int al);
     // 新增数据
     void appendPosition(int sbp, int dbp, int cvp, int lap, int pos);
     // 报告结论

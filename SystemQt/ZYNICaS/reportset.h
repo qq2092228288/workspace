@@ -92,10 +92,12 @@ public:
     Q_ENUM(ReportJson)
     enum ReportData
     {
+        inquiry,
         patientInfo,
         place,
         position,
         reportConclusion,
+        signature,
         startTime
     };
     Q_ENUM(ReportData)
@@ -110,12 +112,23 @@ public:
         weight
     };
     Q_ENUM(PatientInfoStruct)
+    enum InquiryStruct
+    {
+        fhh,
+        edh,
+        ltsh,
+        lthms,
+        ptm,
+        al
+    };
+    Q_ENUM(InquiryStruct)
     enum PlaceStruct
     {
         inspector,
         primaryPlace,
         secondaryPlace,
-        mac
+        mac,
+        consultationPlace
     };
     Q_ENUM(PlaceStruct)
     enum PositionStruct

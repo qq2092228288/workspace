@@ -25,22 +25,22 @@ public:
     ReportPainter(const ReportStruct &info, QPrinter *printer);
     struct ReportTableSet
     {
-        ReportTableSet(bool paging):paging(paging){}
+        ReportTableSet(bool paging) : paging(paging) {}
         QPointF start()
         {
-            return QPointF(30, 150);
+            return QPointF(30, 170);
         }
         qreal rowHeight(Check_Mode mode)
         {
             switch (mode) {
             case Check_Mode::Hypertension:
-                return 40;
+                return 35;
             case Check_Mode::InternalMedicine:
-                return 26;
+                return 22;
             case Check_Mode::IntensiveCareUnit:
                 return 22;
             case Check_Mode::PhysicalExamination:
-                return 26;
+                return 22;
             }
             return -1;
         }
@@ -51,7 +51,7 @@ public:
         QVector<qreal> colWidth()
         {
             if (paging) {
-                return QVector<qreal>()<<160<<70<<100<<130;
+                return QVector<qreal>()<<170<<70<<100<<130;
             }
             return QVector<qreal>()<<160<<55<<55<<85<<115;
         }
@@ -64,6 +64,7 @@ private:
     void plrPage();
     void generalFooter();
 
+    QString getConsultation(int value);
     void setFontSize(int pointSize, bool bold = false);
     QRectF drawTableCell(QRectF rect, const QString &txt, int align = Qt::AlignCenter, int offset = 0);
     QMap<Type, qreal> valueMap(const QJsonObject &data, const QJsonArray &alldata);

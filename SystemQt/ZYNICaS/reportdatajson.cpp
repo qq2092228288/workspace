@@ -18,6 +18,7 @@ QJsonObject ReportDataJson::getJson()
                     { ReportDataName::ekey(ReportDataName::primaryPlace), info->hospitalName },
                     { ReportDataName::ekey(ReportDataName::secondaryPlace), info->roomName },
                     { ReportDataName::ekey(ReportDataName::inspector), info->doctorName },
+                    { ReportDataName::ekey(ReportDataName::consultationPlace), info->consultationHospitalName },
                     { ReportDataName::ekey(ReportDataName::mac), DataManagement::getInstance().getMac() }
                 });
     return json;
@@ -139,7 +140,8 @@ void ReportDataJson::clearCheckData()
 }
 
 void ReportDataJson::setPatientInfo(int age, float hb, int height, int weight, int sex,
-                                    const QString &patientName, const QString &medicalRecordNumber)
+                                    const QString &patientName, const QString &medicalRecordNumber,
+                                    int fhh, int edh, int ltsh, int lthms, int ptm, int al)
 {
     clear();
     json.insert(ReportDataName::ekey(ReportDataName::startTime), time());
@@ -152,6 +154,15 @@ void ReportDataJson::setPatientInfo(int age, float hb, int height, int weight, i
                     { ReportDataName::ekey(ReportDataName::sex), (sex == 0 ? QString("男") : QString("女")) },
                     { ReportDataName::ekey(ReportDataName::patientName), patientName },
                     { ReportDataName::ekey(ReportDataName::medicalRecordNumber), medicalRecordNumber }
+                });
+    json.insert(ReportDataName::ekey(ReportDataName::inquiry), QJsonObject
+                {
+                    { ReportDataName::ekey(ReportDataName::fhh), fhh },
+                    { ReportDataName::ekey(ReportDataName::edh), edh },
+                    { ReportDataName::ekey(ReportDataName::ltsh), ltsh },
+                    { ReportDataName::ekey(ReportDataName::lthms), lthms },
+                    { ReportDataName::ekey(ReportDataName::ptm), ptm },
+                    { ReportDataName::ekey(ReportDataName::al), al }
                 });
 }
 

@@ -65,6 +65,12 @@ QVariant ReportTableModel::data(const QModelIndex &index, int role) const
                 return (crow.modified ? QString("是") : QString("否"));
             }
         }
+        else if (Qt::BackgroundRole == role) {
+            if (m_list.at(row).modified) {
+                return QColor(135, 206, 235, 127);
+            }
+
+        }
         return QVariant();
     }
     return QVariant();

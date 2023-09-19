@@ -493,7 +493,7 @@ QString DataManagement::reportResult(bool record)
                         .arg(pevl(Type::CO), pevl(Type::CI), pevl(Type::SV), pevl(Type::SI), pevl(Type::HR),
                              pevl(Type::Vas), pevl(Type::Vol), pevl(Type::Ino), pevl(Type::SBP))
                         .arg(pevl(Type::DBP), pevl(Type::TFC), compare(Type::SV), compare(Type::ISI), preload());
-                result += tr("3.%1；\n  %2；\n  %3；\n  %4；").arg(fstr, tstr, sstr, hstr);
+                result += tr("3.%1；%2；%3；%4；").arg(fstr, tstr, sstr, hstr);
             }
             else if (m_pHospitalInfo->cMode == Check_Mode::PhysicalExamination) {
                 // 体检模式

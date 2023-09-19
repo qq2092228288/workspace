@@ -41,7 +41,7 @@
       ]
     },
     {
-      "module" : "前负荷容量",
+      "module" : "前负荷",
       "parameters" : [
         {
           "cn" : "胸液传导性",
@@ -107,6 +107,15 @@
     {
       "module" : "心肌收缩力",
       "parameters" : [
+        {
+          "cn" : "每搏做功指数",
+          "en" : "LSWI",
+          "unit" : "g·m/beat/m²",
+          "min" : 39.3,
+          "max" : 73.0,
+          "digit" : 1,
+          "type" : 28
+        },
         {
           "cn" : "变力状态指数",
           "en" : "ISI",

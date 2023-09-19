@@ -15,7 +15,6 @@
 #include <QComboBox>
 
 struct BodyValue;
-
 class PersonalInfoDialog : public QDialog
 {
     Q_OBJECT
@@ -27,7 +26,7 @@ public:
     void insertData(BodyValue &bValue);
 signals:
     // 病历号，姓名，性别 0男 1女，年龄，身高，体重
-    void patientInfo(QString,QString,int,int,int,int);
+    void patientInfo(QString, QString, int, int, int, int, int, int, int, int, int, int);
 private slots:
     void searchSlot();
     void deletePatientInfo();

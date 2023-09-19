@@ -314,8 +314,12 @@ void MqttClient::messageReceived(const QByteArray &message, const QMqttTopicName
                                Singleton::enumValueToKey(ReportTable::time),
                                key));
             if (sqlQuery.next()) {
+                auto json = object.value(key).toObject();
                 auto data = Singleton::utf8ToJsonObject(sqlQuery.value(0).toString().toUtf8());
-                data.insert(ReportDataName::ekey(ReportDataName::reportConclusion), object.value(key).toString());
+                auto reportConclusion = ReportDataName::ekey(ReportDataName::reportConclusion);
+                auto signature = ReportDataName::ekey(ReportDataName::signature);
+                data.insert(reportConclusion, json.value(reportConclusion).toString());
+                data.insert(signature, json.value(signature).toString());
                 sqlQuery.exec(QString("UPDATE %1 SET %2 = '%3', %4 = '%5' WHERE %6 = '%7'")
                               .arg(m_reportsTable,
                                    Singleton::enumValueToKey(ReportTable::data),

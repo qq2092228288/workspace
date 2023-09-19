@@ -139,7 +139,9 @@ void EnterSystemWidget::showEvent(QShowEvent *event)
         instance.getRegulator()->connectTrendChart(true);
         trendChartBtn->show();
     }
-    infoDialog->showHb(instance.getHospitalInfo()->cMode == Check_Mode::IntensiveCareUnit);
+    auto mode = instance.getHospitalInfo()->cMode;
+    infoDialog->showHb(mode == Check_Mode::IntensiveCareUnit);
+    infoDialog->showInquiry(mode == Check_Mode::Hypertension);
     event->accept();
 }
 
@@ -341,7 +343,8 @@ void EnterSystemWidget::signalsAndSlots()
         nameLineEdit->setText(bodyValue.name);
         numLineEdit->setText(bodyValue.id);
         // 设置报告数据
-        reportJson->setPatientInfo(bVal.age, bVal.hb, bVal.height, bVal.weight, bVal.sex, bVal.name, bVal.id);
+        reportJson->setPatientInfo(bVal.age, bVal.hb, bVal.height, bVal.weight, bVal.sex, bVal.name, bVal.id,
+                                   bVal.fhh, bVal.edh, bVal.ltsh, bVal.lthms, bVal.ptm, bVal.al);
     });
     connect(infoDialog, &InfoEditDialog::updateUi, this, [=](){
         rPos.clear();

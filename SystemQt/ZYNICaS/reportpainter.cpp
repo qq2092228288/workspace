@@ -157,7 +157,7 @@ void ReportPainter::generalHeader()
     auto data = m_info.data;
     // 场所信息
     auto place = data.value(ekey(ReportDataName::place)).toObject();
-    setFontSize(16, true);
+    setFontSize(14, true);
     // 医院LOGO
     QPixmap pixmap(DataManagement::getInstance().getPaths().hospitalLogo());
     if (!pixmap.isNull()) {
@@ -171,7 +171,9 @@ void ReportPainter::generalHeader()
     // 医院
     drawText(rectF(0, 10), Qt::AlignHCenter, place.value(ekey(ReportDataName::primaryPlace)).toString());
     // 标题
-    drawText(rectF(0, 40), Qt::AlignHCenter, QString("无创心功能监测报告"));
+    drawText(rectF(0, 33), Qt::AlignHCenter, QString("无创心功能监测报告"));
+    auto consultationPlace = place.value(ekey(ReportDataName::consultationPlace)).toString();
+    drawText(rectF(0, 55), Qt::AlignHCenter, QString("会诊医院: ") + consultationPlace);
     // 个人信息
     setFontSize(12, true);
     auto info = data.value(ekey(ReportDataName::patientInfo)).toObject();
@@ -188,7 +190,7 @@ void ReportPainter::generalHeader()
     drawText(rectF(625, hvalue1), "体 重:");
     auto weight = info.value(ekey(ReportDataName::weight)).toString().toInt();
     drawText(rectF(675, hvalue1), QString::number(weight) + " kg");
-    int hvalue2 = 110;
+    int hvalue2 = 100;
     drawText(rectF( 50, hvalue2), "体表面积:");
     drawText(rectF(125, hvalue2), QString::number(DataCalculation::cBsa(height, weight), 'f', 2) + " m²");
     QString departmentName = instance.departmentName();
@@ -199,7 +201,26 @@ void ReportPainter::generalHeader()
     drawText(rectF(325, hvalue2), place.value(ekey(ReportDataName::secondaryPlace)).toString());
     drawText(rectF(500, hvalue2), instance.idName() + ":");
     drawText(rectF(560, hvalue2), info.value(ekey(ReportDataName::medicalRecordNumber)).toString());
-    drawLine(QPointF(30, 140), QPointF(m_size.width() - 30, 140));
+
+    if (m_info.mode == Check_Mode::Hypertension) {
+        int hvalue3 = 120;
+        auto inquiry = data.value(ekey(ReportDataName::inquiry)).toObject();
+        drawText(rectF( 50, hvalue3), "高血压家族史: " +
+                 getConsultation(inquiry.value(ekey(ReportDataName::fhh)).toInt()));
+        drawText(rectF(250, hvalue3), "过量饮酒史: " +
+                 getConsultation(inquiry.value(ekey(ReportDataName::edh)).toInt()));
+        drawText(rectF(500, hvalue3), "长期吸烟史: " +
+                 getConsultation(inquiry.value(ekey(ReportDataName::ltsh)).toInt()));
+        int hvalue4 = 140;
+        drawText(rectF( 50, hvalue4), "长期精神紧张史: " +
+                 getConsultation(inquiry.value(ekey(ReportDataName::lthms)).toInt()));
+        drawText(rectF(250, hvalue4), "坚持服药: " +
+                 getConsultation(inquiry.value(ekey(ReportDataName::ptm)).toInt()));
+        drawText(rectF(500, hvalue4), "活动受限: " +
+                 getConsultation(inquiry.value(ekey(ReportDataName::al)).toInt()));
+    }
+
+    drawLine(QPointF(30, 162), QPointF(m_size.width() - 30, 162));
 }
 
 void ReportPainter::generalDataPage(int page)
@@ -295,7 +316,7 @@ void ReportPainter::generalDataPage(int page)
         generalDataPage(1);
     }
     if ((!m_info.paging || 1 == page) && secExist) {
-        drawIsiAndSv(QRectF(rectUnit.topRight().x() + 8, 700, 720 - rectUnit.topRight().x(), 100),
+        drawIsiAndSv(QRectF(rectUnit.topRight().x() + 8, 660, 720 - rectUnit.topRight().x(), 100),
                      fMap.value(Type::ISI), fMap.value(Type::SV), sMap.value(Type::ISI), sMap.value(Type::SV));
     }
     if (!m_info.paging || 1 == page || !secExist) {  // 不分页或者第二页
@@ -316,7 +337,7 @@ void ReportPainter::plrPage()
     generalFooter();
     // 被动抬腿试验
     setFontSize(16, true);
-    drawText(rectF(0, 160), Qt::AlignHCenter, "被动抬腿试验");
+    drawText(rectF(0, 170), Qt::AlignHCenter, "被动抬腿试验");
     // 数据
     auto position = m_info.data.value(ekey(ReportDataName::position)).toArray();
     auto fMap = valueMap(position.at(0).toObject().value(ekey(ReportDataName::data)).toObject(),
@@ -436,6 +457,29 @@ void ReportPainter::generalFooter()
     auto place = m_info.data.value(ekey(ReportDataName::place)).toObject();
     drawText(rectF(640, 1055), "检测人员:  " + place.value(ekey(ReportDataName::inspector)).toString());
     drawText(rectF(35, 1075), "此报告只说明检测当时状态的血流动力学情况，请结合临床具体情况综合分析。");
+    // 签名
+    auto const encoded = m_info.data.value(ekey(ReportDataName::signature)).toString().toLatin1();
+    if (!encoded.isEmpty()) {
+        QPixmap pixmap;
+        pixmap.loadFromData(QByteArray::fromBase64(encoded), "PNG");
+        drawText(rectF(640, 1085), "会诊医生:");
+        drawPixmap(QRect(690, 1080, 50, 25), pixmap);
+    }
+}
+
+QString ReportPainter::getConsultation(int value)
+{
+    switch (value) {
+    case 1:
+        return QString("是");
+    case 2:
+        return QString("否");
+    case 3:
+        return QString("不详");
+    default:
+        break;
+    }
+    return QString();
 }
 
 void ReportPainter::setFontSize(int pointSize, bool bold)
