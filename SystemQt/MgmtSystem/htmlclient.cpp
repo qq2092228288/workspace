@@ -2,6 +2,7 @@
 #include <singleton.h>
 #include <QSqlQuery>
 #include <QUuid>
+#include <QDateTime>
 #include <QDebug>
 #include "databasens.h"
 using namespace DatabaseEnumNs;
@@ -150,23 +151,26 @@ void HtmlClient::consultation(const QJsonObject &object)
                         reportTime,
                         ekey(ReportInfo::deviceId),
                         deviceId));
-        query.next();
-        auto reportData = Singleton::utf8ToJsonObject(query.value(0).toString().toUtf8());
-        reportData.insert(str, reportConclusion);
-        query.exec(QString("UPDATE %1 SET %2 = '1', %3 = '%4' WHERE %5 = '%6' AND %7 = '%8'")
-                   .arg(ename<ReportInfo>(),
-                        ekey(ReportInfo::modify),
-                        ekey(ReportInfo::reportData),
-                        Singleton::jsonToString(reportData),
-                        ekey(ReportInfo::reportTime),
-                        reportTime,
-                        ekey(ReportInfo::deviceId),
-                        deviceId));
-        if (query.lastError().type() == QSqlError::NoError) {
-            sendNewData(NewDataType::OperationSuccessful);
-        }
-        else {
-            sendNewData(NewDataType::OperationFailed);
+        if (query.next()) {
+            auto reportData = Singleton::utf8ToJsonObject(query.value(0).toString().toUtf8());
+            reportData.insert(str, reportConclusion);
+            reportData.insert("signature", object.value("signature").toString());
+            reportData.insert("consultationTime", QDateTime::currentDateTime().toString("yyyyMMddhhmmsszzz"));
+            query.exec(QString("UPDATE %1 SET %2 = '1', %3 = '%4' WHERE %5 = '%6' AND %7 = '%8'")
+                       .arg(ename<ReportInfo>(),
+                            ekey(ReportInfo::modify),
+                            ekey(ReportInfo::reportData),
+                            Singleton::jsonToString(reportData),
+                            ekey(ReportInfo::reportTime),
+                            reportTime,
+                            ekey(ReportInfo::deviceId),
+                            deviceId));
+            if (query.lastError().type() == QSqlError::NoError) {
+                sendNewData(NewDataType::OperationSuccessful);
+            }
+            else {
+                sendNewData(NewDataType::OperationFailed);
+            }
         }
     }
 }
