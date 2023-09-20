@@ -156,7 +156,7 @@ void HtmlClient::consultation(const QJsonObject &object)
             reportData.insert("consultation", QJsonObject
                               {
                                   { "signature", object.value("signature").toString() },
-                                  { "suggestion", object.value("consultation").toString() },
+                                  { "suggestion", object.value("suggestion").toString() },
                                   { "updateTime", QDateTime::currentDateTime().toString("yyyyMMddhhmmsszzz") }
                               });
             reportData.insert(str, reportConclusion);
