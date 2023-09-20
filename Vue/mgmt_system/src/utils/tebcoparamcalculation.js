@@ -314,7 +314,7 @@ function percent(value, ideal)
 
 function perPNJ(value1, value2)
 {
-  return (value1 >= value2 ? (value1/value2 - 1)*100 : (1 - value2/value1)*100);
+  return intercept((value1 >= value2 ? (value1/value2 - 1)*100 : (1 - value2/value1)*100), 4);
 }
 
 function checkValue(value)
@@ -343,7 +343,7 @@ function actualValue(value) {
   return value;
 }
 export function intercept(value, n) {
-  return Math.floor(value*qPow(10, n))/qPow(10, n)
+  return Math.trunc(value*qPow(10, n))/qPow(10, n)
 }
 /**
 * @description return position data object
@@ -369,7 +369,7 @@ export function positionData(bodyInfo, pdata) {
   const cvp = pdata[getValue(DataType.Cvp)];
   // 计算值
   const bsa = intercept(cBsa(height, weight), 2);
-  const vept = intercept(cVept(height, weight, sex), 6);
+  const vept = intercept(cVept(height, weight, sex), 0);
   const idealW = intercept(cIdealW(height, sex), 6);
   const map = intercept(cMap(sbp, dbp), dt.getFixed(DataType.Map));
 

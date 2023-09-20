@@ -125,9 +125,9 @@ export const ConnectToServer = (url) => {
             break;
         }
       })
-      window.core.reportData.connect(function(reprotdata) {
+      window.core.reportData.connect(function(reportdata) {
         try {
-          reportDialog(reprotdata)
+          reportDialog(reportdata)
         } catch (error) {
           ElMessage.error({
             message: '数据格式不正确',

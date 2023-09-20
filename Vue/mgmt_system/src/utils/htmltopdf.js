@@ -1,6 +1,7 @@
 // 页面导出为pdf格式
 import html2Canvas from 'html2canvas';
 import jsPDF from 'jspdf';
+import router from '@/router';
 
 const htmlToPdf = {
   getPdf(id, title, loading) {
@@ -56,6 +57,7 @@ const htmlToPdf = {
       }
       //保存文件
       pdf.save(title + '.pdf');
+      router.go(0)
       // loading = false;
     //   console.log(loading);
     });
