@@ -61,10 +61,11 @@ private:
     void thermalPage();
     void generalHeader();
     void generalDataPage(int page = 0);
+    void consultationPage(const QJsonObject &consultation);
     void plrPage();
     void generalFooter();
 
-    QString getConsultation(int value);
+    QString getInquiry(int value);
     void setFontSize(int pointSize, bool bold = false);
     QRectF drawTableCell(QRectF rect, const QString &txt, int align = Qt::AlignCenter, int offset = 0);
     QMap<Type, qreal> valueMap(const QJsonObject &data, const QJsonArray &alldata);

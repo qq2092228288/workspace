@@ -22,6 +22,12 @@ ReportPainter::ReportPainter(const ReportStruct &info, QPrinter *printer)
     else {
         // 数据页
         generalDataPage();
+        // 会诊建议页
+        auto consultation = m_info.data.value(ekey(ReportDataName::consultation)).toObject();
+        if (!consultation.isEmpty()) {
+            m_printer->newPage();
+            consultationPage(consultation);
+        }
         // PLR页
         if (m_info.mode != Check_Mode::PhysicalExamination &&
                 !m_info.data.value(ekey(ReportDataName::position)).toArray()
@@ -216,19 +222,13 @@ void ReportPainter::generalHeader()
             }
         }
         if (show) {
-            drawText(rectF( 50, hvalue3), "高血压家族史: " +
-                     getConsultation(inquiry.value(ekey(ReportDataName::fhh)).toInt()));
-            drawText(rectF(250, hvalue3), "过量饮酒史: " +
-                     getConsultation(inquiry.value(ekey(ReportDataName::edh)).toInt()));
-            drawText(rectF(500, hvalue3), "长期吸烟史: " +
-                     getConsultation(inquiry.value(ekey(ReportDataName::ltsh)).toInt()));
+            drawText(rectF( 50, hvalue3), "高血压家族史: " + getInquiry(inquiry.value(ekey(ReportDataName::fhh)).toInt()));
+            drawText(rectF(250, hvalue3), "过量饮酒史: " + getInquiry(inquiry.value(ekey(ReportDataName::edh)).toInt()));
+            drawText(rectF(500, hvalue3), "长期吸烟史: " + getInquiry(inquiry.value(ekey(ReportDataName::ltsh)).toInt()));
             int hvalue4 = 140;
-            drawText(rectF( 50, hvalue4), "长期精神紧张史: " +
-                     getConsultation(inquiry.value(ekey(ReportDataName::lthms)).toInt()));
-            drawText(rectF(250, hvalue4), "坚持服药: " +
-                     getConsultation(inquiry.value(ekey(ReportDataName::ptm)).toInt()));
-            drawText(rectF(500, hvalue4), "活动受限: " +
-                     getConsultation(inquiry.value(ekey(ReportDataName::al)).toInt()));
+            drawText(rectF( 50, hvalue4), "长期精神紧张史: " + getInquiry(inquiry.value(ekey(ReportDataName::lthms)).toInt()));
+            drawText(rectF(250, hvalue4), "坚持服药: " + getInquiry(inquiry.value(ekey(ReportDataName::ptm)).toInt()));
+            drawText(rectF(500, hvalue4), "活动受限: " + getInquiry(inquiry.value(ekey(ReportDataName::al)).toInt()));
         }
     }
 
@@ -341,6 +341,19 @@ void ReportPainter::generalDataPage(int page)
     }
 }
 
+void ReportPainter::consultationPage(const QJsonObject &consultation)
+{
+    // 页眉
+    generalHeader();
+    // 页脚
+    generalFooter();
+    setFontSize(14, true);
+    drawText(rectF(0, 170), Qt::AlignHCenter, "会诊建议");
+    setFontSize(8);
+    auto suggestion = consultation.value(ekey(ReportDataName::suggestion)).toString();
+    drawText(QRect(40, 200, m_size.width() - 80, m_size.height()), Qt::AlignLeft | Qt::TextWordWrap, suggestion);
+}
+
 void ReportPainter::plrPage()
 {
     // 页眉
@@ -348,7 +361,7 @@ void ReportPainter::plrPage()
     // 页脚
     generalFooter();
     // 被动抬腿试验
-    setFontSize(16, true);
+    setFontSize(14, true);
     drawText(rectF(0, 170), Qt::AlignHCenter, "被动抬腿试验");
     // 数据
     auto position = m_info.data.value(ekey(ReportDataName::position)).toArray();
@@ -402,7 +415,7 @@ void ReportPainter::plrPage()
         return;
     }
     // 心率变异性分析
-    setFontSize(16, true);
+    setFontSize(14, true);
     drawText(rectF(0, 600), Qt::AlignHCenter, "心率变异性分析");
     setFontSize(11);
     foreach (auto data, sAllData) {
@@ -470,7 +483,8 @@ void ReportPainter::generalFooter()
     drawText(rectF(640, 1055), "检测人员:  " + place.value(ekey(ReportDataName::inspector)).toString());
     drawText(rectF(35, 1075), "此报告只说明检测当时状态的血流动力学情况，请结合临床具体情况综合分析。");
     // 签名
-    auto const encoded = m_info.data.value(ekey(ReportDataName::signature)).toString().toLatin1();
+    auto consultation = m_info.data.value(ekey(ReportDataName::consultation)).toObject();
+    auto const encoded = consultation.value(ekey(ReportDataName::signature)).toString().toLatin1();
     if (!encoded.isEmpty()) {
         QPixmap pixmap;
         pixmap.loadFromData(QByteArray::fromBase64(encoded), "PNG");
@@ -479,7 +493,7 @@ void ReportPainter::generalFooter()
     }
 }
 
-QString ReportPainter::getConsultation(int value)
+QString ReportPainter::getInquiry(int value)
 {
     switch (value) {
     case 1:

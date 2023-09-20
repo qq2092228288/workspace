@@ -156,6 +156,13 @@ void InfoEditDialog::clear()
     heightLineEdit->clear();
     weightLineEdit->clear();
     hbLineEdit->clear();
+
+    fhhComboxBox->setCurrentIndex(0);
+    edhComboxBox->setCurrentIndex(0);
+    ltshComboxBox->setCurrentIndex(0);
+    lthmsComboxBox->setCurrentIndex(0);
+    ptmComboxBox->setCurrentIndex(0);
+    alComboxBox->setCurrentIndex(0);
 }
 
 void InfoEditDialog::clearSlot()
