@@ -415,9 +415,10 @@ void TopicAnalysis::response(const QByteArray &message, const QMqttTopicName &to
         while (sqlQuery.next()) {
             auto reportData = Singleton::utf8ToJsonObject(sqlQuery.value(1).toString().toUtf8());
             json.insert(QString::number(sqlQuery.value(0).toDateTime().toMSecsSinceEpoch()),
-                        QJsonObject {
-                            {"reportConclusion", reportData.value("reportConclusion").toString()},
-                            {"signature", reportData.value("signature").toString()}
+                        QJsonObject
+                        {
+                            { "consultation", reportData.value("consultation").toObject() },
+                            { "reportConclusion", reportData.value("reportConclusion").toString() }
                         });
         }
         data = Singleton::jsonToUtf8(json);

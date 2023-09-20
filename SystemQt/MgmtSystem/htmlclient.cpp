@@ -153,9 +153,13 @@ void HtmlClient::consultation(const QJsonObject &object)
                         deviceId));
         if (query.next()) {
             auto reportData = Singleton::utf8ToJsonObject(query.value(0).toString().toUtf8());
+            reportData.insert("consultation", QJsonObject
+                              {
+                                  { "signature", object.value("signature").toString() },
+                                  { "suggestion", object.value("consultation").toString() },
+                                  { "updateTime", QDateTime::currentDateTime().toString("yyyyMMddhhmmsszzz") }
+                              });
             reportData.insert(str, reportConclusion);
-            reportData.insert("signature", object.value("signature").toString());
-            reportData.insert("consultationTime", QDateTime::currentDateTime().toString("yyyyMMddhhmmsszzz"));
             query.exec(QString("UPDATE %1 SET %2 = '1', %3 = '%4' WHERE %5 = '%6' AND %7 = '%8'")
                        .arg(ename<ReportInfo>(),
                             ekey(ReportInfo::modify),
