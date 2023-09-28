@@ -106,7 +106,7 @@
 
 <script setup>
 import { Check, Close, Download } from '@element-plus/icons';
-import { ElButton, ElDialog, ElDivider, ElDrawer, ElInput, ElRadio, ElRadioGroup, ElRow, ElTable, ElTableColumn, ElTooltip } from 'element-plus';
+import { ElButton, ElDialog, ElDivider, ElDrawer, ElInput, ElMessage, ElRadio, ElRadioGroup, ElRow, ElTable, ElTableColumn, ElTooltip } from 'element-plus';
 import { ref } from 'vue';
 import { cBsa, createDataType, DataType, intercept, positionData } from '@/utils/tebcoparamcalculation';
 import { consultation } from '@/utils/communication';
@@ -398,6 +398,10 @@ const reportPrint = async () => {
 }
 const confirmSuggestion = () => {
   if (lco.value.length === 0 || preload.value.length === 0 || afterload.value.length === 0 || lvsf.value.length === 0 || lvdf.value.length === 0) {
+    ElMessage.error({
+      message: '所有项为必选',
+      showClose: true
+    })
     return
   }
   let str = lcoTopic + "\n" + lco.value + "\n" 

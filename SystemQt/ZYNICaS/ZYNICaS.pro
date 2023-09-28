@@ -1,4 +1,4 @@
-QT       += core gui widgets serialport charts concurrent
+QT       += core gui widgets serialport concurrent charts
 QT       += printsupport sql network
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
@@ -95,11 +95,11 @@ nicas.path = ../../commonFiles/nicas
 include(../../commonFiles/nicas.pri)
 
 INCLUDEPATH += ../ZyTebco \
-    ../IdCheck \
+#    ../IdCheck \
 #    ../../commonFiles/QRencode
 
 LIBS += -L$$PROJECT_LIBDIR -lZyTebco \
-    -L$$PROJECT_LIBDIR -lIdCheck \
+#    -L$$PROJECT_LIBDIR -lIdCheck \
 #    -L$$PROJECT_LIBDIR -lqrencoded
 
 # Default rules for deployment.
