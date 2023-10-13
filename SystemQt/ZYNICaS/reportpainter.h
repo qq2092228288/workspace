@@ -122,7 +122,8 @@ private:
     void drawIsiAndSv(QRectF rect, qreal fIsi, qreal fSv, qreal sIsi, qreal sSv);
     void drawArrow(QPointF start, QPointF end);
     void drawCurve(QList<QPointF> points);
-    void drawTrendChart(QRectF rect, Type type, QVector<qreal> fvect, QVector<qreal> svect = QVector<qreal>());
+    void drawTrendChart(QRectF rect, Type type, QString stime, QString etime,
+                        QVector<qreal> fvect, QVector<qreal> svect = QVector<qreal>());
     QPointF intersection(qreal ssvri, qreal lswi, qreal cvp, qreal lap);
     void positionSymbol(int pos, QPoint point, QColor color);
     void positionText(int pos, QPoint point, QColor color);
@@ -132,6 +133,7 @@ private:
     qreal circleX(qreal y, qreal r, qreal ox, qreal oy, bool negative);
     QRectF rectF(qreal x, qreal y);
     QString getPicFileName(int pos);
+    QString timeStyle(const QString &otime);
     template <class T>
     QString ekey(const T &t);
 private:

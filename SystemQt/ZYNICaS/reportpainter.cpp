@@ -388,6 +388,8 @@ void ReportPainter::trendChartPage(QVector<Type> types)
         auto type = types.at(i);
         auto alldata = trendChartsData.alldata(type);
         drawTrendChart(QRectF((i + 1) % 2 != 0 ? 30 : 403, 170 + 220 * (i / 2), 360, 210), type,
+                       timeStyle(trendChartsData.startTime),
+                       timeStyle(trendChartsData.endTime),
                        alldata.size() >= 1 ? alldata.at(0) : QVector<qreal>(),
                        alldata.size() >= 2 ? alldata.at(1) : QVector<qreal>());
     }
@@ -510,11 +512,7 @@ void ReportPainter::generalFooter()
         reportTime = position.at(0).toObject().value(ekey(ReportDataName::reportTime)).toString();
     }
     setFontSize(8);
-    auto time = QDateTime::fromString(reportTime, "yyyyMMddhhmmsszzz");
-    if (!time.isValid()) {
-        time = QDateTime::fromString(reportTime, "yyyyMMddhhmmss");
-    }
-    drawText(rectF(35, 1055), "报告时间: " + time.toString("yyyy-MM-dd hh:mm:ss"));
+    drawText(rectF(35, 1055), "报告时间: " + timeStyle(reportTime));
     auto place = m_info.data.value(ekey(ReportDataName::place)).toObject();
     drawText(rectF(640, 1055), "检测人员:  " + place.value(ekey(ReportDataName::inspector)).toString());
     drawText(rectF(35, 1075), "此报告只说明检测当时状态的血流动力学情况，请结合临床具体情况综合分析。");
@@ -850,7 +848,8 @@ void ReportPainter::drawCurve(QList<QPointF> points)
     drawPath(path);
 }
 
-void ReportPainter::drawTrendChart(QRectF rect, Type type, QVector<qreal> fvect, QVector<qreal> svect)
+void ReportPainter::drawTrendChart(QRectF rect, Type type, QString stime, QString etime,
+                                   QVector<qreal> fvect, QVector<qreal> svect)
 {
     auto vector = fvect + svect;
     drawRect(rect);
@@ -882,8 +881,8 @@ void ReportPainter::drawTrendChart(QRectF rect, Type type, QVector<qreal> fvect,
     setFontSize(8);
     // 时间
     auto rectTime = QRectF(rect.x() + 10, origin.y() + 5, rect.width() - 20, 15);
-    drawText(rectTime, Qt::AlignLeft, QString("起始: 2023-10-12 11:00:12"));
-    drawText(rectTime, Qt::AlignRight, QString("结束: 2023-10-12 11:08:05"));
+    drawText(rectTime, Qt::AlignLeft, QString("起始: %1").arg(stime));
+    drawText(rectTime, Qt::AlignRight, QString("结束: %1").arg(etime));
     // 正常范围线
     auto startMin = QPointF(origin.x(), origin.y() - (normalMin - min) * stepY);
     auto startMax = QPointF(origin.x(), origin.y() - (normalMax - min) * stepY);
@@ -1007,6 +1006,15 @@ QString ReportPainter::getPicFileName(int pos)
         return ":/images/leglift.png";
     }
     return QString();
+}
+
+QString ReportPainter::timeStyle(const QString &otime)
+{
+    auto time = QDateTime::fromString(otime, "yyyyMMddhhmmsszzz");
+    if (!time.isValid()) {
+        time = QDateTime::fromString(otime, "yyyyMMddhhmmss");
+    }
+    return time.toString("yyyy-MM-dd hh:mm:ss");
 }
 
 template<class T>
