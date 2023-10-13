@@ -134,6 +134,7 @@ void ReportDataJson::clear()
 {
     json = QJsonObject();
     data = QJsonObject();
+    tempData = QJsonObject();
     allData = QJsonArray();
     waveform = QJsonArray();
 }
@@ -201,7 +202,11 @@ void ReportDataJson::appendData(uchar type, short value)
 {
     if (Type::BEEP != type) {
         data.insert(QString::number(type), value);
-        allData.append(QJsonObject{{QString::number(type), value}});
+        tempData.insert(QString::number(type), value);
+        if (10 == tempData.size()) {
+            allData.append(tempData);
+            tempData = QJsonObject();
+        }
     }
 }
 

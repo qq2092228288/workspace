@@ -41,6 +41,7 @@ private:
 private:
     QJsonObject json;
     QJsonObject data;
+    QJsonObject tempData;
     QJsonArray allData;
     QJsonArray waveform;
 };

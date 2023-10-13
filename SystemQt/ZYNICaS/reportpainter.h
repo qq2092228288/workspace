@@ -8,6 +8,7 @@
 
 #include "reportset.h"
 #include "customctrl.h"
+#include "reportdatajson.h"
 
 struct ReportStruct
 {
@@ -17,6 +18,49 @@ struct ReportStruct
     Check_Mode mode;
     bool paging; // 分页
     QJsonObject data;
+};
+
+typedef QVector<QMap<Type, qreal>> ValueMaps;
+struct TrendChartsData
+{
+    TrendChartsData(const QJsonObject &object)
+    {
+        startTime = object.value(ekey(ReportDataName::startTime)).toString();
+        auto patientInfo = object.value(ekey(ReportDataName::patientInfo)).toObject();
+        auto position = object.value(ekey(ReportDataName::position)).toArray();
+        foreach (auto pos, position) {
+            auto index = pos.toObject();
+            endTime = index.value(ekey(ReportDataName::reportTime)).toString();
+            auto allData = index.value(ekey(ReportDataName::allData)).toArray();
+            auto dataMap = index.value(ekey(ReportDataName::data)).toObject().toVariantMap();
+            ValueMaps maps;
+            foreach (auto cdata, allData) {
+                dataMap.insert(cdata.toObject().toVariantMap());
+                maps<<ReportDataJson::valueMap(patientInfo, QJsonObject::fromVariantMap(dataMap), QJsonArray());
+            }
+            mapsVector<<maps;
+        }
+    }
+    QVector<QVector<qreal>> alldata(Type type)
+    {
+        QVector<QVector<qreal>> datas;
+        foreach (auto maps, mapsVector) {
+            QVector<qreal> data;
+            foreach (auto map, maps) {
+                data<<map.value(type);
+            }
+            datas<<data;
+        }
+        return datas;
+    }
+    template <class T>
+    QString ekey(const T &t)
+    {
+        return ReportDataName::ekey(t);
+    }
+    QString startTime;
+    QString endTime;
+    QVector<ValueMaps> mapsVector;
 };
 
 class ReportPainter : public QPainter
@@ -59,11 +103,13 @@ public:
     };
 private:
     void thermalPage();
-    void generalHeader();
+    void generalHeader(const QString &title);
     void generalDataPage(int page = 0);
     void consultationPage(const QJsonObject &consultation);
+    void trendChartPage(QVector<Type> types);
     void plrPage();
     void generalFooter();
+    void setGeneralHeaderAndFooter();
 
     QString getInquiry(int value);
     void setFontSize(int pointSize, bool bold = false);
@@ -76,6 +122,7 @@ private:
     void drawIsiAndSv(QRectF rect, qreal fIsi, qreal fSv, qreal sIsi, qreal sSv);
     void drawArrow(QPointF start, QPointF end);
     void drawCurve(QList<QPointF> points);
+    void drawTrendChart(QRectF rect, Type type, QVector<qreal> fvect, QVector<qreal> svect = QVector<qreal>());
     QPointF intersection(qreal ssvri, qreal lswi, qreal cvp, qreal lap);
     void positionSymbol(int pos, QPoint point, QColor color);
     void positionText(int pos, QPoint point, QColor color);

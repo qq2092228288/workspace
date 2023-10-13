@@ -24,7 +24,6 @@ SOURCES += \
     countdowngizmo.cpp \
 #    createreportthread.cpp \
     customctrl.cpp \
-    datacalculation.cpp \
     datamanagement.cpp \
     deviceparameters.cpp \
     drawsudoku.cpp \
@@ -59,7 +58,6 @@ HEADERS += \
     bpeditdialog.h \
     countdowngizmo.h \
     customctrl.h \
-    datacalculation.h \
     datamanagement.h \
     drawsudoku.h \
     drawwaveforms.h \
@@ -93,6 +91,7 @@ include(../../commonFiles/qt-solutions/qtsingleapplication/src/qtsingleapplicati
 include(../../commonFiles/MqttServerNs/mqttserverns.pri)
 nicas.path = ../../commonFiles/nicas
 include(../../commonFiles/nicas.pri)
+include(../../commonFiles/nicas/datacalculation/datacalculation.pri)
 
 INCLUDEPATH += ../ZyTebco \
 #    ../IdCheck \

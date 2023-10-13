@@ -1,9 +1,6 @@
-#ifndef SYSTEMCONFIGDIALOG_H
+ #ifndef SYSTEMCONFIGDIALOG_H
 #define SYSTEMCONFIGDIALOG_H
 
-#pragma comment(lib, "version.lib")
-#include <windows.h>
-#include <tchar.h>
 
 #include <QDialog>
 #include <QPushButton>
@@ -36,6 +33,7 @@ struct HospitalInfo
     Printer_Type pType;
     bool tip;
     bool samePage;
+    QString trendChartTitle;
     Check_Mode cMode;
 };
 
@@ -82,6 +80,8 @@ private:
     QRadioButton *xprinterRadio;
     QCheckBox *tipCheckBox;
     QCheckBox *samePageCheckBox;
+    QLabel *trendChartPageTitleLabel;
+    QLineEdit *trendChartPageTitleLineEdit;
     QPushButton *selectLogoBtn;
     QLabel *logoLabel;
     QGroupBox *checkModeGroupBox;

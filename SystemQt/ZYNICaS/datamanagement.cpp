@@ -415,13 +415,13 @@ QString DataManagement::reportResult(bool record)
                         m_pRegulator->getCustomCtrl("MAP")->getRecordValue() == 0)) {
         return nullptr;
     }
-    QString result;
+    QStringList result;
     if (m_pHospitalInfo->cMode == Check_Mode::Hypertension ||
             m_pHospitalInfo->cMode == Check_Mode::PhysicalExamination) {
-        result = tr("连续无创血流动力学对高血压病靶向分析报告如下：\n");
+        result<<tr("连续无创血流动力学对高血压病靶向分析报告如下：");
     }
     else {
-        result = tr("连续无创血流动力学分析报告如下：\n");
+        result<<tr("连续无创血流动力学分析报告如下：");
     }
     if (record) {   // 双体位
         if (m_pHospitalInfo->pType == Printer_Type::General) {
@@ -432,77 +432,82 @@ QString DataManagement::reportResult(bool record)
             auto hrv = m_pRegulator->getCustomCtrl(typeName(Type::HRV));
             auto map = m_pRegulator->getCustomCtrl(typeName(Type::MAP));
             QString fstr = tr("前负荷(容量负荷)：") + (isi->getCurrentValue() > isi->getRecordValue() && sv->getCurrentValue() > sv->getRecordValue() ?
-                                tr("正常") : tr("偏高(建议使用：减少钠盐摄入，使用利尿剂)，请结合临床分析"));
+                                tr("正常") : tr("偏高(建议使用：减少钠盐摄入，使用利尿剂)，请结合临床分析；"));
             QString tstr = tr("后负荷(张力负荷)：");
             if (map->getRecordValue() >= map->getMinValue() && map->getRecordValue() <= map->getMaxValue()) {
                 if (vas->getRecordValue() >= vas->getMinValue() && vas->getRecordValue() <= vas->getMaxValue()) {
-                    tstr += tr("正常");
+                    tstr += tr("正常；");
                 }
                 else {
-                    tstr += tr("正常(因血压正常，后负荷有益代偿)");
+                    tstr += tr("正常(因血压正常，后负荷有益代偿)；");
                 }
             }
             else if (map->getRecordValue() > map->getMaxValue()) {
                 if (vas->getRecordValue() >= vas->getMinValue() && vas->getRecordValue() <= vas->getMaxValue()) {
-                    tstr += tr("正常");
+                    tstr += tr("正常；");
                 }
                 else if (vas->getRecordValue() > vas->getMaxValue()) {
-                    tstr += tr("偏高(建议使用：ACEI，ARB)，请结合临床分析");
+                    tstr += tr("偏高(建议使用：ACEI，ARB)，请结合临床分析；");
                 }
             }
             else if (map->getRecordValue() < map->getMinValue()) {
                 if (vas->getRecordValue() <= vas->getMaxValue()) {
-                    tstr += tr("偏低");
+                    tstr += tr("偏低；");
                 }
             }
             QString sstr = tr("心肌力(心脏泵力)：");
             if (isi->getRecordValue() < isi->getMinValue()) {
-                sstr += tr("偏低");
+                sstr += tr("偏低；");
             }
             else if (isi->getRecordValue() > isi->getMaxValue()) {
-                sstr += tr("偏高(建议使用：β阻滞剂类，CCB)，请结合临床分析");
+                sstr += tr("偏高(建议使用：β阻滞剂类，CCB)，请结合临床分析；");
             }
             else {
-                sstr += tr("正常");
+                sstr += tr("正常；");
             }
             QString hstr = tr("心率变异性（交感神经兴奋度）：");
             if (hrv->getRecordValue() < hrv->getMinValue()) {
-                hstr += tr("偏低");
+                hstr += tr("偏低；");
             }
             else if (hrv->getRecordValue() > hrv->getMaxValue()) {
-                hstr += tr("偏高(建议使用：β阻滞剂，镇静剂类)，请结合临床分析");
+                hstr += tr("偏高(建议使用：β阻滞剂，镇静剂类)，请结合临床分析；");
             }
             else {
-                hstr += tr("正常");
+                hstr += tr("正常；");
             }
 
             if (m_pHospitalInfo->cMode == Check_Mode::Hypertension) {
                 // 高血压模式
-                result += tr("1.%1；\n2.%2；\n3.%3；\n4.%4；\n").arg(fstr, tstr, sstr, hstr);
+//                result += tr("1.%1；\n2.%2；\n3.%3；\n4.%4；\n").arg(fstr, tstr, sstr, hstr);
+                result<<fstr<<tstr<<sstr<<hstr;
             }
             else if (m_pHospitalInfo->cMode == Check_Mode::InternalMedicine) {
                 // 内科模式
-                result += tr("1.%1；\n2.%2；\n3.%3；\n4.%4；\n").arg(fstr, tstr, sstr, hstr);
+//                result += tr("1.%1；\n2.%2；\n3.%3；\n4.%4；\n").arg(fstr, tstr, sstr, hstr);
+                result<<fstr<<tstr<<sstr<<hstr;
             }
             else if (m_pHospitalInfo->cMode == Check_Mode::IntensiveCareUnit) {
                 // 重症模式
-                result += tr("1.第一体位：心输出量(CO)%1，心脏指数(CI)%2，搏排量(SV)%3，心搏指数(SI)%4，"
+                result<<tr("第一体位：心输出量(CO)%1，心脏指数(CI)%2，搏排量(SV)%3，心搏指数(SI)%4，"
                             "心率(HR)%5，血管顺应性(Vas)%6，血管容量(Vol)%7，收缩变力性(Ino)%8，"
-                            "收缩压(SBP)%9，舒张压(DBP)%10，胸液传导性(TFC)%11；\n"
-                            "2.第二体位增加容量负荷实验后：搏排量(SV)%12，变力状态指数(ISI)%13，%14；\n")
+                            "收缩压(SBP)%9，舒张压(DBP)%10，胸液传导性(TFC)%11；")
                         .arg(pevl(Type::CO), pevl(Type::CI), pevl(Type::SV), pevl(Type::SI), pevl(Type::HR),
                              pevl(Type::Vas), pevl(Type::Vol), pevl(Type::Ino), pevl(Type::SBP))
-                        .arg(pevl(Type::DBP), pevl(Type::TFC), compare(Type::SV), compare(Type::ISI), preload());
-                result += tr("3.%1；%2；%3；%4；").arg(fstr, tstr, sstr, hstr);
+                        .arg(pevl(Type::DBP), pevl(Type::TFC));
+                result<<tr("第二体位增加容量负荷实验后：搏排量(SV)%1，变力状态指数(ISI)%2，%3；")
+                        .arg(compare(Type::SV), compare(Type::ISI), preload());
+//                result += tr("3.%1；%2；%3；%4；").arg(fstr, tstr, sstr, hstr);
+                result<<tr("%1%2%3%4").arg(fstr, tstr, sstr, hstr);
             }
             else if (m_pHospitalInfo->cMode == Check_Mode::PhysicalExamination) {
                 // 体检模式
-                result += tr("1.%1；\n2.%2；\n3.%3；\n4.%4；\n").arg(fstr, tstr, sstr, hstr);
+//                result += tr("1.%1；\n2.%2；\n3.%3；\n4.%4；\n").arg(fstr, tstr, sstr, hstr);
+                result<<fstr<<tstr<<sstr<<hstr;
             }
         }
         else if (m_pHospitalInfo->pType == Printer_Type::Thermal) {
             //双体位热敏打印机报告
-            result = tr("无创血流动力学检测系统评价，心脏动力，血管阻力，血液容量，血压等循环系统情况结论如下：\n"
+            result<<tr("无创血流动力学检测系统评价，心脏动力，血管阻力，血液容量，血压等循环系统情况结论如下：\n"
                         "1.第一体位：CO%1，CI%2，SV%3，SI%4，HR%5，Vas%6，Vol%7，Ino%8，SBP%9，DBP%10，TFC%11；\n"
                         "2.第二体位增加容量负荷实验后：SV%12，ISI%13，%14。")
                     .arg(pevl(Type::CO), pevl(Type::CI), pevl(Type::SV), pevl(Type::SI), pevl(Type::HR),
@@ -518,48 +523,49 @@ QString DataManagement::reportResult(bool record)
         auto map = m_pRegulator->getCustomCtrl(typeName(Type::MAP));
         QString fstr = tr("前负荷(容量负荷)：");
         if (vol->getCurrentValue() < vol->getMinValue()) {
-            fstr += tr("偏低");
+            fstr += tr("偏低；");
         }
         else if (vol->getCurrentValue() > vol->getMaxValue()) {
             fstr += tr("偏高(建议使用：减少钠盐摄入，使用利尿剂)，请结合临床分析；");
         }
         else {
-            fstr += tr("正常");
+            fstr += tr("正常；");
         }
         QString tstr = tr("后负荷(张力负荷)：");
         if (vas->getCurrentValue() < vas->getMinValue()) {
-            tstr += tr("偏低");
+            tstr += tr("偏低；");
         }
         else if (vas->getCurrentValue() > vas->getMaxValue()) {
             tstr += tr("偏高(建议使用：ACEI，ARB)，请结合临床分析；");
         }
         else {
-            tstr += tr("正常");
+            tstr += tr("正常；");
         }
         QString sstr = tr("心肌力(心脏泵力)：");
         if (isi->getCurrentValue() < isi->getMinValue()) {
-            sstr += tr("偏低");
+            sstr += tr("偏低；");
         }
         else if (isi->getCurrentValue() > isi->getMaxValue()) {
             sstr += tr("偏高(建议使用：β阻滞剂类，CCB)，请结合临床分析；");
         }
         else {
-            sstr += tr("正常");
+            sstr += tr("正常；");
         }
         QString hstr = tr("心率变异性（交感神经兴奋度）：");
         if (hrv->getCurrentValue() < hrv->getMinValue()) {
-            hstr += tr("偏低");
+            hstr += tr("偏低；");
         }
         else if (hrv->getCurrentValue() > hrv->getMaxValue()) {
             hstr += tr("偏高(建议使用：β阻滞剂，镇静剂类)，请结合临床分析；");
         }
         else {
-            hstr += tr("正常");
+            hstr += tr("正常；");
         }
         if (map->getCurrentValue() < map->getMinValue() && vas->getCurrentValue() > vas->getMaxValue()) {
-            tstr += tr("(提示：病人血压低，后负荷被动性代偿)");
+            tstr += tr("(提示：病人血压低，后负荷被动性代偿)；");
         }
-        result += tr("1.%1\n2.%2\n3.%3\n4.%4\n").arg(fstr, tstr, sstr, hstr);
+//        result += tr("1.%1\n2.%2\n3.%3\n4.%4\n").arg(fstr, tstr, sstr, hstr);
+        result<<fstr<<tstr<<sstr<<hstr;
         if (m_pHospitalInfo->pType == Printer_Type::General) {
             // 单体位常规打印机报告
             // 体检模式
@@ -567,7 +573,8 @@ QString DataManagement::reportResult(bool record)
         else if (m_pHospitalInfo->pType == Printer_Type::Thermal) {
             // 单体位热敏打印机报告
             // 体检模式
-            result = tr("无创血流动力学检测系统评价，心脏动力，血管阻力，血液容量，血压等循环系统情况结论如下：\n"
+            result.clear();
+            result<<tr("无创血流动力学检测系统评价，心脏动力，血管阻力，血液容量，血压等循环系统情况结论如下：\n"
                         "1.心脏功能：CO%1，SV%2，SI%3，CI%4，Vol%5，Vas%6，Ino%7；\n"
                         "2.血压管理：SBP%8，DBP%9，HR%10；")
                     .arg(pevl(Type::CO, false), pevl(Type::SV, false), pevl(Type::SI, false),
@@ -576,7 +583,7 @@ QString DataManagement::reportResult(bool record)
                     .arg(pevl(Type::HR, false));
         }
     }
-    return result;
+    return result.join("|");
 }
 
 QString DataManagement::pevl(const Type &type, bool many)

@@ -36,6 +36,8 @@ SystemConfigDialog::SystemConfigDialog(QWidget *parent)
     xprinterRadio = new QRadioButton(tr("热敏打印机报告"), this);
     tipCheckBox = new QCheckBox(tr("高风险人群提示"), this);
     samePageCheckBox = new QCheckBox(tr("双体位同页"), this);
+    trendChartPageTitleLabel = new QLabel(tr("趋势图页标题"), this);
+    trendChartPageTitleLineEdit = new QLineEdit(this);
     selectLogoBtn = new QPushButton(tr("选择logo"), this);
     logoLabel = new QLabel(this);
     checkModeGroupBox = new QGroupBox(tr("模式配置"), this);
@@ -117,8 +119,10 @@ SystemConfigDialog::SystemConfigDialog(QWidget *parent)
     rLayout->addWidget(xprinterRadio, 0, 2, 1, 2);
     rLayout->addWidget(tipCheckBox, 1, 0, 1, 2);
     rLayout->addWidget(samePageCheckBox, 1, 2, 1, 2);
-    rLayout->addWidget(selectLogoBtn, 2, 0, Qt::AlignLeft);
-    rLayout->addWidget(logoLabel, 2, 1, Qt::AlignLeft);
+    rLayout->addWidget(trendChartPageTitleLabel, 2, 0);
+    rLayout->addWidget(trendChartPageTitleLineEdit, 2, 1);
+    rLayout->addWidget(selectLogoBtn, 3, 0, Qt::AlignLeft);
+    rLayout->addWidget(logoLabel, 3, 1, Qt::AlignLeft);
 
     cLayout->addWidget(generalModeRadio, 0, 0);
     cLayout->addWidget(professionalModeRadio, 0, 1);
@@ -170,6 +174,7 @@ SystemConfigDialog::SystemConfigDialog(QWidget *parent)
         in<<QString("printer=\"0\"\n");
         in<<QString("tip=\"0\"\n");
         in<<QString("samepage=\"0\"\n");
+        in<<QString("trendcharttitle=\"心血流图监测报告\"\n");
         in<<QString("mode=\"0\"\n");
         in<<QString("serialport=\"COM3\"\n");
         file.close();
@@ -231,6 +236,9 @@ SystemConfigDialog::SystemConfigDialog(QWidget *parent)
                 else if (name == "samepage") {
                     samePageCheckBox->setChecked(value.toInt());
                 }
+                else if (name == "trendcharttitle") {
+                    trendChartPageTitleLineEdit->setText(value);
+                }
                 else if (name == "mode") {
                     auto btn = modeButtonGroup->button(value.toInt());
                     if (nullptr != btn) {
@@ -266,6 +274,7 @@ void SystemConfigDialog::updateHospitalInfo()
     hospitalInfo.pType = Printer_Type(printerButtonGroup->checkedId());
     hospitalInfo.tip = tipCheckBox->isChecked();
     hospitalInfo.samePage = samePageCheckBox->isChecked();
+    hospitalInfo.trendChartTitle = trendChartPageTitleLineEdit->text();
     hospitalInfo.cMode = Check_Mode(modeButtonGroup->checkedId());
     DataManagement::getInstance().setHospitalInfo(&hospitalInfo);
     emit modeChanged(Check_Mode(modeButtonGroup->checkedId()));
@@ -355,6 +364,7 @@ void SystemConfigDialog::closeEvent(QCloseEvent *event)
         in<<QString("printer=\"%1\"\n").arg(printerButtonGroup->checkedId());
         in<<QString("tip=\"%1\"\n").arg(tipCheckBox->isChecked());
         in<<QString("samepage=\"%1\"\n").arg(samePageCheckBox->isChecked());
+        in<<QString("trendcharttitle=\"%1\"\n").arg(trendChartPageTitleLineEdit->text());
         in<<QString("mode=\"%1\"\n").arg(modeButtonGroup->checkedId());
         in<<QString("serialport=\"%1\"\n").arg(serialPortComboBox->currentText());
         file.close();
