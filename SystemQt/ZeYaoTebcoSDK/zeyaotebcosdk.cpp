@@ -8,7 +8,7 @@ ZeYaoTebcoSDK::ZeYaoTebcoSDK(QObject *parent)
 
 }
 
-bool ZeYaoTebcoSDK::startCheck(int gender, int age, int height, int weight, const std::string &portname)
+bool ZeYaoTebcoSDK::startCheck(int gender, int age, int height, int weight, const char *portname)
 {
     return d_ptr->startCheck(gender, age, height, weight, portname);
 }

@@ -56,7 +56,7 @@ public:
     explicit ZeYaoTebcoSDKPrivate(QObject *q);
     virtual ~ZeYaoTebcoSDKPrivate();
 public:
-    bool startCheck(int gender, int age, int height, int weight, const std::string &portname);
+    bool startCheck(int gender, int age, int height, int weight, const char *portname);
     void setSbpAndDbp(int sbp, int dbp);
     void endChecked();
     bool isChecking();

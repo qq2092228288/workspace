@@ -13,7 +13,6 @@ ZeYaoTebcoSDKPrivate::ZeYaoTebcoSDKPrivate(QObject *q)
       q_ptr{qobject_cast<ZeYaoTebcoSDK *>(q)}
 {
     // 类型注册
-    qRegisterMetaType<std::string>("std::string");
     qRegisterMetaType<QMqttTopicName>("QMqttTopicName");
     qRegisterMetaType<QMqttClient::ClientState>("ClientState");
     // 串口
@@ -44,16 +43,16 @@ ZeYaoTebcoSDKPrivate::~ZeYaoTebcoSDKPrivate()
     m_pSerialPort->deleteLater();
 }
 
-bool ZeYaoTebcoSDKPrivate::startCheck(int gender, int age, int height, int weight, const std::string &portname)
+bool ZeYaoTebcoSDKPrivate::startCheck(int gender, int age, int height, int weight, const char *portname)
 {
     // 设置基本数据
     m_data = BaseData(gender, age, height, weight);
     // 串口已打开或名称为空
-    if (m_pSerialPort->isOpen() || portname.empty()) {
+    if (m_pSerialPort->isOpen()) {
         return false;
     }
     // 设置串口名称
-    m_pSerialPort->setPortName(QString::fromStdString(portname));
+    m_pSerialPort->setPortName(QString(portname));
     return m_pSerialPort->open(QIODevice::ReadOnly);
 }
 
@@ -130,11 +129,6 @@ void ZeYaoTebcoSDKPrivate::parsingMessages()
     default:
         break;
     }
-
-//    if (6 == m_jsonObject.count()) {
-//        emit q_ptr->sendData(QJsonDocument(m_jsonObject).toJson(QJsonDocument::Compact).toStdString());
-//        m_jsonObject = QJsonObject();
-//    }
 }
 
 void ZeYaoTebcoSDKPrivate::stateChanged(QMqttClient::ClientState state)

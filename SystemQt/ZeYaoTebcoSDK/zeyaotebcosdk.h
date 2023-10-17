@@ -9,7 +9,6 @@
 #  define ZEYAOTEBCOSDK_EXPORT Q_DECL_IMPORT
 #endif
 
-#include <iostream>
 #include <QObject>
 
 
@@ -20,15 +19,13 @@ class ZEYAOTEBCOSDK_EXPORT ZeYaoTebcoSDK : public QObject
 public:
     explicit ZeYaoTebcoSDK(QObject *parent = nullptr);
 public:
-    bool startCheck(int gender, int age, int height, int weight, const std::string &portname);
+    bool startCheck(int gender, int age, int height, int weight, const char *portname);
     void setSbpAndDbp(int sbp, int dbp);
     void endChecked();
     bool isChecking();
     int dataLength();
     void readAll(char *str);
 //    std::string error();
-signals:
-    void sendData(std::string);
 private:
     ZeYaoTebcoSDKPrivate *d_ptr;
 };
