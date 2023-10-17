@@ -925,10 +925,10 @@ void ReportPainter::positionSymbol(int pos, QPoint point, QColor color)
     if (1 == pos) {
         drawRect(rect);
     }
-    else if (1 == pos) {
+    else if (2 == pos) {
         drawEllipse(rect);
     }
-    else if (2 == pos) {
+    else if (3 == pos) {
         QPolygon triangle;
         triangle.setPoints(3, point.x(), point.y() - 3,
                            point.x() + 3, point.y() + 3,
