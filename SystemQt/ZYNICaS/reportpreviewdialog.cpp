@@ -11,7 +11,7 @@ ReportPreviewDialog::ReportPreviewDialog(const QJsonObject &data, HospitalInfo *
     printer->setPageSize(QPageSize(info->pType == Printer_Type::Thermal ? QSizeF(72, 297) : QSizeF(210, 297),
                                    QPageSize::Millimeter));
     printer->setFullPage(true);
-    printer->setPageMargins(QMarginsF(0,0,0,0));
+    printer->setPageMargins(QMarginsF(0,0,0,0), QPageLayout::Millimeter);
     resize(screen()->availableSize());
     setWindowTitle("报告预览");
     setWindowFlags(Qt::Dialog | Qt::WindowMinMaxButtonsHint | Qt::WindowCloseButtonHint);

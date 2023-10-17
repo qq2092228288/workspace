@@ -177,25 +177,25 @@ void ReportPainter::generalHeader(const QString &title)
     QPixmap pixmap(DataManagement::getInstance().getPaths().hospitalLogo());
     if (!pixmap.isNull()) {
         if (pixmap.width() > pixmap.height()) {
-            drawPixmap(QRect(30, 15, 50, pixmap.height() * 50 / pixmap.width()), pixmap);
+            drawPixmap(QRect(30, 25, 50, pixmap.height() * 50 / pixmap.width()), pixmap);
         }
         else {
-            drawPixmap(QRect(30, 15, pixmap.width() * 50 / pixmap.height(), 50), pixmap);
+            drawPixmap(QRect(30, 25, pixmap.width() * 50 / pixmap.height(), 50), pixmap);
         }
     }
     // 医院
-    drawText(rectF(0, 10), Qt::AlignHCenter, place.value(ekey(ReportDataName::primaryPlace)).toString());
+    drawText(rectF(0, 25), Qt::AlignHCenter, place.value(ekey(ReportDataName::primaryPlace)).toString());
     // 标题
-    drawText(rectF(0, 33), Qt::AlignHCenter, title);
+    drawText(rectF(0, 45), Qt::AlignHCenter, title);
+    setFontSize(12, true);
     // 会诊医院
     auto consultationPlace = place.value(ekey(ReportDataName::consultationPlace)).toString();
     if (!consultationPlace.isEmpty()) {
-        drawText(rectF(0, 55), Qt::AlignHCenter, QString("会诊医院: ") + consultationPlace);
+        drawText(rectF(0, 65), Qt::AlignHCenter, QString("会诊医院: ") + consultationPlace);
     }
     // 个人信息
-    setFontSize(12, true);
     auto info = data.value(ekey(ReportDataName::patientInfo)).toObject();
-    int hvalue1 = 80;
+    int hvalue1 = 85;
     drawText(rectF( 50, hvalue1), "姓 名:");
     drawText(rectF(125, hvalue1), info.value(ekey(ReportDataName::patientName)).toString());
     drawText(rectF(250, hvalue1), "性 别:");
@@ -208,7 +208,7 @@ void ReportPainter::generalHeader(const QString &title)
     drawText(rectF(625, hvalue1), "体 重:");
     auto weight = info.value(ekey(ReportDataName::weight)).toString().toInt();
     drawText(rectF(675, hvalue1), QString::number(weight) + " kg");
-    int hvalue2 = 100;
+    int hvalue2 = 105;
     drawText(rectF( 50, hvalue2), "体表面积:");
     drawText(rectF(125, hvalue2), QString::number(DataCalculation::cBsa(height, weight), 'f', 2) + " m²");
     QString departmentName = instance.departmentName();
@@ -219,9 +219,9 @@ void ReportPainter::generalHeader(const QString &title)
     drawText(rectF(325, hvalue2), place.value(ekey(ReportDataName::secondaryPlace)).toString());
     drawText(rectF(500, hvalue2), instance.idName() + ":");
     drawText(rectF(560, hvalue2), info.value(ekey(ReportDataName::medicalRecordNumber)).toString());
-
+    setFontSize(10, true);
     if (m_info.mode == Check_Mode::Hypertension) {
-        int hvalue3 = 120;
+        int hvalue3 = 125;
         auto inquiry = data.value(ekey(ReportDataName::inquiry)).toObject();
         bool show = !inquiry.isEmpty();
         foreach (auto value, inquiry) {
