@@ -10,6 +10,8 @@
 #include <QtMqtt/qmqttglobal.h>
 
 #include <iostream>
+#include <cmath>
+#include <cstring>
 #include "datacalculation.h"
 
 static qreal intercept(qreal value, int digit)
