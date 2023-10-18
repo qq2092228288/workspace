@@ -38,3 +38,8 @@ void ZeYaoTebcoSDK::readAll(char *str)
     d_ptr->readAll(str);
 }
 
+string ZeYaoTebcoSDK::readAll()
+{
+    return d_ptr->readAll();
+}
+

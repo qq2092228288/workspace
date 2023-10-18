@@ -14,9 +14,11 @@
 #include <cstring>
 #include "datacalculation.h"
 
+using namespace std;
+
 static qreal intercept(qreal value, int digit)
 {
-    return DatCa::invalid() != value ? (static_cast<int>(value * std::pow(10, digit)))/std::pow(10, digit) : value;
+    return DatCa::invalid() != value ? (static_cast<int>(value * pow(10, digit))) / pow(10, digit) : value;
 }
 
 struct BaseData
@@ -64,6 +66,7 @@ public:
     bool isChecking();
     int dataLength();
     int readAll(char *str);
+    string readAll();
 //    std::string error();
 private slots:
     void parsingMessages();

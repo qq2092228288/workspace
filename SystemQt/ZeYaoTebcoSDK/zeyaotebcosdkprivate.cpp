@@ -96,6 +96,14 @@ int ZeYaoTebcoSDKPrivate::readAll(char *str)
     return len;
 }
 
+string ZeYaoTebcoSDKPrivate::readAll()
+{
+    if (6 != m_jsonObject.count()) return string();
+    auto data = QJsonDocument(m_jsonObject).toJson(QJsonDocument::Compact).toStdString();
+    m_jsonObject = QJsonObject();
+    return data;
+}
+
 void ZeYaoTebcoSDKPrivate::parsingMessages()
 {
     auto data = m_pSerialPort->readAll();

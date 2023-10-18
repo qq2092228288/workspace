@@ -10,7 +10,10 @@
 #endif
 
 #include <QObject>
+#include <iostream>
+#include <cstring>
 
+using namespace std;
 
 class ZeYaoTebcoSDKPrivate;
 class ZEYAOTEBCOSDK_EXPORT ZeYaoTebcoSDK : public QObject
@@ -25,6 +28,7 @@ public:
     bool isChecking();
     int dataLength();
     void readAll(char *str);
+    string readAll();
 //    std::string error();
 private:
     ZeYaoTebcoSDKPrivate *d_ptr;
