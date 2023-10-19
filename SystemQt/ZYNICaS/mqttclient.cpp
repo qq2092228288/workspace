@@ -2,7 +2,7 @@
 #include <singleton.h>
 #include <databasens.h>
 #include <QCoreApplication>
-#include "reportset.h"
+#include "reportdataname.h"
 using namespace DatabaseEnumNs;
 
 MqttClient::MqttClient(QObject *parent)
@@ -237,10 +237,7 @@ void MqttClient::stateChanged(QMqttClient::ClientState state)
 
 void MqttClient::messageReceived(const QByteArray &message, const QMqttTopicName &topic)
 {
-    if (topic.levelCount() != 3) {
-        return;
-    }
-    if (message.isNull()) {
+    if (topic.levelCount() != 3 || message.isNull()) {
         return;
     }
     auto level2 = SecondaryTopic(Singleton::enumKeyToValue<SecondaryTopic>(topic.levels().at(1)));

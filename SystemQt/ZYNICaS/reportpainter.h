@@ -7,8 +7,9 @@
 #include <QJsonObject>
 
 #include "reportset.h"
-#include "customctrl.h"
+#include "datatype.h"
 #include "reportdatajson.h"
+#include "reportdataname.h"
 
 struct ReportStruct
 {
@@ -36,7 +37,8 @@ struct TrendChartsData
             ValueMaps maps;
             foreach (auto cdata, allData) {
                 dataMap.insert(cdata.toObject().toVariantMap());
-                maps<<ReportDataJson::valueMap(patientInfo, QJsonObject::fromVariantMap(dataMap), QJsonArray());
+                maps<<ReportDataJson::valueMap(patientInfo, QJsonObject::fromVariantMap(dataMap), QJsonArray(),
+                                               ReportParameters::array(Check_Mode::IntensiveCareUnit));
             }
             mapsVector<<maps;
         }

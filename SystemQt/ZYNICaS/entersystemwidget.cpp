@@ -622,10 +622,13 @@ void EnterSystemWidget::createReport()
         reportJson->appendPosition(bodyValue.SBP, bodyValue.DBP, bodyValue.CVP, bodyValue.LAP, posGroup.checkedId() + 1);
         QDateTime curTime = QDateTime::fromString(reportJson->getReportTime(), "yyyyMMddhhmmsszzz");
         reportJson->setReportConclusion(instance.reportCreated(!rPos.isEmpty()));
-        emit createdReport(curTime.toMSecsSinceEpoch(), reportJson->getJsonString());
+        auto info = instance.getHospitalInfo();
+        auto json = reportJson->getJson(info->hospitalName, info->roomName, info->doctorName,
+                                        info->consultationHospitalName, instance.getMac());
+        emit createdReport(curTime.toMSecsSinceEpoch(), QString(QJsonDocument(json).toJson(QJsonDocument::Compact)));
         // 报告预览
         QPrinter printer(QPrinter::ScreenResolution);
-        ReportPreviewDialog dialog(reportJson->getJson(), instance.getHospitalInfo(), &printer);
+        ReportPreviewDialog dialog(json, instance.getHospitalInfo(), &printer);
         dialog.exec();
 
         reportJson->clear();

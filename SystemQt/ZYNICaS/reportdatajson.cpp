@@ -1,9 +1,8 @@
 #include "reportdatajson.h"
 #include <QDateTime>
 #include <qmath.h>
-#include "datamanagement.h"
 #include "datacalculation.h"
-#include "reportset.h"
+#include "reportdataname.h"
 
 
 ReportDataJson::ReportDataJson(QObject *parent)
@@ -12,25 +11,24 @@ ReportDataJson::ReportDataJson(QObject *parent)
 
 }
 
-QJsonObject ReportDataJson::getJson()
+QJsonObject ReportDataJson::getJson(const QString &hospitalName, const QString &roomName,  const QString &doctorName,
+                                    const QString &consultationHospitalName, const QString &mac)
 {
-    // 场所信息
-    auto info = DataManagement::getInstance().getHospitalInfo();
     json.insert(ReportDataName::ekey(ReportDataName::place), QJsonObject
                 {
-                    { ReportDataName::ekey(ReportDataName::primaryPlace), info->hospitalName },
-                    { ReportDataName::ekey(ReportDataName::secondaryPlace), info->roomName },
-                    { ReportDataName::ekey(ReportDataName::inspector), info->doctorName },
-                    { ReportDataName::ekey(ReportDataName::consultationPlace), info->consultationHospitalName },
-                    { ReportDataName::ekey(ReportDataName::mac), DataManagement::getInstance().getMac() }
+                    { ReportDataName::ekey(ReportDataName::primaryPlace), hospitalName },
+                    { ReportDataName::ekey(ReportDataName::secondaryPlace), roomName },
+                    { ReportDataName::ekey(ReportDataName::inspector), doctorName },
+                    { ReportDataName::ekey(ReportDataName::consultationPlace), consultationHospitalName },
+                    { ReportDataName::ekey(ReportDataName::mac), mac }
                 });
     return json;
 }
 
-QString ReportDataJson::getJsonString()
-{
-    return QString(QJsonDocument(getJson()).toJson(QJsonDocument::Compact));
-}
+//QString ReportDataJson::getJsonString()
+//{
+//    return QString(QJsonDocument(getJson()).toJson(QJsonDocument::Compact));
+//}
 
 QString ReportDataJson::getReportTime()
 {
@@ -42,7 +40,8 @@ QString ReportDataJson::getReportTime()
     return reportTime;
 }
 
-QMap<Type, qreal> ReportDataJson::valueMap(const QJsonObject &info, const QJsonObject &data, const QJsonArray &alldata)
+QMap<Type, qreal> ReportDataJson::valueMap(const QJsonObject &info, const QJsonObject &data,
+                                           const QJsonArray &alldata, const QJsonArray &reportStruct)
 {
     // 基本数据
     auto age = info.value(ReportDataName::ekey(ReportDataName::age)).toString().toInt();
@@ -55,7 +54,7 @@ QMap<Type, qreal> ReportDataJson::valueMap(const QJsonObject &info, const QJsonO
     auto lap = data.value(QString::number(Type::LAP)).toInt();
     auto cvp = data.value(QString::number(Type::CVP)).toInt();
 
-    auto dMap = ReportParameters::digitMap();
+    auto dMap = ReportDataName::digitMap(reportStruct);
     // 计算值
     auto bsa = intercept(DatCa::cBsa(height, weight), 2);
     auto vept = intercept(DatCa::cVept(height, weight, sex), 0);

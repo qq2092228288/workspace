@@ -1,5 +1,5 @@
 #include "reporttablemodel.h"
-#include "reportset.h"
+#include "reportdataname.h"
 #include "datamanagement.h"
 
 ReportModelItem::ReportModelItem(const qint64 &_time, const int &_modified, const QJsonObject &data)

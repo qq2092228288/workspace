@@ -91,7 +91,6 @@ include(../../commonFiles/qt-solutions/qtsingleapplication/src/qtsingleapplicati
 include(../../commonFiles/MqttServerNs/mqttserverns.pri)
 nicas.path = ../../commonFiles/nicas
 include(../../commonFiles/nicas.pri)
-include(../../commonFiles/nicas/datacalculation/datacalculation.pri)
 
 INCLUDEPATH += ../ZyTebco \
 #    ../IdCheck \

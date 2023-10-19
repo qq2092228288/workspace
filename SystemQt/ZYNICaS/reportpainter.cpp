@@ -567,7 +567,8 @@ QRectF ReportPainter::drawTableCell(QRectF rect, const QString &txt, int align, 
 
 QMap<Type, qreal> ReportPainter::valueMap(const QJsonObject &data, const QJsonArray &alldata)
 {
-    return ReportDataJson::valueMap(m_info.data.value(ekey(ReportDataName::patientInfo)).toObject(), data, alldata);
+    return ReportDataJson::valueMap(m_info.data.value(ekey(ReportDataName::patientInfo)).toObject(), data, alldata,
+                                    ReportParameters::array(Check_Mode::IntensiveCareUnit));
 }
 
 void ReportPainter::drawValue(const QJsonObject &parameter, QMap<Type, qreal> map, QRectF rect, qreal _y)

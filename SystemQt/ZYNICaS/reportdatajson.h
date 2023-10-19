@@ -6,17 +6,20 @@
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QMap>
-#include "customctrl.h"
+
+#include "datatype.h"
 
 class ReportDataJson : public QObject
 {
     Q_OBJECT
 public:
     explicit ReportDataJson(QObject *parent = nullptr);
-    QJsonObject getJson();
-    QString getJsonString();
+    QJsonObject getJson(const QString &hospitalName, const QString &roomName,  const QString &doctorName,
+                        const QString &consultationHospitalName, const QString &mac);
+//    QString getJsonString();
     QString getReportTime();
-    static QMap<Type, qreal> valueMap(const QJsonObject &info, const QJsonObject &data, const QJsonArray &alldata);
+    static QMap<Type, qreal> valueMap(const QJsonObject &info, const QJsonObject &data, const QJsonArray &alldata,
+                                      const QJsonArray &reportStruct);
     static QVector<qreal> allValue(Type type, const QJsonArray &alldata);
 public slots:
     // 清空
