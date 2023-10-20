@@ -1,5 +1,5 @@
 QT -= gui
-QT += core serialport
+QT += core serialport sql
 
 TEMPLATE = lib
 DEFINES += ZEYAOTEBCOSDK_LIBRARY
@@ -20,7 +20,8 @@ HEADERS += \
 
 
 include(../../commonFiles/base.pri)
-include(../../commonFiles/nicas/datacalculation/datacalculation.pri)
+include(../../commonFiles/nicas/report.pri)
+include(../../commonFiles/MqttServerNs/mqttserverns.pri)
 
 win32:CONFIG(release, debug|release): LIBS += -L$$[QT_INSTALL_LIBS] -lQt5Mqtt
 else:win32:CONFIG(debug, debug|release): LIBS += -L$$[QT_INSTALL_LIBS] -lQt5Mqttd

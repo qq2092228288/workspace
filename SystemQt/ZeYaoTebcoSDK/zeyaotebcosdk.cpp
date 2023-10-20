@@ -1,45 +1,69 @@
 #include "zeyaotebcosdk.h"
 #include "zeyaotebcosdkprivate.h"
 
-ZeYaoTebcoSDK::ZeYaoTebcoSDK(QObject *parent)
-    : QObject{parent},
-      d_ptr{new ZeYaoTebcoSDKPrivate(this)}
+ZeYaoTebcoSDK::ZeYaoTebcoSDK()
+    : d_ptr{new ZeYaoTebcoSDKPrivate}
 {
 
 }
 
-bool ZeYaoTebcoSDK::startCheck(int gender, int age, int height, int weight, const char *portname)
+ZeYaoTebcoSDK::~ZeYaoTebcoSDK()
 {
-    return d_ptr->startCheck(gender, age, height, weight, portname);
+
 }
 
-void ZeYaoTebcoSDK::setSbpAndDbp(int sbp, int dbp)
+void ZeYaoTebcoSDK::login(string deviceId, string password)
 {
-    d_ptr->setSbpAndDbp(sbp, dbp);
+    d_ptr->login(QString::fromStdString(deviceId), QString::fromStdString(password));
 }
 
-void ZeYaoTebcoSDK::endChecked()
+bool ZeYaoTebcoSDK::open(string portname)
 {
-    d_ptr->endChecked();
+    return d_ptr->open(QString::fromStdString(portname));
 }
 
-bool ZeYaoTebcoSDK::isChecking()
+int ZeYaoTebcoSDK::close()
 {
-    return d_ptr->isChecking();
+    return d_ptr->close();
 }
 
-int ZeYaoTebcoSDK::dataLength()
+int ZeYaoTebcoSDK::start(string name, string id, int gender, int age, int height, int weight)
 {
-    return d_ptr->dataLength();
+    return d_ptr->start(QString::fromStdString(name), QString::fromStdString(id), gender, age, height, weight);
 }
 
-void ZeYaoTebcoSDK::readAll(char *str)
+int ZeYaoTebcoSDK::appendBpAndPostion(int sbp, int dbp, int postion)
 {
-    d_ptr->readAll(str);
+    return d_ptr->appendBpAndPostion(sbp, dbp, postion);
+}
+
+int ZeYaoTebcoSDK::end()
+{
+    return d_ptr->end();
+}
+
+bool ZeYaoTebcoSDK::isOpen()
+{
+    return d_ptr->isOpen();
+}
+
+bool ZeYaoTebcoSDK::isDetecting()
+{
+    return d_ptr->isDetecting();
+}
+
+string ZeYaoTebcoSDK::availablePorts()
+{
+    return d_ptr->availablePorts();
 }
 
 string ZeYaoTebcoSDK::readAll()
 {
     return d_ptr->readAll();
+}
+
+string ZeYaoTebcoSDK::deviceInfo()
+{
+    return d_ptr->deviceInfo();
 }
 
