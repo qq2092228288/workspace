@@ -22,7 +22,6 @@ SOURCES += \
     auxargdialog.cpp \
     bpeditdialog.cpp \
     countdowngizmo.cpp \
-#    createreportthread.cpp \
     customctrl.cpp \
     datamanagement.cpp \
     deviceparameters.cpp \
@@ -38,7 +37,6 @@ SOURCES += \
     mqttclient.cpp \
     personalinfodialog.cpp \
     plrttablewidget.cpp \
-    reportdatajson.cpp \
     reportdialog.cpp \
     reportpainter.cpp \
     reportpreviewdialog.cpp \
@@ -70,7 +68,6 @@ HEADERS += \
     mqttclient.h \
     personalinfodialog.h \
     plrttablewidget.h \
-    reportdatajson.h \
     reportdialog.h \
     reportpainter.h \
     reportpreviewdialog.h \

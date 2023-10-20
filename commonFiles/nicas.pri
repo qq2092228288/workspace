@@ -8,9 +8,7 @@ nicas.files += \
     $$PWD/nicas/xprinter_report.json
 INSTALLS += nicas
 
-include($$PWD/nicas/datatype.pri)
-include($$PWD/nicas/datacalculation.pri)
-include($$PWD/nicas/reportdataname.pri)
+include($$PWD/nicas/report.pri)
 
 #!equals(_PRO_FILE_PWD_, $$DESTDIR) {
 #    assetcopy.files += $$nicas.files
