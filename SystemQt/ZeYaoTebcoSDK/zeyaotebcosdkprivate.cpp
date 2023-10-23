@@ -1,8 +1,8 @@
 #include "zeyaotebcosdkprivate.h"
 #include <QSerialPortInfo>
-#include "singleton.h"
 #include "databasens.h"
 #include "reportdataname.h"
+#include "basic.h"
 
 using namespace DatabaseEnumNs;
 
@@ -33,8 +33,8 @@ ZeYaoTebcoSDKPrivate::ZeYaoTebcoSDKPrivate(QObject *parent)
     connect(m_pSerialPort, &QSerialPort::errorOccurred, this, &ZeYaoTebcoSDKPrivate::serialPortError);
     // MQTT
     m_client = new QMqttClient(this);
-    m_client->setHostname(Singleton::serverAddress());
-    m_client->setPort(Singleton::mqttPort());
+    m_client->setHostname(Basic::serverAddress());
+    m_client->setPort(Basic::mqttPort());
     connect(m_client, &QMqttClient::stateChanged, this, &ZeYaoTebcoSDKPrivate::stateChanged);
     connect(m_client, &QMqttClient::messageReceived, this, &ZeYaoTebcoSDKPrivate::messageReceived);
     m_client->connectToHost();
@@ -63,8 +63,8 @@ int ZeYaoTebcoSDKPrivate::login(const QString &deviceId, const QString &password
     m_client->subscribe(subTopic(deviceId));
     m_deviceId = deviceId;
     // 推送
-    publish(Singleton::getTopicName(PrimaryTopic::request, SecondaryTopic::deviceInfo, m_deviceId),
-            Singleton::jsonToUtf8(QJsonObject{ { Singleton::enumValueToKey(Device::password), password } }), 2, false);
+    publish(Basic::getTopicName(PrimaryTopic::request, SecondaryTopic::deviceInfo, m_deviceId),
+            toString(QJsonObject{ { Basic::valueToLower(Device::password), password } }).toUtf8(), 2, false);
     return Error::NoError;
 }
 
@@ -99,8 +99,8 @@ int ZeYaoTebcoSDKPrivate::start(const QString &name, const QString &id, int gend
     if (m_deviceInfo.empty())
         return Error::NoDeviceInformation;
     // 有效验证码不足
-    auto totalCount = m_deviceInfo.value(Singleton::enumValueToKey(CountType::totalCount)).toString().toInt();
-    auto usedCount = m_deviceInfo.value(Singleton::enumValueToKey(CountType::usedCount)).toString().toInt();
+    auto totalCount = m_deviceInfo.value(Basic::valueToLower(CountType::totalCount)).toString().toInt();
+    auto usedCount = m_deviceInfo.value(Basic::valueToLower(CountType::usedCount)).toString().toInt();
     if (totalCount - usedCount <= 0)
         return Error::InsufficientQuantity;
     // 正在检测
@@ -139,27 +139,27 @@ int ZeYaoTebcoSDKPrivate::end()
     if (!m_checking) return Error::NotDetected;
     // 信息不完整
     auto reportData = m_reportData.getJson();
-    auto position = reportData.value(Singleton::enumValueToKey(ReportDataName::position)).toArray();
+    auto position = reportData.value(Basic::valueToLower(ReportDataName::position)).toArray();
     if (0 == position.size()) return Error::IncompleteData;
     // 报告时间
     auto rtime = QDateTime::fromString(m_reportData.getReportTime(), "yyyyMMddhhmmsszzz");
     // 推送的数据
     QJsonObject object {
-        { Singleton::enumValueToKey(ReportInfo::reportTime), rtime.toString("yyyy-MM-dd hh:mm:ss.zzz") },
-        { Singleton::enumValueToKey(ReportInfo::deviceId), m_deviceId },
-        { Singleton::enumValueToKey(ReportInfo::name), m_data.id + "-" + m_data.name },
-        { Singleton::enumValueToKey(ReportInfo::modify), 0 },
-        { Singleton::enumValueToKey(ReportInfo::reportData), Singleton::jsonToString(reportData) }
+        { Basic::valueToLower(ReportInfo::reportTime), rtime.toString("yyyy-MM-dd hh:mm:ss.zzz") },
+        { Basic::valueToLower(ReportInfo::deviceId), m_deviceId },
+        { Basic::valueToLower(ReportInfo::name), m_data.id + "-" + m_data.name },
+        { Basic::valueToLower(ReportInfo::modify), 0 },
+        { Basic::valueToLower(ReportInfo::reportData), toString(reportData) }
     };
     // 上传数据
-    publish(Singleton::getTopicName(PrimaryTopic::request, SecondaryTopic::uploadData, m_deviceId),
-            Singleton::jsonToUtf8(object), 2, false);
+    publish(Basic::getTopicName(PrimaryTopic::request, SecondaryTopic::uploadData, m_deviceId),
+            toString(object).toUtf8(), 2, false);
     // 清空
     m_reportData.clear();
     m_jsonObject = QJsonObject();
     // 使用数量+1
-    auto usedCount = m_deviceInfo.value(Singleton::enumValueToKey(CountType::usedCount)).toString().toInt();
-    m_deviceInfo.insert(Singleton::enumValueToKey(CountType::usedCount), QString::number(usedCount + 1));
+    auto usedCount = m_deviceInfo.value(Basic::valueToLower(CountType::usedCount)).toString().toInt();
+    m_deviceInfo.insert(Basic::valueToLower(CountType::usedCount), QString::number(usedCount + 1));
     // 断开串口数据接收
     disconnect(m_pSerialPort, &QSerialPort::readyRead, this, &ZeYaoTebcoSDKPrivate::parsingMessages);
     // 设为未检测状态
@@ -184,7 +184,7 @@ string ZeYaoTebcoSDKPrivate::availablePorts()
     foreach (auto info, QSerialPortInfo::availablePorts()) {
         array.append(info.portName());
     }
-    return toString(array);
+    return toString(array).toStdString();
 }
 
 string ZeYaoTebcoSDKPrivate::readAll()
@@ -197,7 +197,7 @@ string ZeYaoTebcoSDKPrivate::readAll()
 string ZeYaoTebcoSDKPrivate::deviceInfo()
 {
     if (m_deviceInfo.empty()) return string();
-    return toString(m_deviceInfo);
+    return toString(m_deviceInfo).toStdString();
 }
 
 void ZeYaoTebcoSDKPrivate::reconnect()
@@ -258,7 +258,7 @@ void ZeYaoTebcoSDKPrivate::messageReceived(const QByteArray &message, const QMqt
 {
     if (topic.levelCount() != 3 || message.isNull()) return;
     auto object = QJsonDocument::fromJson(message).object();
-    auto level2 = SecondaryTopic(Singleton::enumKeyToValue<SecondaryTopic>(topic.levels().at(1)));
+    auto level2 = SecondaryTopic(Basic::keyToValue<SecondaryTopic>(topic.levels().at(1)));
     if (SecondaryTopic::deviceInfo == level2) {
         m_client->unsubscribe(subTopic(m_deviceId));
         m_deviceInfo = object;
@@ -277,11 +277,11 @@ bool ZeYaoTebcoSDKPrivate::dataIntegrity() const
 
 QMqttTopicFilter ZeYaoTebcoSDKPrivate::subTopic(const QString &deviceId) const
 {
-    return QMqttTopicFilter(Singleton::enumValueToKey(ResponseTopic::response) + "/+/" + deviceId);
+    return QMqttTopicFilter(Basic::valueToLower(ResponseTopic::response) + "/+/" + deviceId);
 }
 
 template <class T>
-string ZeYaoTebcoSDKPrivate::toString(const T &qjson) const
+QString ZeYaoTebcoSDKPrivate::toString(const T &qjson) const
 {
-    return QString(QJsonDocument(qjson).toJson(QJsonDocument::Compact)).toStdString();
+    return QString(QJsonDocument(qjson).toJson(QJsonDocument::Compact));
 }

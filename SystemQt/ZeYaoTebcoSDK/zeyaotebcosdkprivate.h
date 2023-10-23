@@ -92,7 +92,7 @@ private:
     bool dataIntegrity() const;
     QMqttTopicFilter subTopic(const QString &deviceId) const;
     template <class T>
-    string toString(const T &qjson) const;
+    QString toString(const T &qjson) const;
 private:
     bool m_checking;            // 正在检测中
     QTimer *m_pTimer;           // 串口重连
