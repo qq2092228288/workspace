@@ -288,6 +288,8 @@ void ReportPainter::generalDataPage(int page)
             qreal _y = rectArg.bottomLeft().y() + row_h * j;
             auto min = parameter.value(ekey(ReportDataName::min)).toDouble();
             auto max = parameter.value(ekey(ReportDataName::max)).toDouble();
+            auto digit = parameter.value(ekey(ReportDataName::digit)).toDouble();
+            auto type = Type(parameter.value(ekey(ReportDataName::type)).toDouble());
             // 参数名称
             drawTableCell(QRectF(rectArg.bottomLeft().x() + set.groupWidth(), _y,
                                  set.colWidth().at(0) - set.groupWidth(), row_h),
@@ -295,9 +297,19 @@ void ReportPainter::generalDataPage(int page)
                           parameter.value(ekey(ReportDataName::en)).toString(),
                           Qt::AlignLeft | Qt::AlignVCenter, 10);
             // 值
-            drawValue(parameter, (0 == page ? fMap : sMap), rectFirst, _y);
+//            drawValue(parameter, (0 == page ? fMap : sMap), rectFirst, _y);
+            auto first = actualValue(fMap.value(Type(parameter.value(ekey(ReportDataName::type)).toInt())), digit);
+            if (0 == page) {
+                drawValue(rectFirst, _y, first, getArrow(first, min, max, type));
+            }
+            else {
+                auto second = actualValue(sMap.value(Type(parameter.value(ekey(ReportDataName::type)).toInt())), digit);
+                drawValue(rectFirst, _y, second, getArrow(second, first, type));
+            }
             if (single) {
-                drawValue(parameter, sMap, rectSecond, _y);
+//                drawValue(parameter, sMap, rectSecond, _y);
+                auto second = actualValue(sMap.value(Type(parameter.value(ekey(ReportDataName::type)).toInt())), digit);
+                drawValue(rectSecond, _y, second, getArrow(second, first, type));
             }
             // 正常范围
             drawTableCell(QRectF(QPointF(rectRange.topLeft().x(), _y), rectRange.size()),
@@ -592,6 +604,57 @@ void ReportPainter::drawValue(const QJsonObject &parameter, QMap<Type, qreal> ma
             }
         }
     }
+}
+
+void ReportPainter::drawValue(QRectF rect, qreal _y, qreal value, Arrow arrow)
+{
+    drawTableCell(QRectF(QPointF(rect.topLeft().x(), _y), rect.size()),
+                  DatCa::invalid() != value ? QString::number(value) : "-",
+                  Qt::AlignLeft | Qt::AlignVCenter, 10);
+    switch (arrow) {
+    case Arrow::Up:
+        drawText(QRectF(QPointF(rect.topLeft().x() - 3, _y), rect.size()),
+                 Qt::AlignVCenter | Qt::AlignRight, " ↑");
+        break;
+    case Arrow::Down:
+        drawText(QRectF(QPointF(rect.topLeft().x() - 3, _y), rect.size()),
+                 Qt::AlignVCenter | Qt::AlignRight, " ↓");
+        break;
+    default:
+        break;
+    }
+}
+
+ReportPainter::Arrow ReportPainter::getArrow(qreal value, qreal min, qreal max, Type type)
+{
+    auto list = QList<Type>{Type::CO, Type::CI, Type::SV, Type::SI, Type::TFC, Type::EPCI, Type::ISI, Type::Ino,
+                            Type::HR, Type::MAP, Type::Vol, Type::HRV, Type::Vas, Type::SBP, Type::DBP};
+    if (list.indexOf(type) == -1) {
+        return Arrow::Null;
+    }
+    if (value < min) {
+        return Arrow::Down;
+    }
+    else if (value > max) {
+        return Arrow::Up;
+    }
+    return Arrow::Null;
+}
+
+ReportPainter::Arrow ReportPainter::getArrow(qreal second, qreal first, Type type)
+{
+    auto list = QList<Type>{Type::CO, Type::CI, Type::SV, Type::SI, Type::TFC, Type::EPCI, Type::ISI,
+                            Type::HR, Type::MAP, Type::SBP, Type::DBP};
+    if (list.indexOf(type) == -1) {
+        return Arrow::Null;
+    }
+    if (second < first) {
+        return Arrow::Down;
+    }
+    else if (second > first) {
+        return Arrow::Up;
+    }
+    return Arrow::Null;
 }
 
 QString ReportPainter::positionCn(int pos)

@@ -103,6 +103,13 @@ public:
         }
         bool paging;
     };
+    enum Arrow
+    {
+        Null,
+        Up,
+        Down
+    };
+    Q_ENUM(Arrow)
 private:
     void thermalPage();
     void generalHeader(const QString &title);
@@ -118,6 +125,9 @@ private:
     QRectF drawTableCell(QRectF rect, const QString &txt, int align = Qt::AlignCenter, int offset = 0);
     QMap<Type, qreal> valueMap(const QJsonObject &data, const QJsonArray &alldata);
     void drawValue(const QJsonObject &parameter, QMap<Type, qreal> map, QRectF rect, qreal _y);
+    void drawValue(QRectF rect, qreal _y, qreal value, Arrow arrow);
+    Arrow getArrow(qreal value, qreal min, qreal max, Type type);
+    Arrow getArrow(qreal second, qreal first, Type type);
     QString positionCn(int pos);
     void drawWaveform(QRectF rect, int pos, const QJsonArray &waveform, bool index);
     void drawSudoku(QRectF rect, QMap<Type, qreal> fMap, QMap<Type, qreal> sMap = QMap<Type, qreal>());
