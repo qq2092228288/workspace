@@ -1,5 +1,5 @@
 QT -= gui
-QT += core serialport sql
+QT += core serialport
 
 TEMPLATE = lib
 DEFINES += ZEYAOTEBCOSDK_LIBRARY
