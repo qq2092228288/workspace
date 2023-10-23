@@ -6,7 +6,7 @@
 class DataCalculation
 {
 public:
-    static const qreal invalid();
+    static qreal invalid();
     // device data
     static qreal cHr     (const qreal &value);
     static qreal cVet    (const qreal &value);

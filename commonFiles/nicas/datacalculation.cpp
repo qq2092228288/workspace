@@ -1,7 +1,7 @@
 #include "datacalculation.h"
 #include <qmath.h>
 
-const qreal DataCalculation::invalid()
+qreal DataCalculation::invalid()
 {
     return 0xFFFFFFFF;
 }

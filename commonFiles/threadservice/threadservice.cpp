@@ -17,7 +17,7 @@ QThread *ThreadService::objectMoveToThread(QObject *object)
     QMutexLocker locker(&mutex);
     QThread *thread = nullptr;
     foreach (auto index, threadList) {
-        if (nullptr == index && !index->isRunning()) {
+        if (nullptr != index && !index->isRunning()) {
             thread = index;
             break;
         }
