@@ -6,6 +6,8 @@
 #include <iostream>
 #include "zeyaotebcosdk.h"
 #include <threadservice.h>
+#include <QJsonDocument>
+#include <QJsonArray>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -16,6 +18,11 @@ MainWindow::MainWindow(QWidget *parent)
     timer = new QTimer(this);
     connect(timer, &QTimer::timeout, this, &MainWindow::timeout);
     timer->start(1000);
+    auto coms = QString::fromStdString(tebco->availablePorts());
+    auto array = QJsonDocument::fromJson(coms.toUtf8()).array();
+    foreach (auto com, array) {
+        ui->comboBox->addItem(com.toString());
+    }
 
 //    ThreadService::getInstance()->objectMoveToThread(tebco);
 //    connect(tebco, &ZeYaoTebcoSDK::sendData, this, &MainWindow::appendString);
@@ -64,7 +71,7 @@ void MainWindow::on_pushButtonOpen_clicked()
     if (!info.isEmpty()) {
         ui->textBrowser->append(info);
     }
-    auto boolean = tebco->open("COM3");
+    auto boolean = tebco->open(ui->comboBox->currentText().toStdString());
     ui->textBrowser->append(QString("打开串口：%1").arg(boolean));
 }
 

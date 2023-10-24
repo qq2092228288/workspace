@@ -1,14 +1,6 @@
 #ifndef ZEYAOTEBCOSDK_H
 #define ZEYAOTEBCOSDK_H
 
-#include <QtCore/qglobal.h>
-
-#if defined(ZEYAOTEBCOSDK_LIBRARY)
-#  define ZEYAOTEBCOSDK_EXPORT Q_DECL_EXPORT
-#else
-#  define ZEYAOTEBCOSDK_EXPORT Q_DECL_IMPORT
-#endif
-
 #include <iostream>
 #include <cstring>
 #include <memory>
@@ -16,7 +8,7 @@
 using namespace std;
 
 class ZeYaoTebcoSDKPrivate;
-class ZEYAOTEBCOSDK_EXPORT ZeYaoTebcoSDK
+class ZeYaoTebcoSDK
 {
 public:
     explicit ZeYaoTebcoSDK();

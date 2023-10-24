@@ -171,6 +171,13 @@
         </property>
        </widget>
       </item>
+      <item row="4" column="2" colspan="2">
+       <widget class="QPushButton" name="pushButtonBp">
+        <property name="text">
+         <string>输入血压</string>
+        </property>
+       </widget>
+      </item>
       <item row="4" column="4">
        <widget class="QPushButton" name="pushButtonEnd">
         <property name="text">
@@ -178,12 +185,8 @@
         </property>
        </widget>
       </item>
-      <item row="4" column="3">
-       <widget class="QPushButton" name="pushButtonBp">
-        <property name="text">
-         <string>追加血压和体位</string>
-        </property>
-       </widget>
+      <item row="5" column="0" colspan="2">
+       <widget class="QComboBox" name="comboBox"/>
       </item>
      </layout>
     </item>
