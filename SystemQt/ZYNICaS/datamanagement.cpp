@@ -483,8 +483,15 @@ QString DataManagement::reportResult(bool record)
             }
             else if (m_pHospitalInfo->cMode == Check_Mode::InternalMedicine) {
                 // 内科模式
-//                result += tr("1.%1；\n2.%2；\n3.%3；\n4.%4；\n").arg(fstr, tstr, sstr, hstr);
-                result<<fstr<<tstr<<sstr<<hstr;
+                result<<tr("第一体位：心输出量(CO)%1，心脏指数(CI)%2，搏排量(SV)%3，心搏指数(SI)%4，"
+                            "心率(HR)%5，血管顺应性(Vas)%6，血管容量(Vol)%7，收缩变力性(Ino)%8，"
+                            "收缩压(SBP)%9，舒张压(DBP)%10，胸液传导性(TFC)%11；")
+                        .arg(pevl(Type::CO), pevl(Type::CI), pevl(Type::SV), pevl(Type::SI), pevl(Type::HR),
+                             pevl(Type::Vas), pevl(Type::Vol), pevl(Type::Ino), pevl(Type::SBP))
+                        .arg(pevl(Type::DBP), pevl(Type::TFC));
+                result<<tr("第二体位增加容量负荷实验后：搏排量(SV)%1，变力状态指数(ISI)%2，%3；")
+                        .arg(compare(Type::SV), compare(Type::ISI), preload());
+                result<<tr("%1%2%3%4").arg(fstr, tstr, sstr, hstr);
             }
             else if (m_pHospitalInfo->cMode == Check_Mode::IntensiveCareUnit) {
                 // 重症模式
@@ -496,7 +503,6 @@ QString DataManagement::reportResult(bool record)
                         .arg(pevl(Type::DBP), pevl(Type::TFC));
                 result<<tr("第二体位增加容量负荷实验后：搏排量(SV)%1，变力状态指数(ISI)%2，%3；")
                         .arg(compare(Type::SV), compare(Type::ISI), preload());
-//                result += tr("3.%1；%2；%3；%4；").arg(fstr, tstr, sstr, hstr);
                 result<<tr("%1%2%3%4").arg(fstr, tstr, sstr, hstr);
             }
             else if (m_pHospitalInfo->cMode == Check_Mode::PhysicalExamination) {
