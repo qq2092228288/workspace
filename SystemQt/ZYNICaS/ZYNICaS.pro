@@ -102,17 +102,9 @@ qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
-win32:{
-    COMPILATION_CHAIN_DIR = D:/Qt/5.15.2/msvc2019_64
-}
-unix:{
-    COMPILATION_CHAIN_DIR = /home/ubuntu/Qt5.12.12/5.12.12/gcc_64
-}
-
-win32:CONFIG(release, debug|release): LIBS += -L$$COMPILATION_CHAIN_DIR/lib/ -lQt5Mqtt
-else:win32:CONFIG(debug, debug|release): LIBS += -L$$COMPILATION_CHAIN_DIR/lib/ -lQt5Mqttd
-else:unix: LIBS += -L$$COMPILATION_CHAIN_DIR/lib/ -lQt5Mqtt
-INCLUDEPATH += ../MqttServer
+win32:CONFIG(release, debug|release): LIBS += -L$$[QT_INSTALL_LIBS] -lQt5Mqtt
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$[QT_INSTALL_LIBS] -lQt5Mqttd
+else:unix: LIBS += -L$$[QT_INSTALL_LIBS] -lQt5Mqtt
 
 RESOURCES += \
     common.qrc \
