@@ -621,7 +621,8 @@ void EnterSystemWidget::createReport()
 
         reportJson->appendPosition(bodyValue.SBP, bodyValue.DBP, bodyValue.CVP, bodyValue.LAP, posGroup.checkedId() + 1);
         QDateTime curTime = QDateTime::fromString(reportJson->getReportTime(), "yyyyMMddhhmmsszzz");
-        reportJson->setReportConclusion(instance.reportCreated(!rPos.isEmpty()));
+        reportJson->setReportConclusion(instance.reportResult(reportJson->getJson()));
+        emit instance.startCheck(false);
         auto info = instance.getHospitalInfo();
         auto json = reportJson->getJson(info->hospitalName, info->roomName, info->doctorName,
                                         info->consultationHospitalName, instance.getMac());

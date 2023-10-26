@@ -6,18 +6,13 @@
 #include <QChartView>
 #include <QPixmap>
 #include <QFileInfo>
-#include <windows.h>
 #include <QDateTime>
 
 
 #include "systemconfigdialog.h"
 #include "customctrl.h"
 #include "infoeditdialog.h"
-//#include "drawsudoku.h"
 #include "zytebco.h"
-//#include "httppost.h"
-//#include "reportdatabase.h"
-//#include "devicedatabase.h"
 #include "mqttclient.h"
 
 // 文件路径
@@ -119,6 +114,7 @@ public:
     void setHospitalInfo(HospitalInfo *hospitalInfo);
     void setBodyValue(BodyValue *bodyValue);
     void setRegulator(CustomCtrlRegulator *regulator);
+    QString reportResult(const QJsonObject &json);
 public slots:
     QString reportCreated(bool record);
     void clearSlot();
