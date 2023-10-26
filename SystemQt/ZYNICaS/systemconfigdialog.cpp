@@ -143,13 +143,19 @@ SystemConfigDialog::SystemConfigDialog(QWidget *parent)
 
     // 隐藏其它设置按钮
 //    anotherSetBtn->hide();
-
+#ifdef Q_OS_WIN
     QStringList portNames;
     for (int var = 1; var <= 20; ++var) {
         portNames<<QString("COM%1").arg(var);
     }
     serialPortComboBox->addItems(portNames);
-
+#endif
+#ifdef Q_OS_LINUX
+    auto ports = QSerialPortInfo::availablePorts();
+    foreach (auto info, ports) {
+        serialPortComboBox->addItem(info.portName());
+    }
+#endif
     connect(selectLogoBtn, &QPushButton::clicked, this, &SystemConfigDialog::selectLogoSlot);
     connect(getIDBtn, &QPushButton::clicked, getIdDialog, &GetIdDialog::exec);
 //    connect(anotherSetBtn, &QPushButton::clicked, this, &SystemConfigDialog::anotherSetSlot);
@@ -176,7 +182,9 @@ SystemConfigDialog::SystemConfigDialog(QWidget *parent)
         in<<QString("samepage=\"0\"\n");
         in<<QString("trendcharttitle=\"心血流图监测报告\"\n");
         in<<QString("mode=\"0\"\n");
+#ifdef Q_OS_WIN
         in<<QString("serialport=\"COM3\"\n");
+#endif
         file.close();
     }
     if(file.open(QFile::ReadOnly | QFile::Text)) {

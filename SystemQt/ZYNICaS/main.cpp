@@ -4,7 +4,6 @@
 #include <QObject>
 #include "datamanagement.h"
 #include <threadservice.h>
-//#include "singleapplication.h"
 #include <qtsingleapplication.h>
 #include <QTimer>
 #include "mqttclient.h"
@@ -16,8 +15,10 @@ int main(int argc, char *argv[])
 {
     QtSingleApplication a(QApplication::applicationName(),argc, argv);
     if (!a.isRunning()) {
-        // prevent system hibernation
+// Windows system prevents hibernation
+#ifdef Q_OS_WIN
         SetThreadExecutionState(ES_CONTINUOUS | ES_SYSTEM_REQUIRED | ES_DISPLAY_REQUIRED);
+#endif
         // data management instance
         auto &ins = DataManagement::getInstance();
         // tebco serialport class move to thread
