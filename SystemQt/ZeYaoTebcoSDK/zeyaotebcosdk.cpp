@@ -12,9 +12,9 @@ ZeYaoTebcoSDK::~ZeYaoTebcoSDK()
 
 }
 
-void ZeYaoTebcoSDK::login(string deviceId, string password)
+int ZeYaoTebcoSDK::login(string deviceId, string password)
 {
-    d_ptr->login(QString::fromStdString(deviceId), QString::fromStdString(password));
+    return d_ptr->login(QString::fromStdString(deviceId), QString::fromStdString(password));
 }
 
 bool ZeYaoTebcoSDK::open(string portname)

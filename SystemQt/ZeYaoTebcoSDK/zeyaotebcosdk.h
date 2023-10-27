@@ -15,7 +15,7 @@ public:
     virtual ~ZeYaoTebcoSDK();
 public:
     /*! 登录服务器 */
-    void login(string deviceId, string password);
+    int login(string deviceId, string password);
     /*! 打开串口 */
     bool open(string portname);
     /*! 关闭串口 */
