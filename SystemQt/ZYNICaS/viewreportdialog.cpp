@@ -160,8 +160,13 @@ void ViewReportDialog::createdPdfSlot()
             printer.setPageSize(QPageSize(info->pType == Printer_Type::Thermal ? QSizeF(72, 297) : QSizeF(210, 297),
                                           QPageSize::Millimeter));
             printer.setFullPage(true);
-            printer.setPageMargins(QMarginsF(0,0,0,0));
-            ReportPainter painter(ReportStruct(info->pType, info->cMode, !info->samePage, object), &printer);
+            printer.setPageMargins(QMarginsF(0, 0, 0, 0));
+            auto &instance = DataManagement::getInstance();
+            ReportStruct temp(info->pType, info->cMode, !info->samePage, instance.getPaths().hospitalLogo(),
+                              instance.getHospitalInfo()->trendChartTitle, object);
+            temp.departmentName = instance.departmentName();
+            temp.idName = instance.idName();
+            ReportPainter painter(temp, &printer);
             QDesktopServices::openUrl(QUrl::fromLocalFile(fileName));
         }
         else {

@@ -38,7 +38,6 @@ SOURCES += \
     personalinfodialog.cpp \
     plrttablewidget.cpp \
     reportdialog.cpp \
-    reportpainter.cpp \
     reportpreviewdialog.cpp \
     reporttablemodel.cpp \
     scopecalendardialog.cpp \
@@ -69,7 +68,6 @@ HEADERS += \
     personalinfodialog.h \
     plrttablewidget.h \
     reportdialog.h \
-    reportpainter.h \
     reportpreviewdialog.h \
     reportset.h \
     reporttablemodel.h \
@@ -83,24 +81,21 @@ HEADERS += \
     viewreportdialog.h \
 
 include(../../commonFiles/base.pri)
-#include(../../commonFiles/qextserialport/src/qextserialport.pri)
 include(../../commonFiles/qt-solutions/qtsingleapplication/src/qtsingleapplication.pri)
 include(../../commonFiles/MqttServerNs/mqttserverns.pri)
 nicas.path = ../../commonFiles/nicas
 include(../../commonFiles/nicas.pri)
 
-INCLUDEPATH += ../ZyTebco \
-#    ../IdCheck \
-#    ../../commonFiles/QRencode
-
-LIBS += -L$$PROJECT_LIBDIR -lZyTebco \
-#    -L$$PROJECT_LIBDIR -lIdCheck \
-#    -L$$PROJECT_LIBDIR -lqrencoded
-
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
+
+INCLUDEPATH += ../ZyTebco \
+#    ../../commonFiles/QRencode
+
+LIBS += -L$$PWD/$$PROJECT_LIBDIR -lZyTebco \
+#    -L$$PROJECT_LIBDIR -lqrencoded
 
 win32:CONFIG(release, debug|release): LIBS += -L$$[QT_INSTALL_LIBS] -lQt5Mqtt
 else:win32:CONFIG(debug, debug|release): LIBS += -L$$[QT_INSTALL_LIBS] -lQt5Mqttd

@@ -1,6 +1,7 @@
 #include "reportpreviewdialog.h"
 #include <QScreen>
 #include "systemconfigdialog.h"
+#include "datamanagement.h"
 #include "reportpainter.h"
 
 ReportPreviewDialog::ReportPreviewDialog(const QJsonObject &data, HospitalInfo *info, QPrinter *printer, QWidget *parent)
@@ -20,5 +21,10 @@ ReportPreviewDialog::ReportPreviewDialog(const QJsonObject &data, HospitalInfo *
 
 void ReportPreviewDialog::paintRequestedSlot(QPrinter *printer)
 {
-    ReportPainter painter(ReportStruct(m_info->pType, m_info->cMode, !m_info->samePage, m_data), printer);
+    auto &instance = DataManagement::getInstance();
+    ReportStruct temp(m_info->pType, m_info->cMode, !m_info->samePage, instance.getPaths().hospitalLogo(),
+                      instance.getHospitalInfo()->trendChartTitle, m_data);
+    temp.departmentName = instance.departmentName();
+    temp.idName = instance.idName();
+    ReportPainter painter(temp, printer);
 }
