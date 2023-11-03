@@ -1,0 +1,56 @@
+QPushButton {
+    background-color: #ffffff;
+    border: 1px solid #dcdfe6;
+    padding-top: 2px;
+    padding-bottom: 2px;
+    padding-left: 10px;
+    padding-right: 10px;
+    border-radius: 5px;
+    font-family: 'Microsoft YaHei';
+    font-size: 16px;
+}
+
+QPushButton:hover {
+    background-color: #ecf5ff;
+    color: #409eff;
+}
+
+QPushButton:pressed, QPushButton:checked {
+    border: 1px solid #3a8ee6;
+    color: #409eff;
+}
+
+QLineEdit {
+    font-family: 'Microsoft YaHei';
+    font-size: 16px;
+    border-radius: 5px;
+    padding-left: 5px;
+    padding-right: 5px;
+}
+
+QLineEdit:disabled {
+    background:#dddddd;
+}
+
+QComboBox {
+    font-family: 'Microsoft YaHei';
+    font-size: 16px;
+    border-radius: 5px;
+    padding-left: 5px;
+    padding-right: 5px;
+}
+
+QLabel {
+    font-family: 'Microsoft YaHei';
+    font-size: 16px;
+}
+
+QCheckBox {
+    font-family: 'Microsoft YaHei';
+    font-size: 16px;
+}
+
+QRadioButton {
+    font-family: 'Microsoft YaHei';
+    font-size: 16px;
+}

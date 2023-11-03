@@ -306,13 +306,13 @@ QString PlrtTableWidget::getPicFileName(const PosType &type)
 {
     switch (type) {
     case PosType::HalfSleeper:
-        return ":/images/halfsleeper.png";
+        return ":/img/halfsleeper.png";
         break;
     case PosType::LieFlat:
-        return ":/images/lieflat.png";
+        return ":/img/lieflat.png";
         break;
     case PosType::LegLift:
-        return ":/images/leglift.png";
+        return ":/img/leglift.png";
         break;
     default:
         break;

@@ -4,6 +4,9 @@
 ScopeCalendarDialog::ScopeCalendarDialog(QWidget *parent)
     : QDialog{parent}
 {
+    setWindowFlag(Qt::WindowContextHelpButtonHint, false);
+    setWindowTitle("选择日期");
+    resize(600, 300);
     label = new QLabel(this);
     startWidget = new QCalendarWidget(this);
     endWidget = new QCalendarWidget(this);
@@ -28,6 +31,14 @@ ScopeCalendarDialog::ScopeCalendarDialog(QWidget *parent)
     connect(endWidget, &QCalendarWidget::clicked, this, &ScopeCalendarDialog::setLabel);
     connect(confirmButton, &QPushButton::clicked, this, &ScopeCalendarDialog::confirmSlot);
     connect(cancelButton, &QPushButton::clicked, this, &QDialog::close);
+    connect(startWidget, &QCalendarWidget::currentPageChanged, this, [=](int year, int month){
+        startWidget->setSelectedDate(QDate(year, month, 1));
+        setLabel();
+    });
+    connect(endWidget, &QCalendarWidget::currentPageChanged, this, [=](int year, int month){
+        endWidget->setSelectedDate(QDate(year, month, 1));
+        setLabel();
+    });
     setLabel();
 }
 

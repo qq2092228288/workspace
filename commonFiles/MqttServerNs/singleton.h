@@ -53,18 +53,18 @@ public:
         return QString(QMetaEnum::fromType<T>().valueToKey(static_cast<int>(value))).toLower();
     }
     template <class T>
-    static int enumKeyToValue(const QString &key)
+    static T enumKeyToValue(const QString &key)
     {
         QMetaEnum meta = QMetaEnum::fromType<T>();
         auto value = meta.keyToValue(key.toStdString().c_str());
         if (-1 == value) {
             for (int index = 0; index < meta.keyCount(); ++index) {
                 if (0 == key.compare(QString(meta.key(index)), Qt::CaseInsensitive)) {
-                    return meta.keyToValue(meta.key(index));
+                    return T(meta.keyToValue(meta.key(index)));
                 }
             }
         }
-        return value;
+        return T(value);
     }
     template <class T>
     static QStringList enumKeys()

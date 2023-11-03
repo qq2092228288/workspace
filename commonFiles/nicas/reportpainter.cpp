@@ -1060,13 +1060,13 @@ QRectF ReportPainter::rectF(qreal x, qreal y)
 QString ReportPainter::getPicFileName(int pos)
 {
     if (1 == pos) {
-        return ":/images/halfsleeper.png";
+        return ":/img/halfsleeper.png";
     }
     else if (2 == pos) {
-        return ":/images/lieflat.png";
+        return ":/img/lieflat.png";
     }
     else if (3 == pos) {
-        return ":/images/leglift.png";
+        return ":/img/leglift.png";
     }
     return QString();
 }

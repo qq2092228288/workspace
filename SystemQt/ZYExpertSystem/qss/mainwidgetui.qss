@@ -1,0 +1,31 @@
+#Widget {
+    background-color: qlineargradient(spread:pad, x1:1, y1:1, x2:0, y2:0,
+    stop:0 rgba(30, 144, 255, 255), stop:1 rgba(0, 255, 255, 255));
+}
+
+#titleLabel {
+    font-family:'华文行楷'; font:bold 100px; color:#1296db;
+}
+
+#showReportButton, #configButton, #exitButton {
+    font-family:'Microsoft YaHei';
+    font:bold 50px;
+    color:#ffffff;
+    background-color:qlineargradient(x1:0,y1:0,x2:0,y2:1,stop:0 #aa55ff,stop:1 #1296db);
+    border-style:outset;
+    border-width:2px;
+    border-color:#0055ff;
+    border-radius:10px;
+    padding-top:20px;
+    padding-bottom:20px;
+    padding-left:60px;
+    padding-right:60px;
+}
+
+#showReportButton:hover, #configButton:hover, #exitButton:hover {
+    background-color:qlineargradient(x1:0,y1:0,x2:0,y2:1,stop:0 #ff55ff,stop:1 #1296db);
+}
+
+#showReportButton:pressed,#configButton:pressed,#exitButton:pressed {
+    background-color:qlineargradient(x1:0,y1:0,x2:0,y2:1,stop:0 #ff55ff,stop:1 #aa00ff);
+}

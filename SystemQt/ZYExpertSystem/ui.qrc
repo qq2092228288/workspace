@@ -1,0 +1,12 @@
+<RCC>
+    <qresource prefix="/">
+        <file>images/app.ico</file>
+        <file>images/logo.png</file>
+        <file>qss/mainwidgetui.qss</file>
+        <file>qss/reportdialogui.qss</file>
+        <file>qss/logindialogui.qss</file>
+        <file>images/password.svg</file>
+        <file>images/username.svg</file>
+        <file>qss/reportconfidialogui.qss</file>
+    </qresource>
+</RCC>

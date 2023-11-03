@@ -1,0 +1,48 @@
+#Dialog {
+    background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:0, y2:1,
+    stop:0 #00BBFF, stop:0.32 #FFFFFF, stop:0.504 #00FFFF, stop:0.505 #FFFFFF, stop:1 #FFFFFF);
+}
+QPushButton {
+    background-color: #ffffff;
+    border: 1px solid #dcdfe6;
+    border-radius: 18px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    padding-left: 20px;
+    padding-right: 20px;
+    font-family: 'Microsoft YaHei';
+    font-size: 18px;
+}
+
+QPushButton:hover {
+    background-color: #ecf5ff;
+    color: #409eff;
+}
+
+QPushButton:pressed, QPushButton:checked {
+    border: 1px solid #3a8ee6;
+    color: #409eff;
+}
+
+QLineEdit {
+    background: transparent;
+    font-family: 'Microsoft YaHei';
+    font-size: 18px;
+    border-top: transparent;
+    border-left: transparent;
+    border-right: transparent;
+    border-bottom: 1px solid gray;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    padding-left: 5px;
+    padding-right: 20px;
+}
+
+QLabel {
+    font-family: 'Microsoft YaHei';
+    font-size: 18px;
+}
+
+QCheckBox {
+    font-family: 'Microsoft YaHei';
+}

@@ -39,8 +39,6 @@ SOURCES += \
     plrttablewidget.cpp \
     reportdialog.cpp \
     reportpreviewdialog.cpp \
-    reporttablemodel.cpp \
-    scopecalendardialog.cpp \
     selectitemdialog.cpp \
     sudokuwidget.cpp \
     systemconfigdialog.cpp \
@@ -69,9 +67,6 @@ HEADERS += \
     plrttablewidget.h \
     reportdialog.h \
     reportpreviewdialog.h \
-    reportset.h \
-    reporttablemodel.h \
-    scopecalendardialog.h \
     selectitemdialog.h \
     sudokuwidget.h \
     systemconfigdialog.h \
@@ -83,8 +78,8 @@ HEADERS += \
 include(../../commonFiles/base.pri)
 include(../../commonFiles/qt-solutions/qtsingleapplication/src/qtsingleapplication.pri)
 include(../../commonFiles/MqttServerNs/mqttserverns.pri)
-nicas.path = ../../commonFiles/nicas
-include(../../commonFiles/nicas.pri)
+include(../../commonFiles/nicas/report.pri)
+include(../../commonFiles/zywidgets/zywidgets.pri)
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
@@ -102,6 +97,5 @@ else:win32:CONFIG(debug, debug|release): LIBS += -L$$[QT_INSTALL_LIBS] -lQt5Mqtt
 else:unix: LIBS += -L$$[QT_INSTALL_LIBS] -lQt5Mqtt
 
 RESOURCES += \
-    common.qrc \
     images.qrc \
     version.qrc

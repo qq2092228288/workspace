@@ -194,46 +194,35 @@ void TopicAnalysis::messageAnalysis(const QByteArray &message, const QMqttTopicN
         emit error(MessageError::TopicInvalid);
         return;
     }
-    auto level1 = Singleton::enumKeyToValue<PrimaryTopic>(topic.levels().at(0));
-    auto level2 = Singleton::enumKeyToValue<SecondaryTopic>(topic.levels().at(1));
-    if (-1 != level1 && -1 != level2) {
-        auto id = topic.levels().at(2);
-        switch (PrimaryTopic(level1)) {
-        case PrimaryTopic::request:
-            // respone to client or admin request and publish message
-//            if (!legalDeviceId(id) && !legalAdminId(id)) {
-//                emit error(MessageError::IllegalId);
-//                return;
-//            }
-            response(message, topic);
-            break;
-        case PrimaryTopic::append:
-            // admin append new data
-            databaseOperation(message, topic, DatabaseOperation::Insert);
-            break;
-        case PrimaryTopic::update:
-            // admin update data
-            databaseOperation(message, topic, DatabaseOperation::Update);
-            break;
-        case PrimaryTopic::remove:
-            // admin remove data
-            databaseOperation(message, topic, DatabaseOperation::Delete);
-            break;
-        case PrimaryTopic::select:
-        {
-            auto data = databaseOperation(message, topic, DatabaseOperation::Select);
-            if (!data.isNull()) {
-                emit messagePublish(Singleton::getTopicName(ResponseTopic::response, getSTopic(topic), id), data);
-            }
-        }
-            break;
-        default:
-            emit error(MessageError::NoAnalysis);
-            break;
+    auto id = topic.levels().at(2);
+    switch (Singleton::enumKeyToValue<PrimaryTopic>(topic.levels().at(0))) {
+    case PrimaryTopic::request:
+        // respone to client or admin request and publish message
+        response(message, topic);
+        break;
+    case PrimaryTopic::append:
+        // admin append new data
+        databaseOperation(message, topic, DatabaseOperation::Insert);
+        break;
+    case PrimaryTopic::update:
+        // admin update data
+        databaseOperation(message, topic, DatabaseOperation::Update);
+        break;
+    case PrimaryTopic::remove:
+        // admin remove data
+        databaseOperation(message, topic, DatabaseOperation::Delete);
+        break;
+    case PrimaryTopic::select:
+    {
+        auto data = databaseOperation(message, topic, DatabaseOperation::Select);
+        if (!data.isNull()) {
+            emit messagePublish(Singleton::getTopicName(ResponseTopic::response, getSTopic(topic), id), data);
         }
     }
-    else {
-        emit error(MessageError::TopicInvalid);
+        break;
+    default:
+        emit error(MessageError::NoAnalysis);
+        break;
     }
 }
 
@@ -306,6 +295,7 @@ void TopicAnalysis::response(const QByteArray &message, const QMqttTopicName &to
         break;
     case SecondaryTopic::software:
     {
+        qDebug()<<object;
         auto appIdString = Singleton::enumValueToKey(SoftwareManagement::appId);
         auto appId = object.value(appIdString);
         if (appId.type() != QJsonValue::Undefined) {
@@ -324,25 +314,29 @@ void TopicAnalysis::response(const QByteArray &message, const QMqttTopicName &to
         break;
     case SecondaryTopic::signIn:
     {
-        auto passwordString = Singleton::enumValueToKey(AdministratorInfo::password);
-        auto password = object.value(passwordString);
-        if (password.type() != QJsonValue::Undefined) {
-            sqlQuery.exec(QString("SELECT * FROM %1 WHERE %2 = '%3' AND %4 = '%5'")
-                          .arg(Singleton::enumName<AdministratorInfo>(),
-                               Singleton::enumValueToKey(AdministratorInfo::adminId),
-                               id,
-                               passwordString,
+        auto astr = Singleton::enumValueToKey(AdministratorInfo::adminId);
+        auto pstr = Singleton::enumValueToKey(AdministratorInfo::password);
+        auto adminId = object.value(astr);
+        auto password = object.value(pstr);
+        if (adminId.type() != QJsonValue::Undefined && password.type() != QJsonValue::Undefined) {
+            sqlQuery.exec(QString("SELECT %1 FROM %2 WHERE %3 = '%4' AND %5 = '%6'")
+                          .arg(Singleton::enumValueToKey(AdministratorInfo::deviceIds),
+                               Singleton::enumName<AdministratorInfo>(),
+                               astr,
+                               adminId.toString(),
+                               pstr,
                                password.toString()));
             if (sqlQuery.next()) {
-                QJsonObject json;
-                json.insert(Singleton::enumName<UserStatus>(),
-                            Singleton::enumValueToKey(UserStatus::passwordCorrect));
+                QJsonObject json {
+                    { Singleton::enumName<UserStatus>(), Singleton::enumValueToKey(UserStatus::passwordCorrect) },
+                    { Singleton::enumValueToKey(ReportInfo::deviceId), sqlQuery.value(0).toString() }
+                };
                 data = Singleton::jsonToUtf8(json);
             }
             else {
-                QJsonObject json;
-                json.insert(Singleton::enumName<UserStatus>(),
-                            Singleton::enumValueToKey(UserStatus::passwordError));
+                QJsonObject json {
+                    { Singleton::enumName<UserStatus>(), Singleton::enumValueToKey(UserStatus::passwordError) }
+                };
                 data = Singleton::jsonToUtf8(json);
             }
         }
@@ -534,10 +528,12 @@ QByteArray TopicAnalysis::dbOperation(const QJsonObject &object, const DatabaseO
     {
         auto value = object.value(primaryKey).toString();
         if (value == "*" || value.isEmpty()) { // select all
-            sqlQuery.prepare(QString("SELECT * FROM %1").arg(tableName));
+            sqlQuery.prepare(QString("SELECT * FROM %1 ORDER BY %2 DESC")
+                             .arg(tableName, Singleton::enumKeys<T>().first()));
         }
         else {
-            sqlQuery.prepare(QString("SELECT * FROM %1 WHERE %2 = ?").arg(tableName, primaryKey));
+            sqlQuery.prepare(QString("SELECT * FROM %1 WHERE %2 = ? ORDER BY %3 DESC")
+                             .arg(tableName, primaryKey, Singleton::enumKeys<T>().first()));
             sqlQuery.addBindValue(value);
         }
     }

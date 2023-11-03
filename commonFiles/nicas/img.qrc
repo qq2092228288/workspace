@@ -1,0 +1,7 @@
+<RCC>
+    <qresource prefix="/">
+        <file>img/halfsleeper.png</file>
+        <file>img/leglift.png</file>
+        <file>img/lieflat.png</file>
+    </qresource>
+</RCC>
