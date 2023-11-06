@@ -24,7 +24,8 @@ enum class SecondaryTopic
     deviceInfo,                 // client/server request/response device info
     uploadData,                 // client/server request/response upload data
     software,                   // client/server request/response software data
-    signIn,                     // admin/server request/response sign in
+    signIn,                     // admin/server request/response sign in (device)
+    loginIn,                    // admin/server request/response login in (administrator)
     changePassword,             // admin request/response change password
     reports,                    // admin/server request/response reports
     device,                     // admin append/update/delete device

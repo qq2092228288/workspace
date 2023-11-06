@@ -295,7 +295,6 @@ void TopicAnalysis::response(const QByteArray &message, const QMqttTopicName &to
         break;
     case SecondaryTopic::software:
     {
-        qDebug()<<object;
         auto appIdString = Singleton::enumValueToKey(SoftwareManagement::appId);
         auto appId = object.value(appIdString);
         if (appId.type() != QJsonValue::Undefined) {
@@ -313,6 +312,35 @@ void TopicAnalysis::response(const QByteArray &message, const QMqttTopicName &to
     }
         break;
     case SecondaryTopic::signIn:
+    {
+        auto pstr = Singleton::enumValueToKey(AdministratorInfo::password);
+        auto password = object.value(pstr);
+        if (password.type() != QJsonValue::Undefined) {
+            sqlQuery.exec(QString("SELECT * FROM %1 WHERE %2 = '%3' AND %4 = '%5'")
+                          .arg(Singleton::enumName<AdministratorInfo>(),
+                               Singleton::enumValueToKey(AdministratorInfo::adminId),
+                               id,
+                               pstr,
+                               password.toString()));
+            if (sqlQuery.next()) {
+                QJsonObject json {
+                    { Singleton::enumName<UserStatus>(), Singleton::enumValueToKey(UserStatus::passwordCorrect) }
+                };
+                data = Singleton::jsonToUtf8(json);
+            }
+            else {
+                QJsonObject json {
+                    { Singleton::enumName<UserStatus>(), Singleton::enumValueToKey(UserStatus::passwordError) }
+                };
+                data = Singleton::jsonToUtf8(json);
+            }
+        }
+        else {
+            emit error(MessageError::RequiredDataIsIncomplete);
+        }
+    }
+        break;
+    case SecondaryTopic::loginIn:
     {
         auto astr = Singleton::enumValueToKey(AdministratorInfo::adminId);
         auto pstr = Singleton::enumValueToKey(AdministratorInfo::password);
