@@ -610,8 +610,9 @@ QByteArray TopicAnalysis::dbOperation(const QJsonObject &object, const DatabaseO
             dataArray.append(data);
         }
     }
-    if (!dataArray.isEmpty())
+    if (!dataArray.isEmpty()) {
         return Singleton::jsonToUtf8(dataArray);
+    }
     return QByteArray();
 }
 
