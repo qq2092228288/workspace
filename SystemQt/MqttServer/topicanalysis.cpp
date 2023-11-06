@@ -601,15 +601,12 @@ QByteArray TopicAnalysis::dbOperation(const QJsonObject &object, const DatabaseO
         auto data = Singleton::getJsonObject(sqlQuery);
         auto temp = dataArray;
         temp.append(data);
-        if (Singleton::jsonToUtf8(data).length() > 1000000) {
-            // discard
-        }
-        else if (Singleton::jsonToUtf8(temp).length() > 1000000) {
+        if (Singleton::jsonToUtf8(temp).length() > 1024000) {
             emit messagePublish(Singleton::getTopicName(ResponseTopic::response, getSTopic(topic), topic.levels().at(2)),
                                 Singleton::jsonToUtf8(dataArray));
             dataArray = QJsonArray();
         }
-        else {
+        if (Singleton::jsonToUtf8(data).length() < 1024000) {
             dataArray.append(data);
         }
     }
