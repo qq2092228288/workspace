@@ -595,18 +595,12 @@ QByteArray TopicAnalysis::dbOperation(const QJsonObject &object, const DatabaseO
         break;
     }
     sqlQuery.exec();
-    QJsonArray array;
     while (sqlQuery.next()) {
-        // send select data
-        array.append(Singleton::getJsonObject(sqlQuery));
-        auto data = Singleton::jsonToUtf8(array);
-        if (data.length() > 524288) {
-            emit messagePublish(Singleton::getTopicName(ResponseTopic::response, getSTopic(topic), topic.levels().at(2)), data);
-            array = QJsonArray();
-        }
+        auto data = Singleton::jsonToUtf8(QJsonArray{Singleton::getJsonObject(sqlQuery)});
+        if (data.length() < 1000000)
+            emit messagePublish(Singleton::getTopicName(ResponseTopic::response, getSTopic(topic), topic.levels().at(2)),
+                                data);
     }
-    if (!array.isEmpty())
-        return Singleton::jsonToUtf8(array);
     return QByteArray();
 }
 
