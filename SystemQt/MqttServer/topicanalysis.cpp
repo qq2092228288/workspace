@@ -467,11 +467,11 @@ QByteArray TopicAnalysis::databaseOperation(const QByteArray &message, const QMq
                                 + "," + Singleton::enumValueToKey(ReportInfo::reportTime));
 #else
         dbOperation<ReportInfo>(object, type, Singleton::enumValueToKey(ReportInfo::deviceId)
-                                + "," + Singleton::enumValueToKey(ReportInfo::reportTime));
+                                + "," + Singleton::enumValueToKey(ReportInfo::reportTime), topic);
 #endif
         break;
     case SecondaryTopic::device:
-        return dbOperation(object, type, Device::deviceId);
+        return dbOperation(object, type, Device::deviceId, topic);
         break;
 #if ENABLE_COMBINE_DEVICE
     case SecondaryTopic::computer:
@@ -484,19 +484,19 @@ QByteArray TopicAnalysis::databaseOperation(const QByteArray &message, const QMq
         break;
 #endif
     case SecondaryTopic::allocatedConsumables:
-        return dbOperation(object, type, AllocatedConsumables::createTime);
+        return dbOperation(object, type, AllocatedConsumables::createTime, topic);
         break;
     case SecondaryTopic::place:
-        return dbOperation(object, type, PlaceInfo::placeId);
+        return dbOperation(object, type, PlaceInfo::placeId, topic);
         break;
     case SecondaryTopic::agent:
-        return dbOperation(object, type, AgentInfo::agentId);
+        return dbOperation(object, type, AgentInfo::agentId, topic);
         break;
     case SecondaryTopic::reports:
 #if ENABLE_COMBINE_DEVICE
         return dbOperation(object, type, ReportInfo::uniqueId);
 #else
-        return dbOperation(object, type, ReportInfo::deviceId);
+        return dbOperation(object, type, ReportInfo::deviceId, topic);
 #endif
         break;
     default:
@@ -539,7 +539,8 @@ SecondaryTopic TopicAnalysis::getSTopic(const QMqttTopicName &topic) const
 }
 
 template <class T>
-QByteArray TopicAnalysis::dbOperation(const QJsonObject &object, const DatabaseOperation &type, const QString &primaryKey)
+QByteArray TopicAnalysis::dbOperation(const QJsonObject &object, const DatabaseOperation &type,
+                                      const QString &primaryKey, const QMqttTopicName &topic)
 {
     QStringList keys = Singleton::enumKeys<T>();
     keys.sort();
@@ -598,6 +599,11 @@ QByteArray TopicAnalysis::dbOperation(const QJsonObject &object, const DatabaseO
     while (sqlQuery.next()) {
         // send select data
         array.append(Singleton::getJsonObject(sqlQuery));
+        auto data = Singleton::jsonToUtf8(array);
+        if (data.length() > 524288) {
+            emit messagePublish(Singleton::getTopicName(ResponseTopic::response, getSTopic(topic), topic.levels().at(2)), data);
+            array = QJsonArray();
+        }
     }
     if (!array.isEmpty())
         return Singleton::jsonToUtf8(array);
@@ -605,7 +611,8 @@ QByteArray TopicAnalysis::dbOperation(const QJsonObject &object, const DatabaseO
 }
 
 template<class T>
-QByteArray TopicAnalysis::dbOperation(const QJsonObject &object, const DatabaseOperation &type, const T &column)
+QByteArray TopicAnalysis::dbOperation(const QJsonObject &object, const DatabaseOperation &type,
+                                      const T &column, const QMqttTopicName &topic)
 {
-    return dbOperation<T>(object, type, Singleton::enumValueToKey(column));
+    return dbOperation<T>(object, type, Singleton::enumValueToKey(column), topic);
 }

@@ -68,9 +68,11 @@ private:
     void bindValue(QSqlQuery &sqlQuery, const QJsonObject &object);
     SecondaryTopic getSTopic(const QMqttTopicName &topic) const;
     template <class T>
-    QByteArray dbOperation(const QJsonObject &object, const DatabaseOperation &type, const QString &primaryKey);
+    QByteArray dbOperation(const QJsonObject &object, const DatabaseOperation &type,
+                           const QString &primaryKey, const QMqttTopicName &topic);
     template <class T>
-    QByteArray dbOperation(const QJsonObject &object, const DatabaseOperation &type, const T &column);
+    QByteArray dbOperation(const QJsonObject &object, const DatabaseOperation &type,
+                           const T &column, const QMqttTopicName &topic);
 private:
     QSqlDatabase m_database;
 };
