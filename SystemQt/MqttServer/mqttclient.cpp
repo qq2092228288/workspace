@@ -1,6 +1,7 @@
 #include "mqttclient.h"
 #include <singleton.h>
 #include <threadservice.h>
+#include <QTimer>
 
 MqttClient::MqttClient(QObject *parent)
     : QObject{parent}/*,
@@ -42,11 +43,14 @@ void MqttClient::connectToHost()
 void MqttClient::stateChanged(QMqttClient::ClientState state)
 {
     TIME_DEBUG()<<"connect state: "<<state;
-    if (QMqttClient::ClientState::Connected == state) {
+    if (QMqttClient::Connected == state) {
         // subscribe topics
         foreach (auto key, Singleton::enumKeys<PrimaryTopic>()) {
             m_client->subscribe(QMqttTopicFilter(key + "/#"));
         }
+    }
+    else if (QMqttClient::Disconnected == state) {
+        QTimer::singleShot(10000, this, &MqttClient::connectToHost);
     }
 }
 
