@@ -58,7 +58,7 @@ public slots:
     void messageAnalysis(const QByteArray &message, const QMqttTopicName &topic);
 signals:
     void messagePublish(const QMqttTopicName &topic, const QByteArray &message = QByteArray(),
-                        quint8 qos = 0, bool retain = false);
+                        quint8 qos = 1, bool retain = false);
     void error(const DatabaseEnumNs::MessageError &);
 private:
     bool legalAdminId(const QString &id);
