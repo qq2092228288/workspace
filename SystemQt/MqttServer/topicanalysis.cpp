@@ -276,6 +276,34 @@ void TopicAnalysis::response(const QByteArray &message, const QMqttTopicName &to
             data = QString("登陆失败，请确认信息是否正确！").toUtf8();
         }
         break;
+    case SecondaryTopic::deviceData:
+    {
+        auto deviceId = object.value(Singleton::enumValueToKey(Device::deviceId)).toString();
+        auto password = object.value(Singleton::enumValueToKey(Device::password)).toString();
+        // first upload offline used data, then get device info
+        sqlQuery.prepare(QString("SELECT *, "
+                                 "(SELECT SUM(%1) AS totalCount FROM %2 WHERE %3 = ?), "
+                                 "(SELECT COUNT(*) AS usedCount FROM %4 WHERE %3 = ?)"
+                                 "FROM %5 WHERE %3 = ? AND %6 = ?")
+                         .arg(Singleton::enumValueToKey(AllocatedConsumables::count),
+                              Singleton::enumName<AllocatedConsumables>(),
+                              Singleton::enumValueToKey(Device::deviceId),
+                              Singleton::enumName<ReportInfo>(),
+                              Singleton::enumName<Device>(),
+                              Singleton::enumValueToKey(Device::password)));
+        sqlQuery.addBindValue(deviceId);
+        sqlQuery.addBindValue(deviceId);
+        sqlQuery.addBindValue(deviceId);
+        sqlQuery.addBindValue(password);
+        sqlQuery.exec();
+        if (sqlQuery.next()) {
+            data = Singleton::jsonToUtf8(Singleton::getJsonObject(sqlQuery));
+        }
+        else {
+            data = QString("登陆失败，请确认信息是否正确！").toUtf8();
+        }
+    }
+        break;
     case SecondaryTopic::uploadData:
     {
         auto reportTimeString = Singleton::enumValueToKey(ReportInfo::reportTime);

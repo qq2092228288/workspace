@@ -22,6 +22,7 @@ Q_ENUM_NS(ResponseTopic)
 enum class SecondaryTopic
 {
     deviceInfo,                 // client/server request/response device info
+    deviceData,                 // improve deviceinfo
     uploadData,                 // client/server request/response upload data
     software,                   // client/server request/response software data
     signIn,                     // admin/server request/response sign in (device)
