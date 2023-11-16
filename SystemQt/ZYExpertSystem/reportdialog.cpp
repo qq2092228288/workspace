@@ -88,9 +88,6 @@ void ReportDialog::resetButtonClicked()
 void ReportDialog::reportPulled()
 {
     model->updateList(getItems());
-    if (!isHidden()) {
-        QMessageBox::information(this, "提示", "已获取最新数据！");
-    }
 }
 
 void ReportDialog::generatePdfButtonClicked()

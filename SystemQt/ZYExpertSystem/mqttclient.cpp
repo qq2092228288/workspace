@@ -1,8 +1,11 @@
 #include "mqttclient.h"
 #include "singleton.h"
 #include "databasens.h"
+#include "threadservice.h"
 #include <QNetworkInterface>
+#include <QNetworkProxy>
 #include <QCoreApplication>
+#include <QTimer>
 
 using namespace DatabaseEnumNs;
 
@@ -24,7 +27,7 @@ void MqttClient::login(const QString &username, const QString &password)
         { Singleton::enumValueToKey(AdministratorInfo::adminId), username },
         { Singleton::enumValueToKey(AdministratorInfo::password), password }
     };
-    m_client->publish(Singleton::getTopicName(PrimaryTopic::request, SecondaryTopic::signIn, m_mac),
+    m_client->publish(Singleton::getTopicName(PrimaryTopic::request, SecondaryTopic::loginIn, m_mac),
                       Singleton::jsonToUtf8(object), 2, false);
 }
 
@@ -63,18 +66,17 @@ void MqttClient::serverConnected()
                         Singleton::enumValueToKey(ReportInfo::reportData)));
     }
     m_client->subscribe(QMqttTopicFilter(Singleton::enumValueToKey(ResponseTopic::response) + "/+/" + m_mac));
-    QJsonObject object {
-        { Singleton::enumValueToKey(SoftwareManagement::appId), "08D41DD0-E740-4006-BD1C-132B2891042B" }
-    };
     m_client->publish(Singleton::getTopicName(PrimaryTopic::request, SecondaryTopic::software, m_mac),
-                      Singleton::jsonToUtf8(object), 0, false);
+                      Singleton::jsonToUtf8(QJsonObject {
+                                                { Singleton::enumValueToKey(SoftwareManagement::appId), m_appId }
+                                            }), 0, false);
 }
 
 void MqttClient::messageReceived(const QByteArray &message, const QMqttTopicName &topic)
 {
     auto json = QJsonDocument::fromJson(message).object();
     switch (Singleton::enumKeyToValue<SecondaryTopic>(topic.levels().at(1))) {
-    case SecondaryTopic::signIn:
+    case SecondaryTopic::loginIn:
         m_deviceIds = json.value(Singleton::enumValueToKey(ReportInfo::deviceId))
                 .toString().remove("{").remove("}");
         emit loginStatus(json);
@@ -147,7 +149,8 @@ void MqttClient::getReport(const QString &deviceId)
 }
 
 MqttClient::MqttClient(QObject *parent)
-    : QObject{parent}
+    : QObject{parent},
+      m_appId{"08D41DD0-E740-4006-BD1C-132B2891042B"}
 {
     foreach (auto net, QNetworkInterface::allInterfaces()) {
         auto flags = net.flags();
@@ -159,16 +162,18 @@ MqttClient::MqttClient(QObject *parent)
             }
         }
     }
-
     if(QSqlDatabase::contains("qt_sql_default_connection"))
         m_db = QSqlDatabase::database("qt_sql_default_connection");
     else
         m_db = QSqlDatabase::addDatabase("QSQLITE");
     m_db.setDatabaseName(":memory:");
 
-    m_client = new QMqttClient(this);
+    m_client = new QMqttClient;
+    ThreadService::getInstance()->objectMoveToThread(m_client);
     m_client->setHostname(Singleton::serverAddress());
     m_client->setPort(Singleton::mqttPort());
+
+    connect(m_client, &QMqttClient::disconnected, this, &MqttClient::connectToHost);
     connect(m_client, &QMqttClient::connected, this, &MqttClient::serverConnected);
     connect(m_client, &QMqttClient::stateChanged, this, &MqttClient::stateChanged);
     connect(m_client, &QMqttClient::messageReceived, this, &MqttClient::messageReceived);
@@ -179,6 +184,7 @@ MqttClient::~MqttClient()
     if (m_db.isOpen()) {
         m_db.close();
     }
+    delete m_client;
 }
 
 MqttClient *MqttClient::getInstance()

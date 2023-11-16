@@ -30,6 +30,7 @@ signals:
     void loginStatus(const QJsonObject &);
     void reportPulled();
 private:
+    QString m_appId;
     QString m_mac;
     QSqlDatabase m_db;
     QMqttClient *m_client;
