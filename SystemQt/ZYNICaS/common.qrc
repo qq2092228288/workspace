@@ -1,9 +1,0 @@
-<RCC>
-    <qresource prefix="/">
-        <file>hypertension.json</file>
-        <file>intensive_care_unit.json</file>
-        <file>internal_medicine.json</file>
-        <file>physical_examination.json</file>
-        <file>xprinter_report.json</file>
-    </qresource>
-</RCC>
