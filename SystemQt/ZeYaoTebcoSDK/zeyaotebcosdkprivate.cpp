@@ -38,12 +38,10 @@ ZeYaoTebcoSDKPrivate::ZeYaoTebcoSDKPrivate(QObject *parent)
     connect(m_client, &QMqttClient::stateChanged, this, &ZeYaoTebcoSDKPrivate::stateChanged);
     connect(m_client, &QMqttClient::messageReceived, this, &ZeYaoTebcoSDKPrivate::messageReceived);
     m_client->connectToHost();
-    qDebug()<<__FUNCTION__<<this->thread();
 }
 
 ZeYaoTebcoSDKPrivate::~ZeYaoTebcoSDKPrivate()
 {
-    qDebug()<<__FUNCTION__<<this->thread();
     if (m_pSerialPort->isOpen())
         m_pSerialPort->close();
     if (m_pTimer->isActive())
@@ -52,7 +50,6 @@ ZeYaoTebcoSDKPrivate::~ZeYaoTebcoSDKPrivate()
 
 int ZeYaoTebcoSDKPrivate::login(const QString &deviceId, const QString &password)
 {
-    qDebug()<<__FUNCTION__<<this->thread();
     // 输入错误
     if (deviceId.isEmpty() || password.isEmpty() || deviceId.length() > 32 || password.length() > 32)
         return Error::InputError;
@@ -73,7 +70,6 @@ int ZeYaoTebcoSDKPrivate::login(const QString &deviceId, const QString &password
 
 bool ZeYaoTebcoSDKPrivate::open(const QString &portname)
 {
-    qDebug()<<__FUNCTION__<<this->thread();
     // 串口已打开
     if (m_pSerialPort->isOpen())
         return false;
@@ -84,7 +80,6 @@ bool ZeYaoTebcoSDKPrivate::open(const QString &portname)
 
 int ZeYaoTebcoSDKPrivate::close()
 {
-    qDebug()<<__FUNCTION__<<this->thread();
     // 未打开串口
     if (!m_pSerialPort->isOpen())
         return Error::SerialPortNotOpened;
@@ -97,7 +92,6 @@ int ZeYaoTebcoSDKPrivate::close()
 
 int ZeYaoTebcoSDKPrivate::start(const QString &name, const QString &id, int gender, int age, int height, int weight)
 {
-    qDebug()<<__FUNCTION__<<this->thread();
     // 串口未打开
     if (!m_pSerialPort->isOpen())
         return Error::SerialPortNotOpened;
@@ -128,7 +122,6 @@ int ZeYaoTebcoSDKPrivate::start(const QString &name, const QString &id, int gend
 
 int ZeYaoTebcoSDKPrivate::appendBpAndPostion(int sbp, int dbp, int postion)
 {
-    qDebug()<<__FUNCTION__<<this->thread();
     // 未进行检测
     if (!m_checking) return Error::NotDetected;
     // 输入错误
@@ -142,7 +135,6 @@ int ZeYaoTebcoSDKPrivate::appendBpAndPostion(int sbp, int dbp, int postion)
 
 int ZeYaoTebcoSDKPrivate::end()
 {
-    qDebug()<<__FUNCTION__<<this->thread();
     // 未进行检测
     if (!m_checking) return Error::NotDetected;
     // 信息不完整
@@ -188,7 +180,6 @@ bool ZeYaoTebcoSDKPrivate::isDetecting()
 
 string ZeYaoTebcoSDKPrivate::availablePorts()
 {
-    qDebug()<<__FUNCTION__<<this->thread();
     QJsonArray array;
     foreach (auto info, QSerialPortInfo::availablePorts()) {
         array.append(info.portName());
@@ -198,7 +189,6 @@ string ZeYaoTebcoSDKPrivate::availablePorts()
 
 string ZeYaoTebcoSDKPrivate::readAll()
 {
-    qDebug()<<__FUNCTION__<<this->thread();
     if (!dataIntegrity()) return string();
     auto data = QJsonDocument(m_jsonObject).toJson(QJsonDocument::Compact).toStdString();
     return data;
@@ -206,20 +196,17 @@ string ZeYaoTebcoSDKPrivate::readAll()
 
 string ZeYaoTebcoSDKPrivate::deviceInfo()
 {
-    qDebug()<<__FUNCTION__<<this->thread();
     if (m_deviceInfo.empty()) return string();
     return toString(m_deviceInfo).toStdString();
 }
 
 void ZeYaoTebcoSDKPrivate::reconnect()
 {
-    qDebug()<<__FUNCTION__<<this->thread();
     if (m_pSerialPort->open(QIODevice::ReadOnly)) m_pTimer->stop();
 }
 
 void ZeYaoTebcoSDKPrivate::serialPortError(QSerialPort::SerialPortError error)
 {
-    qDebug()<<__FUNCTION__<<this->thread();
     if(error != QSerialPort::ResourceError && error != QSerialPort::PermissionError) return;
     if (m_pSerialPort->isOpen()) m_pSerialPort->close();
     if (!m_pTimer->isActive()) m_pTimer->start(1000);
@@ -227,7 +214,6 @@ void ZeYaoTebcoSDKPrivate::serialPortError(QSerialPort::SerialPortError error)
 
 void ZeYaoTebcoSDKPrivate::parsingMessages()
 {
-    qDebug()<<__FUNCTION__<<this->thread();
     auto data = m_pSerialPort->readAll();
     // 携带波形数据
     if (4 == data.size()) m_reportData.appendWaveformData(data);
@@ -265,13 +251,11 @@ void ZeYaoTebcoSDKPrivate::parsingMessages()
 
 void ZeYaoTebcoSDKPrivate::stateChanged(QMqttClient::ClientState state)
 {
-    qDebug()<<__FUNCTION__<<this->thread();
     if (QMqttClient::Connected != state) m_deviceInfo = QJsonObject();
 }
 
 void ZeYaoTebcoSDKPrivate::messageReceived(const QByteArray &message, const QMqttTopicName &topic)
 {
-    qDebug()<<__FUNCTION__<<this->thread();
     if (topic.levelCount() != 3 || message.isNull()) return;
     auto object = QJsonDocument::fromJson(message).object();
     auto level2 = SecondaryTopic(Basic::keyToValue<SecondaryTopic>(topic.levels().at(1)));
@@ -283,7 +267,6 @@ void ZeYaoTebcoSDKPrivate::messageReceived(const QByteArray &message, const QMqt
 
 void ZeYaoTebcoSDKPrivate::publish(const QMqttTopicName &topic, const QByteArray &message, quint8 qos, bool retain)
 {
-    qDebug()<<__FUNCTION__<<this->thread();
     m_client->publish(topic, message, qos, retain);
 }
 

@@ -20,7 +20,7 @@ HEADERS += \
 
 
 include(../../commonFiles/base.pri)
-include(../../commonFiles/nicas/report.pri)
+include(../../commonFiles/nicas/reportdatajson.pri)
 include(../../commonFiles/MqttServerNs/basic.pri)
 
 win32:CONFIG(release, debug|release): LIBS += -L$$[QT_INSTALL_LIBS] -lQt5Mqtt

@@ -1,5 +1,6 @@
 #include "zeyaotebcosdk.h"
 #include "zeyaotebcosdkprivate.h"
+#include <thread>
 
 ZeYaoTebcoSDK::ZeYaoTebcoSDK()
     : d_ptr{new ZeYaoTebcoSDKPrivate}
