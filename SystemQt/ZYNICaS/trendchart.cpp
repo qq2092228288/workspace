@@ -67,7 +67,7 @@ TrendChart::TrendChart(QWidget *customCtrl)
     m_pSeries->setUseOpenGL(true);
     m_pChartView->chart()->legend()->hide();
 
-    connect(dialog, &SelectItemDialog::currentText, this, &TrendChart::getChangeText);
+    connect(dialog, &SelectItemDialog::currentType, this, &TrendChart::getChangeType);
 }
 
 TrendChart::~TrendChart()
@@ -114,9 +114,9 @@ void TrendChart::addValue(double value)
     m_pSeries->append(cTime.toMSecsSinceEpoch(), value);
 }
 
-void TrendChart::getChangeText(const QString &text)
+void TrendChart::getChangeType(const Type &type)
 {
     auto &instance = DataManagement::getInstance();
-    emit changeName(m_pCustomCtrl->getArgItems().dataName, text);
-    instance.getRegulator()->saveNames(instance.getPaths().trendCharts(), instance.getRegulator()->getCurrentNames(true));
+    emit changeType(m_pCustomCtrl->getType(), type);
+    instance.getRegulator()->saveTypes(instance.getPaths().trendCharts(), instance.getRegulator()->getCurrentNames(true));
 }

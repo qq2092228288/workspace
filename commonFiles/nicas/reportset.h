@@ -6,6 +6,7 @@
 #include <QJsonDocument>
 #include <QFile>
 #include <QDir>
+#include "reportdataname.h"
 
 enum Printer_Type
 {
@@ -60,10 +61,10 @@ public:
     {
         auto arr = array(Check_Mode::IntensiveCareUnit);
         foreach (auto group, arr) {
-            auto parameters = group.toObject().value("parameters").toArray();
+            auto parameters = group.toObject().value(ReportDataName::ekey(ReportDataName::parameters)).toArray();
             foreach (auto value, parameters) {
                 auto parameter = value.toObject();
-                if (parameter.value("type").toInt() == type) {
+                if (parameter.value(ReportDataName::ekey(ReportDataName::type)).toInt() == type) {
                     return parameter;
                 }
             }

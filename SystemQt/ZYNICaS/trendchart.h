@@ -25,9 +25,9 @@ public:
 public slots:
     void clear();
     void addValue(double value);
-    void getChangeText(const QString &text);
+    void getChangeType(const Type &type);
 signals:
-    void changeName(const QString &, const QString &);
+    void changeType(const Type &, const Type &);
 private:
     QGroupBox *m_pGroupBox;
     QLabel *m_pLabel;

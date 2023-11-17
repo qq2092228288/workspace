@@ -59,7 +59,7 @@ protected:
 
 public slots:
     void timeoutSlot();
-    void changeShow(const QString &current, const QString &change);
+    void changeShow(const Type &current, const Type &change);
     void setData(const uchar &type, const short &value);
     void showBpDialogSlot();
     void setBPValue(const QString &sbp, const QString &dbp);
@@ -116,7 +116,7 @@ private:
     QPushButton *recordBtn;         //记录体位
     QPushButton *startupTestBtn;    //启动试验
     PlrtTableWidget *plrtWidget;
-    QString rPos;
+    PosType rpos;
 
     //图形模块
     QGroupBox *ecgGroupBox;
@@ -131,7 +131,6 @@ private:
     QGridLayout *dataGLayout;
     CustomCtrlRegulator *regulator;
     BodyValue bodyValue;
-//    QList<QHBoxLayout *> hLayouts;
     SudokuWidget *sudokuWidget;
     qreal efValue = 0;
     QVector<qreal> svValues;
@@ -140,17 +139,12 @@ private:
     QGroupBox *operationGroupBox;
     QPushButton *backBtn;
     QPushButton *reportBtn;
-//    QPushButton *plrtBtn;
     QPushButton *trendChartBtn;
-//    QPushButton *sudokuBtn;
     QPushButton *auxArgBtn;
     TrendChartsWidget *trendChartsWidget;
     AuxArgDialog *auxArgDialog;
-//    DrawSudoku *sudokuDraw;
 
     // 记录数据
-//    QMap<uchar, short> recordDataMap;
-//    BaseData baseData;
     ReportDataJson *reportJson;
 };
 

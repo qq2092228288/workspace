@@ -41,15 +41,16 @@ typedef struct CheckedData
 struct Argument
 {
     Argument();
-    Argument(QString _cn, QString _en, QString _unit, qreal _min, qreal _max, int _digit);
+    Argument(QString _cn, QString _en, QString _unit, qreal _min, qreal _max, int _digit, Type _type);
     Argument(QString _cn, QString _en, QString _unit, qreal _sbpmin, qreal _sbpmax,
-             int _digit, QString _dbpcn, QString _dbpen, qreal _dbpmin, qreal _dbpmax);
+             int _digit, Type _type, QString _dbpcn, QString _dbpen, qreal _dbpmin, qreal _dbpmax);
     QString cn;
     QString en;
     QString unit;
     qreal min = 0;
     qreal max = 0;
     int digit = 0;
+    Type type;
     QString dbpcn;
     QString dbpen;
     qreal dbpmin = 0;
@@ -59,15 +60,14 @@ struct Argument
 typedef struct Arguments
 {
     Arguments();
-    Argument findArgument(const QString &en);
+    void init();
     qreal CVP = 4;
     qreal LAP = 9;
     QList<Argument> arguments;
     Argument find(const Type &type)
     {
-        auto en = typeName(type);
         foreach (Argument arg, arguments) {
-            if (arg.en == en) {
+            if (arg.type == type) {
                 return arg;
             }
         }

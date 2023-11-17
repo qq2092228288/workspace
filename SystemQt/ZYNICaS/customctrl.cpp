@@ -53,6 +53,7 @@ CustomCtrl::CustomCtrl(Argument arg, QWidget *parent)
     aitems.dataName_cn = (arg.dbpcn.isEmpty() ? arg.cn : arg.cn + "/" +arg.dbpcn);
     aitems.dataUnit = arg.unit;
     digit = arg.digit;
+    m_type = arg.type;
 
     mainLabel->setText(aitems.dataName);
     secondaryLabel->setText(aitems.dataName_cn);
@@ -86,7 +87,7 @@ CustomCtrl::CustomCtrl(Argument arg, QWidget *parent)
     scopeLabel->setStyleSheet(QString("QLabel{font-size: %1px;color: #ffffff;font-weight:normal;}").arg(scsize));
     unitLabel->setStyleSheet(QString("QLabel{font-size: %1px;color: #ffffff;font-weight:normal;}").arg(usize));
 
-    connect(m_pDialog, &SelectItemDialog::currentText, this, &CustomCtrl::getChangeText);
+    connect(m_pDialog, &SelectItemDialog::currentType, this, &CustomCtrl::getChangeType);
     m_pTrendChart = new TrendChart(this);
     m_pTrendChart->hide();
 }
@@ -174,6 +175,11 @@ double CustomCtrl::getMaxValue() const
 QString CustomCtrl::getName() const
 {
     return aitems.dataName;
+}
+
+Type CustomCtrl::getType() const
+{
+    return m_type;
 }
 
 QString CustomCtrl::getValueStr() const
@@ -271,11 +277,11 @@ void CustomCtrl::recordValueSlot()
     dbpaitems.recordValue = dbpaitems.currentValue;
 }
 
-void CustomCtrl::getChangeText(const QString &text)
+void CustomCtrl::getChangeType(const Type &type)
 {
-    emit changeName(aitems.dataName, text);
+    emit changeType(m_type, type);
     auto &instance = DataManagement::getInstance();
-    instance.getRegulator()->saveNames(DataManagement::getInstance().getPaths().showItems(),
+    instance.getRegulator()->saveTypes(DataManagement::getInstance().getPaths().showItems(),
                                        instance.getRegulator()->getCurrentNames(false));
 }
 
@@ -321,10 +327,10 @@ void CustomCtrlRegulator::addCustomCtrl(QList<CustomCtrl *> ctrls)
     allCustomCtrls.append(ctrls);
 }
 
-CustomCtrl *CustomCtrlRegulator::getCustomCtrl(const QString &cname)
+CustomCtrl *CustomCtrlRegulator::getCustomCtrl(const Type &type)
 {
     foreach (auto customCtrl, allCustomCtrls) {
-        if(customCtrl->getName() == cname) {
+        if(customCtrl->getType() == type) {
             return customCtrl;
         }
     }
@@ -336,24 +342,23 @@ QList<CustomCtrl *> CustomCtrlRegulator::getAllCustomCtrls()
     return allCustomCtrls;
 }
 
-QStringList CustomCtrlRegulator::getSaveNames(bool trendChart)
+std::vector<Type> CustomCtrlRegulator::getSaveTypes(bool trendChart)
 {
-    QStringList list;
+    QJsonArray array;
     if (trendChart) {
         QFile file(DataManagement::getInstance().getPaths().trendCharts());
         if (file.open(QFile::ReadWrite | QFile::Text)) {
             QTextStream stream(&file);
             stream.setCodec(QTextCodec::codecForName("utf-8"));
-            while (!stream.atEnd()) {
-                list<<stream.readLine();
+            if (!stream.atEnd()) {
+                array = QJsonDocument::fromJson(stream.readLine().toUtf8()).array();
             }
-            if (list.size() != 12) {
-                list.clear();
-                list<<"CO"<<"CI"<<"SV"<<"SI"<<"HRV"<<"Vol"<<"SSVRI"<<"Vas"<<"ISI"<<"Ino"<<"HR"<<"DO2";
-                foreach (QString str, list) {
-                    stream<<QString("%1\n").arg(str);
-                }
+            if (array.count() != 12 || !isSubset(array, false)) {
+                array = QJsonArray{ Type::CO, Type::CI, Type::SV, Type::SI, Type::HRV, Type::Vol,
+                                    Type::SSVRI, Type::SVRI, Type::Vas, Type::ISI, Type::Ino, Type::HR };
+                stream<<QString(QJsonDocument(array).toJson(QJsonDocument::Compact));
             }
+            file.close();
         }
     }
     else {
@@ -361,65 +366,66 @@ QStringList CustomCtrlRegulator::getSaveNames(bool trendChart)
         if (file.open(QFile::ReadWrite | QFile::Text)) {
             QTextStream stream(&file);
             stream.setCodec(QTextCodec::codecForName("utf-8"));
-            while (!stream.atEnd()) {
-                list<<stream.readLine();
+            if (!stream.atEnd()) {
+                array = QJsonDocument::fromJson(stream.readLine().toUtf8()).array();
             }
-            if (list.size() != 11) {
-                list.clear();
-                list<<"HR"<<"TFC"<<"CO"<<"CI"<<"SV"<<"SI"<<"HRV"<<"ISI"<<"Ino"<<"SSVRI"<<"SBP/DBP";
-                foreach (QString str, list) {
-                    stream<<QString("%1\n").arg(str);
-                }
+            if (array.count() != 11 || !isSubset(array, true)) {
+                array = QJsonArray{ Type::HR, Type::TFC, Type::CO, Type::CI, Type::SV, Type::SI,
+                                    Type::HRV, Type::ISI, Type::Ino, Type::SSVRI, Type::SBP };
+                stream<<QString(QJsonDocument(array).toJson(QJsonDocument::Compact));
             }
+            file.close();
         }
     }
     if (trendChart) {
-        currentTrendChartNames = list;
+        currentTrendChartTypes = arrayToVector(array);
     }
     else {
-        currentNames = list;
+        currentTypes = arrayToVector(array);
     }
-    return list;
+    return arrayToVector(array);
 }
 
 
-QStringList CustomCtrlRegulator::getAllNames()
+std::vector<Type> CustomCtrlRegulator::getAllTypes()
 {
-    QStringList list;
+    std::vector<Type> types;
     foreach (auto custromCtrl, allCustomCtrls) {
-        list<<custromCtrl->getName();
+        types.push_back(custromCtrl->getType());
     }
-    return list;
+    return types;
 }
 
-QStringList CustomCtrlRegulator::getCurrentNames(bool trendChart)
+std::vector<Type> CustomCtrlRegulator::getCurrentNames(bool trendChart)
 {
     if (trendChart) {
-        return currentTrendChartNames;
+        return currentTrendChartTypes;
     }
-    return currentNames;
+    return currentTypes;
 }
 
-void CustomCtrlRegulator::saveNames(const QString &fileName, const QStringList &list)
+void CustomCtrlRegulator::saveTypes(const QString &fileName, const std::vector<Type> &types)
 {
     QFile file(fileName);
     if(!file.open(QFile::WriteOnly)){
         emit openError(file.fileName());
     }
     QTextStream in(&file);
-    foreach (auto name, list) {
-        in<<QString("%1\n").arg(name);
+    QJsonArray array;
+    foreach (auto type, types) {
+        array<<type;
     }
+    in<<QString(QJsonDocument(array).toJson(QJsonDocument::Compact));
     file.close();
 }
 
 QList<CustomCtrl *> CustomCtrlRegulator::getSaveCustomCtrls(bool trendChart)
 {
     QList<CustomCtrl *> customCtrls;
-    QStringList list = getSaveNames(trendChart);
-    foreach (const QString &name, list) {
+    auto types = getSaveTypes(trendChart);
+    foreach (auto type, types) {
         foreach (auto customCtrl, allCustomCtrls) {
-            if(name == customCtrl->getName()) {
+            if(type == customCtrl->getType()) {
                 customCtrls.append(customCtrl);
                 break;
             }
@@ -428,15 +434,24 @@ QList<CustomCtrl *> CustomCtrlRegulator::getSaveCustomCtrls(bool trendChart)
     return customCtrls;
 }
 
-void CustomCtrlRegulator::changeCurrentNames(const QString &current, const QString &change, bool trendChart)
+void CustomCtrlRegulator::changeCurrentTypes(const Type &current, const Type &change, bool trendChart)
 {
     if (trendChart) {
-        currentTrendChartNames[currentTrendChartNames.indexOf(current)] = change;
+        for (int i = 0; i < currentTrendChartTypes.size(); ++i) {
+            if (currentTrendChartTypes.at(i) == current) {
+                currentTrendChartTypes[i] = change;
+                break;
+            }
+        }
     }
     else {
-        currentNames[currentNames.indexOf(current)] = change;
+        for (int i = 0; i < currentTypes.size(); ++i) {
+            if (currentTypes.at(i) == current) {
+                currentTypes[i] = change;
+                break;
+            }
+        }
     }
-
 }
 
 QList<qreal> CustomCtrlRegulator::getRecordValues()
@@ -480,4 +495,56 @@ void CustomCtrlRegulator::connectTrendChart(bool con)
             disconnect(customCtrl, &CustomCtrl::currentValue, customCtrl->getTrendChart(), &TrendChart::addValue);
         }
     }
+}
+
+bool CustomCtrlRegulator::isSubset(const QJsonArray &array, bool showItem) const
+{
+    std::vector<Type> atypes {
+        Type::CO, Type::CI, Type::SV, Type::SI, Type::TFC, Type::EDI,
+        Type::SVV, Type::Vol, Type::SVR, Type::SSVR, Type::SSVRI, Type::SVRI, Type::Vas,
+        Type::PEP, Type::LVET, Type::LSW, Type::LSWI, Type::LCW,Type::LCWI, Type::STR,
+        Type::EPCI, Type::ISI, Type::Ino, Type::HR, Type::HRV
+    };
+    if (showItem) {
+        atypes.push_back(Type::DO2);
+        atypes.push_back(Type::SBP);
+        atypes.push_back(Type::MAP);
+    }
+    std::vector<Type> types;
+    foreach (auto value, array) {
+        types.push_back(Type(value.toInt(-1)));
+    }
+    std::sort(atypes.begin(), atypes.end());
+    std::sort(types.begin(), types.end());
+    int i = 0, j = 0;
+    auto m = atypes.size();
+    auto n = types.size();
+    if (0 == n || m < n) {
+        return false;
+    }
+    while (i < n && j < m) {
+        if (atypes[j] < types[i]) {
+            ++j;
+        }
+        else if (atypes[j] == types[i]) {
+            ++j;
+            ++i;
+        }
+        else {
+            return false;
+        }
+    }
+    if (i < n) {
+        return false;
+    }
+    return true;
+}
+
+std::vector<Type> CustomCtrlRegulator::arrayToVector(const QJsonArray &array) const
+{
+    std::vector<Type> vector;
+    foreach (auto value, array) {
+        vector.push_back(Type(value.toInt(-1)));
+    }
+    return vector;
 }

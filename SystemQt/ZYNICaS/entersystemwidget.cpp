@@ -242,9 +242,9 @@ void EnterSystemWidget::initPosModule()
 
     patternGroup.addButton(manyBtn, 0);
     patternGroup.addButton(singleBtn, 1);
-    posGroup.addButton(halfLieBtn, 0);
-    posGroup.addButton(lieBtn, 1);
-    posGroup.addButton(legLiftBtn, 2);
+    posGroup.addButton(halfLieBtn, PosType::HalfSleeper);
+    posGroup.addButton(lieBtn, PosType::LieFlat);
+    posGroup.addButton(legLiftBtn, PosType::LegLift);
 
 
     manyBtn->setChecked(true);
@@ -308,13 +308,10 @@ void EnterSystemWidget::initReportModule()
     operationGroupBox = new QGroupBox(this);
     backBtn = new QPushButton(tr("返回"), this);
     reportBtn = new QPushButton(tr("生成报告"),this);
-//    plrtBtn = new QPushButton(tr("PLRT"), this);
     trendChartBtn = new QPushButton(tr("趋势图"),this);
-//    sudokuBtn = new QPushButton(tr("血压靶向分析图"),this);
     auxArgBtn = new QPushButton(tr("辅助参数"),this);
     trendChartsWidget = new TrendChartsWidget;
     auxArgDialog = new AuxArgDialog;
-//    sudokuDraw = new DrawSudoku;
     reportJson = new ReportDataJson(this);
 
     QHBoxLayout *hLayout = new QHBoxLayout(operationGroupBox);
@@ -323,9 +320,7 @@ void EnterSystemWidget::initReportModule()
     hLayout->addWidget(backBtn);
     hLayout->addWidget(reportBtn);
     hLayout->addStretch();
-//    hLayout->addWidget(plrtBtn);
     hLayout->addWidget(trendChartBtn);
-//    hLayout->addWidget(sudokuBtn);
     hLayout->addWidget(auxArgBtn);
 }
 
@@ -347,16 +342,13 @@ void EnterSystemWidget::signalsAndSlots()
                                    bVal.fhh, bVal.edh, bVal.ltsh, bVal.lthms, bVal.ptm, bVal.al);
     });
     connect(infoDialog, &InfoEditDialog::updateUi, this, [=](){
-        rPos.clear();
-//        recordDataMap.clear();
-//        baseData = BaseData();
+        rpos = PosType::None;
         svValues.clear();
         // 清空波形图
         ecgDraw->clear();
         diffDraw->clear();
         admitDraw->clear();
         // 清空九宫格
-//        sudokuDraw->clear();
         sudokuWidget->clear();
         // 清空plrt
         plrtWidget->clear();
@@ -378,19 +370,19 @@ void EnterSystemWidget::signalsAndSlots()
         switch (status) {
         case TestS::Started:
             legLiftBtn->setChecked(true);
-            emit posGroup.idClicked(posGroup.id(legLiftBtn));
+            changePosition(PosType::LegLift);
             break;
         case TestS::Paused:
             // nothing
             break;
         case TestS::Stopped:
-            foreach (auto btn, posGroup.buttons()) {
-                if (btn->text() == rPos) {
-                    btn->setChecked(true);
-                    emit posGroup.idClicked(posGroup.id(btn));
-                    break;
-                }
+        {
+            auto btn = posGroup.button(rpos);
+            if (btn != nullptr) {
+                btn->setChecked(true);
             }
+            changePosition(rpos);
+        }
             break;
         case TestS::Completed:
             createReport();
@@ -401,11 +393,12 @@ void EnterSystemWidget::signalsAndSlots()
     });
     // data
     foreach (auto customCtrl, regulator->getAllCustomCtrls()) {
-        connect(customCtrl, &CustomCtrl::changeName, this, &EnterSystemWidget::changeShow);
+        connect(customCtrl, &CustomCtrl::changeType, this, &EnterSystemWidget::changeShow);
         connect(this, &EnterSystemWidget::recordValue, customCtrl, &CustomCtrl::recordValueSlot);
         if (customCtrl->getName() == "SI") {
             connect(customCtrl, &CustomCtrl::currentValue, this, [=](qreal si){
-                sudokuWidget->setPoint(bodyValue.MAP(), si, SignType(posGroup.checkedId()), rPos.isEmpty());
+                sudokuWidget->setPoint(bodyValue.MAP(), si, SignType(posGroup.checkedId()),
+                                       PosType::None == rpos);
             });
         }
         connect(customCtrl, &CustomCtrl::nameAndValue, plrtWidget, &PlrtTableWidget::setData);
@@ -435,7 +428,7 @@ void EnterSystemWidget::timeoutSlot()
     dataGroupBox->setTitle(QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss"));
 }
 
-void EnterSystemWidget::changeShow(const QString &current, const QString &change)
+void EnterSystemWidget::changeShow(const Type &current, const Type &change)
 {
     CustomCtrl *cuCtrl = regulator->getCustomCtrl(current);
     CustomCtrl *chCtrl = regulator->getCustomCtrl(change);
@@ -446,7 +439,7 @@ void EnterSystemWidget::changeShow(const QString &current, const QString &change
             dataGLayout->removeWidget(cuCtrl);
             dataGLayout->addWidget(chCtrl, index/4, index%4);
             chCtrl->show();
-            regulator->changeCurrentNames(current, change, false);
+            regulator->changeCurrentTypes(current, change, false);
             break;
         }
     }
@@ -463,7 +456,7 @@ void EnterSystemWidget::setData(const uchar &type, const short &value)
         break;
     case Type::PEP:
         setCtrlValue(Type::PEP, DatCa::cPep(value));
-        setCtrlValue(Type::STR, DatCa::cStr(value, regulator->getCustomCtrl(typeName(Type::LVET))->getCurrentValue()));
+        setCtrlValue(Type::STR, DatCa::cStr(value, regulator->getCustomCtrl(Type::LVET)->getCurrentValue()));
         break;
     case Type::TFC:
         setCtrlValue(Type::TFC, DatCa::cTfc(value));
@@ -489,7 +482,7 @@ void EnterSystemWidget::setData(const uchar &type, const short &value)
             setCtrlValue(Type::LSW, DatCa::cLsw(sv, bodyValue.MAP(), bodyValue.LAP));
             double lswi = DatCa::cLswi(si, bodyValue.MAP(), bodyValue.LAP);
             setCtrlValue(Type::LSWI, lswi);
-            setCtrlValue(Type::Vol, DatCa::cVol(lswi, regulator->getCustomCtrl(typeName(Type::Ino))->getCurrentValue()));
+            setCtrlValue(Type::Vol, DatCa::cVol(lswi, regulator->getCustomCtrl(Type::Ino)->getCurrentValue()));
             setCtrlValue(Type::SSVR, DatCa::cSsvr(sv, bodyValue.MAP(), bodyValue.CVP));
             double ssvri = DatCa::cSsvri(si, bodyValue.MAP(), bodyValue.CVP);
             setCtrlValue(Type::SSVRI, ssvri);
@@ -541,18 +534,18 @@ void EnterSystemWidget::setBPValue(const QString &sbp, const QString &dbp)
 {
     sbpLineEdit->setText(sbp);
     dbpLineEdit->setText(dbp);
-    auto BPCtrl = regulator->getCustomCtrl("SBP/DBP");
-    auto MAPCtrl = regulator->getCustomCtrl("MAP");
+    auto BPCtrl = regulator->getCustomCtrl(Type::SBP);
+    auto MAPCtrl = regulator->getCustomCtrl(Type::MAP);
     if(BPCtrl != nullptr && MAPCtrl != nullptr) {
         if(!sbp.isEmpty() && !dbp.isEmpty()) {
             bodyValue.SBP = sbp.toInt();
             bodyValue.DBP = dbp.toInt();
             BPCtrl->setValues(bodyValue.SBP, bodyValue.DBP);
             MAPCtrl->setValue(bodyValue.MAP(), MAPCtrl->getName());
-            auto SICtrl = regulator->getCustomCtrl(typeName(Type::SI));
+            auto SICtrl = regulator->getCustomCtrl(Type::SI);
             if (SICtrl != nullptr) {
                 sudokuWidget->setPoint(bodyValue.MAP(), SICtrl->getCurrentValue(),
-                                       SignType(posGroup.checkedId()), rPos.isEmpty());
+                                       SignType(posGroup.checkedId()), PosType::None == rpos);
             }
         }
         else {
@@ -568,13 +561,13 @@ void EnterSystemWidget::changeMode(const int &id)
         recordBtn->setVisible(true);
     }
     else if(id == 1) {
-        if (!rPos.isEmpty() && QMessageBox::question(this,tr("提示"),
+        if (PosType::None != rpos && QMessageBox::question(this,tr("提示"),
                          tr("已记录体位，确定切换为单体位吗？")) == QMessageBox::No) {
             manyBtn->setChecked(true);
             return;
         }
         reportJson->clearCheckData();
-        rPos.clear();
+        rpos = PosType::None;
         recordBtn->setVisible(false);
     }
 }
@@ -583,9 +576,10 @@ void EnterSystemWidget::recordPosition()
 {
     if (isStartCheck() && detectedData()) {
         emit recordValue();
-        rPos = posGroup.checkedButton()->text();
+        rpos = PosType(posGroup.checkedId());
         auto &instance = DataManagement::getInstance();
-        reportJson->appendPosition(bodyValue.SBP, bodyValue.DBP, bodyValue.CVP, bodyValue.LAP, posGroup.checkedId() + 1);
+        reportJson->appendPosition(bodyValue.SBP, bodyValue.DBP, bodyValue.CVP, bodyValue.LAP,
+                                   posGroup.checkedId());
         instance.getTebco()->clearMap();
         QMessageBox::information(this, tr("提示"), tr("已记录体位。"));
     }
@@ -593,15 +587,13 @@ void EnterSystemWidget::recordPosition()
 
 void EnterSystemWidget::changePosition(int id)
 {
-    if (!rPos.isEmpty() && posGroup.button(id)->text() != rPos) {
+    if (PosType::None != rpos && PosType(id) != rpos) {
         recordBtn->hide();
-        foreach (auto btn, posGroup.buttons()) {
-            if (btn->text() == rPos) {
-                plrtWidget->setPic(PosType(posGroup.id(btn) + 1), PosType(id + 1));
-            }
+        if (posGroup.checkedId() != rpos) {
+            plrtWidget->setPic(rpos, PosType(id));
         }
     }
-    else if(posGroup.button(id)->text() == rPos) {
+    else if(id == rpos) {
         recordBtn->show();
     }
 }
@@ -610,16 +602,15 @@ void EnterSystemWidget::createReport()
 {
     if (isStartCheck() && detectedData()) {
         auto &instance = DataManagement::getInstance();
-        if (patternGroup.checkedId() == 0 && rPos.isEmpty()) {
+        if (patternGroup.checkedId() == 0 && PosType::None == rpos) {
             QMessageBox::information(this, tr("提示"), tr("多体位模式需要记录体位！"));
             return;
         }
-        if (!rPos.isEmpty() && !recordBtn->isHidden()) {
+        if (PosType::None != rpos && !recordBtn->isHidden()) {
             QMessageBox::information(this, tr("提示"), tr("未改变体位！"));
             return;
         }
-
-        reportJson->appendPosition(bodyValue.SBP, bodyValue.DBP, bodyValue.CVP, bodyValue.LAP, posGroup.checkedId() + 1);
+        reportJson->appendPosition(bodyValue.SBP, bodyValue.DBP, bodyValue.CVP, bodyValue.LAP, posGroup.checkedId());
         QDateTime curTime = QDateTime::fromString(reportJson->getReportTime(), "yyyyMMddhhmmsszzz");
         reportJson->setReportConclusion(instance.reportResult(reportJson->getJson()));
         emit instance.startCheck(false);
@@ -643,7 +634,7 @@ void EnterSystemWidget::createReport()
 
 void EnterSystemWidget::clearUiSlot()
 {
-    rPos.clear();
+    rpos = PosType::None;
 //    recordDataMap.clear();
 //    baseData = BaseData();
     svValues.clear();
@@ -710,11 +701,11 @@ void EnterSystemWidget::startupTestSlot()
         QMessageBox::warning(this, tr("警告"), tr("被动抬腿试验不适用于单体位！"));
         return;
     }
-    else if (rPos.isEmpty()) {
+    else if (PosType::None == rpos) {
         QMessageBox::warning(this, tr("警告"), tr("请先记录体位！"));
         return;
     }
-    else if (rPos == legLiftBtn->text()) {
+    else if (rpos == PosType::LegLift) {
         QMessageBox::warning(this, tr("警告"), tr("PLRT抬腿试验第一体位为“半卧”或“平躺”！"));
         return;
     }
@@ -724,11 +715,11 @@ void EnterSystemWidget::startupTestSlot()
 
 bool EnterSystemWidget::detectedData()
 {
-    if (0 == regulator->getCustomCtrl(typeName(Type::MAP))->getCurrentValue()) {
+    if (0 == regulator->getCustomCtrl(Type::MAP)->getCurrentValue()) {
         QMessageBox::information(this, tr("提示"), tr("请先输入血压。"));
         return false;
     }
-    else if (0 == regulator->getCustomCtrl(typeName(Type::SSVRI))->getCurrentValue()) {
+    else if (0 == regulator->getCustomCtrl(Type::SSVRI)->getCurrentValue()) {
         QMessageBox::information(this, tr("提示"), tr("数据检测中，请稍后。"));
         return false;
     }
@@ -738,7 +729,7 @@ bool EnterSystemWidget::detectedData()
 void EnterSystemWidget::setCtrlValue(const Type &type, const double &value)
 {
     if (value == DatCa::invalid()) return;
-    regulator->getCustomCtrl(typeName(type))->setValue(value);
+    regulator->getCustomCtrl(type)->setValue(value);
 }
 
 bool EnterSystemWidget::isStartCheck()

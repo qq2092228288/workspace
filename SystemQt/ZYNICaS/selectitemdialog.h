@@ -7,6 +7,7 @@
 #include <QShowEvent>
 #include <QFileInfo>
 #include <QFile>
+#include "datatype.h"
 
 class SelectItemDialog : public QDialog
 {
@@ -17,7 +18,7 @@ public:
 protected:
     void showEvent(QShowEvent *event);
 signals:
-    void currentText(QString);
+    void currentType(Type);
 private:
     bool m_trendChart;
     QComboBox *comboBox;

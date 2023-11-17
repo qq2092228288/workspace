@@ -10,7 +10,7 @@ TrendChartsWidget::TrendChartsWidget(QWidget *parent)
     this->setStyleSheet("QWidget{background-color:#ffffff;}");
     CustomCtrlRegulator *regulator = instance.getRegulator();
     foreach (auto customCtrl, regulator->getAllCustomCtrls()) {
-        connect(customCtrl->getTrendChart(), &TrendChart::changeName, this, &TrendChartsWidget::changeShow);
+        connect(customCtrl->getTrendChart(), &TrendChart::changeType, this, &TrendChartsWidget::changeShow);
     }
     dataGLayout = new QGridLayout(this);
     QList<CustomCtrl *> customCtrls = regulator->getSaveCustomCtrls(true);
@@ -26,7 +26,7 @@ TrendChartsWidget::TrendChartsWidget(QWidget *parent)
     }
 }
 
-void TrendChartsWidget::changeShow(const QString &current, const QString &change)
+void TrendChartsWidget::changeShow(const Type &current, const Type &change)
 {
     auto regulator = DataManagement::getInstance().getRegulator();
     TrendChart *cuTc = regulator->getCustomCtrl(current)->getTrendChart();
@@ -39,7 +39,7 @@ void TrendChartsWidget::changeShow(const QString &current, const QString &change
         dataGLayout->removeWidget(cuTc);
         dataGLayout->addWidget(chTc, index/4, index%4);
         chTc->show();
-        regulator->changeCurrentNames(current, change, true);
+        regulator->changeCurrentTypes(current, change, true);
         trendCharts.replace(trendCharts.indexOf(cuTc), chTc);
     }
 //    foreach (QHBoxLayout *layout, hLayouts) {

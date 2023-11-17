@@ -21,6 +21,7 @@ int main(int argc, char *argv[])
 #endif
         // data management instance
         auto &ins = DataManagement::getInstance();
+        ins.getArgs().init();
         // tebco serialport class move to thread
         ThreadService::getInstance()->objectMoveToThread(ins.getTebco());
         // clear old data

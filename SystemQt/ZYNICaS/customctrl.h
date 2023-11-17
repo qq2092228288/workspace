@@ -66,6 +66,7 @@ public:
     double getMinValue() const;
     double getMaxValue() const;
     QString getName() const;
+    Type getType() const;
     QString getValueStr() const;
     TrendChart *getTrendChart();
     int getDigit() const;
@@ -78,13 +79,13 @@ public slots:
     void valueWarning(int warning);
     void recordValueSlot();
 protected slots:
-    void getChangeText(const QString &text);
+    void getChangeType(const Type &type);
     void timeoutSlot();
 signals:
     void currentValue(qreal);
     void nameAndValue(const QString &, const double &rVal, const double &cVal);
-    // 当前名字，交换显示的名字
-    void changeName(const QString &, const QString &);
+    // 当前类型，交换显示的类型
+    void changeType(const Type &, const Type &);
 private:
     QTimer *timer;
     SelectItemDialog *m_pDialog;
@@ -98,6 +99,7 @@ private:
     ArgItems aitems;
     ArgItems dbpaitems;
     int digit;
+    Type m_type;
     // 精度
     qreal m_accuracy = 1;
     TrendChart *m_pTrendChart;
@@ -112,23 +114,26 @@ public:
 public:
     void addCustomCtrl(CustomCtrl *ctrl);
     void addCustomCtrl(QList<CustomCtrl *> ctrls);
-    CustomCtrl *getCustomCtrl(const QString &cname);
+    CustomCtrl *getCustomCtrl(const Type &type);
     QList<CustomCtrl *> getAllCustomCtrls();
-    QStringList getSaveNames(bool trendChart);
-    QStringList getAllNames();
-    QStringList getCurrentNames(bool trendChart);
-    void saveNames(const QString &fileName, const QStringList &list);
+    std::vector<Type> getSaveTypes(bool trendChart);
+    std::vector<Type> getAllTypes();
+    std::vector<Type> getCurrentNames(bool trendChart);
+    void saveTypes(const QString &fileName, const std::vector<Type> &types);
     QList<CustomCtrl *> getSaveCustomCtrls(bool trendChart);
-    void changeCurrentNames(const QString &current, const QString &change, bool trendChart);
+    void changeCurrentTypes(const Type &current, const Type &change, bool trendChart);
     QList<qreal> getRecordValues();
     QList<qreal> getCurrentValues();
     void connectTrendChart(bool con);
 signals:
     void openError(const QString &);
 private:
+    bool isSubset(const QJsonArray &array, bool showItem) const;
+    std::vector<Type> arrayToVector(const QJsonArray &array) const;
+private:
     QList<CustomCtrl *> allCustomCtrls;
-    QStringList currentNames;
-    QStringList currentTrendChartNames;
+    std::vector<Type> currentTypes;
+    std::vector<Type> currentTrendChartTypes;
 };
 
 #endif // CUSTOMCTRL_H

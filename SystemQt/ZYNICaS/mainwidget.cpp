@@ -84,7 +84,7 @@ MainWidget::MainWidget(QWidget *parent)
 //    connect(this, &MainWidget::wmDeviceChange, instance.getTebco(), &ZyTebco::hotPlug);
     configDialog->updateHospitalInfo();
     // 未show控件截屏问题处理
-    enterSystemWidget->trendChartLayout();
+//    enterSystemWidget->trendChartLayout();
 }
 
 MainWidget::~MainWidget()

@@ -44,8 +44,8 @@ enum Type {
     SVV = 41
 };
 
-QString typeName(const uchar &type);
+//QString typeName(const uchar &type);
 
-QString typeName(const Type &type);
+//QString typeName(const Type &type);
 
 #endif // DATATYPE_H

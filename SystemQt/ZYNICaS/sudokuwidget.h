@@ -17,8 +17,9 @@ struct ArgScope
     double max;
 };
 
-enum SignType
+enum class SignType
 {
+    None,
     Circular,
     Square,
     Delta

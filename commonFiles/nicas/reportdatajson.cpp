@@ -194,8 +194,8 @@ void ReportDataJson::appendPosition(int sbp, int dbp, int cvp, int lap, int pos)
         data.insert(QString::number(Type::Pos), pos);
     }
     auto position = getPosition();
-    if (position.size() > 4) {
-        return;
+    if (position.size() == 2) {
+        position.removeFirst();
     }
     position.append(QJsonObject
                     {

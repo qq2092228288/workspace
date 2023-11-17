@@ -44,7 +44,6 @@ SOURCES += \
     systemconfigdialog.cpp \
     trendchart.cpp \
     trendchartswidget.cpp \
-    updateappdialog.cpp \
     viewreportdialog.cpp \
 
 HEADERS += \
@@ -72,7 +71,6 @@ HEADERS += \
     systemconfigdialog.h \
     trendchart.h \
     trendchartswidget.h \
-    updateappdialog.h \
     viewreportdialog.h \
 
 include(../../commonFiles/base.pri)

@@ -45,63 +45,99 @@ QString MyFilePath::userAccountInfo() const
 
 Argument::Argument(){}
 
-Argument::Argument(QString _cn, QString _en, QString _unit, qreal _min, qreal _max, int _digit)
-    : cn(_cn),en(_en),unit(_unit),min(_min),max(_max),digit(_digit)
+Argument::Argument(QString _cn, QString _en, QString _unit, qreal _min, qreal _max, int _digit, Type _type)
+    : cn(_cn),en(_en),unit(_unit),min(_min),max(_max),digit(_digit),type(_type)
 {
 
 }
 
-Argument::Argument(QString _cn, QString _en, QString _unit, qreal _sbpmin, qreal _sbpmax, int _digit,
+Argument::Argument(QString _cn, QString _en, QString _unit, qreal _sbpmin, qreal _sbpmax, int _digit, Type _type,
                    QString _dbpcn, QString _dbpen, qreal _dbpmin, qreal _dbpmax)
-    : cn(_cn),en(_en),unit(_unit),min(_sbpmin),max(_sbpmax),
-      digit(_digit),dbpcn(_dbpcn),dbpen(_dbpen),dbpmin(_dbpmin),dbpmax(_dbpmax)
+    : cn(_cn),en(_en),unit(_unit),min(_sbpmin),max(_sbpmax),digit(_digit),type(_type),
+      dbpcn(_dbpcn),dbpen(_dbpen),dbpmin(_dbpmin),dbpmax(_dbpmax)
 {
 
 }
 
 Arguments::Arguments()
 {
-    arguments = QList<Argument>()
-        <<Argument("心输出量", "CO", "L/min", 3.5, 9.0, 1)
-        <<Argument("心脏指数", "CI", "L/min·m²", 2.0, 5.0, 1)
-        <<Argument("氧输送", "DO2", "mL/min", 1000, 1000, 0)
-        <<Argument("搏排量", "SV", "mL/beat", 50, 120, 1)
-        <<Argument("心搏指数", "SI", "mL/beat·m²", 35, 65, 0)
-        <<Argument("心率变异性", "HRV", "%", -50, 50, 0)
-        <<Argument("胸液传导性", "TFC", "1/Ω", 0.025, 0.045, 3)
-        <<Argument("舒张末期指数", "EDI", "mL/beat·m²", 54, 130, 0)
-        <<Argument("每搏输出变异性", "SVV", "%", 0, 10, 0)
-        <<Argument("血管容积", "Vol", "%", -50, 50, 0)
-        <<Argument("系统阻力", "SVR", "dyn·s·m²/cm⁵", 742, 1500, 0)
-        <<Argument("每搏外周阻力", "SSVR", "dyn·s/cm⁵", 119.6, 429.2, 1)
-        <<Argument("每搏外周阻力指数", "SSVRI", "dyn·s/cm⁵/beat/m²", 99.7, 185.1, 1)
-        <<Argument("系统阻力指数", "SVRI", "dyn·s·m²/cm⁵", 1337, 2483, 0)
-        <<Argument("血管顺应性", "Vas", "%", -50, 50, 0)
-        <<Argument("射血前期", "PEP", "ms", 50, 120, 0)
-        <<Argument("左室射血时间", "LVET", "ms", 250, 350, 0)
-        <<Argument("左心室每搏做功", "LSW", "g·m", 20, 90, 0)
-        <<Argument("每搏做功指数", "LSWI", "g·m/beat/m²", 39.3, 73.0, 1)
-        <<Argument("左心室做功", "LCW", "kg·m", 5.4, 10.0, 1)
-        <<Argument("左心室做功指数", "LCWI", "kg·m/m²", 1.81, 7.06, 2)
-        <<Argument("收缩时间比", "STR", "-", 0, 0.4, 1)
-        <<Argument("射血期收缩指数", "EPCI", "1/s", 0.038, 0.076, 3)
-        <<Argument("变力状态指数", "ISI", "1/s²", 0.90, 1.70, 2)
-        <<Argument("收缩变力性", "Ino", "%", -50, 50, 0)
-        <<Argument("心率", "HR", "bpm", 60, 100, 0)
-        <<Argument("收缩压", "SBP", "mmHg", 90, 140, 0, "舒张压", "DBP", 60, 90)
-        <<Argument("平均动脉压", "MAP", "mmHg", 70, 105, 0);
+//    arguments = QList<Argument>()
+//        <<Argument("心输出量", "CO", "L/min", 3.5, 9.0, 1)
+//        <<Argument("心脏指数", "CI", "L/min·m²", 2.0, 5.0, 1)
+//        <<Argument("氧输送", "DO2", "mL/min", 1000, 1000, 0)
+//        <<Argument("搏排量", "SV", "mL/beat", 50, 120, 1)
+//        <<Argument("心搏指数", "SI", "mL/beat·m²", 35, 65, 0)
+//        <<Argument("心率变异性", "HRV", "%", -50, 50, 0)
+//        <<Argument("胸液传导性", "TFC", "1/Ω", 0.025, 0.045, 3)
+//        <<Argument("舒张末期指数", "EDI", "mL/beat·m²", 54, 130, 0)
+//        <<Argument("每搏输出变异性", "SVV", "%", 0, 10, 0)
+//        <<Argument("血管容积", "Vol", "%", -50, 50, 0)
+//        <<Argument("系统阻力", "SVR", "dyn·s·m²/cm⁵", 742, 1500, 0)
+//        <<Argument("每搏外周阻力", "SSVR", "dyn·s/cm⁵", 119.6, 429.2, 1)
+//        <<Argument("每搏外周阻力指数", "SSVRI", "dyn·s/cm⁵/beat/m²", 99.7, 185.1, 1)
+//        <<Argument("系统阻力指数", "SVRI", "dyn·s·m²/cm⁵", 1337, 2483, 0)
+//        <<Argument("血管顺应性", "Vas", "%", -50, 50, 0)
+//        <<Argument("射血前期", "PEP", "ms", 50, 120, 0)
+//        <<Argument("左室射血时间", "LVET", "ms", 250, 350, 0)
+//        <<Argument("左心室每搏做功", "LSW", "g·m", 20, 90, 0)
+//        <<Argument("每搏做功指数", "LSWI", "g·m/beat/m²", 39.3, 73.0, 1)
+//        <<Argument("左心室做功", "LCW", "kg·m", 5.4, 10.0, 1)
+//        <<Argument("左心室做功指数", "LCWI", "kg·m/m²", 1.81, 7.06, 2)
+//        <<Argument("收缩时间比", "STR", "-", 0, 0.4, 1)
+//        <<Argument("射血期收缩指数", "EPCI", "1/s", 0.038, 0.076, 3)
+//        <<Argument("变力状态指数", "ISI", "1/s²", 0.90, 1.70, 2)
+//        <<Argument("收缩变力性", "Ino", "%", -50, 50, 0)
+//        <<Argument("心率", "HR", "bpm", 60, 100, 0)
+//        <<Argument("收缩压", "SBP", "mmHg", 90, 140, 0, "舒张压", "DBP", 60, 90)
+    //        <<Argument("平均动脉压", "MAP", "mmHg", 70, 105, 0);
 }
 
-Argument Arguments::findArgument(const QString &en)
+void Arguments::init()
 {
-    if (en.isEmpty())
-        return Argument();
-    foreach (auto argument, arguments) {
-        if (en == argument.en || en == argument.dbpen) {
-            return argument;
+    // func函数获取object对应key的值
+    auto func = [=](const QJsonObject &object, const ReportDataName::ReportJson &key) {
+        return object.value(ReportDataName::ekey(key));
+    };
+    auto array = ReportParameters::array(Check_Mode::IntensiveCareUnit);
+
+    foreach (auto module, array) {
+        auto parameters = func(module.toObject(), ReportDataName::parameters).toArray();
+        QJsonObject sbp, dbp;
+        foreach (auto parameter, parameters) {
+            auto obj = parameter.toObject();
+            auto type = func(obj, ReportDataName::type).toInt();
+            if (Type::SBP == type) {
+                sbp = obj;
+            }
+            else if (Type::DBP == type) {
+                dbp = obj;
+            }
+            else {
+                arguments<<Argument(func(obj, ReportDataName::cn).toString(),
+                                    func(obj, ReportDataName::en).toString(),
+                                    func(obj, ReportDataName::unit).toString(),
+                                    func(obj, ReportDataName::min).toDouble(),
+                                    func(obj, ReportDataName::max).toDouble(),
+                                    func(obj, ReportDataName::digit).toInt(),
+                                    Type(func(obj, ReportDataName::type).toInt()));
+            }
+            if (!sbp.empty() && !dbp.empty()) {
+                arguments<<Argument(func(sbp, ReportDataName::cn).toString(),
+                                    func(sbp, ReportDataName::en).toString(),
+                                    func(sbp, ReportDataName::unit).toString(),
+                                    func(sbp, ReportDataName::min).toDouble(),
+                                    func(sbp, ReportDataName::max).toDouble(),
+                                    func(sbp, ReportDataName::digit).toInt(),
+                                    Type(func(sbp, ReportDataName::type).toInt()),
+                                    func(dbp, ReportDataName::cn).toString(),
+                                    func(dbp, ReportDataName::en).toString(),
+                                    func(dbp, ReportDataName::min).toDouble(),
+                                    func(dbp, ReportDataName::max).toDouble());
+                sbp = QJsonObject();
+                dbp = QJsonObject();
+            }
         }
     }
-    return Argument();
 }
 
 DataManagement::DataManagement()
@@ -345,7 +381,7 @@ QString DataManagement::reportResult(const QJsonObject &json)
             // 双体位常规打印机报告
             QString fstr = tr("前负荷(容量负荷)：");
             if (smap.value(Type::ISI) > fmap.value(Type::ISI) && smap.value(Type::SV) > fmap.value(Type::SV)) {
-                fstr += tr("正常");
+                fstr += tr("正常；");
             }
             else {
                 fstr += tr("偏高(建议使用：减少钠盐摄入，使用利尿剂)，请结合临床分析；");
@@ -518,9 +554,9 @@ void DataManagement::clearSlot()
 
 void DataManagement::customCtrlTimer(bool start)
 {
-    auto hrCtrl = m_pRegulator->getCustomCtrl(typeName(Type::HR));
-    auto svCtrl = m_pRegulator->getCustomCtrl(typeName(Type::SV));
-    auto isiCtrl = m_pRegulator->getCustomCtrl(typeName(Type::ISI));
+    auto hrCtrl = m_pRegulator->getCustomCtrl(Type::HR);
+    auto svCtrl = m_pRegulator->getCustomCtrl(Type::SV);
+    auto isiCtrl = m_pRegulator->getCustomCtrl(Type::ISI);
     if (hrCtrl == nullptr || svCtrl == nullptr || isiCtrl == nullptr)
         return;
     if (start) {
@@ -544,7 +580,7 @@ QString DataManagement::flag(CustomCtrl *customCtrl, bool second)
         if (fList.indexOf(customCtrl->getName()) != -1) {
             if (customCtrl->getCurrentValue() != 0) {
                 if ((customCtrl->getName() == "Vol" || customCtrl->getName() == "Vas") &&
-                        m_pRegulator->getCustomCtrl("MAP")->getCurrentValue() == 0) {   // Vol或Vas参数时MAP为零
+                        m_pRegulator->getCustomCtrl(Type::MAP)->getCurrentValue() == 0) {   // Vol或Vas参数时MAP为零
                     return QString("-");
                 }
                 else {
@@ -562,7 +598,7 @@ QString DataManagement::flag(CustomCtrl *customCtrl, bool second)
             }
             else {
                 if ((customCtrl->getName() == "Vol" || customCtrl->getName() == "Vas") &&
-                    m_pRegulator->getCustomCtrl("MAP")->getCurrentValue() != 0) {
+                    m_pRegulator->getCustomCtrl(Type::MAP)->getCurrentValue() != 0) {
                     return QString::number(customCtrl->getCurrentValue());
                 }
                 return QString("-");
@@ -596,12 +632,12 @@ QString DataManagement::tip(qreal rValue, qreal cValue)
 
 QString DataManagement::reportResult(bool record)
 {
-    if (m_pRegulator->getCustomCtrl("HR")->getCurrentValue() == 0 ||
-            m_pRegulator->getCustomCtrl("MAP")->getCurrentValue() == 0) {
+    if (m_pRegulator->getCustomCtrl(Type::HR)->getCurrentValue() == 0 ||
+            m_pRegulator->getCustomCtrl(Type::MAP)->getCurrentValue() == 0) {
         return nullptr;
     }
-    else if (record && (m_pRegulator->getCustomCtrl("HR")->getRecordValue() == 0 ||
-                        m_pRegulator->getCustomCtrl("MAP")->getRecordValue() == 0)) {
+    else if (record && (m_pRegulator->getCustomCtrl(Type::HR)->getRecordValue() == 0 ||
+                        m_pRegulator->getCustomCtrl(Type::MAP)->getRecordValue() == 0)) {
         return nullptr;
     }
     QStringList result;
@@ -615,13 +651,13 @@ QString DataManagement::reportResult(bool record)
     if (record) {   // 双体位
         if (m_pHospitalInfo->pType == Printer_Type::General) {
             // 双体位常规打印机报告
-            auto isi = m_pRegulator->getCustomCtrl(typeName(Type::ISI));
-            auto sv = m_pRegulator->getCustomCtrl(typeName(Type::SV));
-            auto vas = m_pRegulator->getCustomCtrl(typeName(Type::Vas));
-            auto hrv = m_pRegulator->getCustomCtrl(typeName(Type::HRV));
-            auto map = m_pRegulator->getCustomCtrl(typeName(Type::MAP));
+            auto isi = m_pRegulator->getCustomCtrl(Type::ISI);
+            auto sv = m_pRegulator->getCustomCtrl(Type::SV);
+            auto vas = m_pRegulator->getCustomCtrl(Type::Vas);
+            auto hrv = m_pRegulator->getCustomCtrl(Type::HRV);
+            auto map = m_pRegulator->getCustomCtrl(Type::MAP);
             QString fstr = tr("前负荷(容量负荷)：") + (isi->getCurrentValue() > isi->getRecordValue() && sv->getCurrentValue() > sv->getRecordValue() ?
-                                tr("正常") : tr("偏高(建议使用：减少钠盐摄入，使用利尿剂)，请结合临床分析；"));
+                                tr("正常；") : tr("偏高(建议使用：减少钠盐摄入，使用利尿剂)，请结合临床分析；"));
             QString tstr = tr("后负荷(张力负荷)：");
             if (map->getRecordValue() >= map->getMinValue() && map->getRecordValue() <= map->getMaxValue()) {
                 if (vas->getRecordValue() >= vas->getMinValue() && vas->getRecordValue() <= vas->getMaxValue()) {
@@ -711,11 +747,11 @@ QString DataManagement::reportResult(bool record)
         }
     }
     else {  // 单体位
-        auto vol = m_pRegulator->getCustomCtrl(typeName(Type::Vol));
-        auto isi = m_pRegulator->getCustomCtrl(typeName(Type::ISI));
-        auto vas = m_pRegulator->getCustomCtrl(typeName(Type::Vas));
-        auto hrv = m_pRegulator->getCustomCtrl(typeName(Type::HRV));
-        auto map = m_pRegulator->getCustomCtrl(typeName(Type::MAP));
+        auto vol = m_pRegulator->getCustomCtrl(Type::Vol);
+        auto isi = m_pRegulator->getCustomCtrl(Type::ISI);
+        auto vas = m_pRegulator->getCustomCtrl(Type::Vas);
+        auto hrv = m_pRegulator->getCustomCtrl(Type::HRV);
+        auto map = m_pRegulator->getCustomCtrl(Type::MAP);
         QString fstr = tr("前负荷(容量负荷)：");
         if (vol->getCurrentValue() < vol->getMinValue()) {
             fstr += tr("偏低；");
@@ -783,9 +819,9 @@ QString DataManagement::reportResult(bool record)
 
 QString DataManagement::pevl(const Type &type, bool many)
 {
-    CustomCtrl *temp = m_pRegulator->getCustomCtrl(typeName(type));
+    CustomCtrl *temp = m_pRegulator->getCustomCtrl(type);
     if (type == Type::SBP || type == Type::DBP) {
-        temp = m_pRegulator->getCustomCtrl("SBP/DBP");
+        temp = m_pRegulator->getCustomCtrl(Type::SBP);
     }
     if (temp == nullptr)
         return nullptr;
@@ -813,7 +849,7 @@ QString DataManagement::pevl(const Type &type, bool many)
 
 QString DataManagement::compare(const Type &type)
 {
-    auto temp = m_pRegulator->getCustomCtrl(typeName(type));
+    auto temp = m_pRegulator->getCustomCtrl(type);
     if (temp == nullptr) return nullptr;
     if (temp->getRecordValue() > temp->getCurrentValue()) return tr("下降");
     else if (temp->getRecordValue() < temp->getCurrentValue()) return tr("上升");
@@ -822,8 +858,8 @@ QString DataManagement::compare(const Type &type)
 
 QString DataManagement::preload()
 {
-    auto svCtrl = m_pRegulator->getCustomCtrl(typeName(Type::SV));
-    auto isiCtrl = m_pRegulator->getCustomCtrl(typeName(Type::ISI));
+    auto svCtrl = m_pRegulator->getCustomCtrl(Type::SV);
+    auto isiCtrl = m_pRegulator->getCustomCtrl(Type::ISI);
     if (svCtrl == nullptr || isiCtrl == nullptr)
         return nullptr;
     qreal rsv = svCtrl->getRecordValue();
@@ -866,10 +902,10 @@ QString DataManagement::preload()
 
 QString DataManagement::riskTip(bool many)
 {
-    auto co = m_pRegulator->getCustomCtrl(typeName(Type::CO));
-    auto isi = m_pRegulator->getCustomCtrl(typeName(Type::ISI));
-    auto hr = m_pRegulator->getCustomCtrl(typeName(Type::HR));
-    auto sv = m_pRegulator->getCustomCtrl(typeName(Type::SV));
+    auto co = m_pRegulator->getCustomCtrl(Type::CO);
+    auto isi = m_pRegulator->getCustomCtrl(Type::ISI);
+    auto hr = m_pRegulator->getCustomCtrl(Type::HR);
+    auto sv = m_pRegulator->getCustomCtrl(Type::SV);
     if (co == nullptr || isi == nullptr || hr == nullptr || sv == nullptr)
         return nullptr;
     int rank = 0;
