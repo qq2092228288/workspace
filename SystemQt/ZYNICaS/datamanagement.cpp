@@ -573,13 +573,12 @@ void DataManagement::customCtrlTimer(bool start)
 
 QString DataManagement::flag(CustomCtrl *customCtrl, bool second)
 {
-    QStringList fList = QStringList()<<"CO"<<"CI"<<"SV"<<"SI"<<"TFC"<<"EPCI"<<"ISI"<<"Ino"<<"HR"<<"MAP";
-    QStringList sList = fList<<"Vol"<<"HRV"<<"Vas";
-
+    QVector<Type> fvect { Type::CO, Type::CI, Type::SV, Type::SI, Type::TFC, Type::EPCI, Type::ISI, Type::Ino, Type::HR, Type::MAP };
+    QVector<Type> svect { Type::Vol, Type::HRV, Type::Vas };
     if (!second) {  // 第一体位
-        if (fList.indexOf(customCtrl->getName()) != -1) {
+        if (fvect.cend() != std::find(fvect.cbegin(), fvect.cend(), customCtrl->getType())) {
             if (customCtrl->getCurrentValue() != 0) {
-                if ((customCtrl->getName() == "Vol" || customCtrl->getName() == "Vas") &&
+                if ((customCtrl->getType() == Type::Vol || customCtrl->getType() == Type::Vas) &&
                         m_pRegulator->getCustomCtrl(Type::MAP)->getCurrentValue() == 0) {   // Vol或Vas参数时MAP为零
                     return QString("-");
                 }
@@ -590,14 +589,14 @@ QString DataManagement::flag(CustomCtrl *customCtrl, bool second)
         }
     }
     else {  // 第二体位
-        if (sList.indexOf(customCtrl->getName()) != -1) {
+        if (svect.cend() != std::find(svect.cbegin(), svect.cend(), customCtrl->getType())) {
             if (customCtrl->getCurrentValue() != 0) {
                 if (customCtrl->getRecordValue() != 0) {
                     return tip(customCtrl->getRecordValue(), customCtrl->getCurrentValue());
                 }
             }
             else {
-                if ((customCtrl->getName() == "Vol" || customCtrl->getName() == "Vas") &&
+                if ((customCtrl->getType() == Type::Vol || customCtrl->getType() == Type::Vas) &&
                     m_pRegulator->getCustomCtrl(Type::MAP)->getCurrentValue() != 0) {
                     return QString::number(customCtrl->getCurrentValue());
                 }

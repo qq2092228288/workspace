@@ -153,37 +153,36 @@ void PlrtTableWidget::setPlrtData(const PaType &type, const double &fdata, const
     dataWarning(type, offset >= 0.1 ? false : true);
 }
 
-void PlrtTableWidget::setData(const QString &name, const double &fdata, const double &sdata)
+void PlrtTableWidget::setData(const Type &type, const double &fdata, const double &sdata)
 {
-    PaType type;
-    if (name == "HR") {
-        type = PaType::Hr;
-    }
-    else if (name == "SI") {
-        type = PaType::Si;
-    }
-    else if (name == "CI") {
-        type = PaType::Ci;
-    }
-    else if (name == "SV") {
-        type = PaType::Sv;
-    }
-    else if (name == "CO") {
-        type = PaType::Co;
-    }
-//    else if (name == "DO2") {
-//        type = PaType::Do2;
-//    }
-    else if (name == "TFC") {
-        type = PaType::Tfc;
-    }
-    else if (name == "ISI") {
-        type = PaType::Isi;
-    }
-    else {
+    PaType ptype;
+    switch (type) {
+    case Type::HR:
+        ptype = PaType::Hr;
+        break;
+    case Type::SI:
+        ptype = PaType::Si;
+        break;
+    case Type::CI:
+        ptype = PaType::Ci;
+        break;
+    case Type::SV:
+        ptype = PaType::Sv;
+        break;
+    case Type::CO:
+        ptype = PaType::Co;
+        break;
+    case Type::TFC:
+        ptype = PaType::Tfc;
+        break;
+    case Type::ISI:
+        ptype = PaType::Isi;
+        break;
+    default:
         return;
+        break;
     }
-    setPlrtData(type, fdata, sdata);
+    setPlrtData(ptype, fdata, sdata);
 }
 
 void PlrtTableWidget::closeEvent(QCloseEvent *event)

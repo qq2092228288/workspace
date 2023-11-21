@@ -21,7 +21,7 @@ CustomCtrl::CustomCtrl(Argument arg, QWidget *parent)
         auto cv = getCurrentValue();
         if (cv != 0) {
             if (rv == 0) rv = cv;
-            emit nameAndValue(getName(), rv, cv);
+            emit nameAndValue(getType(), rv, cv);
         }
     });
 
@@ -216,9 +216,9 @@ void CustomCtrl::setValue(const double &value)
     emit currentValue(value);
 }
 
-void CustomCtrl::setValue(const double &value, const QString &name)
+void CustomCtrl::setValue(const double &value, const Type &type)
 {
-    if (name == getName()) {
+    if (type == getType()) {
         valueEdit->setText(QString::number(value, 'f', digit));
         aitems.currentValue = valueEdit->text().toDouble();
         setWarning();
@@ -250,7 +250,7 @@ void CustomCtrl::setWarning()
 
 void CustomCtrl::valueWarning(int warning)
 {
-    if (getName() == "DO2") return;
+    if (Type::DO2 == getType()) return;
     auto &instance = DataManagement::getInstance();
     int fsize = 10*instance.zoom();
     int vsize = 50*instance.zoom();
@@ -458,7 +458,7 @@ QList<qreal> CustomCtrlRegulator::getRecordValues()
 {
     QList<qreal> list;
     foreach (auto customCtrl, allCustomCtrls) {
-        if (customCtrl->getName() != "SBP/DBP") {
+        if (customCtrl->getType() != Type::SBP) {
             list<<customCtrl->getRecordValue();
         }
         else {
@@ -473,7 +473,7 @@ QList<qreal> CustomCtrlRegulator::getCurrentValues()
 {
     QList<qreal> list;
     foreach (auto customCtrl, allCustomCtrls) {
-        if (customCtrl->getName() != "SBP/DBP") {
+        if (customCtrl->getType() != Type::SBP) {
             list<<customCtrl->getCurrentValue();
         }
         else {

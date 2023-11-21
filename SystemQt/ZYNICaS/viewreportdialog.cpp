@@ -54,7 +54,7 @@ ViewReportDialog::ViewReportDialog(QWidget *parent)
     // 选中整行，不可编辑，单选
     tableView->setSelectionBehavior(QAbstractItemView::SelectRows);
     tableView->setEditTriggers(QAbstractItemView::NoEditTriggers);
-    tableView->setSelectionMode(QAbstractItemView::SingleSelection);
+//    tableView->setSelectionMode(QAbstractItemView::SingleSelection);
     tableView->setModel(model);
     tableView->setColumnWidth(0, 150);
     tableView->setColumnWidth(1, 150);
@@ -134,44 +134,25 @@ void ViewReportDialog::pulledSlot(int state)
 
 void ViewReportDialog::createdPdfSlot()
 {
-    auto index = tableView->currentIndex();
-    if (indexIsValid(index)) {
-        auto object = getReportJson(index);
-        if (!object.isEmpty()) {
-            auto patientInfo = object.value(ReportDataName::ekey(ReportDataName::patientInfo)).toObject();
-            auto fileName = DataManagement::getInstance().getPaths().reports()
-                    + getReportTime(index).toString("yyyyMMddhhmmss")
-                    + "-"
-                    + patientInfo.value(ReportDataName::ekey(ReportDataName::medicalRecordNumber)).toString()
-                    + "-"
-                    + patientInfo.value(ReportDataName::ekey(ReportDataName::patientName)).toString()
-                    + ".pdf";
-            QFileInfo fileInfo(fileName);
-            if (fileInfo.isFile()) {
-                if (QMessageBox::question(this, "提示", "此报告已生成PDF文件，是否重新生成？") == QMessageBox::No) {
-                    QDesktopServices::openUrl(QUrl::fromLocalFile(fileName));
-                    return;
-                }
-            }
-            QPrinter printer(QPrinter::ScreenResolution);
-            printer.setOutputFormat(QPrinter::PdfFormat);
-            printer.setOutputFileName(fileName);
-            auto info = DataManagement::getInstance().getHospitalInfo();
-            printer.setPageSize(QPageSize(info->pType == Printer_Type::Thermal ? QSizeF(72, 297) : QSizeF(210, 297),
-                                          QPageSize::Millimeter));
-            printer.setFullPage(true);
-            printer.setPageMargins(QMarginsF(0, 0, 0, 0));
-            auto &instance = DataManagement::getInstance();
-            ReportStruct temp(info->pType, info->cMode, !info->samePage, instance.getPaths().hospitalLogo(),
-                              instance.getHospitalInfo()->trendChartTitle, object);
-            temp.departmentName = instance.departmentName();
-            temp.idName = instance.idName();
-            ReportPainter painter(temp, &printer);
-            QDesktopServices::openUrl(QUrl::fromLocalFile(fileName));
+    auto selections = tableView->selectionModel();
+    QVector<QModelIndex> indexs;
+    foreach (auto index, selections->selectedIndexes()) {
+        if (0 == index.column()) {
+            indexs<<index;
         }
-        else {
-            QMessageBox::warning(this, "警告", "报告不存在！");
-        }
+    }
+    QString fileName;
+    foreach (auto index, indexs) {
+        fileName = createdPdf(index);
+    }
+    if (indexs.size() == 0) {
+        QMessageBox::information(this, "提示", "至少选择一个报告");
+    }
+    else if (indexs.size() == 1){
+        QDesktopServices::openUrl(QUrl::fromLocalFile(fileName));
+    }
+    else {
+        QDesktopServices::openUrl(QUrl::fromLocalFile(DataManagement::getInstance().getPaths().reports()));
     }
 }
 
@@ -228,6 +209,43 @@ QJsonObject ViewReportDialog::getReportJson(const QModelIndex &index)
 QDateTime ViewReportDialog::getReportTime(const QModelIndex &index)
 {
     return model->data(model->index(index.row(), 0)).toDateTime();
+}
+
+QString ViewReportDialog::createdPdf(const QModelIndex &index)
+{
+    if (index.isValid()) {
+        auto object = getReportJson(index);
+        if (!object.isEmpty()) {
+            auto patientInfo = object.value(ReportDataName::ekey(ReportDataName::patientInfo)).toObject();
+            auto fileName = DataManagement::getInstance().getPaths().reports()
+                    + getReportTime(index).toString("yyyyMMddhhmmss")
+                    + "-"
+                    + patientInfo.value(ReportDataName::ekey(ReportDataName::medicalRecordNumber)).toString()
+                    + "-"
+                    + patientInfo.value(ReportDataName::ekey(ReportDataName::patientName)).toString()
+                    + ".pdf";
+            QPrinter printer(QPrinter::ScreenResolution);
+            printer.setOutputFormat(QPrinter::PdfFormat);
+            printer.setOutputFileName(fileName);
+            auto info = DataManagement::getInstance().getHospitalInfo();
+            if (info->pType == Printer_Type::Thermal) {
+                printer.setPageSize(QPageSize(QSizeF(72, 297), QPageSize::Millimeter));
+            }
+            else {
+                printer.setPageSize(QPageSize(QSizeF(210, 297), QPageSize::Millimeter));
+            }
+            printer.setFullPage(true);
+            printer.setPageMargins(QMarginsF(0, 0, 0, 0));
+            auto &instance = DataManagement::getInstance();
+            ReportStruct temp(info->pType, info->cMode, !info->samePage, instance.getPaths().hospitalLogo(),
+                              instance.getHospitalInfo()->trendChartTitle, object);
+            temp.departmentName = instance.departmentName();
+            temp.idName = instance.idName();
+            ReportPainter painter(temp, &printer);
+            return fileName;
+        }
+    }
+    return QString();
 }
 
 bool ViewReportDialog::indexIsValid(const QModelIndex &index)

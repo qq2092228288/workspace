@@ -36,6 +36,7 @@ private:
     QVector<ReportModelItem> getItems();
     QJsonObject getReportJson(const QModelIndex &index);
     QDateTime getReportTime(const QModelIndex &index);
+    QString createdPdf(const QModelIndex &index);
     bool indexIsValid(const QModelIndex &index);
 private:
     QSqlDatabase m_db;

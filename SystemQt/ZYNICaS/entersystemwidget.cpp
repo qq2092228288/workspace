@@ -395,7 +395,7 @@ void EnterSystemWidget::signalsAndSlots()
     foreach (auto customCtrl, regulator->getAllCustomCtrls()) {
         connect(customCtrl, &CustomCtrl::changeType, this, &EnterSystemWidget::changeShow);
         connect(this, &EnterSystemWidget::recordValue, customCtrl, &CustomCtrl::recordValueSlot);
-        if (customCtrl->getName() == "SI") {
+        if (customCtrl->getType() == Type::SI) {
             connect(customCtrl, &CustomCtrl::currentValue, this, [=](qreal si){
                 sudokuWidget->setPoint(bodyValue.MAP(), si, SignType(posGroup.checkedId()),
                                        PosType::None == rpos);
@@ -541,7 +541,7 @@ void EnterSystemWidget::setBPValue(const QString &sbp, const QString &dbp)
             bodyValue.SBP = sbp.toInt();
             bodyValue.DBP = dbp.toInt();
             BPCtrl->setValues(bodyValue.SBP, bodyValue.DBP);
-            MAPCtrl->setValue(bodyValue.MAP(), MAPCtrl->getName());
+            MAPCtrl->setValue(bodyValue.MAP(), MAPCtrl->getType());
             auto SICtrl = regulator->getCustomCtrl(Type::SI);
             if (SICtrl != nullptr) {
                 sudokuWidget->setPoint(bodyValue.MAP(), SICtrl->getCurrentValue(),

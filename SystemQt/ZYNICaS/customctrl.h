@@ -73,7 +73,7 @@ public:
 public slots:
     void clear();
     void setValue(const double &value);
-    void setValue(const double &value, const QString &name);
+    void setValue(const double &value, const Type &type);
     void setValues(const double &value, const double &value1);
     void setWarning();
     void valueWarning(int warning);
@@ -83,7 +83,7 @@ protected slots:
     void timeoutSlot();
 signals:
     void currentValue(qreal);
-    void nameAndValue(const QString &, const double &rVal, const double &cVal);
+    void nameAndValue(const Type &, const double &rVal, const double &cVal);
     // 当前类型，交换显示的类型
     void changeType(const Type &, const Type &);
 private:

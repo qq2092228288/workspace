@@ -935,7 +935,7 @@ void ReportPainter::drawTrendChart(QRectF rect, Type type, QString stime, QStrin
     // 坐标系
     auto origin = QPointF(rect.bottomLeft().x() + scale(40), rect.bottomLeft().y() - scale(60));
     auto endY = QPointF(origin.x(), rect.topLeft().y() + scale(30));
-    auto endX = QPointF(rect.bottomRight().x() - 30, origin.y());
+    auto endX = QPointF(rect.bottomRight().x() - scale(30), origin.y());
     drawArrow(origin, endY);
     drawArrow(origin, endX);
     // 绘制曲线
@@ -945,8 +945,8 @@ void ReportPainter::drawTrendChart(QRectF rect, Type type, QString stime, QStrin
     auto normalMax = param.value(ekey(ReportDataName::max)).toDouble();
     auto min = valueMin < normalMin ? valueMin : normalMin;
     auto max = valueMax > normalMax ? valueMax : normalMax;
-    auto stepY = (origin.y() - endY.y() - 10) / (max - min);
-    auto stepX = (endX.x() - origin.x() - 10) / vector.size();
+    auto stepY = (origin.y() - endY.y() - scale(10)) / (max - min);
+    auto stepX = (endX.x() - origin.x() - scale(10)) / vector.size();
     // 最大、最小、平均值
     drawText(QRectF(rect.bottomLeft().x(), rect.bottomLeft().y() - scale(22), rect.width(), scale(22)),
              Qt::AlignHCenter,
@@ -967,10 +967,10 @@ void ReportPainter::drawTrendChart(QRectF rect, Type type, QString stime, QStrin
              Qt::AlignRight, QString::number(normalMax));
     // 虚线
     setPen(QPen(Qt::DashLine));
-    drawLine(startMin, QPointF(endX.x() - 10, startMin.y()));
-    drawLine(startMax, QPointF(endX.x() - 10, startMax.y()));
+    drawLine(startMin, QPointF(endX.x() - scale(10), startMin.y()));
+    drawLine(startMax, QPointF(endX.x() - scale(10), startMax.y()));
     auto secondX = origin.x() - 1 + (fvect.size() - 0.5) * stepX;
-    drawLine(secondX, origin.y(), secondX, endY.y() + 10);
+    drawLine(secondX, origin.y(), secondX, endY.y() + scale(10));
     setPen(QPen(QColor(Qt::black), 1));
     QList<QPointF> points;
     setBrush(Qt::black);

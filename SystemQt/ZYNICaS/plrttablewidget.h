@@ -11,6 +11,7 @@
 #include <QPushButton>
 #include <QProgressBar>
 #include <QDebug>
+#include "datatype.h"
 
 // PLRT被动抬腿试验参数类型
 typedef enum PlrtArgType
@@ -20,7 +21,6 @@ typedef enum PlrtArgType
     Ci,
     Sv,
     Co,
-//    Do2,
     Tfc,
     Isi
 }PaType;
@@ -64,7 +64,7 @@ public slots:
     // 设置数据
     void setPlrtData(const PaType &type, const double &fdata, const double &sdata);
 
-    void setData(const QString &name, const double &fdata, const double &sdata);
+    void setData(const Type &type, const double &fdata, const double &sdata);
 protected:
     virtual void closeEvent(QCloseEvent *event);
 

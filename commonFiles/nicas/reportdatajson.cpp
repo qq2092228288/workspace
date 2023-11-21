@@ -195,10 +195,15 @@ void ReportDataJson::appendPosition(int sbp, int dbp, int cvp, int lap, int pos)
     }
     auto position = getPosition();
     if (position.size() == 2) {
+        auto oldAllData = position.at(0).toObject()
+                .value(ReportDataName::ekey(ReportDataName::allData)).toArray();
+        foreach (auto cdata, allData) {
+            oldAllData.append(cdata);
+        }
+        allData = oldAllData;
         position.removeFirst();
     }
-    position.append(QJsonObject
-                    {
+    position.append(QJsonObject {
                         { ReportDataName::ekey(ReportDataName::reportTime), (0 != pos ? time() : "") },
                         { ReportDataName::ekey(ReportDataName::data), data },
                         { ReportDataName::ekey(ReportDataName::allData), allData },

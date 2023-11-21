@@ -133,7 +133,7 @@ void ReportDialog::openReportDirButtonClicked()
         param<<QLatin1String("/select,");
     }
     param<<QDir::toNativeSeparators(m_path);
-    QProcess::startDetached(explorer,param);
+    QProcess::startDetached(explorer, param);
 }
 
 void ReportDialog::printPreviewButtonClicked()
