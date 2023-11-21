@@ -2,6 +2,7 @@
 #include <QPaintEngine>
 #include <QPainterPath>
 #include <QDateTime>
+#include <QScreen>
 #include <QDebug>
 #include <algorithm>
 #include <numeric>
@@ -58,7 +59,7 @@ void ReportPainter::thermalPage()
     // 标题
     drawText(rectF(0, 30), Qt::AlignHCenter, QString("无创心功能监测报告"));
     // 线
-    drawLine(QPoint(0, 50), QPoint(m_size.width(), 50));
+    drawLine(QPoint(0, scale(50)), QPoint(m_size.width(), scale(50)));
     // 个人信息
     setFontSize(12, true);
     auto info = data.value(ekey(ReportDataName::patientInfo)).toObject();
@@ -79,7 +80,7 @@ void ReportPainter::thermalPage()
     drawText(rectF(140, y + 40), "体表面积:");
     drawText(rectF(200, y + 40), QString::number(DataCalculation::cBsa(height, weight), 'f', 2) + " m²");
     // 线
-    drawLine(QPoint(0, 107), QPoint(m_size.width(), 107));
+    drawLine(QPoint(0, scale(107)), QPoint(m_size.width(), scale(107)));
     // 数据
     auto position = m_info.data.value(ekey(ReportDataName::position)).toArray();
     QJsonObject fdata = position.at(0).toObject().value(ekey(ReportDataName::data)).toObject();
@@ -88,12 +89,12 @@ void ReportPainter::thermalPage()
     bool secExist = !position.at(1).toObject().value(ekey(ReportDataName::reportTime)).toString().isEmpty();
     auto fMap = valueMap(fdata, QJsonArray());
     auto sMap = valueMap(sdata, QJsonArray());
-    auto p = QPoint(10, 120);
+    auto p = QPoint(scale(10), scale(120));
     auto parameters = ReportParameters::xprinter();
     if (secExist) {
-        auto s1 = QSize(84, 40);
+        auto s1 = QSize(scale(84), scale(40));
         drawTableCell(QRectF(p, s1), "参数名称");
-        auto s2 = QSize(42, 40);
+        auto s2 = QSize(scale(42), scale(40));
         drawTableCell(QRectF(QPoint(p.x() + s1.width(), p.y()), s2),
                       positionCn(fdata.value(QString::number(Type::Pos)).toInt()));
         drawTableCell(QRectF(QPoint(p.x() + s1.width() + s2.width(), p.y()), s2),
@@ -104,7 +105,7 @@ void ReportPainter::thermalPage()
             auto parameter = parameters.at(i).toObject();
             auto type = Type(parameter.value(ekey(ReportDataName::type)).toInt());
             auto digit = parameter.value(ekey(ReportDataName::digit)).toInt();
-            auto y = p.y() + 40 * (i + 1);
+            auto y = p.y() + scale(40) * (i + 1);
             drawTableCell(QRectF(QPoint(p.x(), y), s1), QString("%1\n%2")
                           .arg(parameter.value(ekey(ReportDataName::en)).toString(),
                                parameter.value(ekey(ReportDataName::cn)).toString()));
@@ -119,9 +120,9 @@ void ReportPainter::thermalPage()
         }
     }
     else {
-        auto s1 = QSize(98, 40);
+        auto s1 = QSize(scale(98), scale(40));
         drawTableCell(QRectF(p, s1), "参数名称");
-        auto s2 = QSize(56, 40);
+        auto s2 = QSize(scale(56), scale(40));
         drawTableCell(QRectF(QPoint(p.x() + s1.width(), p.y()), s2),
                       positionCn(fdata.value(QString::number(Type::Pos)).toInt()));
         drawTableCell(QRectF(QPoint(p.x() + s1.width() + s2.width(), p.y()), s1), "参考范围");
@@ -130,7 +131,7 @@ void ReportPainter::thermalPage()
             auto parameter = parameters.at(i).toObject();
             auto type = Type(parameter.value(ekey(ReportDataName::type)).toInt());
             auto digit = parameter.value(ekey(ReportDataName::digit)).toInt();
-            auto y = p.y() + 40 * (i + 1);
+            auto y = p.y() + scale(40) * (i + 1);
             drawTableCell(QRectF(QPoint(p.x(), y), s1), QString("%1\n%2")
                           .arg(parameter.value(ekey(ReportDataName::en)).toString(),
                                parameter.value(ekey(ReportDataName::cn)).toString()));
@@ -143,50 +144,57 @@ void ReportPainter::thermalPage()
         }
     }
 
-    auto sy = 170 + parameters.count() * 40;
+    auto sy = scale(170 + parameters.count() * 40);
     drawLine(QPoint(0, sy), QPoint(m_size.width(), sy));
-    drawSudoku(QRectF(30, sy + 30, m_size.width() - 60, m_size.width() - 60),
+    drawSudoku(QRectF(scale(40), sy + scale(30), m_size.width() - scale(80), m_size.width() - scale(80)),
                fMap, secExist ? sMap : QMap<Type, qreal>());
     setFontSize(6);
     drawLine(QPoint(0, sy + m_size.width()), QPoint(m_size.width(), sy + m_size.width()));
-    drawText(QRectF(10, sy + m_size.width(), m_size.width() - 20, m_size.height()),
-             Qt::AlignLeft | Qt::TextWordWrap,
-             data.value(ekey(ReportDataName::reportConclusion)).toString());
-    drawLine(QPoint(0, m_size.height() - 40), QPoint(m_size.width(), m_size.height() - 40));
+    // 结论
+    auto reportConclusionList = m_info.data.value(ekey(ReportDataName::reportConclusion)).toString().split("|");
+    QString reportConclusion = reportConclusionList.first() + "\n";
+    for (int i = 0; i < reportConclusionList.size(); ++i) {
+        reportConclusion += QString("%1.%2\n").arg(i + 1).arg(reportConclusionList.at(i));
+    }
+    drawText(QRectF(scale(10), sy + m_size.width(), m_size.width() - scale(20), m_size.height()),
+             Qt::AlignLeft | Qt::TextWordWrap, reportConclusion);
+    drawLine(QPoint(0, m_size.height() - scale(40)), QPoint(m_size.width(), m_size.height() - scale(40)));
     auto reportTime = position.at(1).toObject().value(ekey(ReportDataName::reportTime)).toString();
     if (reportTime.isEmpty()) {
         reportTime = position.at(0).toObject().value(ekey(ReportDataName::reportTime)).toString();
     }
     setFontSize(7);
-    drawText(rectF(10, m_size.height() - 35), "报告时间: " + QDateTime::fromString(reportTime, "yyyyMMddhhmmsszzz")
+    drawText(QRectF(scale(10), m_size.height() - scale(35), m_size.width() - scale(20), scale(35)),
+             "报告时间: " + QDateTime::fromString(reportTime, "yyyyMMddhhmmsszzz")
              .toString("yyyy-MM-dd hh:mm:ss"));
-    drawText(rectF(m_size.width() - 80, m_size.height() - 35),
+    drawText(QRectF(m_size.width() - scale(80), m_size.height() - scale(35), scale(80), scale(35)),
              "检测人员: " + place.value(ekey(ReportDataName::inspector)).toString());
     setFontSize(5);
-    drawText(rectF(10, m_size.height() - 15), "此报告只说明检测当时状态的血流动力学情况，请结合临床具体情况综合分析。");
+    drawText(QRectF(scale(10), m_size.height() - scale(15), m_size.width() - scale(20), scale(15)),
+             "此报告只说明检测当时状态的血流动力学情况，请结合临床具体情况综合分析。");
 }
 
-void ReportPainter::generalHeader(const QString &title)
+QPointF ReportPainter::generalHeader(const QString &title)
 {
     auto data = m_info.data;
     // 场所信息
     auto place = data.value(ekey(ReportDataName::place)).toObject();
-    setFontSize(14, true);
+    setFontSize(18, true);
     // 医院LOGO
     QPixmap pixmap(m_info.logo);
     if (!pixmap.isNull()) {
         if (pixmap.width() > pixmap.height()) {
-            drawPixmap(QRect(30, 25, 50, pixmap.height() * 50 / pixmap.width()), pixmap);
+            drawPixmap(QRect(30, scale(25), scale(50), pixmap.height() * scale(50) / pixmap.width()), pixmap);
         }
         else {
-            drawPixmap(QRect(30, 25, pixmap.width() * 50 / pixmap.height(), 50), pixmap);
+            drawPixmap(QRect(30, scale(25), pixmap.width() * scale(50) / pixmap.height(), scale(50)), pixmap);
         }
     }
     // 医院
     drawText(rectF(0, 25), Qt::AlignHCenter, place.value(ekey(ReportDataName::primaryPlace)).toString());
     // 标题
     drawText(rectF(0, 45), Qt::AlignHCenter, title);
-    setFontSize(12, true);
+    setFontSize(15, true);
     // 会诊医院
     auto consultationPlace = place.value(ekey(ReportDataName::consultationPlace)).toString();
     if (!consultationPlace.isEmpty()) {
@@ -218,7 +226,7 @@ void ReportPainter::generalHeader(const QString &title)
     drawText(rectF(325, hvalue2), place.value(ekey(ReportDataName::secondaryPlace)).toString());
     drawText(rectF(500, hvalue2), m_info.idName + ":");
     drawText(rectF(560, hvalue2), info.value(ekey(ReportDataName::medicalRecordNumber)).toString());
-    setFontSize(10, true);
+    setFontSize(13, true);
     if (m_info.mode == Check_Mode::Hypertension) {
         int hvalue3 = 125;
         auto inquiry = data.value(ekey(ReportDataName::inquiry)).toObject();
@@ -239,8 +247,9 @@ void ReportPainter::generalHeader(const QString &title)
             drawText(rectF(500, hvalue4), "活动受限: " + getInquiry(inquiry.value(ekey(ReportDataName::al)).toInt()));
         }
     }
-
-    drawLine(QPointF(30, 162), QPointF(m_size.width() - 30, 162));
+    QPointF end(30, scale(162));
+    drawLine(end, QPointF(m_size.width() - 30, end.y()));
+    return end;
 }
 
 void ReportPainter::generalDataPage(int page)
@@ -248,17 +257,17 @@ void ReportPainter::generalDataPage(int page)
     setPen(QPen(QColor(Qt::black), 1));
     setBrush(Qt::NoBrush);
 
-    setGeneralHeaderAndFooter();
+    auto hend = setGeneralHeaderAndFooter();
     // 数据
     auto position = m_info.data.value(ekey(ReportDataName::position)).toArray();
     QJsonObject fdata = position.at(0).toObject().value(ekey(ReportDataName::data)).toObject();
     QJsonObject sdata = position.at(1).toObject().value(ekey(ReportDataName::data)).toObject();
     // 第二体位数据存在
     bool secExist = !position.at(1).toObject().value(ekey(ReportDataName::reportTime)).toString().isEmpty();
-    ReportTableSet set(m_info.paging || !secExist);
+    ReportTableSet set(m_info.paging || !secExist, m_printer->logicalDpiX(), hend);
     // 行高
     qreal row_h = set.rowHeight(m_info.mode);
-    setFontSize(8, true);
+    setFontSize(12, true);
     auto rectArg = drawTableCell(QRectF(set.start(), QSizeF(set.colWidth().at(0), row_h)),
                                  "参数名称");
     auto rectFirst = drawTableCell(QRectF(rectArg.topRight(), QSizeF(set.colWidth().at(1), row_h)),
@@ -281,7 +290,7 @@ void ReportPainter::generalDataPage(int page)
     for (int i = 0; i < array.count(); ++i) {
         auto group = array.at(i).toObject();
         auto parameters = group.value(ekey(ReportDataName::parameters)).toArray();
-        setFontSize(8);
+        setFontSize(10);
         for (int j = 0; j < parameters.count(); ++j) {
             auto parameter = parameters.at(j).toObject();
             qreal _y = rectArg.bottomLeft().y() + row_h * j;
@@ -296,7 +305,6 @@ void ReportPainter::generalDataPage(int page)
                           parameter.value(ekey(ReportDataName::en)).toString(),
                           Qt::AlignLeft | Qt::AlignVCenter, 10);
             // 值
-//            drawValue(parameter, (0 == page ? fMap : sMap), rectFirst, _y);
             auto first = actualValue(fMap.value(Type(parameter.value(ekey(ReportDataName::type)).toInt())), digit);
             if (0 == page) {
                 drawValue(rectFirst, _y, first, getArrow(first, min, max, type));
@@ -306,7 +314,6 @@ void ReportPainter::generalDataPage(int page)
                 drawValue(rectFirst, _y, second, getArrow(second, first, type));
             }
             if (single) {
-//                drawValue(parameter, sMap, rectSecond, _y);
                 auto second = actualValue(sMap.value(Type(parameter.value(ekey(ReportDataName::type)).toInt())), digit);
                 drawValue(rectSecond, _y, second, getArrow(second, first, type));
             }
@@ -319,24 +326,27 @@ void ReportPainter::generalDataPage(int page)
                           parameter.value(ekey(ReportDataName::unit)).toString(),
                           Qt::AlignLeft | Qt::AlignVCenter, 10);
         }
-        setFontSize(8, true);
+        setFontSize(12, true);
         rectArg = drawTableCell(QRectF(rectArg.bottomLeft(), QSizeF(set.groupWidth(), row_h * parameters.count())),
                       group.value(ekey(ReportDataName::module)).toString(),
                       Qt::AlignCenter | Qt::TextSingleLine | Qt::TextWordWrap);
     }
     // 心阻抗图
-    drawWaveform(QRectF(rectUnit.topRight().x() + 15, rectUnit.topRight().y(), 748 - rectUnit.topRight().x(), 100),
-                 QJsonObject(0 == page ? fdata : sdata).value(QString::number(Type::Pos)).toInt(),
+    auto waveform = QRectF(rectUnit.topRight().x() + 15, rectUnit.topRight().y(),
+                           m_size.width() - rectUnit.topRight().x() - 45, scale(100));
+    drawWaveform(waveform, QJsonObject(0 == page ? fdata : sdata).value(QString::number(Type::Pos)).toInt(),
                  position.at(page).toObject().value(ekey(ReportDataName::waveform)).toArray(), page);
     if (secExist && !m_info.paging) {
-        drawWaveform(QRectF(rectUnit.topRight().x() + 15, rectUnit.topRight().y() + 110,
-                            748 - rectUnit.topRight().x(), 100),
+        drawWaveform(QRectF(QPointF(waveform.x(), waveform.bottomLeft().y() + 10), waveform.size()),
                      sdata.value(QString::number(Type::Pos)).toInt(),
                      position.at(1).toObject().value(ekey(ReportDataName::waveform)).toArray(), 1);
     }
     // 血压靶向分析图
-    drawSudoku(QRectF(rectUnit.topRight().x() + 23, 410, 720 - rectUnit.topRight().x(), 720 - rectUnit.topRight().x()),
-               0 == page ? fMap : sMap, secExist && !m_info.paging ? sMap : QMap<Type, qreal>());
+    auto sudoku = QRectF(rectUnit.topRight().x() + scale(23),
+                         rectUnit.topRight().y() + waveform.height() * 2 + scale(100),
+                         m_size.width() - rectUnit.topRight().x() - scale(70),
+                         m_size.width() - rectUnit.topRight().x() - scale(70));
+    drawSudoku(sudoku, 0 == page ? fMap : sMap, secExist && !m_info.paging ? sMap : QMap<Type, qreal>());
     // 分隔线
     drawLine(QPointF(rectArg.bottomLeft().x(), rectArg.bottomLeft().y() + 10),
              QPointF(m_size.width() - set.start().x(), rectArg.bottomLeft().y() + 10));
@@ -360,7 +370,7 @@ void ReportPainter::generalDataPage(int page)
             }
         }
     }
-    setFontSize(8);
+    setFontSize(11);
     drawText(QRectF(set.start().x(), rectArg.bottomLeft().y() + 10,
                     m_size.width() - set.start().x() * 2, m_size.height() - rectArg.bottomLeft().y() - 10),
              Qt::AlignLeft | Qt::TextWordWrap, reportConclusion);
@@ -370,35 +380,34 @@ void ReportPainter::generalDataPage(int page)
         generalDataPage(1);
     }
     if ((!m_info.paging || 1 == page) && secExist) {
-        drawIsiAndSv(QRectF(rectUnit.topRight().x() + 8, 670, 720 - rectUnit.topRight().x(), 100),
+        drawIsiAndSv(QRectF(sudoku.bottomLeft().x(), sudoku.bottomLeft().y() + scale(40),
+                            sudoku.width(), scale(100)),
                      fMap.value(Type::ISI), fMap.value(Type::SV), sMap.value(Type::ISI), sMap.value(Type::SV));
     }
 }
 
 void ReportPainter::consultationPage(const QJsonObject &consultation)
 {
-    setGeneralHeaderAndFooter();
-    setFontSize(14, true);
-    drawText(rectF(0, 170), Qt::AlignHCenter, "会诊建议");
-    setFontSize(8);
+    auto hend = setGeneralHeaderAndFooter();
+    setFontSize(18, true);
+    drawText(rectF(0, hend.y() + 10), Qt::AlignHCenter, "会诊建议");
+    setFontSize(10);
     auto suggestion = consultation.value(ekey(ReportDataName::suggestion)).toString();
-    drawText(QRect(40, 200, m_size.width() - 80, m_size.height()), Qt::AlignLeft | Qt::TextWordWrap, suggestion);
+    drawText(QRect(40, scale(200), m_size.width() - scale(80), m_size.height()),
+             Qt::AlignLeft | Qt::TextWordWrap, suggestion);
 }
 
 void ReportPainter::trendChartPage(QVector<Type> types)
 {
-    setPen(QPen(QColor(Qt::black), 1));
-    setBrush(Qt::NoBrush);
-    // 页眉
-    generalHeader(m_info.title);
-    // 页脚
-    generalFooter();
+    auto hend = setGeneralHeaderAndFooter();
+
     TrendChartsData trendChartsData(m_info.data);
     // 画图
     for (int i = 0; i < types.size(); ++i) {
         auto type = types.at(i);
         auto alldata = trendChartsData.alldata(type);
-        drawTrendChart(QRectF((i + 1) % 2 != 0 ? 30 : 403, 170 + 220 * (i / 2), 360, 210), type,
+        drawTrendChart(QRectF((i + 1) % 2 != 0 ? 30 : scale(403),  hend.y() + 10 + scale(220) * (i / 2),
+                              scale(360), scale(210)), type,
                        timeStyle(trendChartsData.startTime),
                        timeStyle(trendChartsData.endTime),
                        alldata.size() >= 1 ? alldata.at(0) : QVector<qreal>(),
@@ -408,27 +417,27 @@ void ReportPainter::trendChartPage(QVector<Type> types)
 
 void ReportPainter::plrPage()
 {
-    setGeneralHeaderAndFooter();
+    auto hend = setGeneralHeaderAndFooter();
     // 被动抬腿试验
-    setFontSize(14, true);
-    drawText(rectF(0, 170), Qt::AlignHCenter, "被动抬腿试验");
+    setFontSize(18, true);
+    drawText(QRectF(hend, m_size), Qt::AlignHCenter, "被动抬腿试验");
     // 数据
     auto position = m_info.data.value(ekey(ReportDataName::position)).toArray();
     auto fMap = valueMap(position.at(0).toObject().value(ekey(ReportDataName::data)).toObject(),
                          position.at(0).toObject().value(ekey(ReportDataName::allData)).toArray());
     auto sMap = valueMap(position.at(1).toObject().value(ekey(ReportDataName::data)).toObject(),
                          position.at(1).toObject().value(ekey(ReportDataName::allData)).toArray());
-    auto size = QSizeF(91.625, 50);
+    auto size = QSizeF(scale(91.625), scale(50));
     QList<Type> types;
     types<<Type::Pos<<Type::HR<<Type::SI<<Type::CI<<Type::SV<<Type::CO<<Type::TFC<<Type::ISI;
     for (int i = 0; i < types.count(); ++i) {
         auto type = types.at(i);
         auto parameter = ReportParameters::find(type);
         qreal x = 30 + size.width() * i;
-        qreal y = 200;
+        qreal y = scale(200);
 
         if (0 == i) {
-            setFontSize(11);
+            setFontSize(15);
             drawTableCell(QRectF(QPointF(x, y), size), "");
             drawTableCell(QRectF(QPointF(x, y + size.height()), size), "");
             drawPixmap(QRect(x, y + size.height(), size.width(), size.height()),
@@ -442,9 +451,9 @@ void ReportPainter::plrPage()
             auto digit = parameter.value(ekey(ReportDataName::digit)).toInt();
             auto fval = actualValue(fMap.value(type), digit);
             auto sval = actualValue(sMap.value(type), digit);
-            setFontSize(11, true);
+            setFontSize(15, true);
             drawTableCell(QRectF(QPointF(x, y), size), parameter.value(ekey(ReportDataName::en)).toString());
-            setFontSize(11);
+            setFontSize(15);
             drawTableCell(QRectF(QPointF(x, y + size.height()), size), QString::number(fval, 'f', digit));
             drawTableCell(QRectF(QPointF(x, y + size.height() * 2), size), QString::number(sval, 'f', digit));
             drawTableCell(QRectF(QPointF(x, y + size.height() * 3), size),
@@ -452,7 +461,7 @@ void ReportPainter::plrPage()
         }
 
     }
-    setFontSize(8);
+    setFontSize(12);
     drawText(rectF(30, 410),
              "被动抬腿试验测试报告的建议：\n"
              "1.阳性的判定：被动抬腿试验结束后，SV，SI，CO，CI大于第一体位10%~15%。视同为被动抬腿试验阳性（液体负荷试验阳性）。\n"
@@ -464,9 +473,9 @@ void ReportPainter::plrPage()
         return;
     }
     // 心率变异性分析
-    setFontSize(14, true);
+    setFontSize(18, true);
     drawText(rectF(0, 600), Qt::AlignHCenter, "心率变异性分析");
-    setFontSize(11);
+    setFontSize(15);
     foreach (auto data, sAllData) {
         allData<<data;
     }
@@ -480,8 +489,8 @@ void ReportPainter::plrPage()
         <<QString::number(std::accumulate(allHr.constBegin(), allHr.constEnd(), 0) / allHr.count())
         <<QString("最低HR（次/分）")
         <<QString::number(*std::min_element(allHr.constBegin(), allHr.constEnd()));
-    auto pHr = QPointF(30, 630);
-    auto sHr = QSizeF(183.25, 30);
+    auto pHr = QPointF(scale(30), scale(630));
+    auto sHr = QSizeF(scale(183.25), scale(30));
     for (int i = 0; i < hrAnalysis.count(); ++i) {
         drawTableCell(QRectF(QPointF(pHr.x() + sHr.width() * (i%4), pHr.y() + sHr.height() * static_cast<int>(i / 4)),
                              sHr), hrAnalysis.at(i));
@@ -492,19 +501,19 @@ void ReportPainter::plrPage()
         <<QString("SDNN(ms)")<<QString::number(static_cast<int>(DatCa::cSdnn(allHr)))<<QString("102~180")
         <<QString("PNN50(%)")<<QString::number(static_cast<int>(DatCa::cPnn50(allHr) * 10) / 10.0)<<QString("4.4~29")
         <<QString("RMSSD(ms)")<<QString::number(static_cast<int>(DatCa::cRmssd(allHr)))<<QString("24~54");
-    auto pHrv = QPointF(30, 700);
-    auto sHrv = QSizeF(244.33, 30);
+    auto pHrv = QPointF(scale(30), scale(700));
+    auto sHrv = QSizeF(scale(244.33), scale(30));
     for (int i = 0; i < hrvAnalysis.count(); ++i) {
         if (i < 3) {
-            setFontSize(11, true);
+            setFontSize(15, true);
         }
         else {
-            setFontSize(11);
+            setFontSize(15);
         }
         drawTableCell(QRectF(QPointF(pHrv.x() + sHrv.width() * (i%3), pHrv.y() + sHrv.height() * static_cast<int>(i / 3)),
                              sHrv), hrvAnalysis.at(i));
     }
-    setFontSize(8);
+    setFontSize(12);
     drawText(rectF(30, 850),
              "说明：\n"
              "1.心血管疾病患者（房颤、早搏、高血压、糖尿病等）心率变异性数据通常会偏高，高于正常值范围；\n"
@@ -516,13 +525,13 @@ void ReportPainter::plrPage()
 
 void ReportPainter::generalFooter()
 {
-    drawLine(QPointF(30, 1050), QPointF(m_size.width() - 30, 1050));
+    drawLine(QPointF(30, scale(1050)), QPointF(m_size.width() - scale(30), scale(1050)));
     auto position = m_info.data.value(ekey(ReportDataName::position)).toArray();
     auto reportTime = position.at(1).toObject().value(ekey(ReportDataName::reportTime)).toString();
     if (reportTime.isEmpty()) {
         reportTime = position.at(0).toObject().value(ekey(ReportDataName::reportTime)).toString();
     }
-    setFontSize(8);
+    setFontSize(10);
     drawText(rectF(35, 1055), "报告时间: " + timeStyle(reportTime));
     auto place = m_info.data.value(ekey(ReportDataName::place)).toObject();
     drawText(rectF(640, 1055), "检测人员:  " + place.value(ekey(ReportDataName::inspector)).toString());
@@ -534,16 +543,17 @@ void ReportPainter::generalFooter()
         QPixmap pixmap;
         pixmap.loadFromData(QByteArray::fromBase64(encoded), "PNG");
         drawText(rectF(640, 1085), "会诊医生:");
-        drawPixmap(QRect(690, 1080, 50, 25), pixmap);
+        drawPixmap(QRect(scale(690), scale(1080), scale(50), scale(25)), pixmap);
     }
 }
 
-void ReportPainter::setGeneralHeaderAndFooter()
+QPointF ReportPainter::setGeneralHeaderAndFooter()
 {
     // 页眉
-    generalHeader(QString("无创心功能监测报告"));
+    auto hend = generalHeader(QString("无创心功能监测报告"));
     // 页脚
     generalFooter();
+    return hend;
 }
 
 QString ReportPainter::getInquiry(int value)
@@ -561,9 +571,10 @@ QString ReportPainter::getInquiry(int value)
     return QString();
 }
 
-void ReportPainter::setFontSize(int pointSize, bool bold)
+void ReportPainter::setFontSize(int size, bool bold)
 {
-    auto font = QFont("Microsoft YaHei", pointSize);
+    auto font = QFont("Microsoft YaHei");
+    font.setPixelSize(scale(size));
     font.setBold(bold);
     setFont(font);
 }
@@ -673,9 +684,9 @@ void ReportPainter::drawWaveform(QRectF rect, int pos, const QJsonArray &wavefor
         pixmap.loadFromData(QByteArray::fromBase64(encoded), "PNG");
         drawPixmap(QRect(rect.x(), rect.y() + 5, rect.width(), rect.height() - 5), pixmap);
     }
-    setFontSize(6);
+    setFontSize(8);
     drawRect(rect);
-    drawText(rect.topLeft().x() + 2, rect.topLeft().y() + 10, positionCn(pos) + QString(" 心阻抗图(dZ)"));
+    drawText(rect.topLeft().x() + 2, rect.topLeft().y() + scale(10), positionCn(pos) + QString(" 心阻抗图(dZ)"));
     if (waveform.isEmpty()) {
         return;
     }
@@ -701,7 +712,7 @@ void ReportPainter::drawWaveform(QRectF rect, int pos, const QJsonArray &wavefor
 void ReportPainter::drawSudoku(QRectF rect, QMap<Type, qreal> fMap, QMap<Type, qreal> sMap)
 {
     // 字体
-    setFontSize(6);
+    setFontSize(8);
     // 标题
     drawText(rect.topLeft().x() - 15, rect.topLeft().y() - 15, "血压靶向分析图");
     // 正常范围颜色
@@ -775,12 +786,12 @@ void ReportPainter::drawSudoku(QRectF rect, QMap<Type, qreal> fMap, QMap<Type, q
     setBrush(Qt::NoBrush);
     // 绘制刻度
     for (int x = minX; x <= maxX; x += 10) {
-        QPoint temp(origin.x() + (x - minX) * stepLenX, origin.y() + 9);
+        QPoint temp(origin.x() + (x - minX) * stepLenX, origin.y() + scale(9));
         drawPoint(QPointF(temp.x(), origin.y() - 1));
         drawText(temp, QString::number(x));
     }
     for (int y = minY; y <= maxY; y += 20) {
-        QPoint temp(origin.x() - 17, origin.y() - (y - minY) * stepLenY);
+        QPoint temp(origin.x() - scale(17), origin.y() - (y - minY) * stepLenY);
         drawPoint(QPointF(origin.x() + 1, temp.y()));
         drawText(temp, QString("%1").arg(y, 3, 10, QLatin1Char(' ')));
     }
@@ -808,21 +819,21 @@ void ReportPainter::drawSudoku(QRectF rect, QMap<Type, qreal> fMap, QMap<Type, q
     positionSymbol(fMap.value(Type::Pos),
                    QPoint(origin.x() + (fasi - minX) * stepLenX, origin.y() - (famap - minY) * stepLenY),
                    Qt::blue);
-    positionText(fMap.value(Type::Pos), QPoint(origin.x(), origin.y() + 20), Qt::blue);
+    positionText(fMap.value(Type::Pos), QPoint(origin.x(), origin.y() + scale(20)), Qt::blue);
     if (!sMap.isEmpty()) {
         auto sasi = limits(sMap.value(Type::SI), minX, maxX);
         auto samap = limits(sMap.value(Type::MAP), minY, maxY);
         positionSymbol(sMap.value(Type::Pos),
                        QPoint(origin.x() + (sasi - minX) * stepLenX, origin.y() - (samap - minY) * stepLenY),
                        Qt::red);
-        positionText(sMap.value(Type::Pos), QPoint(origin.x() + 40, origin.y() + 20), Qt::red);
+        positionText(sMap.value(Type::Pos), QPoint(origin.x() + scale(40), origin.y() + scale(20)), Qt::red);
     }
 }
 
 void ReportPainter::drawIsiAndSv(QRectF rect, qreal fIsi, qreal fSv, qreal sIsi, qreal sSv)
 {
     // 字体
-    setFontSize(6);
+    setFontSize(8);
     // 标签
     drawText(rect.topLeft(), "容量@泵力分析图");
     // 原点
@@ -832,13 +843,13 @@ void ReportPainter::drawIsiAndSv(QRectF rect, qreal fIsi, qreal fSv, qreal sIsi,
     // x轴
     drawArrow(origin, QPointF(rect.bottomRight().x(), origin.y()));
     // y轴标签
-    drawText(QRectF(rect.topLeft(), QSizeF(10, rect.height())),
+    drawText(QRectF(QPointF(rect.topLeft().x() - 5, rect.topLeft().y()), QSizeF(scale(10), rect.height())),
              Qt::AlignCenter | Qt::TextSingleLine | Qt::TextWordWrap,
              "心脏泵力");
     // x轴标签
-    drawText(QRectF(origin, QSizeF(rect.width(), 10)), Qt::AlignCenter, "容量");
+    drawText(QRectF(origin, QSizeF(rect.width(), scale(10))), Qt::AlignCenter, "容量");
     // 评价
-    drawText(QRectF(QPointF(origin.x(), origin.y() + 10), QSizeF(rect.width(), 10)), Qt::AlignCenter,
+    drawText(QRectF(QPointF(origin.x(), origin.y() + scale(10)), QSizeF(rect.width(), scale(10))), Qt::AlignCenter,
              QString("回心血量增加后，泵力%1，搏排量%2").arg(compare(fIsi, sIsi), compare(fSv, sSv)));
     // 曲线
     auto rectArc = QRectF(QPointF(origin.x(), rect.topLeft().y() + 10),
@@ -916,14 +927,14 @@ void ReportPainter::drawTrendChart(QRectF rect, Type type, QString stime, QStrin
 {
     auto vector = fvect + svect;
     drawRect(rect);
-    setFontSize(12, true);
+    setFontSize(15, true);
     auto param = ReportParameters::find(type);
     // title
     drawText(rect, Qt::AlignHCenter, param.value(ekey(ReportDataName::en)).toString()
              + "(" + param.value(ekey(ReportDataName::unit)).toString() + ")");
     // 坐标系
-    auto origin = QPointF(rect.bottomLeft().x() + 40, rect.bottomLeft().y() - 60);
-    auto endY = QPointF(origin.x(), rect.topLeft().y() + 30);
+    auto origin = QPointF(rect.bottomLeft().x() + scale(40), rect.bottomLeft().y() - scale(60));
+    auto endY = QPointF(origin.x(), rect.topLeft().y() + scale(30));
     auto endX = QPointF(rect.bottomRight().x() - 30, origin.y());
     drawArrow(origin, endY);
     drawArrow(origin, endX);
@@ -937,21 +948,22 @@ void ReportPainter::drawTrendChart(QRectF rect, Type type, QString stime, QStrin
     auto stepY = (origin.y() - endY.y() - 10) / (max - min);
     auto stepX = (endX.x() - origin.x() - 10) / vector.size();
     // 最大、最小、平均值
-    drawText(QRectF(rect.bottomLeft().x(), rect.bottomLeft().y() - 22, rect.width(), 20), Qt::AlignHCenter,
+    drawText(QRectF(rect.bottomLeft().x(), rect.bottomLeft().y() - scale(22), rect.width(), scale(22)),
+             Qt::AlignHCenter,
              QString("MAX: %1  MIN: %2  AVG: %3").arg(valueMax).arg(valueMin)
              .arg(actualValue(std::accumulate(vector.begin(), vector.end(), 0.0) / vector.size(),
                               param.value(ekey(ReportDataName::digit)).toInt())));
-    setFontSize(8);
+    setFontSize(10);
     // 时间
-    auto rectTime = QRectF(rect.x() + 10, origin.y() + 5, rect.width() - 20, 15);
+    auto rectTime = QRectF(rect.x() + 10, origin.y() + scale(5), rect.width() - 20, scale(15));
     drawText(rectTime, Qt::AlignLeft, QString("起始: %1").arg(stime));
     drawText(rectTime, Qt::AlignRight, QString("结束: %1").arg(etime));
     // 正常范围线
     auto startMin = QPointF(origin.x(), origin.y() - (normalMin - min) * stepY);
     auto startMax = QPointF(origin.x(), origin.y() - (normalMax - min) * stepY);
-    drawText(QRectF(QPointF(rect.x(), startMin.y() - 8), QSizeF(35, 12)),
+    drawText(QRectF(rect.x(), startMin.y() - 8, origin.x() - rect.x() - 2, scale(12)),
              Qt::AlignRight, QString::number(normalMin));
-    drawText(QRectF(QPointF(rect.x(), startMax.y() - 8), QSizeF(35, 12)),
+    drawText(QRectF(rect.x(), startMax.y() - 8, origin.x() - rect.x() - 2, scale(12)),
              Qt::AlignRight, QString::number(normalMax));
     // 虚线
     setPen(QPen(Qt::DashLine));
@@ -984,7 +996,8 @@ void ReportPainter::positionSymbol(int pos, QPoint point, QColor color)
 {
     setPen(QPen(color, 1));
     setBrush(color);
-    QRect rect(point.x() - 3, point.y() - 3, 6, 6);
+    int offset = scale(3);
+    QRect rect(point.x() - offset, point.y() - offset, scale(6), scale(6));
     if (1 == pos) {
         drawRect(rect);
     }
@@ -993,9 +1006,9 @@ void ReportPainter::positionSymbol(int pos, QPoint point, QColor color)
     }
     else if (3 == pos) {
         QPolygon triangle;
-        triangle.setPoints(3, point.x(), point.y() - 3,
-                           point.x() + 3, point.y() + 3,
-                           point.x() - 3, point.y() + 3);
+        triangle.setPoints(3, point.x(), point.y() - offset,
+                           point.x() + offset, point.y() + offset,
+                           point.x() - offset, point.y() + offset);
         drawPolygon(triangle);
     }
     setPen(QPen(Qt::black, 1));
@@ -1013,7 +1026,7 @@ void ReportPainter::positionText(int pos, QPoint point, QColor color)
     else if (3 == pos) {
         drawText(point, "抬腿:");
     }
-    positionSymbol(pos, QPoint(point.x() + 25, point.y() - 3), color);
+    positionSymbol(pos, QPoint(point.x() + scale(25), point.y() - scale(3)), color);
 }
 
 qreal ReportPainter::actualValue(qreal value, int digit)
@@ -1054,7 +1067,7 @@ qreal ReportPainter::circleX(qreal y, qreal r, qreal ox, qreal oy, bool negative
 
 QRectF ReportPainter::rectF(qreal x, qreal y)
 {
-    return QRectF(QPointF(x, y), m_size);
+    return QRectF(QPointF(scale(x), scale(y)), m_size);
 }
 
 QString ReportPainter::getPicFileName(int pos)
@@ -1078,6 +1091,11 @@ QString ReportPainter::timeStyle(const QString &otime)
         time = QDateTime::fromString(otime, "yyyyMMddhhmmss");
     }
     return time.toString("yyyy-MM-dd hh:mm:ss");
+}
+
+double ReportPainter::scale(const double &pixel) const
+{
+    return pixel * m_printer->logicalDpiX() / 96.0;
 }
 
 template<class T>

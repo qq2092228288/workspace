@@ -11,9 +11,15 @@
 #include "reportdatajson.h"
 #include "reportdataname.h"
 
+static double topixel(const int &mm, const int &dpi)
+{
+    return mm * dpi / 25.4;
+}
+
 struct ReportStruct
 {
-    ReportStruct(Printer_Type type, Check_Mode mode, bool paging, QString logo, QString title, QJsonObject data)
+    ReportStruct(Printer_Type type, Check_Mode mode, bool paging,
+                 QString logo, QString title, QJsonObject data)
         : type(type),mode(mode),paging(paging),logo(logo),title(title),data(data) {}
     Printer_Type type;
     Check_Mode mode;
@@ -41,7 +47,9 @@ struct TrendChartsData
             ValueMaps maps;
             foreach (auto cdata, allData) {
                 dataMap.insert(cdata.toObject().toVariantMap());
-                maps<<ReportDataJson::valueMap(patientInfo, QJsonObject::fromVariantMap(dataMap), QJsonArray(),
+                maps<<ReportDataJson::valueMap(patientInfo,
+                                               QJsonObject::fromVariantMap(dataMap),
+                                               QJsonArray(),
                                                ReportParameters::array(Check_Mode::IntensiveCareUnit));
             }
             mapsVector<<maps;
@@ -75,37 +83,44 @@ public:
     ReportPainter(const ReportStruct &info, QPrinter *printer);
     struct ReportTableSet
     {
-        ReportTableSet(bool paging) : paging(paging) {}
+        ReportTableSet(bool paging, const int &dpi,  const QPointF &point)
+            : m_paging(paging), m_dpi(dpi), m_start(point) {}
         QPointF start()
         {
-            return QPointF(30, 170);
+            return QPointF(m_start.x(), m_start.y() + 10);
         }
-        qreal rowHeight(Check_Mode mode)
+        double rowHeight(Check_Mode mode)
         {
             switch (mode) {
             case Check_Mode::Hypertension:
-                return 35;
+                return topix(10);
             case Check_Mode::InternalMedicine:
-                return 22;
+                return topix(6);
             case Check_Mode::IntensiveCareUnit:
-                return 22;
+                return topix(6);
             case Check_Mode::PhysicalExamination:
-                return 22;
+                return topix(6);
             }
             return -1;
         }
-        qreal groupWidth()
+        double groupWidth()
         {
-            return 20;
+            return topix(6);
         }
-        QVector<qreal> colWidth()
+        QVector<double> colWidth()
         {
-            if (paging) {
-                return QVector<qreal>()<<170<<70<<100<<130;
+            if (m_paging) {
+                return QVector<double> { topix(47), topix(19), topix(27), topix(35) };
             }
-            return QVector<qreal>()<<160<<55<<55<<85<<115;
+            return QVector<double>{ topix(44), topix(15), topix(15), topix(23), topix(31) };
         }
-        bool paging;
+        double topix(const int &mm) const
+        {
+            return topixel(mm, m_dpi);
+        }
+        bool m_paging;
+        int m_dpi;
+        QPointF m_start;
     };
     enum Arrow
     {
@@ -116,16 +131,16 @@ public:
     Q_ENUM(Arrow)
 private:
     void thermalPage();
-    void generalHeader(const QString &title);
+    QPointF generalHeader(const QString &title);
     void generalDataPage(int page = 0);
     void consultationPage(const QJsonObject &consultation);
     void trendChartPage(QVector<Type> types);
     void plrPage();
     void generalFooter();
-    void setGeneralHeaderAndFooter();
+    QPointF setGeneralHeaderAndFooter();
 
     QString getInquiry(int value);
-    void setFontSize(int pointSize, bool bold = false);
+    void setFontSize(int size, bool bold = false);
     QRectF drawTableCell(QRectF rect, const QString &txt, int align = Qt::AlignCenter, int offset = 0);
     QMap<Type, qreal> valueMap(const QJsonObject &data, const QJsonArray &alldata);
     void drawValue(const QJsonObject &parameter, QMap<Type, qreal> map, QRectF rect, qreal _y);
@@ -150,11 +165,12 @@ private:
     QRectF rectF(qreal x, qreal y);
     QString getPicFileName(int pos);
     QString timeStyle(const QString &otime);
+    double scale(const double &pixel) const;
     template <class T>
     QString ekey(const T &t);
 private:
     ReportStruct m_info;
-    /** General paper size 793x1123 pixels, thermal printer paper size 272x1123 pixels. */
+    /** General paper size 793x1123 pixels, thermal printer paper size 272x1123 pixels. DPI = 96 */
     const QSizeF m_size;
 private:
     QPrinter *m_printer;
