@@ -171,7 +171,7 @@ SystemConfigDialog::SystemConfigDialog(QWidget *parent)
         in<<QString("idname=\"病历号\"\n");
         in<<QString("printer=\"0\"\n");
         in<<QString("tip=\"0\"\n");
-        in<<QString("samepage=\"0\"\n");
+        in<<QString("samepage=\"1\"\n");
         in<<QString("trendcharttitle=\"心血流图监测报告\"\n");
         in<<QString("mode=\"0\"\n");
 #ifdef Q_OS_WIN
