@@ -6,7 +6,7 @@ SystemConfigDialog::SystemConfigDialog(QWidget *parent)
     : QDialog{parent}
 {
     auto &instance = DataManagement::getInstance();
-    setMinimumSize(500*instance.wZoom(), 800*instance.hZoom());
+    resize(500*instance.wZoom(), 800*instance.hZoom());
     this->setWindowTitle(tr("系统配置"));
     setWindowFlags(Qt::CustomizeWindowHint | Qt::WindowCloseButtonHint);
     infoFileName = instance.getPaths().baseInfo();
@@ -85,14 +85,6 @@ SystemConfigDialog::SystemConfigDialog(QWidget *parent)
     mainLayout->addWidget(appMsgGroupBox, 5, 0);
     mainLayout->addWidget(confirmBtn, 6, 0);
 
-    mainLayout->setRowStretch(0, 3);
-    mainLayout->setRowStretch(1, 1);
-    mainLayout->setRowStretch(2, 1);
-    mainLayout->setRowStretch(3, 1);
-    mainLayout->setRowStretch(4, 1);
-    mainLayout->setRowStretch(5, 1);
-    mainLayout->setRowStretch(6, 1);
-
     QGridLayout *hLayout = new QGridLayout(hospitalInfoGroupBox);
     QGridLayout *tLayout = new QGridLayout(titleGroupBox);
     QGridLayout *rLayout = new QGridLayout(reportGroupBox);
@@ -120,7 +112,7 @@ SystemConfigDialog::SystemConfigDialog(QWidget *parent)
     rLayout->addWidget(tipCheckBox, 1, 0, 1, 2);
     rLayout->addWidget(samePageCheckBox, 1, 2, 1, 2);
     rLayout->addWidget(trendChartPageTitleLabel, 2, 0);
-    rLayout->addWidget(trendChartPageTitleLineEdit, 2, 1);
+    rLayout->addWidget(trendChartPageTitleLineEdit, 2, 1, 1, 2);
     rLayout->addWidget(selectLogoBtn, 3, 0, Qt::AlignLeft);
     rLayout->addWidget(logoLabel, 3, 1, Qt::AlignLeft);
 
