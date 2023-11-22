@@ -10,8 +10,10 @@ class WaitingDialog : public QDialog
 {
     Q_OBJECT
 public:
-    explicit WaitingDialog(const QString &text, QWidget *parent = nullptr);
+    explicit WaitingDialog(QWidget *parent = nullptr);
     virtual ~WaitingDialog();
+public slots:
+    void setValue(const int &value, const int &total);
 signals:
 private:
     QVBoxLayout *mainLayout;

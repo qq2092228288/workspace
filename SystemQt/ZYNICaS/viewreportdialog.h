@@ -32,11 +32,14 @@ private slots:
     void tableDoubleCilicked(const QModelIndex &index);
 signals:
     void pulling(qint64 time);
+    void pdfCreationProgress(const int &value, const int &total);
+    void created();
 private:
     QVector<ReportModelItem> getItems();
     QJsonObject getReportJson(const QModelIndex &index);
     QDateTime getReportTime(const QModelIndex &index);
     QString createdPdf(const QModelIndex &index);
+    void createdPdfs(const QVector<QModelIndex> &vector);
     bool indexIsValid(const QModelIndex &index);
 private:
     QSqlDatabase m_db;

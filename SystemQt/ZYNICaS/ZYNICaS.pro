@@ -45,6 +45,7 @@ SOURCES += \
     trendchart.cpp \
     trendchartswidget.cpp \
     viewreportdialog.cpp \
+    waitingdialog.cpp
 
 HEADERS += \
     anothersetdialog.h \
@@ -72,6 +73,7 @@ HEADERS += \
     trendchart.h \
     trendchartswidget.h \
     viewreportdialog.h \
+    waitingdialog.h
 
 include(../../commonFiles/base.pri)
 include(../../commonFiles/qt-solutions/qtsingleapplication/src/qtsingleapplication.pri)

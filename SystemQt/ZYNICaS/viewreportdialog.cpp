@@ -2,6 +2,8 @@
 #include "datamanagement.h"
 #include "reportpreviewdialog.h"
 #include "reportpainter.h"
+#include "waitingdialog.h"
+#include <QThread>
 
 ViewReportDialog::ViewReportDialog(QWidget *parent)
     : QDialog{parent}
@@ -141,17 +143,19 @@ void ViewReportDialog::createdPdfSlot()
             indexs<<index;
         }
     }
-    QString fileName;
-    foreach (auto index, indexs) {
-        fileName = createdPdf(index);
-    }
     if (indexs.size() == 0) {
         QMessageBox::information(this, "提示", "至少选择一个报告");
     }
-    else if (indexs.size() == 1){
+    else if (indexs.size() == 1) {
+        auto fileName = createdPdf(indexs.at(0));
         QDesktopServices::openUrl(QUrl::fromLocalFile(fileName));
     }
     else {
+        WaitingDialog dialog(this);
+        connect(this, &ViewReportDialog::pdfCreationProgress, &dialog, &WaitingDialog::setValue);
+        auto thread = QThread::create(&ViewReportDialog::createdPdfs, this, indexs);
+        thread->start();
+        dialog.exec();
         QDesktopServices::openUrl(QUrl::fromLocalFile(DataManagement::getInstance().getPaths().reports()));
     }
 }
@@ -246,6 +250,16 @@ QString ViewReportDialog::createdPdf(const QModelIndex &index)
         }
     }
     return QString();
+}
+
+void ViewReportDialog::createdPdfs(const QVector<QModelIndex> &vector)
+{
+    for (int i = 0, size = vector.size(); i < size; ++i) {
+        auto index = vector.at(i);
+        createdPdf(index);
+        emit pdfCreationProgress(i + 1, size);
+    }
+    emit created();
 }
 
 bool ViewReportDialog::indexIsValid(const QModelIndex &index)
