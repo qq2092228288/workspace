@@ -11,7 +11,7 @@
 
 #ifdef _WIN32
     #define APP_ID              "92FB908B-79F3-4B31-9499-5E57A7239285"
-#elif _linux_
+#elif linux
     #define APP_ID              "92FB908B-79F3-4B31-9499-5E57A7239285"
 #endif
 
