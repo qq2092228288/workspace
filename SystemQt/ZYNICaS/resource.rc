@@ -1,42 +1,41 @@
-IDI_ICON1	ICON	DISCARDABLE	"images/app.ico"
+#include "winres.h"
+#include "version.h"
 
-#if defined(UNDER_CE)
-#include <winbase.h>
-#else
-#include <winver.h>
-#endif
+#define PRODUCT_ICON            "images/app.ico"
+#define FILE_DESCRIPTION        "长沙芫泽无创血流动力学检测系统"
+#define LEGAL_COPYRIGHT         "Copyright(C) 2022 长沙芫泽医疗器械有限公司"
+#define PRODUCT_NAME            "无创血流动力学检测系统"
+
+IDI_ICON1       ICON      PRODUCT_ICON
 
 VS_VERSION_INFO VERSIONINFO
-    FILEVERSION 4,5,1,1123
-    PRODUCTVERSION 4,5,1,1123
-	FILEFLAGSMASK 0x3fL
+    FILEVERSION FILE_VERSION
+    PRODUCTVERSION PRODUCT_VERSION
+    FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
-	FILEFLAGS VS_FF_DEBUG
+    FILEFLAGS 0x1L
 #else
-	FILEFLAGS 0x0L
+    FILEFLAGS 0x0L
 #endif
-	FILEOS VOS__WINDOWS32
-	FILETYPE VFT_DLL
-	FILESUBTYPE 0x0L
-	BEGIN
-		BLOCK "StringFileInfo"
-		BEGIN
-			BLOCK "080004b0"
-			BEGIN
-                VALUE "CompanyName", "长沙芫泽医疗器械有限公司\0"
-				VALUE "FileDescription", "\0"
-                VALUE "LegalCopyright", "Copyright(C) 长沙芫泽医疗器械有限公司\0"
-                VALUE "LegalTrademarks", "长沙芫泽医疗器械有限公司\0"
-                VALUE "OriginalFilename", "YZNICaS.exe\0"
-				VALUE "ProductName", "无创血流动力学检测系统\0"
-                VALUE "OrganizationDomain", "www.zeyaotebco.com\0"
-                VALUE "AppId", "92FB908B-79F3-4B31-9499-5E57A7239285"
-			END
-		END
-		BLOCK "VarFileInfo"
-		BEGIN
-			VALUE "Translation", 0x0800, 1200
-		END
-	END
-/* End of Version info */
-
+    FILEOS 0x40004L
+    FILETYPE 0x1L
+    FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "080404b0"
+        BEGIN
+            VALUE "FileDescription", FILE_DESCRIPTION
+            VALUE "FileVersion", FILE_VERSION_STR
+            VALUE "InternalName", INTERNAL_NAME
+            VALUE "LegalCopyright", LEGAL_COPYRIGHT
+            VALUE "OriginalFilename", ORIGINAL_FILE_NAME
+            VALUE "ProductName", PRODUCT_NAME
+            VALUE "ProductVersion", PRODUCT_VERSION_STR
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x804, 1200
+    END
+END

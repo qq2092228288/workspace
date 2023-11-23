@@ -8,6 +8,7 @@
 #include <QTimer>
 #include "mqttclient.h"
 #include "logindialog.h"
+#include "version.h"
 
 DataManagement DataManagement::instance;
 
@@ -19,6 +20,10 @@ int main(int argc, char *argv[])
 #ifdef Q_OS_WIN
         SetThreadExecutionState(ES_CONTINUOUS | ES_SYSTEM_REQUIRED | ES_DISPLAY_REQUIRED);
 #endif
+        QApplication::setApplicationVersion(FILE_VERSION_STR);
+        QApplication::setApplicationName("无创血流动力学检测系统");
+        QApplication::setOrganizationName("长沙芫泽医疗器械有限公司");
+        QApplication::setOrganizationDomain(ORGANIZATION_DOMAIN);
         // data management instance
         auto &ins = DataManagement::getInstance();
         ins.getArgs().init();
@@ -37,10 +42,6 @@ int main(int argc, char *argv[])
         if (!initDir.exists()) {
             initDir.mkpath(ins.getPaths().initDir());
         }
-//        QDir tempDir(ins.getPaths().tempDir());
-//        if (!tempDir.exists()) {
-//            tempDir.mkpath(ins.getPaths().tempDir());
-//        }
         QDir reports(ins.getPaths().reports());
         if (!reports.exists()) {
             reports.mkpath(ins.getPaths().reports());

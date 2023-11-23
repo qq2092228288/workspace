@@ -78,7 +78,6 @@ private:
     QString m_deviceId;
     QString m_password;
     QMqttClient *m_client;
-    const QString m_appId;
     const QString m_databaseName;
     const QString m_reportsTable;
     QSqlDatabase m_database;

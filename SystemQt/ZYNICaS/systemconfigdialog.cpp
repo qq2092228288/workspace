@@ -290,37 +290,25 @@ void SystemConfigDialog::logoutSlot()
 
 void SystemConfigDialog::aboutAppSlot()
 {
-    QDialog dialog;
+    QDialog dialog(this);
+    dialog.setWindowFlag(Qt::WindowContextHelpButtonHint, false);
     dialog.setWindowTitle(tr("关于"));
     QVBoxLayout *vLayout = new QVBoxLayout(&dialog);
-    QTextBrowser *textBrowser = new QTextBrowser(&dialog);
-    textBrowser->setStyleSheet("background:transparent;border-width:0;border-style:outset");
-    vLayout->addWidget(textBrowser);
-    textBrowser->append(tr("软件版本: %1\n").arg(QCoreApplication::applicationVersion()));
-    // get app version info
-    QFile file(":/resource.rc");
-    if (file.open(QIODevice::ReadOnly)) {
-        QTextStream out(&file);
-        out.setCodec("GB2312");
-        QRegExp regExp("(?:VALUE\")(.+)(?:\",\")(.+)(?:\")");
-        while (!out.atEnd()) {
-            QString strLine = out.readLine().remove(" ").remove("\t").remove("\\0");
-            if (strLine.indexOf(regExp) >= 0) {
-                if ("CompanyName" == regExp.cap(1)) {
-                    textBrowser->append(tr("公司名称: %1\n").arg(regExp.cap(2)));
-                }
-                else if ("ProductName" == regExp.cap(1)) {
-                    textBrowser->append(tr("软件名称: %1\n").arg(regExp.cap(2)));
-                }
-//                else if ("ProductVersion" == regExp.cap(1)) {
-//                    textBrowser->append(tr("软件版本: %1\n").arg(regExp.cap(2)));
-//                }
-                else if ("OrganizationDomain" == regExp.cap(1)) {
-                    textBrowser->append(tr("公司网站: %1\n").arg(regExp.cap(2)));
-                }
-            }
-        }
-    }
+    auto infoLabel = new QLabel(&dialog);
+    vLayout->addWidget(infoLabel);
+    infoLabel->setOpenExternalLinks(true);
+    auto str = QString::fromUtf8("<p style='%1'>软件版本：%2</p>"
+                                 "<p style='%1'>软件名称：%3</p>"
+                                 "<p style='%1'>公司名称：%4</p>"
+                                 "<p style='%1'>"
+                                 "公司网址：<a href='%5' style='%1 color:blue; text-decoration:underline;'>%5</a>"
+                                 "</p>")
+            .arg(QString("font-size:18px;margin:30px;"),
+                 QCoreApplication::applicationVersion(),
+                 QCoreApplication::applicationName(),
+                 QCoreApplication::organizationName(),
+                 QCoreApplication::organizationDomain());
+    infoLabel->setText(str);
     dialog.exec();
 }
 

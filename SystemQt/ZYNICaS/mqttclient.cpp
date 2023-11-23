@@ -3,11 +3,11 @@
 #include <databasens.h>
 #include <QCoreApplication>
 #include "reportdataname.h"
+#include "version.h"
 using namespace DatabaseEnumNs;
 
 MqttClient::MqttClient(QObject *parent)
     : QObject{parent},
-      m_appId{"92FB908B-79F3-4B31-9499-5E57A7239285"},
       m_databaseName{"Reports.db"},
       m_reportsTable{"reports"}
 {
@@ -173,7 +173,7 @@ void MqttClient::uploadReport()
 void MqttClient::getSoftwareInfo()
 {
     QJsonObject object;
-    object.insert(Singleton::enumValueToKey(SoftwareManagement::appId), m_appId);
+    object.insert(Singleton::enumValueToKey(SoftwareManagement::appId), APP_ID);
     publish(Singleton::getTopicName(PrimaryTopic::request, SecondaryTopic::software, m_deviceId),
             Singleton::jsonToUtf8(object), 0, false);
 }

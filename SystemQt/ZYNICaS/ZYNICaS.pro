@@ -5,8 +5,13 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 CONFIG += c++17
 TARGET = YZNICaS
+
 #版本信息、图标
+win32: {
+# Windows RC
 RC_FILE = resource.rc
+}
+
 #管理员权限运行
 #CONFIG(release, debug|release){
 #    QMAKE_LFLAGS += /MANIFESTUAC:\"level=\'requireAdministrator\' uiAccess=\'false\'\"
@@ -72,6 +77,7 @@ HEADERS += \
     systemconfigdialog.h \
     trendchart.h \
     trendchartswidget.h \
+    version.h \
     viewreportdialog.h \
     waitingdialog.h
 
