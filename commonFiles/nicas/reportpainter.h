@@ -11,7 +11,7 @@
 #include "reportdatajson.h"
 #include "reportdataname.h"
 
-static double topixel(const int &mm, const int &dpi)
+static double topixel(const double &mm, const int &dpi)
 {
     return mm * dpi / 25.4;
 }
@@ -95,11 +95,11 @@ public:
             case Check_Mode::Hypertension:
                 return topix(10);
             case Check_Mode::InternalMedicine:
-                return topix(6);
+                return topix(6.4);
             case Check_Mode::IntensiveCareUnit:
                 return topix(6);
             case Check_Mode::PhysicalExamination:
-                return topix(6);
+                return topix(6.4);
             }
             return -1;
         }
@@ -114,7 +114,7 @@ public:
             }
             return QVector<double>{ topix(44), topix(15), topix(15), topix(23), topix(31) };
         }
-        double topix(const int &mm) const
+        double topix(const double &mm) const
         {
             return topixel(mm, m_dpi);
         }

@@ -714,7 +714,7 @@ void ReportPainter::drawSudoku(QRectF rect, QMap<Type, qreal> fMap, QMap<Type, q
     // 字体
     setFontSize(8);
     // 标题
-    drawText(rect.topLeft().x() - 15, rect.topLeft().y() - 15, "血压靶向分析图");
+    drawText(rect.topLeft().x() - 15, rect.topLeft().y() - scale(15), "血压靶向分析图");
     // 正常范围颜色
     setBrush(QBrush(Qt::green));
     // 边框
