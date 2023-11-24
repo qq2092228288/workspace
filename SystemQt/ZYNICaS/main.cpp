@@ -21,8 +21,8 @@ int main(int argc, char *argv[])
         SetThreadExecutionState(ES_CONTINUOUS | ES_SYSTEM_REQUIRED | ES_DISPLAY_REQUIRED);
 #endif
         QApplication::setApplicationVersion(FILE_VERSION_STR);
-        QApplication::setApplicationName("无创血流动力学检测系统");
-        QApplication::setOrganizationName("长沙芫泽医疗器械有限公司");
+        QApplication::setApplicationName(INTERNAL_NAME);
+        QApplication::setOrganizationName(ORGANIZATION_NAME);
         QApplication::setOrganizationDomain(ORGANIZATION_DOMAIN);
         // data management instance
         auto &ins = DataManagement::getInstance();

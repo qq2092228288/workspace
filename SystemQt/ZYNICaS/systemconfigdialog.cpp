@@ -298,15 +298,13 @@ void SystemConfigDialog::aboutAppSlot()
     vLayout->addWidget(infoLabel);
     infoLabel->setOpenExternalLinks(true);
     auto str = QString::fromUtf8("<p style='%1'>软件版本：%2</p>"
-                                 "<p style='%1'>软件名称：%3</p>"
-                                 "<p style='%1'>公司名称：%4</p>"
+                                 "<p style='%1'>软件名称：无创血流动力学检测系统</p>"
+                                 "<p style='%1'>公司名称：长沙芫泽医疗器械有限公司</p>"
                                  "<p style='%1'>"
-                                 "公司网址：<a href='%5' style='%1 color:blue; text-decoration:underline;'>%5</a>"
+                                 "公司网址：<a href='%3' style='%1 color:blue; text-decoration:underline;'>%3</a>"
                                  "</p>")
             .arg(QString("font-size:18px;margin:30px;"),
                  QCoreApplication::applicationVersion(),
-                 QCoreApplication::applicationName(),
-                 QCoreApplication::organizationName(),
                  QCoreApplication::organizationDomain());
     infoLabel->setText(str);
     dialog.exec();
