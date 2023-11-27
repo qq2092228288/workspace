@@ -4,8 +4,8 @@
 #include <QTimer>
 
 MqttClient::MqttClient(QObject *parent)
-    : QObject{parent}/*,
-      topicAnalysis_PTR{new TopicAnalysis}*/
+    : QObject{parent},
+      publishing{false}
 {
     qRegisterMetaType<QMqttTopicName>("QMqttTopicName");
     qRegisterMetaType<MessageError>("MessageError");
@@ -21,12 +21,13 @@ MqttClient::MqttClient(QObject *parent)
     ThreadService::getInstance()->objectMoveToThread(m_analysis);
 
     connect(m_client, &QMqttClient::messageReceived, m_analysis, &TopicAnalysis::messageAnalysis);
-    connect(m_analysis, &TopicAnalysis::messagePublish, this, &MqttClient::publish);
+    connect(m_analysis, &TopicAnalysis::publish, this, &MqttClient::appendMsg);
     connect(m_client, &QMqttClient::stateChanged, this, &MqttClient::stateChanged);
     connect(m_analysis, &TopicAnalysis::error, this, [=](const MessageError &error)
     {
         TIME_DEBUG()<<Singleton::enumValueToKey(error);
     });
+    connect(m_client, &QMqttClient::messageSent, this, &MqttClient::messageSent);
 }
 
 MqttClient::~MqttClient()
@@ -54,7 +55,25 @@ void MqttClient::stateChanged(QMqttClient::ClientState state)
     }
 }
 
-void MqttClient::publish(const QMqttTopicName &topic, const QByteArray &message, quint8 qos, bool retain)
+void MqttClient::appendMsg(const QMqttTopicName &topic, const QByteArray &message)
 {
-    m_client->publish(topic, message, qos, retain);
+    if (publishing) {
+        m_queue.enqueue(TMsg(topic, message));
+    }
+    else {
+        publishing = true;
+        m_client->publish(topic, message, 2, false);
+    }
+}
+
+void MqttClient::messageSent(qint32 id)
+{
+    if (!m_queue.empty()) {
+        publishing = true;
+        auto tmsg = m_queue.dequeue();
+        m_client->publish(tmsg.topic, tmsg.msg, 2, false);
+    }
+    else {
+        publishing = false;
+    }
 }

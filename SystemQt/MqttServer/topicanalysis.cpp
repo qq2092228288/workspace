@@ -216,7 +216,7 @@ void TopicAnalysis::messageAnalysis(const QByteArray &message, const QMqttTopicN
     {
         auto data = databaseOperation(message, topic, DatabaseOperation::Select);
         if (!data.isNull()) {
-            emit messagePublish(Singleton::getTopicName(ResponseTopic::response, getSTopic(topic), id), data);
+            emit publish(Singleton::getTopicName(ResponseTopic::response, getSTopic(topic), id), data);
         }
     }
         break;
@@ -479,7 +479,7 @@ void TopicAnalysis::response(const QByteArray &message, const QMqttTopicName &to
         break;
     }
     if (!data.isNull()) {
-        emit messagePublish(Singleton::getTopicName(ResponseTopic::response, sTopic, id), data);
+        emit publish(Singleton::getTopicName(ResponseTopic::response, sTopic, id), data);
     }
 }
 
@@ -630,7 +630,7 @@ QByteArray TopicAnalysis::dbOperation(const QJsonObject &object, const DatabaseO
         auto temp = dataArray;
         temp.append(data);
         if (Singleton::jsonToUtf8(temp).length() > 1024000) {
-            emit messagePublish(Singleton::getTopicName(ResponseTopic::response, getSTopic(topic), topic.levels().at(2)),
+            emit publish(Singleton::getTopicName(ResponseTopic::response, getSTopic(topic), topic.levels().at(2)),
                                 Singleton::jsonToUtf8(dataArray));
             dataArray = QJsonArray();
         }

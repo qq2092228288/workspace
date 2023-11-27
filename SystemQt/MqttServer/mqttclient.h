@@ -5,8 +5,17 @@
 #include <QtMqtt/qmqttclient.h>
 #include <QtMqtt/qmqttglobal.h>
 #include <QSharedPointer>
+#include <QQueue>
 
 #include "topicanalysis.h"
+
+typedef struct TopicMessage
+{
+    TopicMessage(const QMqttTopicName &_topic, const QByteArray &_msg)
+        : topic(_topic),msg(_msg){}
+    QMqttTopicName topic;
+    QByteArray msg;
+}TMsg;
 
 class MqttClient : public QObject
 {
@@ -18,11 +27,13 @@ signals:
 public slots:
     void connectToHost();
     void stateChanged(QMqttClient::ClientState state);
-    void publish(const QMqttTopicName &topic, const QByteArray &message, quint8 qos, bool retain);
+    void appendMsg(const QMqttTopicName &topic, const QByteArray &message);
+    void messageSent(qint32 id);
 private:
     QMqttClient *m_client;
-//    TopicAnalysis_PTR topicAnalysis_PTR;
     TopicAnalysis *m_analysis;
+    QQueue<TMsg> m_queue;
+    std::atomic<bool> publishing;
 };
 typedef QSharedPointer<MqttClient> MqttClient_PTR;
 
