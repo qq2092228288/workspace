@@ -62,16 +62,16 @@ void MqttClient::appendMsg(const QMqttTopicName &topic, const QByteArray &messag
     }
     else {
         publishing = true;
-        m_client->publish(topic, message, 2, false);
+        m_client->publish(topic, message, 1, false);
     }
 }
 
-void MqttClient::messageSent(qint32 id)
+void MqttClient::messageSent(qint32 /* id */)
 {
     if (!m_queue.empty()) {
         publishing = true;
         auto tmsg = m_queue.dequeue();
-        m_client->publish(tmsg.topic, tmsg.msg, 2, false);
+        m_client->publish(tmsg.topic, tmsg.msg, 1, false);
     }
     else {
         publishing = false;
