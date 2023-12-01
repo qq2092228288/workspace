@@ -17,7 +17,7 @@ HEADERS += \
     DemoModeData.h \
     zytebco.h
 
-include(../../commonFiles/base.pri)
+include(../../commonFiles/config.pri)
 
 #include(../../commonFiles/qextserialport/src/qextserialport.pri)
 

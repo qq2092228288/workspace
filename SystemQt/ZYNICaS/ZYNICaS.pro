@@ -81,7 +81,7 @@ HEADERS += \
     viewreportdialog.h \
     waitingdialog.h
 
-include(../../commonFiles/base.pri)
+include(../../commonFiles/config.pri)
 include(../../commonFiles/qt-solutions/qtsingleapplication/src/qtsingleapplication.pri)
 include(../../commonFiles/MqttServerNs/mqttserverns.pri)
 include(../../commonFiles/nicas/report.pri)
