@@ -20,6 +20,7 @@ public slots:
     void getReports();
 private slots:
     void serverConnected();
+    void clientConnected();
     void messageReceived(const QByteArray &message, const QMqttTopicName &topic);
 private:
     bool compareVersion(QString ver1, QString ver2);
@@ -34,6 +35,7 @@ private:
     QString m_mac;
     QSqlDatabase m_db;
     QMqttClient *m_client;
+    QVector<QMqttClient *> m_clients;
     QString m_username;
     QString m_deviceIds;
 private:

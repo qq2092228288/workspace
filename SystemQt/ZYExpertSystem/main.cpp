@@ -26,6 +26,7 @@ int main(int argc, char *argv[])
         dialog->exec();
         delete dialog;
         dialog = nullptr;
+
         if (widget->isHidden())
             return 0;
         return a.exec();

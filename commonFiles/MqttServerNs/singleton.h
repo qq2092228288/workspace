@@ -32,6 +32,7 @@ public:
     // html
     static quint16 listenPort();
     // database
+    static QString databaseType();
     static quint16 databasePort();
     static QString databaseName();
     static QString userName();

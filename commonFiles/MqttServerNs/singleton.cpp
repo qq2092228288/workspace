@@ -26,6 +26,11 @@ quint16 Singleton::listenPort()
     return 18088;
 }
 
+QString Singleton::databaseType()
+{
+    return QString("QPSQL");
+}
+
 quint16 Singleton::databasePort()
 {
     return 5432;

@@ -47,7 +47,8 @@ enum class UserStatus
     passwordCorrect,
     passwordError,
     passwordChanged,
-    passwordModificationFailed
+    passwordModificationFailed,
+    incompleteData
 };
 Q_ENUM_NS(UserStatus)
 enum class RemarksType

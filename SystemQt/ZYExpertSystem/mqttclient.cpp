@@ -16,6 +16,9 @@ QSqlDatabase &MqttClient::db()
 
 void MqttClient::connectToHost()
 {
+    foreach (auto client, m_clients) {
+        client->connectToHost();
+    }
     m_client->connectToHost();
 }
 
@@ -65,11 +68,20 @@ void MqttClient::serverConnected()
                         Singleton::enumValueToKey(ReportInfo::modify),
                         Singleton::enumValueToKey(ReportInfo::reportData)));
     }
-    m_client->subscribe(QMqttTopicFilter(Singleton::enumValueToKey(ResponseTopic::response) + "/+/" + m_mac));
+    QJsonObject software {
+        { Singleton::enumValueToKey(SoftwareManagement::appId), m_appId }
+    };
     m_client->publish(Singleton::getTopicName(PrimaryTopic::request, SecondaryTopic::software, m_mac),
-                      Singleton::jsonToUtf8(QJsonObject {
-                                                { Singleton::enumValueToKey(SoftwareManagement::appId), m_appId }
-                                            }), 0, false);
+                      Singleton::jsonToUtf8(software), 0, false);
+}
+
+void MqttClient::clientConnected()
+{
+    auto client = qobject_cast<QMqttClient *>(sender());
+    if (client != nullptr) {
+        QMqttTopicFilter topic("$share/$queue/" + Singleton::enumValueToKey(ResponseTopic::response) + "/+/" + m_mac);
+        client->subscribe(topic);
+    }
 }
 
 void MqttClient::messageReceived(const QByteArray &message, const QMqttTopicName &topic)
@@ -77,8 +89,7 @@ void MqttClient::messageReceived(const QByteArray &message, const QMqttTopicName
     auto json = QJsonDocument::fromJson(message).object();
     switch (Singleton::enumKeyToValue<SecondaryTopic>(topic.levels().at(1))) {
     case SecondaryTopic::loginIn:
-        m_deviceIds = json.value(Singleton::enumValueToKey(ReportInfo::deviceId))
-                .toString().remove("{").remove("}");
+        m_deviceIds = json.value(Singleton::enumValueToKey(ReportInfo::deviceId)).toString().remove("{").remove("}");
         emit loginStatus(json);
         break;
     case SecondaryTopic::software:
@@ -170,13 +181,24 @@ MqttClient::MqttClient(QObject *parent)
 
     m_client = new QMqttClient;
     ThreadService::getInstance()->objectMoveToThread(m_client);
+    m_client->setProtocolVersion(QMqttClient::MQTT_5_0);
     m_client->setHostname(Singleton::serverAddress());
     m_client->setPort(Singleton::mqttPort());
 
     connect(m_client, &QMqttClient::disconnected, this, &MqttClient::connectToHost);
     connect(m_client, &QMqttClient::connected, this, &MqttClient::serverConnected);
     connect(m_client, &QMqttClient::stateChanged, this, &MqttClient::stateChanged);
-    connect(m_client, &QMqttClient::messageReceived, this, &MqttClient::messageReceived);
+
+    for (int i = 0; i < 100; ++i) {
+        auto client = new QMqttClient;
+        m_clients.push_back(client);
+        ThreadService::getInstance()->objectMoveToThread(client);
+        client->setProtocolVersion(QMqttClient::MQTT_5_0);
+        client->setHostname(Singleton::serverAddress());
+        client->setPort(Singleton::mqttPort());
+        connect(client, &QMqttClient::connected, this, &MqttClient::clientConnected, Qt::DirectConnection);
+        connect(client, &QMqttClient::messageReceived, this, &MqttClient::messageReceived, Qt::DirectConnection);
+    }
 }
 
 MqttClient::~MqttClient()
@@ -185,6 +207,9 @@ MqttClient::~MqttClient()
         m_db.close();
     }
     delete m_client;
+    m_client = nullptr;
+    qDeleteAll(m_clients.begin(), m_clients.end());
+    m_clients.clear();
 }
 
 MqttClient *MqttClient::getInstance()
