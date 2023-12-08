@@ -11,15 +11,14 @@ class TcpClientSocket : public QTcpSocket
 public:
     explicit TcpClientSocket(qintptr socketDescriptor, QObject *parent = nullptr);
     virtual ~TcpClientSocket();
+public slots:
+    void writeReady(qintptr socketDescriptor, const QByteArray &data);
 signals:
-    void breakLink(qintptr);
+    void send(qintptr socketDescriptor, TelegramType type, const QJsonObject &data);
 private slots:
-    void disconnectedSlot();
     void dataReceived();
 private:
-    void handling(TelegramType type, const QJsonObject &data);
-    void writeReady(TelegramType type, const QJsonObject &json);
-private:
+    qintptr m_socketDescriptor;
     QByteArray m_data;
 };
 

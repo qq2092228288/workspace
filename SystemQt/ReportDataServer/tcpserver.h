@@ -4,21 +4,22 @@
 #include <QObject>
 #include <QTcpServer>
 
-class TcpClientSocket;
+#include "subtcpserver.h"
 
 class TcpServer : public QTcpServer
 {
     Q_OBJECT
 public:
-    explicit TcpServer(uint16_t port, int numConnection, QObject *parent = nullptr);
+    explicit TcpServer(QObject *parent = nullptr);
     virtual ~TcpServer();
+signals:
+    void sendSocketDescriptor(qintptr socketDescriptor);
 private:
     void incomingConnection(qintptr socketDescriptor) override;
 private slots:
     void acceptErrorSlot(QAbstractSocket::SocketError socketError);
-    void breakLinkSlot(qintptr socketDescriptor);
 private:
-    QList<TcpClientSocket *> m_clientSocketList;
+    QList<SubTcpServer *> subList;
 };
 
 #endif // TCPSERVER_H

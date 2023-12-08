@@ -1,47 +1,46 @@
 #include "tcpserver.h"
-#include "tcpclientsocket.h"
 #include "singleton.h"
-#include "databasesingleton.h"
-#include <QThread>
+#include "threadservice.h"
+#include "config.h"
 
-TcpServer::TcpServer(uint16_t port, int numConnection, QObject *parent)
+TcpServer::TcpServer(QObject *parent)
     : QTcpServer{parent}
 {
-    setMaxPendingConnections(numConnection);
+    setMaxPendingConnections(MAX_NUM_CONNECTION);
     connect(this, &TcpServer::acceptError, this, &TcpServer::acceptErrorSlot);
-    if (listen(QHostAddress::Any, port)) {
-        TIME_DEBUG()<<QString("listen to port %1 ...").arg(port);
-        DatabaseSingleton::getInstance()->openDatabase();
+    if (listen(QHostAddress::Any, LISTEN_PORT)) {
+        TIME_DEBUG()<<QString("listen to port %1 ...").arg(LISTEN_PORT);
+        for (int i = 0; i < MAX_NUM_CONNECTION / SUB_SERVER_MAX + 1; ++i) {
+            auto sub = new SubTcpServer;
+            ThreadService::getInstance()->objectMoveToThread(sub);
+            subList.append(sub);
+        }
     }
     else {
-        TIME_DEBUG()<<QString("failed to listen to port %1").arg(port);
+        TIME_DEBUG()<<QString("failed to listen to port %1").arg(LISTEN_PORT);
     }
 }
 
 TcpServer::~TcpServer()
 {
-
+    qDeleteAll(subList.begin(), subList.end());
 }
 
 void TcpServer::incomingConnection(qintptr socketDescriptor)
 {
-    auto client = new TcpClientSocket(socketDescriptor);
-    connect(client, &TcpClientSocket::breakLink, this, &TcpServer::breakLinkSlot);
-    m_clientSocketList.append(client);
+    foreach (auto sub, subList) {
+        disconnect(this, &TcpServer::sendSocketDescriptor, sub, &SubTcpServer::newSocketDescriptor);
+    }
+    foreach (auto sub, subList) {
+        if (sub->count() < SUB_SERVER_MAX) {
+            connect(this, &TcpServer::sendSocketDescriptor, sub, &SubTcpServer::newSocketDescriptor);
+            break;
+        }
+    }
+    emit sendSocketDescriptor(socketDescriptor);
 }
 
 void TcpServer::acceptErrorSlot(QAbstractSocket::SocketError socketError)
 {
     TIME_DEBUG()<<" socket error: "<<socketError;
-}
-
-void TcpServer::breakLinkSlot(qintptr socketDescriptor)
-{
-    for (int i = 0; i < m_clientSocketList.count(); ++i) {
-        auto client = m_clientSocketList.at(i);
-        if (client->socketDescriptor() == socketDescriptor) {
-            m_clientSocketList.removeAt(i);
-            return;
-        }
-    }
 }

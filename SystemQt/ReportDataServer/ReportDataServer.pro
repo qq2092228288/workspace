@@ -9,14 +9,16 @@ CONFIG -= app_bundle
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 HEADERS += \
+    clientworker.h \
     config.h \
-    databasesingleton.h \
+    subtcpserver.h \
     tcpclientsocket.h \
     tcpserver.h
 
 SOURCES += \
-        databasesingleton.cpp \
+        clientworker.cpp \
         main.cpp \
+        subtcpserver.cpp \
         tcpclientsocket.cpp \
         tcpserver.cpp
 

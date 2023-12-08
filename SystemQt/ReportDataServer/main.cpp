@@ -1,6 +1,5 @@
 #include <qtsinglecoreapplication.h>
 #include "tcpserver.h"
-#include "config.h"
 
 int main(int argc, char *argv[])
 {
@@ -8,6 +7,6 @@ int main(int argc, char *argv[])
     if (a.isRunning()) {
         return EXIT_SUCCESS;
     }
-    TcpServer server(LISTEN_PORT, MAX_NUM_CONNECTION);
+    TcpServer server;
     return a.exec();
 }
