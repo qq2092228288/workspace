@@ -21,14 +21,14 @@ TelegramProfile::TelegramProfile(const TelegramType &type, const QByteArray &dat
       data_length(data.length()),
       body_data(data)
 {
-    data_checksum = QCryptographicHash::hash(data, QCryptographicHash::Md5);
+    data_checksum = QCryptographicHash::hash(QString(data).toUtf8(), QCryptographicHash::Md5);
     QByteArray header;
     QDataStream stream(&header, QIODevice::WriteOnly);
     stream.setVersion(QDataStream::Qt_5_12);
     stream.setFloatingPointPrecision(QDataStream::DoublePrecision);
     stream<<start_identifier<<header_length<<telegram_type<<data_length;
     stream.writeRawData(data_checksum, data_checksum.length());
-    header_checksum = QCryptographicHash::hash(header, QCryptographicHash::Md5);
+    header_checksum = QCryptographicHash::hash(QString(header).toUtf8(), QCryptographicHash::Md5);
 }
 
 QByteArray TelegramProfile::toByteArray() const

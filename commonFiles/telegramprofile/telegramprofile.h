@@ -36,7 +36,7 @@ typedef class TelegramProfile
 {
 public:
     explicit TelegramProfile();
-    TelegramProfile(const TelegramType &type, const QByteArray &data);
+    explicit TelegramProfile(const TelegramType &type, const QByteArray &data);
 public:
     QByteArray toByteArray() const;
     uint32_t startIdentifier() const;
