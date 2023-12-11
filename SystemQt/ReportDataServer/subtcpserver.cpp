@@ -1,4 +1,5 @@
 #include "subtcpserver.h"
+#include <QUuid>
 #include "config.h"
 #include "singleton.h"
 #include "databasens.h"
