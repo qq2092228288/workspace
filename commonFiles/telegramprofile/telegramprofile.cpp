@@ -105,7 +105,7 @@ TBInfo TelegramProfile::baseInfo(const QByteArray &data)
 
     uint32_t start_identifier;
     uint16_t header_length;
-    TelegramType telegram_type;
+    int16_t telegram_type;
     uint32_t data_length;
 
     out>>start_identifier>>header_length>>telegram_type>>data_length;
@@ -115,7 +115,7 @@ TBInfo TelegramProfile::baseInfo(const QByteArray &data)
         header_length + data_length != temp.length()) {
         return TBInfo();
     }
-    switch (telegram_type) {
+    switch (TelegramType(telegram_type)) {
     #define X_MACRO(type, value) case type:
         ENUM_TELEGRAM_TYPE
     #undef X_MACRO
@@ -148,7 +148,7 @@ TelegramProfile TelegramProfile::fromUtf8(const QByteArray &data)
         header_length + data_length != data.length()) {
         return TelegramProfile();
     }
-    switch (telegram_type) {
+    switch (TelegramType(telegram_type)) {
     #define X_MACRO(type, value) case type:
         ENUM_TELEGRAM_TYPE
     #undef X_MACRO
