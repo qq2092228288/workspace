@@ -24,7 +24,7 @@ TelegramProfile::TelegramProfile(const TelegramType &type, const QByteArray &dat
     data_checksum = QCryptographicHash::hash(data, QCryptographicHash::Md5);
     QByteArray header;
     QDataStream stream(&header, QIODevice::WriteOnly);
-    stream.setVersion(QDataStream::Qt_5_15);
+    stream.setVersion(QDataStream::Qt_5_12);
     stream.setFloatingPointPrecision(QDataStream::DoublePrecision);
     stream<<start_identifier<<header_length<<telegram_type<<data_length;
     stream.writeRawData(data_checksum, data_checksum.length());
@@ -35,7 +35,7 @@ QByteArray TelegramProfile::toByteArray() const
 {
     QByteArray bytes;
     QDataStream stream(&bytes, QIODevice::WriteOnly);
-    stream.setVersion(QDataStream::Qt_5_15);
+    stream.setVersion(QDataStream::Qt_5_12);
     stream.setFloatingPointPrecision(QDataStream::DoublePrecision);
     stream<<startIdentifier()<<headerLength()<<telegramType()<<dataLength();
     stream.writeRawData(dataChecksum(), dataChecksum().length());
@@ -86,7 +86,7 @@ TBInfo TelegramProfile::baseInfo(const QByteArray &data)
 {
     QByteArray header;
     QDataStream in(&header, QIODevice::WriteOnly);
-    in.setVersion(QDataStream::Qt_5_15);
+    in.setVersion(QDataStream::Qt_5_12);
     in.setFloatingPointPrecision(QDataStream::DoublePrecision);
     in<<static_cast<uint32_t>(START_IDENTIFIER)<<static_cast<uint16_t>(HEADER_LENGTH);
     auto index = data.indexOf(header);
@@ -100,7 +100,7 @@ TBInfo TelegramProfile::baseInfo(const QByteArray &data)
     }
 
     QDataStream out(temp);
-    out.setVersion(QDataStream::Qt_5_15);
+    out.setVersion(QDataStream::Qt_5_12);
     out.setFloatingPointPrecision(QDataStream::DoublePrecision);
 
     uint32_t start_identifier;
@@ -133,12 +133,12 @@ TelegramProfile TelegramProfile::fromUtf8(const QByteArray &data)
     }
 
     QDataStream out(data);
-    out.setVersion(QDataStream::Qt_5_15);
+    out.setVersion(QDataStream::Qt_5_12);
     out.setFloatingPointPrecision(QDataStream::DoublePrecision);
 
     uint32_t start_identifier;
     uint16_t header_length;
-    TelegramType telegram_type;
+    int16_t telegram_type;
     uint32_t data_length;
 
     out>>start_identifier>>header_length>>telegram_type>>data_length;
@@ -169,7 +169,7 @@ TelegramProfile TelegramProfile::fromUtf8(const QByteArray &data)
     out.readRawData(header_checksum.data(), MD5_CHECKSUM_LENGTH);
     out.readRawData(body_data.data(), data_length);
 
-    TelegramProfile tp(telegram_type, body_data);
+    TelegramProfile tp(TelegramType(telegram_type), body_data);
     if (tp.dataChecksum() != data_checksum || tp.headerChecksum() != header_checksum) {
         return TelegramProfile();
     }
