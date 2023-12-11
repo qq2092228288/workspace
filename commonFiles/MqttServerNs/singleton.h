@@ -38,6 +38,7 @@ public:
     static QString userName();
     static QString password();
     static QString createUniqueId(const QString &macAddress, const QString &deviceId);
+    static bool compareVersion(QString ver1, QString ver2);
     template <class T>
     static QMqttTopicName getTopicName(const T &pTopic, const SecondaryTopic &sTopic, const QString &id)
     {

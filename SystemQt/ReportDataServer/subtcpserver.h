@@ -15,11 +15,12 @@ public slots:
     void newSocketDescriptor(qintptr socketDescriptor);
 signals:
     void writeReady(qintptr socketDescriptor, const QByteArray &data);
-private:
-    void sendWrite(qintptr socketDescriptor, TelegramType type, const QJsonObject &json);
 private slots:
-    void received(qintptr socketDescriptor, TelegramType type, const QJsonObject &data);
+    void received(qintptr socketDescriptor, TelegramType type, const QByteArray &data);
     void clientDeleted(QObject *client);
+private:
+    template <class T>
+    void sendWrite(qintptr socketDescriptor, TelegramType type, const T &json);
 private:
     QSqlDatabase m_db;
     QList<TcpClientSocket *> m_clientList;

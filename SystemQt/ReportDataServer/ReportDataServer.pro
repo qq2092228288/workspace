@@ -22,7 +22,7 @@ SOURCES += \
         tcpclientsocket.cpp \
         tcpserver.cpp
 
-include(../../commonFiles/base.pri)
+include(../../commonFiles/config.pri)
 include(../../commonFiles/telegramprofile/telegramprofile.pri)
 include(../../commonFiles/qt-solutions/qtsingleapplication/src/qtsinglecoreapplication.pri)
 include(../../commonFiles/MqttServerNs/mqttserverns.pri)

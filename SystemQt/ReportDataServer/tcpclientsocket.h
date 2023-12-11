@@ -14,7 +14,7 @@ public:
 public slots:
     void writeReady(qintptr socketDescriptor, const QByteArray &data);
 signals:
-    void send(qintptr socketDescriptor, TelegramType type, const QJsonObject &data);
+    void send(qintptr socketDescriptor, TelegramType type, const QByteArray &data);
 private slots:
     void dataReceived();
 private:

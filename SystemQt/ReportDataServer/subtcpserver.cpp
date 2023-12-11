@@ -1,4 +1,5 @@
 #include "subtcpserver.h"
+#include "config.h"
 #include "singleton.h"
 #include "databasens.h"
 
@@ -34,22 +35,32 @@ void SubTcpServer::newSocketDescriptor(qintptr socketDescriptor)
     m_clientList.append(client);
 }
 
-void SubTcpServer::sendWrite(qintptr socketDescriptor, TelegramType type, const QJsonObject &json)
+void SubTcpServer::received(qintptr socketDescriptor, TelegramType type, const QByteArray &data)
 {
-    emit writeReady(socketDescriptor, TProfile(type, Singleton::jsonToUtf8(json)).toByteArray());
-}
-
-void SubTcpServer::received(qintptr socketDescriptor, TelegramType type, const QJsonObject &data)
-{
-    qDebug()<<socketDescriptor<<type<<data;
+    auto object = QJsonDocument::fromJson(data).object();
     QSqlQuery sqlQuery(m_db);
     switch (type) {
+    case TelegramType::SoftwareInfomation:
+    {
+        auto appIdString = Singleton::enumValueToKey(SoftwareManagement::appId);
+        auto appId = object.value(appIdString);
+        if (appId.type() != QJsonValue::Undefined) {
+            sqlQuery.exec(QString("SELECT * FROM %1 WHERE %2 = '%3'")
+                              .arg(Singleton::enumName<SoftwareManagement>(),
+                                   appIdString,
+                                   appId.toString()));
+            if (sqlQuery.next()) {
+                sendWrite(socketDescriptor, TelegramType::SoftwareInfomation, Singleton::getJsonObject(sqlQuery));
+            }
+        }
+    }
+        break;
     case TelegramType::UserInfomation:
     {
         auto astr = Singleton::enumValueToKey(AdministratorInfo::adminId);
         auto pstr = Singleton::enumValueToKey(AdministratorInfo::password);
-        auto adminId = data.value(astr);
-        auto password = data.value(pstr);
+        auto adminId = object.value(astr);
+        auto password = object.value(pstr);
         if (adminId.type() != QJsonValue::Undefined && password.type() != QJsonValue::Undefined) {
             sqlQuery.exec(QString("SELECT %1 FROM %2 WHERE %3 = '%4' AND %5 = '%6'")
                               .arg(Singleton::enumValueToKey(AdministratorInfo::deviceIds),
@@ -83,12 +94,11 @@ void SubTcpServer::received(qintptr socketDescriptor, TelegramType type, const Q
     case TelegramType::ReportData:
     {
         auto dstr = Singleton::enumValueToKey(ReportInfo::deviceId);
-        auto deviceId = data.value(dstr).toString().replace("{", "'").replace("}", "'");
-        qDebug()<<dstr<<deviceId;
+        auto deviceId = object.value(dstr).toString().replace("{", "'").replace("}", "'");
         if (deviceId.isEmpty()) {
             return;
         }
-        else if ("*" == deviceId){
+        else if ("*" == deviceId) {
             sqlQuery.exec(QString("SELECT * FROM %1 ORDER BY %2 DESC")
                               .arg(Singleton::enumName<ReportInfo>(),
                                    Singleton::enumValueToKey(ReportInfo::reportTime)));
@@ -100,8 +110,21 @@ void SubTcpServer::received(qintptr socketDescriptor, TelegramType type, const Q
                                    deviceId,
                                    Singleton::enumValueToKey(ReportInfo::reportTime)));
         }
+        QJsonArray array;
         while (sqlQuery.next()) {
-            qDebug()<<"report data";
+            auto json = Singleton::getJsonObject(sqlQuery);
+            auto temp = array;
+            temp.append(json);
+            if (Singleton::jsonToUtf8(temp).length() > MAX_DATA_LENGTH) {
+                sendWrite(socketDescriptor, TelegramType::ReportData, array);
+                array = QJsonArray();
+            }
+            if (Singleton::jsonToUtf8(json).length() < MAX_DATA_LENGTH) {
+                array.append(json);
+            }
+        }
+        if (!array.isEmpty()) {
+            sendWrite(socketDescriptor, TelegramType::ReportData, array);
         }
     }
         break;
@@ -118,4 +141,10 @@ void SubTcpServer::clientDeleted(QObject *client)
             break;
         }
     }
+}
+
+template <class T>
+void SubTcpServer::sendWrite(qintptr socketDescriptor, TelegramType type, const T &json)
+{
+    emit writeReady(socketDescriptor, TProfile(type, Singleton::jsonToUtf8(json)).toByteArray());
 }

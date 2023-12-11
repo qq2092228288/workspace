@@ -57,6 +57,26 @@ QString Singleton::createUniqueId(const QString &macAddress, const QString &devi
     return QCryptographicHash::hash(md5.toLatin1(), QCryptographicHash::Md5).toHex().toLower();
 }
 
+bool Singleton::compareVersion(QString ver1, QString ver2)
+{
+    QStringList list1 = ver1.replace(QRegExp("[a-zA-Z() ]"), "").split(".");
+    QStringList list2 = ver2.replace(QRegExp("[a-zA-Z() ]"), "").split(".");
+    if (list1.count() == list2.count()) {
+        for (int index = 0; index < list1.count(); ++index) {
+            if (list1.at(index).toInt() > list2.at(index).toInt()) {
+                return true;
+            }
+            else if (list1.at(index).toInt() < list2.at(index).toInt()) {
+                return false;
+            }
+        }
+    }
+    else {
+        return true;
+    }
+    return false;
+}
+
 QJsonObject Singleton::getJsonObject(const QSqlQuery &sqlQuery)
 {
     QJsonObject object;

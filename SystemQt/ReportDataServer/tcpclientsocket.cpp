@@ -12,7 +12,7 @@ TcpClientSocket::TcpClientSocket(qintptr socketDescriptor, QObject *parent)
 
 TcpClientSocket::~TcpClientSocket()
 {
-    // qDebug()<<__FUNCTION__;
+    m_data.clear();
 }
 
 void TcpClientSocket::writeReady(qintptr socketDescriptor, const QByteArray &data)
@@ -30,7 +30,7 @@ void TcpClientSocket::dataReceived()
         auto tp = TProfile::fromUtf8(m_data.mid(info.index, info.length));
         m_data = m_data.mid(info.index + info.length);
         if (tp.telegramType() != TelegramType::InvalidType) {
-            emit send(socketDescriptor(), tp.telegramType(), QJsonDocument::fromJson(tp.bodyData()).object());
+            emit send(socketDescriptor(), tp.telegramType(), tp.bodyData());
         }
     }
 }
