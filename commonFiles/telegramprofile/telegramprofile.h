@@ -40,9 +40,9 @@ public:
 public:
     QByteArray toByteArray() const;
     uint32_t startIdentifier() const;
-    uint16_t headerLength() const;
+    int16_t headerLength() const;
     TelegramType telegramType() const;
-    uint32_t dataLength() const;
+    int32_t dataLength() const;
     QByteArray dataChecksum() const;
     QByteArray headerChecksum() const;
     QByteArray bodyData() const;
@@ -53,11 +53,11 @@ private:
     /*! 起始标识 */
     uint32_t start_identifier;
     /*! 头长度 */
-    uint16_t header_length;
+    int16_t header_length;
     /*! 报文类型 */
     TelegramType telegram_type;
     /*! 数据长度 */
-    uint32_t data_length;
+    int32_t data_length;
     /*! 数据校验和(MD5) */
     QByteArray data_checksum;
     /*! 报文头校验和(MD5) */

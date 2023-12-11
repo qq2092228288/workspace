@@ -52,7 +52,7 @@ uint32_t TelegramProfile::startIdentifier() const
     return start_identifier;
 }
 
-uint16_t TelegramProfile::headerLength() const
+int16_t TelegramProfile::headerLength() const
 {
     return header_length;
 }
@@ -62,7 +62,7 @@ TelegramType TelegramProfile::telegramType() const
     return telegram_type;
 }
 
-uint32_t TelegramProfile::dataLength() const
+int32_t TelegramProfile::dataLength() const
 {
     return data_length;
 }
@@ -104,9 +104,9 @@ TBInfo TelegramProfile::baseInfo(const QByteArray &data)
     out.setFloatingPointPrecision(QDataStream::DoublePrecision);
 
     uint32_t start_identifier;
-    uint16_t header_length;
+    int16_t header_length;
     int16_t telegram_type;
-    uint32_t data_length;
+    int32_t data_length;
 
     out>>start_identifier>>header_length>>telegram_type>>data_length;
 
@@ -137,9 +137,9 @@ TelegramProfile TelegramProfile::fromUtf8(const QByteArray &data)
     out.setFloatingPointPrecision(QDataStream::DoublePrecision);
 
     uint32_t start_identifier;
-    uint16_t header_length;
+    int16_t header_length;
     int16_t telegram_type;
-    uint32_t data_length;
+    int32_t data_length;
 
     out>>start_identifier>>header_length>>telegram_type>>data_length;
 
