@@ -3,32 +3,32 @@
 #include <QDataStream>
 
 TelegramProfile::TelegramProfile()
-    : start_identifier(0),
-      header_length(0),
-      telegram_type(TelegramType::InvalidType),
-      data_length(0),
-      data_checksum(nullptr),
-      header_checksum(nullptr),
-      body_data(nullptr)
+    : m_start_identifier(0),
+      m_header_length(0),
+      m_telegram_type(TelegramType::InvalidType),
+      m_data_length(0),
+      m_data_checksum(nullptr),
+      m_header_checksum(nullptr),
+      m_body_data(nullptr)
 {
 
 }
 
 TelegramProfile::TelegramProfile(const TelegramType &type, const QByteArray &data)
-    : start_identifier(START_IDENTIFIER),
-      header_length(HEADER_LENGTH),
-      telegram_type(type),
-      data_length(data.length()),
-      body_data(data)
+    : m_start_identifier(START_IDENTIFIER),
+      m_header_length(HEADER_LENGTH),
+      m_telegram_type(type),
+      m_data_length(data.length()),
+      m_body_data(data)
 {
-    data_checksum = QCryptographicHash::hash(QString(data).toUtf8(), QCryptographicHash::Md5);
+    m_data_checksum = QCryptographicHash::hash(QString(data).toUtf8(), QCryptographicHash::Md5);
     QByteArray header;
     QDataStream stream(&header, QIODevice::WriteOnly);
     stream.setVersion(QDataStream::Qt_5_12);
     stream.setFloatingPointPrecision(QDataStream::DoublePrecision);
-    stream<<start_identifier<<header_length<<telegram_type<<data_length;
-    stream.writeRawData(data_checksum, data_checksum.length());
-    header_checksum = QCryptographicHash::hash(QString(header).toUtf8(), QCryptographicHash::Md5);
+    stream<<m_start_identifier<<m_header_length<<static_cast<int16_t>(m_telegram_type)<<m_data_length;
+    stream.writeRawData(m_data_checksum, m_data_checksum.length());
+    m_header_checksum = QCryptographicHash::hash(QString(header).toUtf8(), QCryptographicHash::Md5);
 }
 
 QByteArray TelegramProfile::toByteArray() const
@@ -37,7 +37,7 @@ QByteArray TelegramProfile::toByteArray() const
     QDataStream stream(&bytes, QIODevice::WriteOnly);
     stream.setVersion(QDataStream::Qt_5_12);
     stream.setFloatingPointPrecision(QDataStream::DoublePrecision);
-    stream<<startIdentifier()<<headerLength()<<telegramType()<<dataLength();
+    stream<<startIdentifier()<<headerLength()<<static_cast<int16_t>(telegramType())<<dataLength();
     stream.writeRawData(dataChecksum(), dataChecksum().length());
     stream.writeRawData(headerChecksum(), headerChecksum().length());
     stream.writeRawData(bodyData(), bodyData().length());
@@ -47,39 +47,39 @@ QByteArray TelegramProfile::toByteArray() const
     return bytes;
 }
 
-uint32_t TelegramProfile::startIdentifier() const
+int32_t TelegramProfile::startIdentifier() const
 {
-    return start_identifier;
+    return m_start_identifier;
 }
 
 int16_t TelegramProfile::headerLength() const
 {
-    return header_length;
+    return m_header_length;
 }
 
 TelegramType TelegramProfile::telegramType() const
 {
-    return telegram_type;
+    return m_telegram_type;
 }
 
 int32_t TelegramProfile::dataLength() const
 {
-    return data_length;
+    return m_data_length;
 }
 
 QByteArray TelegramProfile::dataChecksum() const
 {
-    return data_checksum;
+    return m_data_checksum;
 }
 
 QByteArray TelegramProfile::headerChecksum() const
 {
-    return header_checksum;
+    return m_header_checksum;
 }
 
 QByteArray TelegramProfile::bodyData() const
 {
-    return body_data;
+    return m_body_data;
 }
 
 TBInfo TelegramProfile::baseInfo(const QByteArray &data)
@@ -88,7 +88,7 @@ TBInfo TelegramProfile::baseInfo(const QByteArray &data)
     QDataStream in(&header, QIODevice::WriteOnly);
     in.setVersion(QDataStream::Qt_5_12);
     in.setFloatingPointPrecision(QDataStream::DoublePrecision);
-    in<<static_cast<uint32_t>(START_IDENTIFIER)<<static_cast<uint16_t>(HEADER_LENGTH);
+    in<<static_cast<int32_t>(START_IDENTIFIER)<<static_cast<int16_t>(HEADER_LENGTH);
     auto index = data.indexOf(header);
     if (-1 == index) {
         return TBInfo();
@@ -103,7 +103,7 @@ TBInfo TelegramProfile::baseInfo(const QByteArray &data)
     out.setVersion(QDataStream::Qt_5_12);
     out.setFloatingPointPrecision(QDataStream::DoublePrecision);
 
-    uint32_t start_identifier;
+    int32_t start_identifier;
     int16_t header_length;
     int16_t telegram_type;
     int32_t data_length;
@@ -136,7 +136,7 @@ TelegramProfile TelegramProfile::fromUtf8(const QByteArray &data)
     out.setVersion(QDataStream::Qt_5_12);
     out.setFloatingPointPrecision(QDataStream::DoublePrecision);
 
-    uint32_t start_identifier;
+    int32_t start_identifier;
     int16_t header_length;
     int16_t telegram_type;
     int32_t data_length;

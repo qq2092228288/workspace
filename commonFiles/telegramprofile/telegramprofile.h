@@ -39,7 +39,7 @@ public:
     explicit TelegramProfile(const TelegramType &type, const QByteArray &data);
 public:
     QByteArray toByteArray() const;
-    uint32_t startIdentifier() const;
+    int32_t startIdentifier() const;
     int16_t headerLength() const;
     TelegramType telegramType() const;
     int32_t dataLength() const;
@@ -51,19 +51,19 @@ public:
     static TelegramProfile fromUtf8(const QByteArray &data);
 private:
     /*! 起始标识 */
-    uint32_t start_identifier;
+    int32_t m_start_identifier;
     /*! 头长度 */
-    int16_t header_length;
+    int16_t m_header_length;
     /*! 报文类型 */
-    TelegramType telegram_type;
+    TelegramType m_telegram_type;
     /*! 数据长度 */
-    int32_t data_length;
+    int32_t m_data_length;
     /*! 数据校验和(MD5) */
-    QByteArray data_checksum;
+    QByteArray m_data_checksum;
     /*! 报文头校验和(MD5) */
-    QByteArray header_checksum;
+    QByteArray m_header_checksum;
     /*! 数据 */
-    QByteArray body_data;
+    QByteArray m_body_data;
 private:
     bool operator==(const TelegramProfile &tp);
 }TProfile;
