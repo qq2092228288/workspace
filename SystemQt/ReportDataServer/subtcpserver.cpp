@@ -31,6 +31,7 @@ void SubTcpServer::newSocketDescriptor(qintptr socketDescriptor)
     auto client = new TcpClientSocket(socketDescriptor, this);
     connect(client, &TcpClientSocket::send, this, &SubTcpServer::received);
     connect(this, &SubTcpServer::writeReady, client, &TcpClientSocket::writeReady);
+    connect(this, &SubTcpServer::appendReports, client, &TcpClientSocket::appendReports);
     connect(client, &TcpClientSocket::disconnected, client, &TcpClientSocket::deleteLater);
     connect(client, &TcpClientSocket::destroyed, this, &SubTcpServer::clientDeleted);
     m_clientList.append(client);
@@ -51,7 +52,7 @@ void SubTcpServer::received(qintptr socketDescriptor, TelegramType type, const Q
                                    appIdString,
                                    appId.toString()));
             if (sqlQuery.next()) {
-                sendWrite(socketDescriptor, TelegramType::SoftwareInfomation, Singleton::getJsonObject(sqlQuery));
+                clientWrite(socketDescriptor, TelegramType::SoftwareInfomation, Singleton::getJsonObject(sqlQuery));
             }
         }
     }
@@ -75,20 +76,20 @@ void SubTcpServer::received(qintptr socketDescriptor, TelegramType type, const Q
                     { Singleton::enumName<UserStatus>(), Singleton::enumValueToKey(UserStatus::passwordCorrect) },
                     { Singleton::enumValueToKey(ReportInfo::deviceId), sqlQuery.value(0).toString() }
                 };
-                sendWrite(socketDescriptor, TelegramType::UserInfomation, json);
+                clientWrite(socketDescriptor, TelegramType::UserInfomation, json);
             }
             else {
                 QJsonObject json {
                     { Singleton::enumName<UserStatus>(), Singleton::enumValueToKey(UserStatus::passwordError) }
                 };
-                sendWrite(socketDescriptor, TelegramType::UserInfomation, json);
+                clientWrite(socketDescriptor, TelegramType::UserInfomation, json);
             }
         }
         else {
             QJsonObject json {
                 { Singleton::enumName<UserStatus>(), Singleton::enumValueToKey(UserStatus::incompleteData) }
             };
-            sendWrite(socketDescriptor, TelegramType::UserInfomation, json);
+            clientWrite(socketDescriptor, TelegramType::UserInfomation, json);
         }
     }
     break;
@@ -117,7 +118,7 @@ void SubTcpServer::received(qintptr socketDescriptor, TelegramType type, const Q
             auto temp = array;
             temp.append(json);
             if (Singleton::jsonToUtf8(temp).length() > MAX_DATA_LENGTH) {
-                sendWrite(socketDescriptor, TelegramType::ReportData, array);
+                emit appendReports(socketDescriptor, array);
                 array = QJsonArray();
             }
             if (Singleton::jsonToUtf8(json).length() < MAX_DATA_LENGTH) {
@@ -125,8 +126,50 @@ void SubTcpServer::received(qintptr socketDescriptor, TelegramType type, const Q
             }
         }
         if (!array.isEmpty()) {
-            sendWrite(socketDescriptor, TelegramType::ReportData, array);
+            emit appendReports(socketDescriptor, array);
         }
+        clientWrite(socketDescriptor, TelegramType::ReportDataReady, QJsonArray());
+    }
+        break;
+    case TelegramType::NewReportData:
+    {
+        auto dstr = Singleton::enumValueToKey(ReportInfo::deviceId);
+        auto deviceId = object.value(dstr).toString().replace("{", "'").replace("}", "'");
+        auto time = QDateTime::currentDateTime().addDays(-1).toString("yyyy-MM-dd hh:mm:ss.zzz");
+        if (deviceId.isEmpty()) {
+            return;
+        }
+        else if ("*" == deviceId) {
+            sqlQuery.exec(QString("SELECT * FROM %1 WHERE %2 > '%3' ORDER BY %2 DESC")
+                              .arg(Singleton::enumName<ReportInfo>(),
+                                   Singleton::enumValueToKey(ReportInfo::reportTime),
+                                   time));
+        }
+        else {
+            sqlQuery.exec(QString("SELECT * FROM %1 WHERE %2 IN (%3) AND %4 > '%5' ORDER BY %4 DESC")
+                              .arg(Singleton::enumName<ReportInfo>(),
+                                   Singleton::enumValueToKey(ReportInfo::deviceId),
+                                   deviceId,
+                                   Singleton::enumValueToKey(ReportInfo::reportTime),
+                                   time));
+        }
+        QJsonArray array;
+        while (sqlQuery.next()) {
+            auto json = Singleton::getJsonObject(sqlQuery);
+            auto temp = array;
+            temp.append(json);
+            if (Singleton::jsonToUtf8(temp).length() > MAX_DATA_LENGTH) {
+                emit appendReports(socketDescriptor, array);
+                array = QJsonArray();
+            }
+            if (Singleton::jsonToUtf8(json).length() < MAX_DATA_LENGTH) {
+                array.append(json);
+            }
+        }
+        if (!array.isEmpty()) {
+            emit appendReports(socketDescriptor, array);
+        }
+        clientWrite(socketDescriptor, TelegramType::ReportDataReady, QJsonArray());
     }
         break;
     default:
@@ -145,7 +188,7 @@ void SubTcpServer::clientDeleted(QObject *client)
 }
 
 template <class T>
-void SubTcpServer::sendWrite(qintptr socketDescriptor, TelegramType type, const T &json)
+void SubTcpServer::clientWrite(qintptr socketDescriptor, TelegramType type, const T &json)
 {
     emit writeReady(socketDescriptor, TProfile(type, Singleton::jsonToUtf8(json)).toByteArray());
 }

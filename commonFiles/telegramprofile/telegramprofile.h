@@ -11,10 +11,13 @@
 #define MD5_CHECKSUM_LENGTH             16
 /*! 报文类型宏 */
 #define ENUM_TELEGRAM_TYPE  \
-        X_MACRO(SoftwareInfomation,     0)  \
-        X_MACRO(UserInfomation,         1)  \
-        X_MACRO(DeviceInfomation,       2)  \
-        X_MACRO(ReportData,             3)  \
+        X_MACRO(SoftwareInfomation,     0x00)  \
+        X_MACRO(UserInfomation,         0x01)  \
+        X_MACRO(DeviceInfomation,       0x02)  \
+        X_MACRO(ReportData,             0x03)  \
+        X_MACRO(NewReportData,          0x04)  \
+        X_MACRO(ReportDataReady,        0x05)  \
+        X_MACRO(ReportDataRequest,      0x06)  \
         X_MACRO(InvalidType,    INT16_MAX)
 /*! 报文类型枚举 */
 enum TelegramType : int16_t

@@ -112,7 +112,7 @@ TBInfo TelegramProfile::baseInfo(const QByteArray &data)
 
     if (start_identifier != START_IDENTIFIER ||
         header_length != HEADER_LENGTH ||
-        header_length + data_length != temp.length()) {
+        header_length + data_length > temp.length()) {
         return TBInfo();
     }
     switch (TelegramType(telegram_type)) {
