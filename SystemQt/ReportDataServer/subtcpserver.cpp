@@ -40,10 +40,10 @@ void SubTcpServer::newSocketDescriptor(qintptr socketDescriptor)
 void SubTcpServer::received(qintptr socketDescriptor, TelegramType type, const QByteArray &data)
 {
     auto object = QJsonDocument::fromJson(data).object();
-    QSqlQuery sqlQuery(m_db);
     switch (type) {
     case TelegramType::SoftwareInfomation:
     {
+        QSqlQuery sqlQuery(m_db);
         auto appIdString = Singleton::enumValueToKey(SoftwareManagement::appId);
         auto appId = object.value(appIdString);
         if (appId.type() != QJsonValue::Undefined) {
@@ -59,6 +59,7 @@ void SubTcpServer::received(qintptr socketDescriptor, TelegramType type, const Q
         break;
     case TelegramType::UserInfomation:
     {
+        QSqlQuery sqlQuery(m_db);
         auto astr = Singleton::enumValueToKey(AdministratorInfo::adminId);
         auto pstr = Singleton::enumValueToKey(AdministratorInfo::password);
         auto adminId = object.value(astr);
@@ -94,83 +95,10 @@ void SubTcpServer::received(qintptr socketDescriptor, TelegramType type, const Q
     }
     break;
     case TelegramType::ReportData:
-    {
-        auto dstr = Singleton::enumValueToKey(ReportInfo::deviceId);
-        auto deviceId = object.value(dstr).toString().replace("{", "'").replace("}", "'");
-        if (deviceId.isEmpty()) {
-            return;
-        }
-        else if ("*" == deviceId) {
-            sqlQuery.exec(QString("SELECT * FROM %1 ORDER BY %2 DESC")
-                              .arg(Singleton::enumName<ReportInfo>(),
-                                   Singleton::enumValueToKey(ReportInfo::reportTime)));
-        }
-        else {
-            sqlQuery.exec(QString("SELECT * FROM %1 WHERE %2 IN (%3) ORDER BY %4 DESC")
-                              .arg(Singleton::enumName<ReportInfo>(),
-                                   Singleton::enumValueToKey(ReportInfo::deviceId),
-                                   deviceId,
-                                   Singleton::enumValueToKey(ReportInfo::reportTime)));
-        }
-        QJsonArray array;
-        while (sqlQuery.next()) {
-            auto json = Singleton::getJsonObject(sqlQuery);
-            auto temp = array;
-            temp.append(json);
-            if (Singleton::jsonToUtf8(temp).length() > MAX_DATA_LENGTH) {
-                emit appendReports(socketDescriptor, array);
-                array = QJsonArray();
-            }
-            if (Singleton::jsonToUtf8(json).length() < MAX_DATA_LENGTH) {
-                array.append(json);
-            }
-        }
-        if (!array.isEmpty()) {
-            emit appendReports(socketDescriptor, array);
-        }
-        clientWrite(socketDescriptor, TelegramType::ReportDataReady, QJsonArray());
-    }
-        break;
     case TelegramType::NewReportData:
-    {
-        auto dstr = Singleton::enumValueToKey(ReportInfo::deviceId);
-        auto deviceId = object.value(dstr).toString().replace("{", "'").replace("}", "'");
-        auto time = QDateTime::currentDateTime().addDays(-1).toString("yyyy-MM-dd hh:mm:ss.zzz");
-        if (deviceId.isEmpty()) {
-            return;
-        }
-        else if ("*" == deviceId) {
-            sqlQuery.exec(QString("SELECT * FROM %1 WHERE %2 > '%3' ORDER BY %2 DESC")
-                              .arg(Singleton::enumName<ReportInfo>(),
-                                   Singleton::enumValueToKey(ReportInfo::reportTime),
-                                   time));
-        }
-        else {
-            sqlQuery.exec(QString("SELECT * FROM %1 WHERE %2 IN (%3) AND %4 > '%5' ORDER BY %4 DESC")
-                              .arg(Singleton::enumName<ReportInfo>(),
-                                   Singleton::enumValueToKey(ReportInfo::deviceId),
-                                   deviceId,
-                                   Singleton::enumValueToKey(ReportInfo::reportTime),
-                                   time));
-        }
-        QJsonArray array;
-        while (sqlQuery.next()) {
-            auto json = Singleton::getJsonObject(sqlQuery);
-            auto temp = array;
-            temp.append(json);
-            if (Singleton::jsonToUtf8(temp).length() > MAX_DATA_LENGTH) {
-                emit appendReports(socketDescriptor, array);
-                array = QJsonArray();
-            }
-            if (Singleton::jsonToUtf8(json).length() < MAX_DATA_LENGTH) {
-                array.append(json);
-            }
-        }
-        if (!array.isEmpty()) {
-            emit appendReports(socketDescriptor, array);
-        }
-        clientWrite(socketDescriptor, TelegramType::ReportDataReady, QJsonArray());
-    }
+        reportData(socketDescriptor, object.value(Singleton::enumValueToKey(ReportInfo::deviceId))
+                                         .toString().replace("{", "'").replace("}", "'"),
+                   TelegramType::NewReportData == type);
         break;
     default:
         break;
@@ -185,6 +113,58 @@ void SubTcpServer::clientDeleted(QObject *client)
             break;
         }
     }
+}
+
+void SubTcpServer::reportData(qintptr socketDescriptor, const QString &deviceId, bool isNew)
+{
+    if (deviceId.isEmpty()) {
+        return;
+    }
+    QSqlQuery sqlQuery(m_db);
+    auto tableName = Singleton::enumName<ReportInfo>();
+    auto distr = Singleton::enumValueToKey(ReportInfo::deviceId);
+    auto rtstr = Singleton::enumValueToKey(ReportInfo::reportTime);
+    if (isNew) {
+        auto time = QDateTime::currentDateTime().addDays(-1).toString("yyyy-MM-dd hh:mm:ss.zzz");
+        if ("*" == deviceId) {
+            sqlQuery.exec(QString("SELECT * FROM %1 WHERE %2 > '%3' ORDER BY %2 DESC")
+                              .arg(tableName, rtstr, time));
+        }
+        else {
+            sqlQuery.exec(QString("SELECT * FROM %1 WHERE %2 IN (%3) AND %4 > '%5' ORDER BY %4 DESC")
+                              .arg(tableName, distr, deviceId, rtstr, time));
+        }
+    }
+    else {
+        if ("*" == deviceId) {
+            sqlQuery.exec(QString("SELECT * FROM %1 ORDER BY %2 DESC").arg(tableName, rtstr));
+        }
+        else {
+            sqlQuery.exec(QString("SELECT * FROM %1 WHERE %2 IN (%3) ORDER BY %4 DESC")
+                              .arg(tableName, distr, deviceId, rtstr));
+        }
+    }
+    int dataCount = 0;
+    QJsonArray array;
+    while (sqlQuery.next()) {
+        auto json = Singleton::getJsonObject(sqlQuery);
+        auto temp = array;
+        temp.append(json);
+        if (Singleton::jsonToUtf8(temp).length() > MAX_DATA_LENGTH) {
+            emit appendReports(socketDescriptor, array);
+            array = QJsonArray();
+            ++dataCount;
+        }
+        if (Singleton::jsonToUtf8(json).length() < MAX_DATA_LENGTH) {
+            array.append(json);
+        }
+    }
+    if (!array.isEmpty()) {
+        emit appendReports(socketDescriptor, array);
+        ++dataCount;
+    }
+    clientWrite(socketDescriptor, TelegramType::ReportDataReady,
+                QJsonObject{ { "datacount" , dataCount } });
 }
 
 template <class T>
