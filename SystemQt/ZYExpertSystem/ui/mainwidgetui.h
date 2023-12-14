@@ -19,7 +19,8 @@ public:
     QLabel *titleLabel;
     QLabel *infoLabel;
     QPushButton *showReportButton;
-    QPushButton *configButton;
+    QPushButton *dataAnalysisButton;
+    QPushButton *systemConfigButton;
     QPushButton *exitButton;
     void setupUi(QWidget *Widget)
     {
@@ -61,10 +62,15 @@ public:
 
         mainLayout->addWidget(showReportButton, 0, Qt::AlignCenter);
 
-        configButton = new QPushButton(Widget);
-        configButton->setObjectName(QString::fromUtf8("configButton"));
+        dataAnalysisButton = new QPushButton(Widget);
+        dataAnalysisButton->setObjectName(QString::fromUtf8("dataAnalysisButton"));
 
-        mainLayout->addWidget(configButton, 0, Qt::AlignCenter);
+        mainLayout->addWidget(dataAnalysisButton, 0, Qt::AlignCenter);
+
+        systemConfigButton = new QPushButton(Widget);
+        systemConfigButton->setObjectName(QString::fromUtf8("systemConfigButton"));
+
+        mainLayout->addWidget(systemConfigButton, 0, Qt::AlignCenter);
 
         exitButton = new QPushButton(Widget);
         exitButton->setObjectName(QString::fromUtf8("exitButton"));
@@ -93,7 +99,8 @@ public:
                      QCoreApplication::organizationDomain());
         infoLabel->setText(str);
         showReportButton->setText(QString::fromUtf8("查看报告"));
-        configButton->setText(QString::fromUtf8("报告配置"));
+        dataAnalysisButton->setText(QString::fromUtf8("数据分析"));
+        systemConfigButton->setText(QString::fromUtf8("系统配置"));
         exitButton->setText(QString::fromUtf8("退出系统"));
     }
 };

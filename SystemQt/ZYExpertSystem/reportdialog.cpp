@@ -6,7 +6,7 @@
 #include <QProcess>
 #include <QDesktopServices>
 
-#include "mqttclient.h"
+#include "tcpclientsocket.h"
 #include "singleton.h"
 #include "databasens.h"
 #include "reportdataname.h"
@@ -25,6 +25,7 @@ ReportDialog::ReportDialog(QWidget *parent)
         dir.mkpath(m_path);
     }
     calendarDialog = new ScopeCalendarDialog(this);
+    waitingDialog = new WaitingDialog(this);
     model = new ReportTableModel(this);
 
     ui->reportTableView->setModel(model);
@@ -35,16 +36,20 @@ ReportDialog::ReportDialog(QWidget *parent)
     ui->reportTableView->setColumnWidth(1, 150);
     ui->reportTableView->horizontalHeader()->setStretchLastSection(true);
 
-    connect(MqttClient::getInstance(), &MqttClient::reportPulled, this, &ReportDialog::reportPulled);
-    connect(ui->searchCriteriaComboBox, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &ReportDialog::currentIndexChanged);
+    connect(ui->searchCriteriaComboBox, QOverload<int>::of(&QComboBox::currentIndexChanged),
+            this, &ReportDialog::currentIndexChanged);
     connect(calendarDialog, &ScopeCalendarDialog::scopeTime, model, &ReportTableModel::filterTime);
     connect(ui->searchButton, &QPushButton::clicked, this, &ReportDialog::searchButtonClicked);
     connect(ui->resetButton, &QPushButton::clicked, this, &ReportDialog::resetButtonClicked);
-    connect(ui->getLatestDataButton, &QPushButton::clicked, MqttClient::getInstance(), &MqttClient::getReports);
     connect(ui->generatePdfButton, &QPushButton::clicked, this, &ReportDialog::generatePdfButtonClicked);
     connect(ui->openReportDirButton, &QPushButton::clicked, this, &ReportDialog::openReportDirButtonClicked);
     connect(ui->printPreviewButton, &QPushButton::clicked, this, &ReportDialog::printPreviewButtonClicked);
     connect(ui->reportTableView, &QTableView::doubleClicked, this, &ReportDialog::reportTableViewDoubleClicked);
+    auto instance = TcpClientSocket::getInstance();
+    connect(instance, &TcpClientSocket::reportPulled, this, &ReportDialog::reportPulled);
+    connect(ui->getLatestDataButton, &QPushButton::clicked, instance, &TcpClientSocket::getNewReports);
+    connect(instance, &TcpClientSocket::reportReady, waitingDialog, &WaitingDialog::start);
+    connect(instance, &TcpClientSocket::reportPulled, waitingDialog, &WaitingDialog::tryStop);
 }
 
 ReportDialog::~ReportDialog()
@@ -165,7 +170,7 @@ QDateTime ReportDialog::selectedTime(const QModelIndex &index) const
 
 QJsonObject ReportDialog::getReportJson(const QModelIndex &index)
 {
-    QSqlQuery query(MqttClient::getInstance()->db());
+    QSqlQuery query(TcpClientSocket::getInstance()->db());
     query.prepare(QString("SELECT %1 FROM %2 WHERE %3 = ?")
                   .arg(Singleton::enumValueToKey(ReportInfo::reportData),
                        Singleton::enumName<ReportInfo>(),
@@ -190,7 +195,7 @@ bool ReportDialog::indexIsValid(const QModelIndex &index)
 QVector<ReportModelItem> ReportDialog::getItems()
 {
     QVector<ReportModelItem> items;
-    QSqlQuery query(MqttClient::getInstance()->db());
+    QSqlQuery query(TcpClientSocket::getInstance()->db());
     query.exec(QString("SELECT %1, %2, %3 FROM %4 ORDER BY %1 DESC")
                .arg(Singleton::enumValueToKey(ReportInfo::reportTime),
                     Singleton::enumValueToKey(ReportInfo::modify),

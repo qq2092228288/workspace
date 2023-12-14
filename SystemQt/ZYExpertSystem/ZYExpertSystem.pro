@@ -12,29 +12,35 @@ SOURCES += \
         logindialog.cpp \
         main.cpp \
         mainwidget.cpp \
-        mqttclient.cpp \
+        # mqttclient.cpp \
         printpreviewdialog.cpp \
-        reportconfigdialog.cpp \
-        reportdialog.cpp
+        reportdialog.cpp \
+        systemconfigdialog.cpp \
+        tcpclientsocket.cpp \
+        waitingdialog.cpp
 
 HEADERS += \
     logindialog.h \
     mainwidget.h \
     mainwidgetui.h \
-    mqttclient.h \
+    # mqttclient.h \
     printpreviewdialog.h \
-    reportconfigdialog.h \
     reportdialog.h \
+    systemconfigdialog.h \
+    tcpclientsocket.h \
     ui/logindialogui.h \
     ui/mainwidgetui.h \
-    ui/reportconfigdialogui.h \
-    ui/reportdialogui.h
+    ui/reportdialogui.h \
+    ui/systemconfigdialogui.h \
+    ui/waitingdialogui.h \
+    waitingdialog.h
 
-include(../../commonFiles/base.pri)
+include(../../commonFiles/config.pri)
 include(../../commonFiles/qt-solutions/qtsingleapplication/src/qtsingleapplication.pri)
 include(../../commonFiles/MqttServerNs/mqttserverns.pri)
 include(../../commonFiles/nicas/report.pri)
 include(../../commonFiles/zywidgets/zywidgets.pri)
+include(../../commonFiles/telegramprofile/telegramprofile.pri)
 
 win32:CONFIG(release, debug|release): LIBS += -L$$[QT_INSTALL_LIBS] -lQt5Mqtt
 else:win32:CONFIG(debug, debug|release): LIBS += -L$$[QT_INSTALL_LIBS] -lQt5Mqttd

@@ -3,7 +3,7 @@
 
 #include <QDialog>
 #include <QJsonObject>
-#include "updateappdialog.h"
+#include <QAbstractSocket>
 
 namespace Ui {
 class LoginDialog;
@@ -18,6 +18,7 @@ public:
 signals:
     void successful();
 private slots:
+    void stateChanged(QAbstractSocket::SocketState state);
     void newVersion(const QJsonObject &object);
     void loginButtonClicked();
     void loginStatus(const QJsonObject &object);

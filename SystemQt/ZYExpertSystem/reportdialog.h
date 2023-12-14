@@ -6,6 +6,7 @@
 #include "reporttablemodel.h"
 #include "scopecalendardialog.h"
 #include "printpreviewdialog.h"
+#include "waitingdialog.h"
 
 namespace Ui {
 class ReportDialog;
@@ -39,6 +40,7 @@ private:
     ScopeCalendarDialog *calendarDialog;
     ReportTableModel *model;
     ReportConfig m_config;
+    WaitingDialog *waitingDialog;
 };
 
 #endif // REPORTDIALOG_H

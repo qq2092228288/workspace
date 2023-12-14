@@ -7,7 +7,7 @@
     font-family:'华文行楷'; font:bold 100px; color:#1296db;
 }
 
-#showReportButton, #configButton, #exitButton {
+QPushButton {
     font-family:'Microsoft YaHei';
     font:bold 50px;
     color:#ffffff;
@@ -22,10 +22,10 @@
     padding-right:60px;
 }
 
-#showReportButton:hover, #configButton:hover, #exitButton:hover {
+QPushButton:hover {
     background-color:qlineargradient(x1:0,y1:0,x2:0,y2:1,stop:0 #ff55ff,stop:1 #1296db);
 }
 
-#showReportButton:pressed,#configButton:pressed,#exitButton:pressed {
+QPushButton:pressed {
     background-color:qlineargradient(x1:0,y1:0,x2:0,y2:1,stop:0 #ff55ff,stop:1 #aa00ff);
 }

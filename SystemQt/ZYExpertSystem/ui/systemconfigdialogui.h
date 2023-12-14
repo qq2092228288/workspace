@@ -1,5 +1,5 @@
-#ifndef REPORTCONFIGDIALOGUI_H
-#define REPORTCONFIGDIALOGUI_H
+#ifndef SYSTEMCONFIGDIALOGUI_H
+#define SYSTEMCONFIGDIALOGUI_H
 
 #include <QDialog>
 #include <QCoreApplication>
@@ -11,51 +11,96 @@
 #include <QCheckBox>
 #include <QRadioButton>
 #include <QButtonGroup>
+#include <QFrame>
 
 #include "reportset.h"
 
 QT_BEGIN_NAMESPACE
 
-class ReportConfigDialogUi : public QDialog
+class SystemConfigDialogUi : public QDialog
 {
 public:
     QGridLayout *mainLayout;
+    QButtonGroup *getReportButtonGroup;
+    QRadioButton *latestReportButton;
+    QRadioButton *allReportButton;
+
     QLabel *trendChartTitleLabel;
     QLineEdit *trendChartTitleLineEdit;
+
     QCheckBox *samePageCheckBox;
+
     QButtonGroup *modeButtonGroup;
     QRadioButton *hypertensionButton;
     QRadioButton *internalMedicineButton;
     QRadioButton *intensiveCareUnitButton;
     QRadioButton *physicalExaminationButton;
+
     QPushButton *confirmButton;
+
     void setupUi(QDialog *Dialog)
     {
         if (Dialog->objectName().isEmpty())
             Dialog->setObjectName(QString::fromUtf8("Dialog"));
         Dialog->resize(300, 200);
         Dialog->setWindowFlag(Qt::WindowContextHelpButtonHint, false);
-        QFile qssFile(":/qss/reportconfidialogui.qss");
+        QFile qssFile(":/qss/systemconfidialogui.qss");
         if (qssFile.open(QIODevice::ReadOnly))
             Dialog->setStyleSheet(qssFile.readAll());
 
         mainLayout = new QGridLayout(Dialog);
         mainLayout->setObjectName(QString::fromUtf8("mainLayout"));
 
+        getReportButtonGroup = new QButtonGroup(Dialog);
+        getReportButtonGroup->setObjectName(QString::fromUtf8("getReportButtonGroup"));
+
+        latestReportButton = new QRadioButton(Dialog);
+        latestReportButton->setObjectName(QString::fromUtf8("latestReportButton"));
+        getReportButtonGroup->addButton(latestReportButton, 0);
+
+        mainLayout->addWidget(latestReportButton, 0, 0);
+
+        allReportButton = new QRadioButton(Dialog);
+        allReportButton->setObjectName(QString::fromUtf8("allReportButton"));
+        getReportButtonGroup->addButton(allReportButton, 1);
+
+        mainLayout->addWidget(allReportButton, 0, 1);
+
+        QFrame *hline1 = new QFrame(Dialog);
+        hline1->setObjectName(QString::fromUtf8("hline1"));
+        hline1->setFrameShape(QFrame::HLine);
+        hline1->setFrameShadow(QFrame::Sunken);
+
+        mainLayout->addWidget(hline1, 1, 0, 1, 2);
+
         trendChartTitleLabel = new QLabel(Dialog);
         trendChartTitleLabel->setObjectName(QString::fromUtf8("trendChartTitleLabel"));
 
-        mainLayout->addWidget(trendChartTitleLabel, 0, 0);
+        mainLayout->addWidget(trendChartTitleLabel, 2, 0);
 
         trendChartTitleLineEdit = new QLineEdit(Dialog);
         trendChartTitleLineEdit->setObjectName(QString::fromUtf8("trendChartTitleLineEdit"));
 
-        mainLayout->addWidget(trendChartTitleLineEdit, 0, 1);
+        mainLayout->addWidget(trendChartTitleLineEdit, 2, 1);
+
+        QFrame *hline2 = new QFrame(Dialog);
+        hline2->setObjectName(QString::fromUtf8("hline2"));
+        hline2->setFrameShape(QFrame::HLine);
+        hline2->setFrameShadow(QFrame::Sunken);
+
+        mainLayout->addWidget(hline2, 3, 0, 1, 2);
 
         samePageCheckBox = new QCheckBox(Dialog);
         samePageCheckBox->setObjectName(QString::fromUtf8("samePageCheckBox"));
 
-        mainLayout->addWidget(samePageCheckBox, 1, 0);
+        mainLayout->addWidget(samePageCheckBox, 4, 0);
+
+        QFrame *hline3 = new QFrame(Dialog);
+        hline3->setObjectName(QString::fromUtf8("hline3"));
+        hline3->setFrameShape(QFrame::HLine);
+        hline3->setFrameShadow(QFrame::Sunken);
+
+        mainLayout->addWidget(hline3, 5, 0, 1, 2);
 
         modeButtonGroup = new QButtonGroup(Dialog);
         modeButtonGroup->setObjectName(QString::fromUtf8("modeButtonGroup"));
@@ -64,38 +109,50 @@ public:
         hypertensionButton->setObjectName(QString::fromUtf8("hypertensionButton"));
         modeButtonGroup->addButton(hypertensionButton, Check_Mode::Hypertension);
 
-        mainLayout->addWidget(hypertensionButton, 2, 0);
+        mainLayout->addWidget(hypertensionButton, 6, 0);
 
         internalMedicineButton = new QRadioButton(Dialog);
         internalMedicineButton->setObjectName(QString::fromUtf8("internalMedicineButton"));
         modeButtonGroup->addButton(internalMedicineButton, Check_Mode::InternalMedicine);
 
-        mainLayout->addWidget(internalMedicineButton, 2, 1);
+        mainLayout->addWidget(internalMedicineButton, 6, 1);
 
         intensiveCareUnitButton = new QRadioButton(Dialog);
         intensiveCareUnitButton->setObjectName(QString::fromUtf8("intensiveCareUnitButton"));
         modeButtonGroup->addButton(intensiveCareUnitButton, Check_Mode::IntensiveCareUnit);
 
-        mainLayout->addWidget(intensiveCareUnitButton, 3, 0);
+        mainLayout->addWidget(intensiveCareUnitButton, 7, 0);
 
         physicalExaminationButton = new QRadioButton(Dialog);
         physicalExaminationButton->setObjectName(QString::fromUtf8("physicalExaminationButton"));
         modeButtonGroup->addButton(physicalExaminationButton, Check_Mode::PhysicalExamination);
 
-        mainLayout->addWidget(physicalExaminationButton, 3, 1);
+        mainLayout->addWidget(physicalExaminationButton, 7, 1);
+
+        QFrame *hline4 = new QFrame(Dialog);
+        hline4->setObjectName(QString::fromUtf8("hline4"));
+        hline4->setFrameShape(QFrame::HLine);
+        hline4->setFrameShadow(QFrame::Sunken);
+
+        mainLayout->addWidget(hline4, 8, 0, 1, 2);
 
         confirmButton = new QPushButton(Dialog);
         confirmButton->setObjectName(QString::fromUtf8("confirmButton"));
 
-        mainLayout->addWidget(confirmButton, 4, 0, 1, 2);
+        mainLayout->addWidget(confirmButton, 9, 0, 1, 2);
 
         retranslateUi(Dialog);
     }
     void retranslateUi(QDialog *Dialog)
     {
-        Dialog->setWindowTitle(QCoreApplication::applicationName() + QString::fromUtf8(" - 报告配置"));
+        Dialog->setWindowTitle(QCoreApplication::applicationName() + QString::fromUtf8(" - 系统配置"));
+        latestReportButton->setText(QString::fromUtf8("获取最新"));
+        latestReportButton->setToolTip(QString::fromStdString("登录后获取24小时内的报告（快）"));
+        allReportButton->setText(QString::fromUtf8("获取全部"));
+        allReportButton->setToolTip(QString::fromStdString("登录后获取所有报告（慢）"));
         trendChartTitleLabel->setText(QString::fromUtf8("趋势图页标题:"));
         samePageCheckBox->setText(QString::fromUtf8("双体位同页"));
+        samePageCheckBox->setToolTip(QString::fromStdString("若勾选，且为双体位，则检测数据在同一页报告中体现"));
         hypertensionButton->setText(QString::fromUtf8("高血压模式"));
         internalMedicineButton->setText(QString::fromUtf8("内科模式"));
         intensiveCareUnitButton->setText(QString::fromUtf8("重症模式"));
@@ -105,9 +162,9 @@ public:
 };
 
 namespace Ui {
-    class ReportConfigDialog : public ReportConfigDialogUi {};
+    class SystemConfigDialog : public SystemConfigDialogUi {};
 }
 
 QT_END_NAMESPACE
 
-#endif // REPORTCONFIGDIALOGUI_H
+#endif // SYSTEMCONFIGDIALOGUI_H

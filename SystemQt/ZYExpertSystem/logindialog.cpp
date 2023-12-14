@@ -6,8 +6,9 @@
 #include <QFileInfo>
 #include <QTextStream>
 #include <QTextCodec>
-#include "mqttclient.h"
+#include "updateappdialog.h"
 #include "singleton.h"
+#include "tcpclientsocket.h"
 
 LoginDialog::LoginDialog(QWidget *parent)
     : QDialog{parent},
@@ -15,32 +16,40 @@ LoginDialog::LoginDialog(QWidget *parent)
       m_fileName{QCoreApplication::applicationDirPath() + "/userinfo.ini"}
 {
     ui->setupUi(this);
-    auto instance = MqttClient::getInstance();
-
-    connect(instance, &MqttClient::stateChanged, this, [=](QMqttClient::ClientState state) {
-        if (QMqttClient::Disconnected == state) {
-            QMessageBox::warning(this, QString("警告"), QString("请检查当前网络是否可用！"));
-            exit(0);
-        }
-        else if (QMqttClient::Connected == state) {
-            ui->loginButton->setEnabled(true);
-        }
-    });
-    connect(instance, &MqttClient::newVerion, this, &LoginDialog::newVersion);
-    connect(instance, &MqttClient::loginStatus, this, &LoginDialog::loginStatus, Qt::QueuedConnection);
-    connect(ui->loginButton, &QPushButton::clicked, this, &LoginDialog::loginButtonClicked);
-
     ui->loginButton->setEnabled(false);
-    instance->connectToHost();
     readInfo();
     if (!ui->usernameLineEdit->text().isEmpty()) {
         ui->rememberPasswordCheckBox->setChecked(true);
     }
+    connect(ui->loginButton, &QPushButton::clicked, this, &LoginDialog::loginButtonClicked);
+    auto instance = TcpClientSocket::getInstance();
+    connect(instance, &TcpClientSocket::stateChanged, this, &LoginDialog::stateChanged);
+    connect(instance, &TcpClientSocket::versionInfo, this, &LoginDialog::newVersion);
+    connect(instance, &TcpClientSocket::userInfo, this, &LoginDialog::loginStatus);
 }
 
 LoginDialog::~LoginDialog()
 {
     delete ui;
+}
+
+void LoginDialog::stateChanged(QAbstractSocket::SocketState state)
+{
+    switch (state) {
+    case QAbstractSocket::UnconnectedState:
+        ui->loginButton->setEnabled(false);
+        QMessageBox::warning(this, QString("警告"), QString("连接服务器失败，请检查当前网络是否可用！"));
+        exit(0);
+        break;
+    case QAbstractSocket::ConnectedState:
+    {
+        TcpClientSocket::getInstance()->getSoftwareInfo();
+        ui->loginButton->setEnabled(true);
+    }
+        break;
+    default:
+        break;
+    }
 }
 
 void LoginDialog::newVersion(const QJsonObject &object)
@@ -59,14 +68,13 @@ void LoginDialog::loginButtonClicked()
         QMessageBox::warning(this, QString("警告"), QString("账号和密码不能为空！"));
         return;
     }
-    MqttClient::getInstance()->login(ui->usernameLineEdit->text(), ui->passwordLineEdit->text());
+    TcpClientSocket::getInstance()->login(ui->usernameLineEdit->text(), ui->passwordLineEdit->text());
 }
 
 void LoginDialog::loginStatus(const QJsonObject &object)
 {
     switch (Singleton::enumKeyToValue<UserStatus>(object.value(Singleton::enumName<UserStatus>()).toString())) {
     case UserStatus::passwordCorrect:
-        MqttClient::getInstance()->getReports();
         emit successful();
         close();
         if (!ui->rememberPasswordCheckBox->isChecked()) {
