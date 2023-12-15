@@ -20,7 +20,7 @@ public:
     virtual ~ReportDialog();
     void setConfig(const ReportConfig &config);
 private slots:
-    void currentIndexChanged(int index);
+    void searchCriteriaComboBoxActivated(int index);
     void searchButtonClicked();
     void resetButtonClicked();
     void reportPulled();

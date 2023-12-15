@@ -9,6 +9,7 @@ RC_ICONS = $$PWD/images/app.ico
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+        datanfilterwidgetns.cpp \
         logindialog.cpp \
         main.cpp \
         mainwidget.cpp \
@@ -20,6 +21,7 @@ SOURCES += \
         waitingdialog.cpp
 
 HEADERS += \
+    datanfilterwidgetns.h \
     logindialog.h \
     mainwidget.h \
     mainwidgetui.h \
@@ -28,6 +30,7 @@ HEADERS += \
     reportdialog.h \
     systemconfigdialog.h \
     tcpclientsocket.h \
+    ui/datanwidgetui.h \
     ui/logindialogui.h \
     ui/mainwidgetui.h \
     ui/reportdialogui.h \

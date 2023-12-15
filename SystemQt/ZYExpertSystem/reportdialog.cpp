@@ -36,8 +36,8 @@ ReportDialog::ReportDialog(QWidget *parent)
     ui->reportTableView->setColumnWidth(1, 150);
     ui->reportTableView->horizontalHeader()->setStretchLastSection(true);
 
-    connect(ui->searchCriteriaComboBox, QOverload<int>::of(&QComboBox::currentIndexChanged),
-            this, &ReportDialog::currentIndexChanged);
+    connect(ui->searchCriteriaComboBox, QOverload<int>::of(&QComboBox::activated),
+            this, &ReportDialog::searchCriteriaComboBoxActivated);
     connect(calendarDialog, &ScopeCalendarDialog::scopeTime, model, &ReportTableModel::filterTime);
     connect(ui->searchButton, &QPushButton::clicked, this, &ReportDialog::searchButtonClicked);
     connect(ui->resetButton, &QPushButton::clicked, this, &ReportDialog::resetButtonClicked);
@@ -62,7 +62,7 @@ void ReportDialog::setConfig(const ReportConfig &config)
     m_config = config;
 }
 
-void ReportDialog::currentIndexChanged(int index)
+void ReportDialog::searchCriteriaComboBoxActivated(int index)
 {
     if (2 == index) {
         ui->searchCriteriaLineEdit->setEnabled(false);

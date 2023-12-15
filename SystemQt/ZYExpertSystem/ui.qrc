@@ -10,5 +10,6 @@
         <file>qss/systemconfidialogui.qss</file>
         <file>images/waiting.gif</file>
         <file>qss/waitingdialogui.qss</file>
+        <file>qss/datanwidgetui.qss</file>
     </qresource>
 </RCC>
