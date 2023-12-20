@@ -150,7 +150,7 @@ private:
     QString positionCn(int pos);
     void drawWaveform(QRectF rect, int pos, const QJsonArray &waveform, bool index);
     void drawSudoku(QRectF rect, QMap<Type, qreal> fMap, QMap<Type, qreal> sMap = QMap<Type, qreal>());
-    void drawIsiAndSv(QRectF rect, qreal fIsi, qreal fSv, qreal sIsi, qreal sSv);
+    void drawIsiAndSv(QRectF rect, int fPos, qreal fIsi, qreal fSv, int sPos, qreal sIsi, qreal sSv);
     void drawArrow(QPointF start, QPointF end);
     void drawCurve(QList<QPointF> points);
     void drawTrendChart(QRectF rect, Type type, QString stime, QString etime,

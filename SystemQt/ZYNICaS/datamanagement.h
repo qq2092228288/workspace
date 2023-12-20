@@ -116,15 +116,12 @@ public:
     void setRegulator(CustomCtrlRegulator *regulator);
     QString reportResult(const QJsonObject &json);
 public slots:
-    QString reportCreated(bool record);
     void clearSlot();
     void customCtrlTimer(bool start);
 private:
     QString flag(CustomCtrl *customCtrl, bool second);
     QString tip(qreal min, qreal max, qreal value);
     QString tip(qreal rValue, qreal cValue);
-    // 报告结论
-    QString reportResult(bool record);
     // 第一体位评价
     QString pevl(const Type &type, bool many = true);
     // 两个体位对比

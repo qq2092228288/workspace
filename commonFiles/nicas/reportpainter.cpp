@@ -382,7 +382,8 @@ void ReportPainter::generalDataPage(int page)
     if ((!m_info.paging || 1 == page) && secExist) {
         drawIsiAndSv(QRectF(sudoku.bottomLeft().x(), sudoku.bottomLeft().y() + scale(40),
                             sudoku.width(), scale(100)),
-                     fMap.value(Type::ISI), fMap.value(Type::SV), sMap.value(Type::ISI), sMap.value(Type::SV));
+                     fMap.value(Type::Pos), fMap.value(Type::ISI), fMap.value(Type::SV),
+                     sMap.value(Type::Pos), sMap.value(Type::ISI), sMap.value(Type::SV));
     }
 }
 
@@ -830,7 +831,7 @@ void ReportPainter::drawSudoku(QRectF rect, QMap<Type, qreal> fMap, QMap<Type, q
     }
 }
 
-void ReportPainter::drawIsiAndSv(QRectF rect, qreal fIsi, qreal fSv, qreal sIsi, qreal sSv)
+void ReportPainter::drawIsiAndSv(QRectF rect, int fPos, qreal fIsi, qreal fSv, int sPos, qreal sIsi, qreal sSv)
 {
     // 字体
     setFontSize(8);
@@ -848,9 +849,6 @@ void ReportPainter::drawIsiAndSv(QRectF rect, qreal fIsi, qreal fSv, qreal sIsi,
              "心脏泵力");
     // x轴标签
     drawText(QRectF(origin, QSizeF(rect.width(), scale(10))), Qt::AlignCenter, "容量");
-    // 评价
-    drawText(QRectF(QPointF(origin.x(), origin.y() + scale(10)), QSizeF(rect.width(), scale(10))), Qt::AlignCenter,
-             QString("回心血量增加后，泵力%1，搏排量%2").arg(compare(fIsi, sIsi), compare(fSv, sSv)));
     // 曲线
     auto rectArc = QRectF(QPointF(origin.x(), rect.topLeft().y() + 10),
                        QSizeF(rect.bottomRight().x() - origin.x(), rect.bottomRight().x() - origin.x()));
@@ -859,34 +857,44 @@ void ReportPainter::drawIsiAndSv(QRectF rect, qreal fIsi, qreal fSv, qreal sIsi,
     auto r = rectArc.width() / 2;
     // 圆心
     auto center = QPointF(rectArc.topLeft().x() + r, rectArc.topLeft().y() + r);
-    QPointF p1, p2;
-    if (fIsi < sIsi) {
+
+    QPoint p1, p2;
+    if (sIsi / fIsi >= 1.1) {
         p1.setY(origin.y() - 40);
         p1.setX(circleX(p1.y(), r, center.x(), center.y(), true));
         p2.setY(center.y() - r);
         p2.setX(center.x());
-        drawArrow(QPointF(p1.x() + 5, p1.y() - 2), QPointF(p2.x() - 5, p2.y() + 2));
+        drawArrow(QPointF(p1.x() + scale(10), p1.y() - scale(5)), QPointF(p2.x() - scale(10), p2.y() + scale(5)));
     }
-    else if (fIsi == sIsi) {
+    else if (fIsi == sIsi || fIsi < sIsi) {
         p1.setY(origin.y() - 60);
         p1.setX(circleX(p1.y(), r, center.x(), center.y(), true));
         p2.setY(origin.y() - 60);
         p2.setX(circleX(p2.y(), r, center.x(), center.y(), false));
-        drawArrow(QPointF(p1.x() + 5, p1.y()), QPointF(p2.x() - 5, p2.y()));
+        drawArrow(QPointF(p1.x() + scale(10), p1.y()), QPointF(p2.x() - scale(10), p2.y()));
     }
     else {
         p1.setY(center.y() - r);
         p1.setX(center.x());
         p2.setY(origin.y() - 40);
         p2.setX(circleX(p2.y(), r, center.x(), center.y(), false));
-        drawArrow(QPointF(p1.x() + 5, p1.y() + 2), QPointF(p2.x() - 5, p2.y() - 2));
+        drawArrow(QPointF(p1.x() + scale(10), p1.y() + 5), QPointF(p2.x() - scale(10), p2.y() - scale(5)));
     }
-    drawPoint(QPointF(p1.x(), origin.y() - 1));
-    drawPoint(QPointF(p2.x(), origin.y() - 1));
-    setPen(QPen(QColor(Qt::blue), 1));
-    setBrush(QBrush(Qt::blue));
-    drawEllipse(p1, 2, 2);
-    drawEllipse(p2, 2, 2);
+    //画点
+    positionSymbol(fPos, p1, Qt::blue);
+    positionSymbol(sPos, p2, Qt::red);
+    drawText(QPoint(p1.x() - scale(7), p1.y() + scale(14)), positionCn(fPos));
+    drawText(QPoint(p2.x() - scale(7), p2.y() + scale(14)), positionCn(sPos));
+    // 评价
+    QString evaluate("回心血量增加后，");
+    if (fIsi < sIsi && sIsi / fIsi < 1.1) {
+        evaluate += QString("心肌力增加小于10%，容量平台期");
+    }
+    else {
+        evaluate += QString("泵力%1，搏排量%2").arg(compare(fIsi, sIsi), compare(fSv, sSv));
+    }
+    drawText(QRectF(QPointF(origin.x(), origin.y() + scale(10)), QSizeF(rect.width(), scale(10))),
+             Qt::AlignCenter, evaluate);
     setPen(QPen(QColor(Qt::black), 1));
     setBrush(Qt::NoBrush);
 }
@@ -996,8 +1004,8 @@ void ReportPainter::positionSymbol(int pos, QPoint point, QColor color)
 {
     setPen(QPen(color, 1));
     setBrush(color);
-    int offset = scale(3);
-    QRect rect(point.x() - offset, point.y() - offset, scale(6), scale(6));
+    int offset = scale(4);
+    QRect rect(point.x() - offset, point.y() - offset, scale(8), scale(8));
     if (1 == pos) {
         drawRect(rect);
     }
@@ -1017,15 +1025,7 @@ void ReportPainter::positionSymbol(int pos, QPoint point, QColor color)
 
 void ReportPainter::positionText(int pos, QPoint point, QColor color)
 {
-    if (1 == pos) {
-        drawText(point, "半卧:");
-    }
-    else if (2 == pos) {
-        drawText(point, "平躺:");
-    }
-    else if (3 == pos) {
-        drawText(point, "抬腿:");
-    }
+    drawText(point, positionCn(pos) + ":");
     positionSymbol(pos, QPoint(point.x() + scale(25), point.y() - scale(3)), color);
 }
 
