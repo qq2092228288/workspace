@@ -984,9 +984,9 @@ void ReportPainter::drawTrendChart(QRectF rect, Type type, QString stime, QStrin
     setBrush(Qt::black);
     for (int i = 0; i < vector.size(); ++i) {
         // x轴刻度
-        drawPoint(origin.x() + stepX * i, origin.y() - 1);
+        // drawPoint(origin.x() + stepX * i, origin.y() - 1);
         auto point = QPointF(origin.x() + stepX * i, origin.y() - stepY * (vector.at(i) - min));
-        drawEllipse(point, 1, 1);
+        // drawEllipse(point, 1, 1);
         points.append(point);
     }
     setBrush(Qt::NoBrush);

@@ -329,7 +329,7 @@ void EnterSystemWidget::signalsAndSlots()
     auto &instance = DataManagement::getInstance();
     connect(&instance, &DataManagement::clear, this, &EnterSystemWidget::clearUiSlot);
     connect(instance.getTebco(), &ZyTebco::data, this, &EnterSystemWidget::setData);
-    connect(&instance, &DataManagement::startCheck, &instance, &DataManagement::customCtrlTimer);
+    // connect(&instance, &DataManagement::startCheck, &instance, &DataManagement::customCtrlTimer);
     connect(&instance, &DataManagement::startCheck, this, &EnterSystemWidget::startDemoMode);
     // personal info
     connect(editInfoBtn, &QPushButton::clicked, infoDialog, &InfoEditDialog::exec);

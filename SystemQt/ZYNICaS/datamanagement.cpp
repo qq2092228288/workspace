@@ -571,24 +571,24 @@ void DataManagement::clearSlot()
     m_pTebco->clearSerial();
 }
 
-void DataManagement::customCtrlTimer(bool start)
-{
-    auto hrCtrl = m_pRegulator->getCustomCtrl(Type::HR);
-    auto svCtrl = m_pRegulator->getCustomCtrl(Type::SV);
-    auto isiCtrl = m_pRegulator->getCustomCtrl(Type::ISI);
-    if (hrCtrl == nullptr || svCtrl == nullptr || isiCtrl == nullptr)
-        return;
-    if (start) {
-        hrCtrl->startTimer(1);
-        svCtrl->startTimer(10);
-        isiCtrl->startTimer(100);
-    }
-    else {
-        hrCtrl->stopTimer();
-        svCtrl->stopTimer();
-        isiCtrl->stopTimer();
-    }
-}
+// void DataManagement::customCtrlTimer(bool start)
+// {
+//     auto hrCtrl = m_pRegulator->getCustomCtrl(Type::HR);
+//     auto svCtrl = m_pRegulator->getCustomCtrl(Type::SV);
+//     auto isiCtrl = m_pRegulator->getCustomCtrl(Type::ISI);
+//     if (hrCtrl == nullptr || svCtrl == nullptr || isiCtrl == nullptr)
+//         return;
+//     if (start) {
+//         hrCtrl->startTimer(1);
+//         svCtrl->startTimer(10);
+//         isiCtrl->startTimer(100);
+//     }
+//     else {
+//         hrCtrl->stopTimer();
+//         svCtrl->stopTimer();
+//         isiCtrl->stopTimer();
+//     }
+// }
 
 QString DataManagement::flag(CustomCtrl *customCtrl, bool second)
 {

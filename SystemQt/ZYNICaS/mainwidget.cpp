@@ -157,6 +157,9 @@ void MainWidget::enterBtnSlot()
                 enterSystemWidget->clearUiSlot();
             }
             connect(&DataManagement::getInstance(), &DataManagement::startCheck,
+                    DataManagement::getInstance().getTebco(), &ZyTebco::startWriteF,
+                    Qt::ConnectionType(Qt::AutoConnection|Qt::UniqueConnection));
+            connect(&DataManagement::getInstance(), &DataManagement::startCheck,
                     DataManagement::getInstance().getTebco(), &ZyTebco::startCheckSlot,
                     Qt::ConnectionType(Qt::AutoConnection|Qt::UniqueConnection));
             connect(enterSystemWidget, &EnterSystemWidget::createdReport, this, &MainWidget::createdReportSlot,
@@ -183,6 +186,8 @@ void MainWidget::demoBtnSlot()
         DataManagement::getInstance().clearSlot();
         enterSystemWidget->clearUiSlot();
     }
+    disconnect(&DataManagement::getInstance(), &DataManagement::startCheck,
+            DataManagement::getInstance().getTebco(), &ZyTebco::startWriteF);
     disconnect(enterSystemWidget, &EnterSystemWidget::createdReport, this, &MainWidget::createdReportSlot);
     this->close();
     enterSystemWidget->showMaximized();

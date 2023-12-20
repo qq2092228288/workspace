@@ -71,6 +71,7 @@ int main(int argc, char *argv[])
 
         MainWidget_PTR widget(new MainWidget);
         QObject::connect(client, &MqttClient::newVerion, widget.get(), &MainWidget::newVersion);
+        QObject::connect(widget.get(), &MainWidget::destroyed, ins.getTebco(), &ZyTebco::stopTimer);
 
         widget->showMaximized();
 

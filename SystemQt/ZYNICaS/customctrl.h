@@ -53,8 +53,8 @@ public:
     explicit CustomCtrl(Argument arg, QWidget *parent = nullptr);
     virtual ~CustomCtrl();
     // 数据波动
-    void startTimer(qreal accuracy);
-    void stopTimer();
+    // void startTimer(qreal accuracy);
+    // void stopTimer();
 //    void smoothTransitionTimer(bool isStart);
 protected:
     void mouseDoubleClickEvent(QMouseEvent *);
@@ -87,7 +87,7 @@ signals:
     // 当前类型，交换显示的类型
     void changeType(const Type &, const Type &);
 private:
-    QTimer *timer;
+    // QTimer *timer;
     SelectItemDialog *m_pDialog;
     QFrame *frame;
     QVBoxLayout *mainLayout;

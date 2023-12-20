@@ -11,10 +11,10 @@ CustomCtrl::CustomCtrl(Argument arg, QWidget *parent)
 
     m_pDialog = new SelectItemDialog(false);
 
-    timer = new QTimer(this);
+    // timer = new QTimer(this);
 //    oldAndNewValueTimer = new QTimer(this);
 
-    connect(timer, &QTimer::timeout,this,&CustomCtrl::timeoutSlot);
+    // connect(timer, &QTimer::timeout,this,&CustomCtrl::timeoutSlot);
 //    connect(oldAndNewValueTimer, &QTimer::timeout, this, &CustomCtrl::oldAndNewValueTimerSlot);
     connect(this, &CustomCtrl::currentValue, this, [=]() {
         auto rv = getRecordValue();
@@ -94,9 +94,9 @@ CustomCtrl::CustomCtrl(Argument arg, QWidget *parent)
 
 CustomCtrl::~CustomCtrl()
 {
-    if (timer->isActive()){
-        timer->stop();
-    }
+    // if (timer->isActive()){
+    //     timer->stop();
+    // }
 //    if (oldAndNewValueTimer->isActive()) {
 //        oldAndNewValueTimer->stop();
 //    }
@@ -105,20 +105,20 @@ CustomCtrl::~CustomCtrl()
 //    qDebug()<<aitems.dataName<<"~CustomCtrl()";
 }
 
-void CustomCtrl::startTimer(qreal accuracy)
-{
-    m_accuracy = accuracy;
-    if (!timer->isActive()) {
-        timer->start(2000);
-    }
-}
+// void CustomCtrl::startTimer(qreal accuracy)
+// {
+//     m_accuracy = accuracy;
+//     if (!timer->isActive()) {
+//         timer->start(2000);
+//     }
+// }
 
-void CustomCtrl::stopTimer()
-{
-    if (timer->isActive()) {
-        timer->stop();
-    }
-}
+// void CustomCtrl::stopTimer()
+// {
+//     if (timer->isActive()) {
+//         timer->stop();
+//     }
+// }
 
 //void CustomCtrl::smoothTransitionTimer(bool isStart)
 //{

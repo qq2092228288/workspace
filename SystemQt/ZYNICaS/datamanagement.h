@@ -117,7 +117,7 @@ public:
     QString reportResult(const QJsonObject &json);
 public slots:
     void clearSlot();
-    void customCtrlTimer(bool start);
+    // void customCtrlTimer(bool start);
 private:
     QString flag(CustomCtrl *customCtrl, bool second);
     QString tip(qreal min, qreal max, qreal value);

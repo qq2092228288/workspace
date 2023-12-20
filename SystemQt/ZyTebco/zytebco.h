@@ -13,8 +13,6 @@
 #include <QQueue>
 #include <QMutexLocker>
 
-//#include "qextserialport.h"
-
 
 #if defined(ZYTEBCO_LIBRARY)
 #  define ZYTEBCO_EXPORT Q_DECL_EXPORT
@@ -26,7 +24,7 @@
 class VQueue : public QQueue<short>
 {
 public:
-    explicit VQueue(int maxcount = 5) : maxcount(maxcount) {}
+    explicit VQueue(int maxcount = 80) : maxcount(maxcount) {}
     void enqueue(const short &d)
     {
         if (length() >= maxcount) QQueue::dequeue();
@@ -54,13 +52,13 @@ class ZYTEBCO_EXPORT ZyTebco : public QObject
 public:
     explicit ZyTebco(QObject *parent = nullptr);
     virtual ~ZyTebco();
-//    QSerialPort *getSerial();
 public slots:
+    void stopTimer();
+    void startWriteF();
     void openSerial(const QString &portName);
     void startCheckSlot(bool check);
     void clearSerial();
     bool isWorking();
-//    void hotPlug(bool insert);  // 热插拔
     void startDemoMode(bool start);
     void clearMap();
 signals:
@@ -71,6 +69,7 @@ signals:
     void waveform(QByteArray);// 波形数据
     void openFailed();
 private slots:
+    void writeF();
     void handleSerialError(QSerialPort::SerialPortError error);
     void reConnect();
     void recvInfoSlot();
@@ -80,11 +79,11 @@ private:
 private:
     QMutex mutex;
     QSerialPort *m_pSerial;
+    QTimer *m_pWriteTimer;
     QTimer *m_pTimer;
     bool working;
     QTimer *m_pDemoDataTimer;
     QMap<uchar, VQueue> map;
-//    QextSerialPort *m_pExtSerial;
 };
 
 #endif // ZYTEBCO_H
