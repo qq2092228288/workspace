@@ -1,4 +1,4 @@
-QT       += core gui widgets printsupport sql network
+QT       += core gui widgets printsupport sql network xlsx
 
 CONFIG += c++17
 # app icon
@@ -10,10 +10,13 @@ RC_ICONS = $$PWD/images/app.ico
 
 SOURCES += \
         datanfilterwidgetns.cpp \
+        datatablemodel.cpp \
+        datawidget.cpp \
         logindialog.cpp \
         main.cpp \
         mainwidget.cpp \
         # mqttclient.cpp \
+        nicasdatafilterwidget.cpp \
         printpreviewdialog.cpp \
         reportdialog.cpp \
         systemconfigdialog.cpp \
@@ -22,15 +25,18 @@ SOURCES += \
 
 HEADERS += \
     datanfilterwidgetns.h \
+    datatablemodel.h \
+    datawidget.h \
     logindialog.h \
     mainwidget.h \
     mainwidgetui.h \
     # mqttclient.h \
+    nicasdatafilterwidget.h \
     printpreviewdialog.h \
     reportdialog.h \
     systemconfigdialog.h \
     tcpclientsocket.h \
-    ui/datanwidgetui.h \
+    ui/datawidgetui.h \
     ui/logindialogui.h \
     ui/mainwidgetui.h \
     ui/reportdialogui.h \
@@ -45,9 +51,9 @@ include(../../commonFiles/nicas/report.pri)
 include(../../commonFiles/zywidgets/zywidgets.pri)
 include(../../commonFiles/telegramprofile/telegramprofile.pri)
 
-win32:CONFIG(release, debug|release): LIBS += -L$$[QT_INSTALL_LIBS] -lQt5Mqtt
-else:win32:CONFIG(debug, debug|release): LIBS += -L$$[QT_INSTALL_LIBS] -lQt5Mqttd
-else:unix: LIBS += -L$$[QT_INSTALL_LIBS] -lQt5Mqtt
+win32:CONFIG(release, debug|release): LIBS += -L$$[QT_INSTALL_LIBS] -lQt5Xlsx
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$[QT_INSTALL_LIBS] -lQt5Xlsxd
+else:unix: LIBS += -L$$[QT_INSTALL_LIBS] -lQt5Xlsx
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

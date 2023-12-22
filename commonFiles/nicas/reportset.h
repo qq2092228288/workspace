@@ -71,6 +71,19 @@ public:
         }
         return QJsonObject();
     }
+    static QMap<int, QJsonObject> map()
+    {
+        QMap<int, QJsonObject> temp;
+        auto arr = array(Check_Mode::IntensiveCareUnit);
+        foreach (auto group, arr) {
+            auto parameters = group.toObject().value(ReportDataName::ekey(ReportDataName::parameters)).toArray();
+            foreach (auto value, parameters) {
+                auto parameter = value.toObject();
+                temp.insert(parameter.value(ReportDataName::ekey(ReportDataName::type)).toInt(), parameter);
+            }
+        }
+        return temp;
+    }
 };
 
 #endif // REPORTSET_H

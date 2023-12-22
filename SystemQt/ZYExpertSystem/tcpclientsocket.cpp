@@ -1,9 +1,4 @@
 #include "tcpclientsocket.h"
-
-#include <QCoreApplication>
-#include <QJsonDocument>
-#include <QJsonObject>
-#include <QJsonArray>
 #include "singleton.h"
 #include "databasens.h"
 

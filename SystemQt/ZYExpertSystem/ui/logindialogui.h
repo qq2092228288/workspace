@@ -29,7 +29,7 @@ public:
     {
         if (Dialog->objectName().isEmpty())
             Dialog->setObjectName(QString::fromUtf8("Dialog"));
-        Dialog->setFixedSize(420, 330);
+        Dialog->resize(420, 330);
         Dialog->setWindowFlag(Qt::WindowContextHelpButtonHint, false);
 
         QFile qssFile(":/qss/logindialogui.qss");
@@ -79,8 +79,6 @@ public:
         loginButton->setFixedWidth(250);
 
         mainLayout->addWidget(loginButton, 0, Qt::AlignCenter);
-
-        mainLayout->addStretch();
 
         retranslateUi(Dialog);
     }

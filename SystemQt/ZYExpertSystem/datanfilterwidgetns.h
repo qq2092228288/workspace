@@ -18,7 +18,7 @@ class BaseFilter : public QWidget
 {
     Q_OBJECT
 public:
-    explicit BaseFilter(QWidget *parent = nullptr);
+    explicit BaseFilter(bool check, QWidget *parent = nullptr);
     enum FilterType
     {
         All     = 0,
@@ -26,9 +26,12 @@ public:
     };
     Q_ENUM(FilterType)
 public:
-    void setMain(const QString &text, const QString &tip = nullptr);
+    void setMain(const QString &text, const QString &tip = nullptr, const bool check = true);
     bool isChecked() const;
     bool isAll() const;
+    QString text() const;
+public slots:
+    void init();
 signals:
     void checked(bool);
 protected:
@@ -37,6 +40,7 @@ protected:
 protected slots:
     virtual void radioButtonClicked(int id) = 0;
 private:
+    const bool m_check;
     QHBoxLayout *mainLayout;
     QHBoxLayout *aLayout;
     QHBoxLayout *pLayout;
@@ -46,28 +50,48 @@ private:
     QRadioButton *partButton;
 };
 
+class PositionFilter : public BaseFilter
+{
+    Q_OBJECT
+public:
+    explicit PositionFilter(QWidget *parent = nullptr);
+private slots:
+    virtual void radioButtonClicked(int id) override;
+private:
+    QLabel *label;
+};
+
 class DataFilter : public BaseFilter
 {
     Q_OBJECT
 public:
-    explicit DataFilter(const QString &text, const QString &unit = nullptr, QWidget *parent = nullptr);
+    explicit DataFilter(QWidget *parent = nullptr);
+    double first() const;
+    double second() const;
+    void setUnit(const QString &unit);
+    QString unit() const;
+public slots:
+    void init();
 protected:
     void setRegExp(const QRegExp &exp);
+    void selectAll(bool all);
+    void setData(const double &f, const double &s);
 private slots:
     virtual void radioButtonClicked(int id) override;
-private:
-    void selectAll(bool all);
 private:
     QLineEdit *firstLineEdit;
     QLabel *label;
     QLineEdit *secondLineEdit;
+    QLabel *unitLabel;
 };
 
-class StrFilter : public BaseFilter
+class GeneralFilter : public BaseFilter
 {
     Q_OBJECT
 public:
-    explicit StrFilter(const QString &text, QWidget *parent = nullptr);
+    explicit GeneralFilter(bool check, QWidget *parent = nullptr);
+public slots:
+    void init();
 private slots:
     virtual void radioButtonClicked(int id) override;
 private:
@@ -79,6 +103,8 @@ class SexFilter : public BaseFilter
     Q_OBJECT
 public:
     explicit SexFilter(QWidget *parent = nullptr);
+public slots:
+    void init();
 private slots:
     virtual void radioButtonClicked(int id) override;
 private:
@@ -94,13 +120,18 @@ class TimeFilter : public BaseFilter
     Q_OBJECT
 public:
     explicit TimeFilter(QWidget *parent = nullptr);
+public slots:
+    void init();
 private slots:
     virtual void radioButtonClicked(int id) override;
+    void scopeTime(qint64 start, qint64 end);
 private:
     ScopeCalendarDialog *dialog;
+    qint64 m_start;
+    qint64 m_end;
 };
 
-class NicasFilter : public BaseFilter
+class NicasFilter : public DataFilter
 {
     Q_OBJECT
 public:
@@ -127,6 +158,8 @@ public:
     double max() const;
     int digit() const;
     int type() const;
+public slots:
+    void init();
 private slots:
     virtual void radioButtonClicked(int id) override;
     void checkBoxClicked(int id);
@@ -134,12 +167,9 @@ private:
     void selectAll(bool all);
 private:
     QButtonGroup *group;
-    QCheckBox *lowCheckBox;
+    QCheckBox *belowCheckBox;
     QCheckBox *normalCheckBox;
-    QCheckBox *highCheckBox;
-    QLineEdit *firstLineEdit;
-    QLabel *label;
-    QLineEdit *secondLineEdit;
+    QCheckBox *aboveCheckBox;
 
     QString m_cn;
     QString m_en;
@@ -149,7 +179,6 @@ private:
     double m_digit;
     int m_type;
 };
-
 
 }
 

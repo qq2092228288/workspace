@@ -7,9 +7,6 @@
 #include <QGridLayout>
 #include <QLabel>
 #include <QFile>
-#include "datanfilterwidgetns.h"
-#include "reportset.h"
-#include "datatype.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -22,7 +19,7 @@ public:
     QLabel *titleLabel;
     QLabel *infoLabel;
     QPushButton *showReportButton;
-    QPushButton *dataAnalysisButton;
+    QPushButton *dataFilteringButton;
     QPushButton *systemConfigButton;
     QPushButton *exitButton;
     void setupUi(QWidget *Widget)
@@ -65,10 +62,10 @@ public:
 
         mainLayout->addWidget(showReportButton, 0, Qt::AlignCenter);
 
-        dataAnalysisButton = new QPushButton(Widget);
-        dataAnalysisButton->setObjectName(QString::fromUtf8("dataAnalysisButton"));
+        dataFilteringButton = new QPushButton(Widget);
+        dataFilteringButton->setObjectName(QString::fromUtf8("dataFilteringButton"));
 
-        mainLayout->addWidget(dataAnalysisButton, 0, Qt::AlignCenter);
+        mainLayout->addWidget(dataFilteringButton, 0, Qt::AlignCenter);
 
         systemConfigButton = new QPushButton(Widget);
         systemConfigButton->setObjectName(QString::fromUtf8("systemConfigButton"));
@@ -79,22 +76,6 @@ public:
         exitButton->setObjectName(QString::fromUtf8("exitButton"));
 
         mainLayout->addWidget(exitButton, 0, Qt::AlignCenter);
-
-        auto nicasFilter = new DatanFilterWidgetNs::NicasFilter(ReportParameters::find(Type::EPCI), Widget);
-        nicasFilter->setObjectName(QString::fromUtf8("nicasFilter"));
-        mainLayout->addWidget(nicasFilter, 0, Qt::AlignLeft);
-        auto dataFilter = new DatanFilterWidgetNs::DataFilter("身高", "cm", Widget);
-        dataFilter->setObjectName(QString::fromUtf8("dataFilter"));
-        mainLayout->addWidget(dataFilter, 0, Qt::AlignLeft);
-        auto strFilter = new DatanFilterWidgetNs::StrFilter("医院", Widget);
-        strFilter->setObjectName(QString::fromUtf8("strFilter"));
-        mainLayout->addWidget(strFilter, 0, Qt::AlignLeft);
-        auto sexFilter = new DatanFilterWidgetNs::SexFilter(Widget);
-        sexFilter->setObjectName(QString::fromUtf8("sexFilter"));
-        mainLayout->addWidget(sexFilter, 0, Qt::AlignLeft);
-        auto timeFilter = new DatanFilterWidgetNs::TimeFilter(Widget);
-        timeFilter->setObjectName(QString::fromUtf8("timeFilter"));
-        mainLayout->addWidget(timeFilter, 0, Qt::AlignLeft);
 
         mainLayout->addStretch();
 
@@ -118,7 +99,7 @@ public:
                      QCoreApplication::organizationDomain());
         infoLabel->setText(str);
         showReportButton->setText(QString::fromUtf8("查看报告"));
-        dataAnalysisButton->setText(QString::fromUtf8("数据分析"));
+        dataFilteringButton->setText(QString::fromUtf8("数据筛选"));
         systemConfigButton->setText(QString::fromUtf8("系统配置"));
         exitButton->setText(QString::fromUtf8("退出系统"));
     }

@@ -9,6 +9,7 @@ namespace Ui { class MainWidget; }
 QT_BEGIN_NAMESPACE
 
 class ReportDialog;
+class DataWidget;
 class SystemConfigDialog;
 
 class MainWidget : public QWidget
@@ -25,6 +26,7 @@ signals:
 private:
     Ui::MainWidget *ui;
     ReportDialog *reportDialog;
+    DataWidget *dataWidget;
     SystemConfigDialog *configDialog;
 };
 typedef QScopedPointer<MainWidget> MainWidget_PTR;

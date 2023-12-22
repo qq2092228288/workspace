@@ -5,8 +5,9 @@
 
 namespace DatanFilterWidgetNs {
 
-BaseFilter::BaseFilter(QWidget *parent)
+BaseFilter::BaseFilter(bool check, QWidget *parent)
     : QWidget{parent}
+    , m_check{check}
 {
     QFile qssFile(":/qss/datanwidgetui.qss");
     if (qssFile.open(QIODevice::ReadOnly))
@@ -26,23 +27,24 @@ BaseFilter::BaseFilter(QWidget *parent)
     mainLayout->addWidget(mainCheckBox);
     mainLayout->addLayout(aLayout);
     mainLayout->addLayout(pLayout);
+    mainLayout->addStretch();
 
     radioGroup->addButton(allButton, FilterType::All);
     radioGroup->addButton(partButton, FilterType::Part);
 
-    mainCheckBox->setFixedWidth(50);
-
-    mainCheckBox->setChecked(true);
-    allButton->setChecked(true);
+    mainCheckBox->setFixedWidth(70);
 
     connect(radioGroup, &QButtonGroup::idClicked, this, &BaseFilter::radioButtonClicked);
     connect(mainCheckBox, &QCheckBox::stateChanged, this, &BaseFilter::checked);
+
+    init();
 }
 
-void BaseFilter::setMain(const QString &text, const QString &tip)
+void BaseFilter::setMain(const QString &text, const QString &tip, const bool check)
 {
     mainCheckBox->setText(text);
     mainCheckBox->setToolTip(tip);
+    mainCheckBox->setChecked(check);
 }
 
 bool BaseFilter::isChecked() const
@@ -55,6 +57,17 @@ bool BaseFilter::isAll() const
     return allButton->isChecked();
 }
 
+QString BaseFilter::text() const
+{
+    return mainCheckBox->text();
+}
+
+void BaseFilter::init()
+{
+    mainCheckBox->setChecked(m_check);
+    allButton->setChecked(true);
+}
+
 void BaseFilter::allLayoutAdd(QLayout *layout)
 {
     aLayout->addLayout(layout);
@@ -65,28 +78,72 @@ void BaseFilter::partLayoutAdd(QLayout *layout)
     pLayout->addLayout(layout);
 }
 
-DataFilter::DataFilter(const QString &text, const QString &unit, QWidget *parent)
-    : BaseFilter{parent}
+PositionFilter::PositionFilter(QWidget *parent)
+    : BaseFilter{true, parent}
+{
+    auto lLayout = new QHBoxLayout;
+    label = new QLabel(QString::fromUtf8("仅第一体位"), this);
+
+    lLayout->addWidget(label);
+    partLayoutAdd(lLayout);
+
+    setMain(QString::fromUtf8("体位"));
+}
+
+void PositionFilter::radioButtonClicked(int id)
+{
+    Q_UNUSED(id)
+}
+
+DataFilter::DataFilter(QWidget *parent)
+    : BaseFilter{true, parent}
 {
     auto mmLayout = new QHBoxLayout;
     firstLineEdit = new QLineEdit(this);
     label = new QLabel("-", this);
     secondLineEdit = new QLineEdit(this);
+    unitLabel = new QLabel(this);
 
     mmLayout->addWidget(firstLineEdit);
     mmLayout->addWidget(label);
     mmLayout->addWidget(secondLineEdit);
+    mmLayout->addWidget(unitLabel);
     partLayoutAdd(mmLayout);
 
     firstLineEdit->setFixedWidth(60);
     secondLineEdit->setFixedWidth(60);
 
-    auto validator = new QRegExpValidator(QRegExp("^[1-9][0-9]{0,1}|[1,2][0-9]{2}|300$"), this);
-    firstLineEdit->setValidator(validator);
-    secondLineEdit->setValidator(validator);
+    QRegExp exp("^[1-9][0-9]{0,1}|[1,2][0-9]{2}|300$");
+    setRegExp(exp);
 
-    setMain(text, unit);
+    init();
+}
 
+double DataFilter::first() const
+{
+    return firstLineEdit->text().toDouble();
+}
+
+double DataFilter::second() const
+{
+    return secondLineEdit->text().toDouble();
+}
+
+void DataFilter::setUnit(const QString &unit)
+{
+    unitLabel->setText(unit);
+}
+
+QString DataFilter::unit() const
+{
+    return unitLabel->text();
+}
+
+void DataFilter::init()
+{
+    firstLineEdit->clear();
+    secondLineEdit->clear();
+    BaseFilter::init();
     selectAll(true);
 }
 
@@ -97,19 +154,25 @@ void DataFilter::setRegExp(const QRegExp &exp)
     secondLineEdit->setValidator(validator);
 }
 
-void DataFilter::radioButtonClicked(int id)
-{
-    selectAll(FilterType::All == id);
-}
-
 void DataFilter::selectAll(bool all)
 {
     firstLineEdit->setEnabled(!all);
     secondLineEdit->setEnabled(!all);
 }
 
-StrFilter::StrFilter(const QString &text, QWidget *parent)
-    : BaseFilter{parent}
+void DataFilter::setData(const double &f, const double &s)
+{
+    firstLineEdit->setText(QString::number(f));
+    secondLineEdit->setText(QString::number(s));
+}
+
+void DataFilter::radioButtonClicked(int id)
+{
+    selectAll(FilterType::All == id);
+}
+
+GeneralFilter::GeneralFilter(bool check, QWidget *parent)
+    : BaseFilter{check, parent}
 {
     auto lLayout = new QHBoxLayout;
     lineEdit = new QLineEdit(this);
@@ -119,17 +182,23 @@ StrFilter::StrFilter(const QString &text, QWidget *parent)
 
     lineEdit->setFixedWidth(138);
 
-    setMain(text);
-    lineEdit->setEnabled(false);
+    init();
 }
 
-void StrFilter::radioButtonClicked(int id)
+void GeneralFilter::init()
+{
+    BaseFilter::init();
+    lineEdit->setEnabled(false);
+    lineEdit->clear();
+}
+
+void GeneralFilter::radioButtonClicked(int id)
 {
     lineEdit->setEnabled(FilterType::Part == id);
 }
 
 SexFilter::SexFilter(QWidget *parent)
-    : BaseFilter{parent}
+    : BaseFilter{true, parent}
 {
     auto gLayout = new QHBoxLayout;
     genderGroup = new QButtonGroup(this);
@@ -144,6 +213,13 @@ SexFilter::SexFilter(QWidget *parent)
     genderGroup->addButton(femaleButton, 1);
 
     setMain(QString::fromUtf8("性别"));
+
+    init();
+}
+
+void SexFilter::init()
+{
+    BaseFilter::init();
     maleButton->setChecked(true);
     selectAll(true);
 }
@@ -160,10 +236,20 @@ void SexFilter::selectAll(bool all)
 }
 
 TimeFilter::TimeFilter(QWidget *parent)
-    : BaseFilter{parent}
+    : BaseFilter{true, parent}
 {
     dialog = new ScopeCalendarDialog(this);
     setMain(QString::fromUtf8("时间"));
+    connect(dialog, &ScopeCalendarDialog::scopeTime, this, &TimeFilter::scopeTime);
+
+    init();
+}
+
+void TimeFilter::init()
+{
+    BaseFilter::init();
+    m_start = 0;
+    m_end = 0;
 }
 
 void TimeFilter::radioButtonClicked(int id)
@@ -173,8 +259,14 @@ void TimeFilter::radioButtonClicked(int id)
     }
 }
 
+void TimeFilter::scopeTime(qint64 start, qint64 end)
+{
+    m_start = start;
+    m_end = end;
+}
+
 NicasFilter::NicasFilter(const QJsonObject &object, QWidget *parent)
-    : BaseFilter{parent}
+    : DataFilter{parent}
 {
     m_cn = object.value(ReportDataName::ekey(ReportDataName::cn)).toString();
     m_en = object.value(ReportDataName::ekey(ReportDataName::en)).toString();
@@ -186,57 +278,36 @@ NicasFilter::NicasFilter(const QJsonObject &object, QWidget *parent)
 
     group = new QButtonGroup(this);
     auto lnhLayout = new QHBoxLayout;
-    lowCheckBox = new QCheckBox("L", this);
-    normalCheckBox = new QCheckBox("N", this);
-    highCheckBox = new QCheckBox("H", this);
+    belowCheckBox = new QCheckBox("低于", this);
+    normalCheckBox = new QCheckBox("正常", this);
+    aboveCheckBox = new QCheckBox("高于", this);
 
-    lnhLayout->addWidget(lowCheckBox);
+    lnhLayout->addWidget(belowCheckBox);
     lnhLayout->addWidget(normalCheckBox);
-    lnhLayout->addWidget(highCheckBox);
+    lnhLayout->addWidget(aboveCheckBox);
     allLayoutAdd(lnhLayout);
 
-    auto mmLayout = new QHBoxLayout;
-    firstLineEdit = new QLineEdit(this);
-    label = new QLabel("-", this);
-    secondLineEdit = new QLineEdit(this);
-
-    mmLayout->addWidget(firstLineEdit);
-    mmLayout->addWidget(label);
-    mmLayout->addWidget(secondLineEdit);
-    partLayoutAdd(mmLayout);
-
     group->setExclusive(false);
-    group->addButton(lowCheckBox, ScopeType::Low);
+    group->addButton(belowCheckBox, ScopeType::Low);
     group->addButton(normalCheckBox, ScopeType::Normal);
-    group->addButton(highCheckBox, ScopeType::High);
+    group->addButton(aboveCheckBox, ScopeType::High);
 
-    firstLineEdit->setFixedWidth(60);
-    secondLineEdit->setFixedWidth(60);
+    setRegExp(QRegExp("^(-?\\d{0,5})(\\.\\d{0,3})?$"));
 
-    auto validator = new QRegExpValidator(QRegExp("^(-?\\d{0,5})(\\.\\d{0,3})?$"), this);
-    firstLineEdit->setValidator(validator);
-    secondLineEdit->setValidator(validator);
-
-    lowCheckBox->setChecked(true);
-    normalCheckBox->setChecked(true);
-    highCheckBox->setChecked(true);
-
-    auto tip = QString("%1 (%2)").arg(m_cn, m_unit);
-    setMain(m_en, tip);
-    firstLineEdit->setText(QString::number(m_min));
-    secondLineEdit->setText(QString::number(m_max));
-
-    selectAll(true);
+    setMain(m_en, m_cn);
+    setUnit(m_unit);
 
     connect(group, &QButtonGroup::idClicked, this, &NicasFilter::checkBoxClicked);
+
+    init();
 }
 
 NicasFilter::ScopeType NicasFilter::stype() const
 {
     if (isAll()) {
-        return ScopeType(static_cast<char>(lowCheckBox->isChecked()) |
+        return ScopeType(static_cast<char>(belowCheckBox->isChecked()) |
                          static_cast<char>(normalCheckBox->isChecked()) << 1 |
-                         static_cast<char>(highCheckBox->isChecked()) << 2);
+                         static_cast<char>(aboveCheckBox->isChecked()) << 2);
     }
     return ScopeType::Scope;
 }
@@ -276,6 +347,16 @@ int NicasFilter::type() const
     return m_type;
 }
 
+void NicasFilter::init()
+{
+    DataFilter::init();
+    selectAll(true);
+    setData(m_min, m_max);
+    belowCheckBox->setChecked(true);
+    normalCheckBox->setChecked(true);
+    aboveCheckBox->setChecked(true);
+}
+
 void NicasFilter::radioButtonClicked(int id)
 {
     selectAll(FilterType::All == id);
@@ -283,7 +364,7 @@ void NicasFilter::radioButtonClicked(int id)
 
 void NicasFilter::checkBoxClicked(int id)
 {
-    if (!(lowCheckBox->isChecked() || normalCheckBox->isChecked() || highCheckBox->isChecked())) {
+    if (!(belowCheckBox->isChecked() || normalCheckBox->isChecked() || aboveCheckBox->isChecked())) {
         QMessageBox::warning(this, tr("提示"), QString::fromUtf8("至少选中一项！"));
         group->button(id)->setChecked(true);
     }
@@ -291,11 +372,10 @@ void NicasFilter::checkBoxClicked(int id)
 
 void NicasFilter::selectAll(bool all)
 {
-    lowCheckBox->setEnabled(all);
+    DataFilter::selectAll(all);
+    belowCheckBox->setEnabled(all);
     normalCheckBox->setEnabled(all);
-    highCheckBox->setEnabled(all);
-    firstLineEdit->setEnabled(!all);
-    secondLineEdit->setEnabled(!all);
+    aboveCheckBox->setEnabled(all);
 }
 
 }

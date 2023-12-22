@@ -24,6 +24,8 @@ public:
                                 QPrinter *printer, QWidget *parent = nullptr);
     static void initPrinter(QPrinter *printer);
     static ReportStruct reportSet(const ReportConfig &config, const QJsonObject &data);
+protected:
+    bool event(QEvent *e);
 private slots:
     void paintRequestedSlot(QPrinter *printer);
 private:

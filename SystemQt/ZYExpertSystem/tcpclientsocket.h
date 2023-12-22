@@ -3,7 +3,12 @@
 
 #include <QObject>
 #include <QTcpSocket>
+#include <QCoreApplication>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QJsonArray>
 #include <QSqlDatabase>
+#include <QSqlQuery>
 #include "telegramprofile.h"
 
 class TcpClientSocket : public QTcpSocket

@@ -16,8 +16,7 @@ int main(int argc, char *argv[])
         QCoreApplication::setApplicationName(QString::fromUtf8("泽耀专家系统"));
         QCoreApplication::setOrganizationName(QString::fromUtf8("广东泽耀医疗技术有限公司"));
         QCoreApplication::setOrganizationDomain(QString::fromUtf8("www.zeyaotebco.com"));
-        QCoreApplication::setApplicationVersion(QString::fromUtf8("2.0.0.%1")
-                                                    .arg(QDateTime::currentDateTime().toString("MMdd")));
+        QCoreApplication::setApplicationVersion(QString::fromUtf8("2.0.0.1220"));
 
         LoginDialog *dialog = new LoginDialog;
 
