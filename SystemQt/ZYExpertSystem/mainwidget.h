@@ -18,8 +18,6 @@ class MainWidget : public QWidget
 public:
     explicit MainWidget(QWidget *parent = nullptr);
     virtual ~MainWidget();
-public slots:
-    void requestReports();
 private slots:
     void showReportButtonClicked();
 signals:

@@ -26,15 +26,19 @@ public:
     };
     Q_ENUM(FilterType)
 public:
-    void setMain(const QString &text, const QString &tip = nullptr, const bool check = true);
+    void setMain(const QString &text, const QString &tip = nullptr);
     bool isChecked() const;
     bool isAll() const;
     QString text() const;
 public slots:
     void init();
+    void hideFilterCriteria();
+    void showFilterCriteria();
 signals:
     void checked(bool);
 protected:
+    void hideLayout(QLayout *layout);
+    void showLayout(QLayout *layout);
     void allLayoutAdd(QLayout *layout);
     void partLayoutAdd(QLayout *layout);
 protected slots:

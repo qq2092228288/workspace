@@ -21,9 +21,6 @@ class SystemConfigDialogUi : public QDialog
 {
 public:
     QGridLayout *mainLayout;
-    QButtonGroup *getReportButtonGroup;
-    QRadioButton *latestReportButton;
-    QRadioButton *allReportButton;
 
     QLabel *trendChartTitleLabel;
     QLineEdit *trendChartTitleLineEdit;
@@ -50,21 +47,6 @@ public:
 
         mainLayout = new QGridLayout(Dialog);
         mainLayout->setObjectName(QString::fromUtf8("mainLayout"));
-
-        getReportButtonGroup = new QButtonGroup(Dialog);
-        getReportButtonGroup->setObjectName(QString::fromUtf8("getReportButtonGroup"));
-
-        latestReportButton = new QRadioButton(Dialog);
-        latestReportButton->setObjectName(QString::fromUtf8("latestReportButton"));
-        getReportButtonGroup->addButton(latestReportButton, 0);
-
-        mainLayout->addWidget(latestReportButton, 0, 0);
-
-        allReportButton = new QRadioButton(Dialog);
-        allReportButton->setObjectName(QString::fromUtf8("allReportButton"));
-        getReportButtonGroup->addButton(allReportButton, 1);
-
-        mainLayout->addWidget(allReportButton, 0, 1);
 
         QFrame *hline1 = new QFrame(Dialog);
         hline1->setObjectName(QString::fromUtf8("hline1"));
@@ -146,10 +128,6 @@ public:
     void retranslateUi(QDialog *Dialog)
     {
         Dialog->setWindowTitle(QCoreApplication::applicationName() + QString::fromUtf8(" - 系统配置"));
-        latestReportButton->setText(QString::fromUtf8("获取最新"));
-        latestReportButton->setToolTip(QString::fromStdString("登录后获取24小时内的报告（快）"));
-        allReportButton->setText(QString::fromUtf8("获取全部"));
-        allReportButton->setToolTip(QString::fromStdString("登录后获取所有报告（慢）"));
         trendChartTitleLabel->setText(QString::fromUtf8("趋势图页标题:"));
         samePageCheckBox->setText(QString::fromUtf8("双体位同页"));
         samePageCheckBox->setToolTip(QString::fromStdString("若勾选，且为双体位，则检测数据在同一页报告中体现"));

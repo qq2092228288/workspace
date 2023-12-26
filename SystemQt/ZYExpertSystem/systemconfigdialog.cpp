@@ -2,18 +2,25 @@
 #include "ui/systemconfigdialogui.h"
 #include <QFile>
 #include <QFileInfo>
+#include <QDir>
+#include <QStandardPaths>
 #include <QTextStream>
 #include <QTextCodec>
 #include <QDebug>
 
 SystemConfigDialog::SystemConfigDialog(QWidget *parent)
-    : QDialog{parent},
-      ui{new Ui::SystemConfigDialog},
-      m_fileName{QCoreApplication::applicationDirPath() + "/reportset.ini"}
+    : QDialog{parent}
+    , ui{new Ui::SystemConfigDialog}
 {
+    auto path = QStandardPaths::standardLocations(QStandardPaths::AppConfigLocation).at(0);
+    if (!QFileInfo::exists(path)) {
+        QDir dir(path);
+        dir.mkpath(path);
+    }
+    m_fileName = path + "/reportset.ini";
+
     ui->setupUi(this);
 
-    ui->getReportButtonGroup->button(0)->setChecked(true);
     ui->samePageCheckBox->setChecked(true);
     ui->modeButtonGroup->button(0)->setChecked(true);
 
@@ -23,7 +30,6 @@ SystemConfigDialog::SystemConfigDialog(QWidget *parent)
         file.open(QFile::WriteOnly);
         QTextStream in(&file);
         in.setCodec(QTextCodec::codecForName("utf-8"));
-        in<<QString("latest=\"0\"\n");
         in<<QString("samepage=\"1\"\n");
         in<<QString("trendcharttitle=\"心血流图监测报告\"\n");
         in<<QString("mode=\"0\"\n");
@@ -39,16 +45,7 @@ SystemConfigDialog::SystemConfigDialog(QWidget *parent)
             if (strLine.indexOf(nameExp) >= 0 && strLine.indexOf(valueExp) >= 0) {
                 QString name = nameExp.cap(1);
                 QString value = valueExp.cap(1);
-                if (name == "latest") {
-                    auto btn = ui->getReportButtonGroup->button(value.toInt());
-                    if (nullptr != btn) {
-                        btn->setChecked(true);
-                    }
-                    else {
-                        ui->getReportButtonGroup->button(0)->setChecked(true);
-                    }
-                }
-                else if (name == "samepage") {
+                if (name == "samepage") {
                     ui->samePageCheckBox->setChecked(value.toInt());
                 }
                 else if (name == "trendcharttitle") {
@@ -82,18 +79,12 @@ ReportConfig SystemConfigDialog::config()
                         ui->trendChartTitleLineEdit->text());
 }
 
-bool SystemConfigDialog::getLatest() const
-{
-    return ui->latestReportButton->isChecked();
-}
-
 void SystemConfigDialog::confirmButtonClicked()
 {
     QFile file(m_fileName);
     if(file.open(QFile::WriteOnly)){
         QTextStream in(&file);
         in.setCodec(QTextCodec::codecForName("utf-8"));
-        in<<QString("latest=\"%1\"\n").arg(ui->getReportButtonGroup->checkedId());
         in<<QString("samepage=\"%1\"\n").arg(ui->samePageCheckBox->isChecked());
         in<<QString("trendcharttitle=\"%1\"\n").arg(ui->trendChartTitleLineEdit->text());
         in<<QString("mode=\"%1\"\n").arg(ui->modeButtonGroup->checkedId());

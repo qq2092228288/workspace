@@ -1,6 +1,6 @@
 #Dialog {
     background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:0, y2:1,
-    stop:0 #00BBFF, stop:0.32 #FFFFFF, stop:0.504 #00FFFF, stop:0.505 #FFFFFF, stop:1 #FFFFFF);
+    stop:0 #00BBFF, stop:0.32 #FFFFFF, stop:0.474 #00FFFF, stop:0.475 #FFFFFF, stop:1 #FFFFFF);
 }
 QPushButton {
     background-color: #ffffff;
@@ -44,5 +44,9 @@ QLabel {
 }
 
 QCheckBox {
+    font-family: 'Microsoft YaHei';
+}
+
+QRadioButton {
     font-family: 'Microsoft YaHei';
 }

@@ -4,6 +4,8 @@
 #include <QTimer>
 #include <QFile>
 #include <QFileInfo>
+#include <QDir>
+#include <QStandardPaths>
 #include <QTextStream>
 #include <QTextCodec>
 #include "updateappdialog.h"
@@ -11,12 +13,19 @@
 #include "tcpclientsocket.h"
 
 LoginDialog::LoginDialog(QWidget *parent)
-    : QDialog{parent},
-      ui{new Ui::LoginDialog},
-      m_fileName{QCoreApplication::applicationDirPath() + "/userinfo.ini"}
+    : QDialog{parent}
+    , ui{new Ui::LoginDialog}
 {
+    auto path = QStandardPaths::standardLocations(QStandardPaths::AppDataLocation).at(0);
+    if (!QFileInfo::exists(path)) {
+        QDir dir(path);
+        dir.mkpath(path);
+    }
+    m_fileName = path + "/userinfo.ini";
+
     ui->setupUi(this);
     ui->loginButton->setEnabled(false);
+    ui->latestReportButton->setChecked(true);
     readInfo();
     if (!ui->usernameLineEdit->text().isEmpty()) {
         ui->rememberPasswordCheckBox->setChecked(true);
@@ -80,6 +89,12 @@ void LoginDialog::loginStatus(const QJsonObject &object)
         if (!ui->rememberPasswordCheckBox->isChecked()) {
             ui->usernameLineEdit->clear();
             ui->passwordLineEdit->clear();
+        }
+        if (ui->latestReportButton->isChecked()) {
+            TcpClientSocket::getInstance()->getNewReports();
+        }
+        else {
+            TcpClientSocket::getInstance()->getReports();
         }
         writeInfo();
         break;

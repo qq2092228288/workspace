@@ -15,14 +15,13 @@ public:
     explicit SystemConfigDialog(QWidget *parent = nullptr);
     virtual ~SystemConfigDialog();
     ReportConfig config();
-    bool getLatest() const;
 signals:
 
 private slots:
     void confirmButtonClicked();
 private:
     Ui::SystemConfigDialog *ui;
-    const QString m_fileName;
+    QString m_fileName;
 };
 
 #endif // SYSTEMCONFIGDIALOG_H

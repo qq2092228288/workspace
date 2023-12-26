@@ -8,6 +8,7 @@
 #include <QPushButton>
 #include <QLineEdit>
 #include <QCheckBox>
+#include <QRadioButton>
 #include <QAction>
 #include <QRegExpValidator>
 #include <QFile>
@@ -25,6 +26,9 @@ public:
     QAction *passwordAction;
     QCheckBox *rememberPasswordCheckBox;
     QPushButton *loginButton;
+    QHBoxLayout *radioLayout;
+    QRadioButton *latestReportButton;
+    QRadioButton *allReportButton;
     void setupUi(QDialog *Dialog)
     {
         if (Dialog->objectName().isEmpty())
@@ -80,6 +84,21 @@ public:
 
         mainLayout->addWidget(loginButton, 0, Qt::AlignCenter);
 
+        radioLayout = new QHBoxLayout;
+        radioLayout->setObjectName(QString::fromUtf8("radioLayout"));
+
+        mainLayout->addLayout(radioLayout);
+
+        latestReportButton = new QRadioButton(Dialog);
+        latestReportButton->setObjectName(QString::fromUtf8("latestReportButton"));
+
+        radioLayout->addWidget(latestReportButton, 0, Qt::AlignRight);
+
+        allReportButton = new QRadioButton(Dialog);
+        allReportButton->setObjectName(QString::fromUtf8("allReportButton"));
+
+        radioLayout->addWidget(allReportButton, 0, Qt::AlignLeft);
+
         retranslateUi(Dialog);
     }
     void retranslateUi(QDialog *Dialog)
@@ -92,6 +111,10 @@ public:
         passwordAction->setIcon(QIcon(":/images/password.svg"));
         rememberPasswordCheckBox->setText(QString::fromUtf8("记住密码"));
         loginButton->setText(QString::fromUtf8("登录"));
+        latestReportButton->setText(QString::fromUtf8("获取最新"));
+        latestReportButton->setToolTip(QString::fromUtf8("登录后获取24小时内的报告（快）"));
+        allReportButton->setText(QString::fromUtf8("获取全部"));
+        allReportButton->setToolTip(QString::fromUtf8("登录后获取所有报告（慢）"));
     }
 };
 

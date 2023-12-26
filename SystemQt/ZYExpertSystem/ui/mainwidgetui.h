@@ -99,7 +99,7 @@ public:
                      QCoreApplication::organizationDomain());
         infoLabel->setText(str);
         showReportButton->setText(QString::fromUtf8("查看报告"));
-        dataFilteringButton->setText(QString::fromUtf8("数据筛选"));
+        dataFilteringButton->setText(QString::fromUtf8("数据统计"));
         systemConfigButton->setText(QString::fromUtf8("系统配置"));
         exitButton->setText(QString::fromUtf8("退出系统"));
     }

@@ -31,6 +31,7 @@ public:
 
     QGroupBox *operationGroupBox;
     QHBoxLayout *hLayout;
+    QPushButton *backButton;
     QPushButton *exportXlsxButton;
     QPushButton *resetButton;
     QPushButton *confirmButton;
@@ -39,14 +40,16 @@ public:
     QGridLayout *baseLayout;
 
     GeneralFilter *deviceIdFilter;
-    TimeFilter *timeFilter;
-    PositionFilter *positionFilter;
     GeneralFilter *primaryPlaceFilter;
     GeneralFilter *secondaryPlaceFilter;
+    TimeFilter *timeFilter;
+    PositionFilter *positionFilter;
 
     QGroupBox *infoGroupBox;
     QGridLayout *infoLayout;
+    GeneralFilter *patientNameFilter;
     SexFilter *sexFilter;
+    GeneralFilter *medicalRecordNumberFilter;
     DataFilter *ageFilter;
     DataFilter *heightFilter;
     DataFilter *weightFilter;
@@ -84,14 +87,17 @@ public:
         hLayout = new QHBoxLayout(operationGroupBox);
         hLayout->setObjectName(QString::fromUtf8("hLayout"));
 
+        backButton = new QPushButton(Widget);
+        backButton->setObjectName(QString::fromUtf8("backButton"));
+
+        hLayout->addWidget(backButton);
+
         hLayout->addStretch();
 
         exportXlsxButton = new QPushButton(Widget);
         exportXlsxButton->setObjectName(QString::fromUtf8("exportXlsxButton"));
 
         hLayout->addWidget(exportXlsxButton);
-
-        hLayout->addStretch();
 
         resetButton = new QPushButton(Widget);
         resetButton->setObjectName(QString::fromUtf8("resetButton"));
@@ -132,16 +138,6 @@ public:
 
         baseLayout->addWidget(deviceIdFilter, 0, 0, Qt::AlignLeft);
 
-        timeFilter = new TimeFilter(Widget);
-        timeFilter->setObjectName(QString::fromUtf8("timeFilter"));
-
-        baseLayout->addWidget(timeFilter, 1, 0, Qt::AlignLeft);
-
-        positionFilter = new PositionFilter(Widget);
-        positionFilter->setObjectName(QString::fromUtf8("positionFilter"));
-
-        baseLayout->addWidget(positionFilter, 1, 1, Qt::AlignLeft);
-
         primaryPlaceFilter = new GeneralFilter(false, Widget);
         primaryPlaceFilter->setObjectName(QString::fromUtf8("primaryPlaceFilter"));
 
@@ -152,30 +148,50 @@ public:
 
         baseLayout->addWidget(secondaryPlaceFilter, 2, 1, Qt::AlignLeft);
 
+        timeFilter = new TimeFilter(Widget);
+        timeFilter->setObjectName(QString::fromUtf8("timeFilter"));
+
+        baseLayout->addWidget(timeFilter, 1, 0, Qt::AlignLeft);
+
+        positionFilter = new PositionFilter(Widget);
+        positionFilter->setObjectName(QString::fromUtf8("positionFilter"));
+
+        baseLayout->addWidget(positionFilter, 1, 1, Qt::AlignLeft);
+
+        patientNameFilter = new GeneralFilter(true, Widget);
+        patientNameFilter->setObjectName(QString::fromUtf8("patientNameFilter"));
+
+        infoLayout->addWidget(patientNameFilter, 0, 0, Qt::AlignLeft);
+
         sexFilter = new SexFilter(Widget);
         sexFilter->setObjectName(QString::fromUtf8("sexFilter"));
 
-        infoLayout->addWidget(sexFilter, 0, 0, Qt::AlignLeft);
+        infoLayout->addWidget(sexFilter, 0, 1, Qt::AlignLeft);
+
+        medicalRecordNumberFilter = new GeneralFilter(false, Widget);
+        medicalRecordNumberFilter->setObjectName(QString::fromUtf8("medicalRecordNumberFilter"));
+
+        infoLayout->addWidget(medicalRecordNumberFilter, 1, 0, Qt::AlignLeft);
 
         ageFilter = new DataFilter(Widget);
         ageFilter->setObjectName(QString::fromUtf8("ageFilter"));
 
-        infoLayout->addWidget(ageFilter, 1, 0, Qt::AlignLeft);
+        infoLayout->addWidget(ageFilter, 2, 0, Qt::AlignLeft);
 
         heightFilter = new DataFilter(Widget);
         heightFilter->setObjectName(QString::fromUtf8("heightFilter"));
 
-        infoLayout->addWidget(heightFilter, 1, 1, Qt::AlignLeft);
+        infoLayout->addWidget(heightFilter, 2, 1, Qt::AlignLeft);
 
         weightFilter = new DataFilter(Widget);
         weightFilter->setObjectName(QString::fromUtf8("weightFilter"));
 
-        infoLayout->addWidget(weightFilter, 2, 0, Qt::AlignLeft);
+        infoLayout->addWidget(weightFilter, 3, 0, Qt::AlignLeft);
 
         bsaFilter = new DataFilter(Widget);
         bsaFilter->setObjectName(QString::fromUtf8("bsaFilter"));
 
-        infoLayout->addWidget(bsaFilter, 2, 1, Qt::AlignLeft);
+        infoLayout->addWidget(bsaFilter, 3, 1, Qt::AlignLeft);
 
         nicasDataFilterWidget = new NicasDataFilterWidget(Widget);
         nicasDataFilterWidget->setObjectName(QString::fromUtf8("nicasDataFilterWidget"));
@@ -185,22 +201,25 @@ public:
         tableView = new QTableView(Widget);
         tableView->setObjectName(QString::fromUtf8("tableView"));
 
-        mainLayout->addWidget(tableView, 2);
+        mainLayout->addWidget(tableView, 10);
 
         retranslateUi(Widget);
     }
     void retranslateUi(QWidget *Widget)
     {
-        Widget->setWindowTitle(QCoreApplication::applicationName() + QString::fromUtf8(" - 数据筛选"));
+        Widget->setWindowTitle(QCoreApplication::applicationName() + QString::fromUtf8(" - 数据统计"));
+        backButton->setText(QString::fromUtf8("返回"));
         exportXlsxButton->setText(QString::fromUtf8("导出"));
         resetButton->setText(QString::fromUtf8("重置"));
         confirmButton->setText(QString::fromUtf8("确认"));
-        baseGroupBox->setTitle(QString::fromUtf8("基本筛选"));
-        infoGroupBox->setTitle(QString::fromUtf8("信息筛选"));
-        dataGroupBox->setTitle(QString::fromUtf8("数据筛选"));
-        deviceIdFilter->setMain(QString::fromUtf8("设备编号"), nullptr, false);
-        primaryPlaceFilter->setMain(QString::fromUtf8("医院"), nullptr, false);
-        secondaryPlaceFilter->setMain(QString::fromUtf8("科室"), nullptr, false);
+        baseGroupBox->setTitle(QString::fromUtf8("基本"));
+        infoGroupBox->setTitle(QString::fromUtf8("信息"));
+        dataGroupBox->setTitle(QString::fromUtf8("数据"));
+        deviceIdFilter->setMain(QString::fromUtf8("设备编号"));
+        primaryPlaceFilter->setMain(QString::fromUtf8("医院"));
+        secondaryPlaceFilter->setMain(QString::fromUtf8("科室"));
+        patientNameFilter->setMain(QString::fromUtf8("姓名"));
+        medicalRecordNumberFilter->setMain(QString::fromUtf8("编号"));
         ageFilter->setMain(QString::fromUtf8("年龄"));
         ageFilter->setUnit(QString::fromUtf8("岁"));
         heightFilter->setMain(QString::fromUtf8("身高"));

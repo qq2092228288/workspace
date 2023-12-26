@@ -13,10 +13,12 @@
 struct ExeclData
 {
     ExeclData(const QString &id, const QJsonObject &place, const QJsonObject &patientInfo,
-              const QString &tstr, const QJsonObject &pdata, bool _first);
+              const QString &tstr, const QJsonObject &pdata,const QJsonArray &parameters, bool _first);
     bool first;
     QDateTime time;
     QString deviceId, primaryPlace, secondaryPlace;
+    QString patientName;
+    QString medicalRecordNumber;
     QString sex;
     int age, height, weight;
     double bsa;
@@ -42,7 +44,11 @@ public:
     void resetList();
     void update();
     QStringList header() const;
+    QList<ExeclData> list() const;
+    static QVariant nicasData(const double &value);
+    static QVariant nonZeroData(const double &value);
     static QString positionString(bool first, int pos);
+    static QString privacy(const QString &patientName, const QString &medicalRecordNumber);
 signals:
 private:
     QStringList m_header;

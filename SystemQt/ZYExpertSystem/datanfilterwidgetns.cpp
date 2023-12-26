@@ -32,7 +32,7 @@ BaseFilter::BaseFilter(bool check, QWidget *parent)
     radioGroup->addButton(allButton, FilterType::All);
     radioGroup->addButton(partButton, FilterType::Part);
 
-    mainCheckBox->setFixedWidth(70);
+    // mainCheckBox->setFixedWidth(70);
 
     connect(radioGroup, &QButtonGroup::idClicked, this, &BaseFilter::radioButtonClicked);
     connect(mainCheckBox, &QCheckBox::stateChanged, this, &BaseFilter::checked);
@@ -40,11 +40,10 @@ BaseFilter::BaseFilter(bool check, QWidget *parent)
     init();
 }
 
-void BaseFilter::setMain(const QString &text, const QString &tip, const bool check)
+void BaseFilter::setMain(const QString &text, const QString &tip)
 {
     mainCheckBox->setText(text);
     mainCheckBox->setToolTip(tip);
-    mainCheckBox->setChecked(check);
 }
 
 bool BaseFilter::isChecked() const
@@ -66,6 +65,44 @@ void BaseFilter::init()
 {
     mainCheckBox->setChecked(m_check);
     allButton->setChecked(true);
+}
+
+void BaseFilter::hideFilterCriteria()
+{
+    hideLayout(aLayout);
+    hideLayout(pLayout);
+}
+
+void BaseFilter::showFilterCriteria()
+{
+    showLayout(aLayout);
+    showLayout(pLayout);
+}
+
+void BaseFilter::hideLayout(QLayout *layout)
+{
+    for (int i = 0; i < layout->count(); ++i) {
+        auto item = layout->itemAt(i);
+        if (item->widget() != nullptr) {
+            item->widget()->hide();
+        }
+        else if (item->layout() != nullptr) {
+            hideLayout(item->layout());
+        }
+    }
+}
+
+void BaseFilter::showLayout(QLayout *layout)
+{
+    for (int i = 0; i < layout->count(); ++i) {
+        auto item = layout->itemAt(i);
+        if (item->widget() != nullptr) {
+            item->widget()->show();
+        }
+        else if (item->layout() != nullptr) {
+            hideLayout(item->layout());
+        }
+    }
 }
 
 void BaseFilter::allLayoutAdd(QLayout *layout)
@@ -294,7 +331,7 @@ NicasFilter::NicasFilter(const QJsonObject &object, QWidget *parent)
 
     setRegExp(QRegExp("^(-?\\d{0,5})(\\.\\d{0,3})?$"));
 
-    setMain(m_en, m_cn);
+    setMain(QString("%1/%2").arg(m_cn, m_en));
     setUnit(m_unit);
 
     connect(group, &QButtonGroup::idClicked, this, &NicasFilter::checkBoxClicked);

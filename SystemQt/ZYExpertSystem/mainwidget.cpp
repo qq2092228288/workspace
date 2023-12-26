@@ -29,17 +29,6 @@ MainWidget::~MainWidget()
     delete dataWidget;
 }
 
-void MainWidget::requestReports()
-{
-    auto instance = TcpClientSocket::getInstance();
-    if (configDialog->getLatest()) {
-        instance->getNewReports();
-    }
-    else {
-        instance->getReports();
-    }
-}
-
 void MainWidget::showReportButtonClicked()
 {
     reportDialog->setConfig(configDialog->config());

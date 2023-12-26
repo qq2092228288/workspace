@@ -4,10 +4,9 @@
 #include <QStackedWidget>
 #include <QMap>
 #include <QRadioButton>
-#include <QVBoxLayout>
+#include <QGridLayout>
 #include <QGroupBox>
 #include "datanfilterwidgetns.h"
-// #include "datatype.h"
 
 class NicasDataFilterWidget : public QWidget
 {
@@ -21,7 +20,6 @@ signals:
 private:
     QButtonGroup *buttonGroup;
     QStackedWidget *widget;
-    // QMap<Type, DatanFilterWidgetNs::NicasFilter *> map;
     QVector<DatanFilterWidgetNs::NicasFilter *> m_filters;
 };
 

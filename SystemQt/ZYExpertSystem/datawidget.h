@@ -2,6 +2,7 @@
 #define DATAWIDGET_H
 
 #include <QWidget>
+#include <xlsxdocument.h>
 #include "datanfilterwidgetns.h"
 
 QT_BEGIN_NAMESPACE
@@ -18,12 +19,17 @@ public:
 signals:
     void hidden();
 protected:
+    void showEvent(QShowEvent *event) override;
     void closeEvent(QCloseEvent *event) override;
+private:
+    void xlsxSetSpan(QXlsx::Document &xlsx, const int &columnIndex);
+    void getList();
 private slots:
     void exportXlsxButtonSlot();
     void resetButtonSlot();
     void confirmButtonSlot();
     void setColumns();
+    void setSpan();
 private:
     Ui::DataWidget *ui;
     DataTableModel *model;

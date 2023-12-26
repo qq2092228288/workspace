@@ -6,7 +6,7 @@ NicasDataFilterWidget::NicasDataFilterWidget(QWidget *parent)
     : QWidget{parent}
 {
     auto mainLayout = new QVBoxLayout(this);
-    auto rLayout = new QHBoxLayout;
+    auto rLayout = new QGridLayout;
     buttonGroup = new QButtonGroup(this);
     widget = new QStackedWidget(this);
 
@@ -17,7 +17,7 @@ NicasDataFilterWidget::NicasDataFilterWidget(QWidget *parent)
     for (int index = 0; index < array.size(); ++index) {
         auto module = array.at(index).toObject();
         auto button = new QRadioButton(module.value(ReportDataName::ekey(ReportDataName::module)).toString(), this);
-        rLayout->addWidget(button);
+        rLayout->addWidget(button, index/3, index%3);
         buttonGroup->addButton(button, index);
         auto groupBox = new QGroupBox(widget);
         auto groupLayout = new QVBoxLayout;
@@ -27,13 +27,11 @@ NicasDataFilterWidget::NicasDataFilterWidget(QWidget *parent)
             auto parameter = parameters.at(j).toObject();
             auto filter = new DatanFilterWidgetNs::NicasFilter(parameter, this);
             groupLayout->addWidget(filter);
-            // map.insert(Type(parameter.value(ReportDataName::ekey(ReportDataName::type)).toInt()), filter);
             m_filters.append(filter);
         }
         groupLayout->addStretch();
         widget->addWidget(groupBox);
     }
-    rLayout->addStretch();
     connect(buttonGroup, &QButtonGroup::idClicked, widget, &QStackedWidget::setCurrentIndex);
 
     init();

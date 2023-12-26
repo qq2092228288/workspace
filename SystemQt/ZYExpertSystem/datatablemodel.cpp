@@ -9,20 +9,30 @@
 
 using namespace DatabaseEnumNs;
 
-const auto REPORT_TIME_STR      = ReportDataName::ekey(ReportDataName::reportTime);
-const auto PRIMARY_PLACE_STR    = ReportDataName::ekey(ReportDataName::primaryPlace);
-const auto SECONDARY_PLACE_STR  = ReportDataName::ekey(ReportDataName::secondaryPlace);
-const auto SEX_STR              = ReportDataName::ekey(ReportDataName::sex);
-const auto AGE_STR              = ReportDataName::ekey(ReportDataName::age);
-const auto HEIGHT_STR           = ReportDataName::ekey(ReportDataName::height);
-const auto WEIGHT_STR           = ReportDataName::ekey(ReportDataName::weight);
-const auto DATA_STR             = ReportDataName::ekey(ReportDataName::data);
-const auto PLACE_STR            = ReportDataName::ekey(ReportDataName::place);
-const auto PATIENT_INFO_STR     = ReportDataName::ekey(ReportDataName::patientInfo);
-const auto POSITION_STR         = ReportDataName::ekey(ReportDataName::position);
+const auto REPORT_TIME_STR              = ReportDataName::ekey(ReportDataName::reportTime);
+const auto PRIMARY_PLACE_STR            = ReportDataName::ekey(ReportDataName::primaryPlace);
+const auto SECONDARY_PLACE_STR          = ReportDataName::ekey(ReportDataName::secondaryPlace);
+const auto PATIENT_NAME_STR             = ReportDataName::ekey(ReportDataName::patientName);
+const auto MEDICAL_RECORD_NUMBER_STR    = ReportDataName::ekey(ReportDataName::medicalRecordNumber);
+const auto SEX_STR                      = ReportDataName::ekey(ReportDataName::sex);
+const auto AGE_STR                      = ReportDataName::ekey(ReportDataName::age);
+const auto HEIGHT_STR                   = ReportDataName::ekey(ReportDataName::height);
+const auto WEIGHT_STR                   = ReportDataName::ekey(ReportDataName::weight);
+const auto DATA_STR                     = ReportDataName::ekey(ReportDataName::data);
+const auto PLACE_STR                    = ReportDataName::ekey(ReportDataName::place);
+const auto PATIENT_INFO_STR             = ReportDataName::ekey(ReportDataName::patientInfo);
+const auto POSITION_STR                 = ReportDataName::ekey(ReportDataName::position);
+
+bool myfunction (ExeclData i, ExeclData j)
+{
+    if (i.medicalRecordNumber == j.medicalRecordNumber) {
+        return i.time > j.time;
+    }
+    return i.medicalRecordNumber > j.medicalRecordNumber;
+}
 
 ExeclData::ExeclData(const QString &id, const QJsonObject &place, const QJsonObject &patientInfo,
-                     const QString &tstr, const QJsonObject &pdata, bool _first)
+                     const QString &tstr, const QJsonObject &pdata, const QJsonArray &parameters, bool _first)
     : first(_first)
 {
     time = QDateTime::fromString(tstr, "yyyyMMddhhmmsszzz");
@@ -32,14 +42,15 @@ ExeclData::ExeclData(const QString &id, const QJsonObject &place, const QJsonObj
     deviceId = id;
     primaryPlace = place.value(PRIMARY_PLACE_STR).toString();
     secondaryPlace = place.value(SECONDARY_PLACE_STR).toString();
+    patientName = patientInfo.value(PATIENT_NAME_STR).toString().trimmed();
+    medicalRecordNumber = patientInfo.value(MEDICAL_RECORD_NUMBER_STR).toString().trimmed();
     sex = patientInfo.value(SEX_STR).toString();
     age = patientInfo.value(AGE_STR).toString().toInt();
     height = patientInfo.value(HEIGHT_STR).toString().toInt();
     weight = patientInfo.value(WEIGHT_STR).toString().toInt();
     bsa = (static_cast<int>(DatCa::cBsa(height, weight) * 100)) / 100.0;
     pos = pdata.value(QString::number(Type::Pos)).toInt();
-    map = ReportDataJson::valueMap(patientInfo, pdata, QJsonArray(),
-                                   ReportParameters::array(Check_Mode::IntensiveCareUnit));
+    map = ReportDataJson::valueMap(patientInfo, pdata, QJsonArray(), parameters);
 }
 
 DataTableModel::DataTableModel(const QStringList &header, QObject *parent)
@@ -74,77 +85,81 @@ QVariant DataTableModel::data(const QModelIndex &index, int role) const
             case 0:
                 return crow.deviceId;
             case 1:
-                return crow.time;
-            case 2:
-                return positionString(crow.first, crow.pos);
-            case 3:
                 return crow.primaryPlace;
-            case 4:
+            case 2:
                 return crow.secondaryPlace;
+            case 3:
+                return crow.medicalRecordNumber;
+            case 4:
+                return QString("%1**").arg(crow.patientName.at(0));
             case 5:
-                return crow.sex;
+                return crow.time;
             case 6:
-                return crow.age;
+                return positionString(crow.first, crow.pos);
             case 7:
-                return crow.height;
+                return crow.sex;
             case 8:
-                return crow.weight;
+                return crow.age;
             case 9:
-                return crow.bsa;
+                return crow.height;
             case 10:
-                return crow.map.value(Type::CO);
+                return crow.weight;
             case 11:
-                return crow.map.value(Type::CI);
+                return crow.bsa;
             case 12:
-                return crow.map.value(Type::SV);
+                return nicasData(crow.map.value(Type::CO));
             case 13:
-                return crow.map.value(Type::SI);
+                return nicasData(crow.map.value(Type::CI));
             case 14:
-                return crow.map.value(Type::TFC);
+                return nicasData(crow.map.value(Type::SV));
             case 15:
-                return crow.map.value(Type::EDI);
+                return nicasData(crow.map.value(Type::SI));
             case 16:
-                return crow.map.value(Type::Vol);
+                return nicasData(crow.map.value(Type::TFC));
             case 17:
-                return crow.map.value(Type::SVR);
+                return nicasData(crow.map.value(Type::EDI));
             case 18:
-                return crow.map.value(Type::SSVR);
+                return nicasData(crow.map.value(Type::Vol));
             case 19:
-                return crow.map.value(Type::SSVRI);
+                return nicasData(crow.map.value(Type::SVR));
             case 20:
-                return crow.map.value(Type::SVRI);
+                return nicasData(crow.map.value(Type::SSVR));
             case 21:
-                return crow.map.value(Type::Vas);
+                return nicasData(crow.map.value(Type::SSVRI));
             case 22:
-                return crow.map.value(Type::PEP);
+                return nicasData(crow.map.value(Type::SVRI));
             case 23:
-                return crow.map.value(Type::LVET);
+                return nicasData(crow.map.value(Type::Vas));
             case 24:
-                return crow.map.value(Type::LSW);
+                return nicasData(crow.map.value(Type::PEP));
             case 25:
-                return crow.map.value(Type::LSWI);
+                return nicasData(crow.map.value(Type::LVET));
             case 26:
-                return crow.map.value(Type::LCW);
+                return nicasData(crow.map.value(Type::LSW));
             case 27:
-                return crow.map.value(Type::LCWI);
+                return nicasData(crow.map.value(Type::LSWI));
             case 28:
-                return crow.map.value(Type::STR);
+                return nicasData(crow.map.value(Type::LCW));
             case 29:
-                return crow.map.value(Type::EPCI);
+                return nicasData(crow.map.value(Type::LCWI));
             case 30:
-                return crow.map.value(Type::ISI);
+                return nicasData(crow.map.value(Type::STR));
             case 31:
-                return crow.map.value(Type::Ino);
+                return nicasData(crow.map.value(Type::EPCI));
             case 32:
-                return crow.map.value(Type::HR);
+                return nicasData(crow.map.value(Type::ISI));
             case 33:
-                return crow.map.value(Type::HRV);
+                return nicasData(crow.map.value(Type::Ino));
             case 34:
-                return crow.map.value(Type::SBP);
+                return nicasData(crow.map.value(Type::HR));
             case 35:
-                return crow.map.value(Type::DBP);
+                return nicasData(crow.map.value(Type::HRV));
             case 36:
-                return crow.map.value(Type::MAP);
+                return nonZeroData(crow.map.value(Type::SBP));
+            case 37:
+                return nonZeroData(crow.map.value(Type::DBP));
+            case 38:
+                return nonZeroData(crow.map.value(Type::MAP));
             }
         }
         else {
@@ -173,9 +188,9 @@ void DataTableModel::setHeader(const QStringList &header)
 void DataTableModel::resetList()
 {
     m_list.clear();
-
+    auto parameters = ReportParameters::array(Check_Mode::IntensiveCareUnit);
     QSqlQuery query(TcpClientSocket::getInstance()->db());
-    query.exec(QString("SELECT %1, %2 FROM %3")
+    query.exec(QString("SELECT %1, %2 FROM %3 ORDER BY %1 DESC")
                    .arg(Singleton::enumValueToKey(ReportInfo::deviceId),
                         Singleton::enumValueToKey(ReportInfo::reportData),
                         Singleton::enumName<ReportInfo>()));
@@ -192,13 +207,16 @@ void DataTableModel::resetList()
                                     patientInfo,
                                     ststr,
                                     position.at(1).toObject().value(DATA_STR).toObject(),
+                                    parameters,
                                     false));
         }
         m_list.append(ExeclData(deviceId, place, patientInfo,
                                 position.at(0).toObject().value(REPORT_TIME_STR).toString(),
                                 position.at(0).toObject().value(DATA_STR).toObject(),
+                                parameters,
                                 true));
     }
+    std::sort(m_list.begin(), m_list.end(), myfunction);
     update();
 }
 
@@ -213,9 +231,27 @@ QStringList DataTableModel::header() const
     return m_header;
 }
 
+QList<ExeclData> DataTableModel::list() const
+{
+    return m_list;
+}
+
+QVariant DataTableModel::nicasData(const double &value)
+{
+    return DatCa::invalid() != value ? value : QVariant("-");
+}
+
+QVariant DataTableModel::nonZeroData(const double &value)
+{
+    if (value == 0) {
+        return QVariant("-");
+    }
+    return nicasData(value);
+}
+
 QString DataTableModel::positionString(bool first, int pos)
 {
-    auto str = first ? QString::fromUtf8("第一体位：") : QString::fromUtf8("第二体位：");
+    auto str = first ? QString::fromUtf8("第一体位: ") : QString::fromUtf8("第二体位: ");
     switch (pos) {
     case 1:
         str += QString::fromUtf8("半卧");
@@ -230,4 +266,11 @@ QString DataTableModel::positionString(bool first, int pos)
         break;
     }
     return str;
+}
+
+QString DataTableModel::privacy(const QString &patientName, const QString &medicalRecordNumber)
+{
+    return QString("%1%2&%3**").arg(patientName.at(0),
+                                  QString(patientName.length() - 1, '*'),
+                                  medicalRecordNumber.mid(0, medicalRecordNumber.length() - 2));
 }
