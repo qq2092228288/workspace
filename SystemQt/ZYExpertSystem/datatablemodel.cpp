@@ -43,7 +43,7 @@ ExeclData::ExeclData(const QString &id, const QJsonObject &place, const QJsonObj
     primaryPlace = place.value(PRIMARY_PLACE_STR).toString();
     secondaryPlace = place.value(SECONDARY_PLACE_STR).toString();
     patientName = patientInfo.value(PATIENT_NAME_STR).toString().trimmed();
-    medicalRecordNumber = patientInfo.value(MEDICAL_RECORD_NUMBER_STR).toString().trimmed();
+    medicalRecordNumber = patientInfo.value(MEDICAL_RECORD_NUMBER_STR).toString().trimmed() + patientName;
     sex = patientInfo.value(SEX_STR).toString();
     age = patientInfo.value(AGE_STR).toString().toInt();
     height = patientInfo.value(HEIGHT_STR).toString().toInt();
