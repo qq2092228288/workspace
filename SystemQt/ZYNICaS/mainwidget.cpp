@@ -20,7 +20,7 @@ MainWidget::MainWidget(QWidget *parent)
     reportDialog = new ShowReportDialog;
     configDialog = new SystemConfigDialog;
     enterSystemWidget = new EnterSystemWidget(configDialog->getPortName());
-    QObject::connect(enterSystemWidget,&EnterSystemWidget::widgetClose,this,&EnterSystemWidget::show);
+    QObject::connect(enterSystemWidget,&EnterSystemWidget::widgetClose,this,&EnterSystemWidget::showMaximized);
 
     btnGroup->addButton(enterBtn);
     btnGroup->addButton(reportBtn);
@@ -106,7 +106,7 @@ void MainWidget::enterBtnSlot()
             disconnect(enterSystemWidget, &EnterSystemWidget::startDemoMode,
                     DataManagement::getInstance().getTebco(), &ZyTebco::startDemoMode);
             this->close();
-            enterSystemWidget->show();
+            enterSystemWidget->showMaximized();
             return;
         }
     }

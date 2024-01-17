@@ -54,19 +54,4 @@ deploy/
 *.pb.cc
 
 # local file
-reports
-
-*.ini
-*.txt
-*.xml
-*.doc
-*.docx
-*.zip
-*.exp
-*.db
-*.png
-*.jpg
-*.qm
-~$*
-*.prl
-*.manifest
+mgmt_system

@@ -104,6 +104,8 @@ EnterSystemWidget::EnterSystemWidget(const QString &portName, QWidget *parent)
 
     instance.setBodyValue(&bodyValue);
     instance.setRegulator(regulator);
+    instance.setEcg(ecgDraw->getView());
+    instance.setdZdt(diffDraw->getView());
     instance.setdZ(admitDraw->getView());
 //    instance.setSudoku(sudokuDraw);
 
@@ -253,9 +255,9 @@ void EnterSystemWidget::initOscModule()
     ecgThread = new QThread;
     diffThread = new QThread;
     admitThread = new QThread;
-    ecgGroupBox = new QGroupBox(tr("阻抗心电图"),this);
-    diffGroupBox = new QGroupBox(tr("心血流图"),this);
-    admitGroupBox = new QGroupBox(tr("心阻抗图"),this);
+    ecgGroupBox = new QGroupBox(tr("心电信号"),this);
+    diffGroupBox = new QGroupBox(tr("胸阻抗微分图"),this);
+    admitGroupBox = new QGroupBox(tr("胸阻抗血流图"),this);
     ecgDraw = new DrawWaveforms(true);
     diffDraw = new DrawWaveforms;
     admitDraw = new DrawWaveforms(true);

@@ -180,6 +180,16 @@ void DataManagement::setRegulator(CustomCtrlRegulator *regulator)
     this->m_pRegulator = regulator;
 }
 
+void DataManagement::setEcg(QChartView *ecg)
+{
+    this->m_pEcg = ecg;
+}
+
+void DataManagement::setdZdt(QChartView *dZdt)
+{
+    this->m_pdZdt = dZdt;
+}
+
 void DataManagement::setdZ(QChartView *dZ)
 {
     this->m_pdZ = dZ;
@@ -194,6 +204,8 @@ void DataManagement::recordPosition(QString position)
 {
     m_recordInfo.pos = position;
     saveInfo(m_recordInfo);
+    m_pEcg->grab().scaled(300,120,Qt::IgnoreAspectRatio,Qt::SmoothTransformation).save(m_filePath.record_ecg());
+    m_pdZdt->grab().scaled(300,120,Qt::IgnoreAspectRatio,Qt::SmoothTransformation).save(m_filePath.record_dzdt());
     m_pdZ->grab().scaled(300,120,Qt::IgnoreAspectRatio,Qt::SmoothTransformation).save(m_filePath.record_dz());
     isRecord = true;
 }
@@ -204,6 +216,8 @@ void DataManagement::saveReport(QString position, bool record)
     m_newReportName.clear();
     m_currentInfo.pos = position;
     saveInfo(m_currentInfo,record);
+    m_pEcg->grab().scaled(300,120,Qt::IgnoreAspectRatio,Qt::SmoothTransformation).save(m_filePath.current_ecg());
+    m_pdZdt->grab().scaled(300,120,Qt::IgnoreAspectRatio,Qt::SmoothTransformation).save(m_filePath.current_dzdt());
     m_pdZ->grab().scaled(300,120,Qt::IgnoreAspectRatio,Qt::SmoothTransformation).save(m_filePath.current_dz());
 //    m_pSudoku->grab().save(m_filePath.sudoku());
     reportThread->init();
@@ -222,8 +236,12 @@ void DataManagement::saveReport(QString position, bool record)
                     rList<<QString("r%1").arg(i,2,10,QLatin1Char('0'));
                 }
                 reportThread->addBatchMarks(rList, m_recordInfo.values);
-                reportThread->addMarks("rname", (m_recordInfo.pos + tr(" 心阻抗图(dZ)")));
-                // 插入图片
+
+                // reportThread->addMarks("rname", tr("心电信号(ECG)"));
+                // reportThread->addPic("rimage",m_filePath.record_dz());
+                // reportThread->addMarks("rname", tr("胸阻抗微分图(dZ/dt)"));
+                // reportThread->addPic("rimage",m_filePath.record_dz());
+                reportThread->addMarks("rname", tr("胸阻抗血流图(dZ)"));
                 reportThread->addPic("rimage",m_filePath.record_dz());
 //                result += tr("1.第一体位：心输出量(CO)%1，心脏指数(CI)%2，心搏量(SV)%3，心搏指数(SI)%4，心率(HR)%5，血管顺应性(Vas)%6，"
 //                    "血管容量(Vol)%7，收缩变力性(Ino)%8，收缩压(SBP)%9，舒张压(DBP)%10，胸液传导性(TFC)%11；\n"
@@ -285,8 +303,12 @@ void DataManagement::saveReport(QString position, bool record)
                 cList<<QString("c%1").arg(i,2,10,QLatin1Char('0'));
             }
             reportThread->addBatchMarks(cList, m_currentInfo.values);
-            reportThread->addMarks("cname", (m_currentInfo.pos + tr(" 心阻抗图(dZ)")));
-            reportThread->addPic("cimage",m_filePath.current_dz());
+            reportThread->addMarks("ecgname", tr("心电信号(ECG)"));
+            reportThread->addPic("ecgimage",m_filePath.current_ecg());
+            reportThread->addMarks("dzdtname", tr("胸阻抗微分图(dZ/dt)"));
+            reportThread->addPic("dzdtimage",m_filePath.current_dzdt());
+            reportThread->addMarks("dzname", tr("胸阻抗血流图(dZ)"));
+            reportThread->addPic("dzimage",m_filePath.current_dz());
             reportThread->addMarks("room" , m_pHospitalInfo->roomName);
 //        }
 //        else {

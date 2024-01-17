@@ -31,8 +31,12 @@ public:
     QString many_dot()    const {return appPath + "dot/manyPositionTemplate.dot";}
 //    QString xsingle_dot() const {return appPath + "dot/singlePositionXprinterTemplate.dot";}
 //    QString xmany_dot()   const {return appPath + "dot/manyPositionXprinterTemplate.dot";}
-    QString record_dz()   const {return tempDir() + "record.png";}
-    QString current_dz()  const {return tempDir() + "current.png";}
+    QString record_ecg()  const {return tempDir() + "record_ecg.png";}
+    QString current_ecg() const {return tempDir() + "current_ecg.png";}
+    QString record_dzdt() const {return tempDir() + "record_dzdt.png";}
+    QString current_dzdt()const {return tempDir() + "current_dzdt.png";}
+    QString record_dz()   const {return tempDir() + "record_dz.png";}
+    QString current_dz()  const {return tempDir() + "current_dz.png";}
 //    QString sudoku()      const {return tempDir() + "sudoku.png";}
     QString reports()     const {return appPath + "reports";}
     QString config_zip()  const {return initDir() + "config.zip";}
@@ -129,6 +133,8 @@ public:
     void setBodyValue(BodyValue *bodyValue);
     void setRegulator(CustomCtrlRegulator *regulator);
     // 心阻抗图
+    void setEcg(QChartView *ecg);
+    void setdZdt(QChartView *dZdt);
     void setdZ(QChartView *dZ);
 //    void setSudoku(DrawSudoku *sudoku);
 public slots:
@@ -157,6 +163,8 @@ private:
     HospitalInfo *m_pHospitalInfo;
     BodyValue *m_pBodyValue;
     CustomCtrlRegulator *m_pRegulator;
+    QChartView *m_pEcg;
+    QChartView *m_pdZdt;
     QChartView *m_pdZ;       //阻抗图
 //    DrawSudoku *m_pSudoku;      //九宫格图
     //当前、记录的信息
