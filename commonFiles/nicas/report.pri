@@ -3,15 +3,19 @@ DEPENDPATH      += $$PWD
 HEADERS		+= \
     $$PWD/datacalculation.h \
     $$PWD/datatype.h \
+    $$PWD/painterconfig.h \
     $$PWD/reportdatajson.h \
     $$PWD/reportdataname.h \
+    $$PWD/reportgraphicsitem.h \
     $$PWD/reportpainter.h \
     $$PWD/reportset.h \
     $$PWD/reporttablemodel.h
 SOURCES		+= \
     $$PWD/datacalculation.cpp \
     $$PWD/datatype.cpp \
+    $$PWD/painterconfig.cpp \
     $$PWD/reportdatajson.cpp \
+    $$PWD/reportgraphicsitem.cpp \
     $$PWD/reportpainter.cpp \
     $$PWD/reporttablemodel.cpp
 

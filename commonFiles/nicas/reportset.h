@@ -57,6 +57,15 @@ public:
         QJsonDocument doc = QJsonDocument::fromJson(file.readAll());
         return doc.array();
     }
+    static QJsonArray compact()
+    {
+        QFile file(":/compact_report.json");
+        if (!file.open(QIODevice::ReadOnly)) {
+            return QJsonArray();
+        }
+        QJsonDocument doc = QJsonDocument::fromJson(file.readAll());
+        return doc.array();
+    }
     static QJsonObject find(int type)
     {
         auto arr = array(Check_Mode::IntensiveCareUnit);

@@ -20,7 +20,8 @@ public:
         min,
         max,
         digit,
-        type
+        type,
+        desc
     };
     Q_ENUM(ReportJson)
     enum ReportData

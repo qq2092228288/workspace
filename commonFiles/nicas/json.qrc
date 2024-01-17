@@ -5,5 +5,6 @@
         <file>internal_medicine.json</file>
         <file>physical_examination.json</file>
         <file>xprinter_report.json</file>
+        <file>compact_report.json</file>
     </qresource>
 </RCC>
