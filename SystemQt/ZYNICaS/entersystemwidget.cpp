@@ -52,6 +52,7 @@ EnterSystemWidget::EnterSystemWidget(const QString &portName, QWidget *parent)
         color:#ffffff;\
         border-radius:3px;\
         font:bold %3px;\
+        font-family: 'Times New Roman';\
     }\
     QGroupBox::title\
     {\
@@ -214,7 +215,7 @@ void EnterSystemWidget::initInfoModule()
 
 void EnterSystemWidget::initPosModule()
 {
-    pldGroupBox = new QGroupBox(tr("PLD-被动抬腿实验"),this);
+    pldGroupBox = new QGroupBox(tr("PLR-被动抬腿试验"),this);
 //    manyBtn = new QRadioButton(tr("多体位"),this);
 //    singleBtn = new QRadioButton(tr("单体位"),this);
     halfLieBtn = new QRadioButton(tr("半卧"),this);
@@ -255,9 +256,9 @@ void EnterSystemWidget::initOscModule()
     ecgThread = new QThread;
     diffThread = new QThread;
     admitThread = new QThread;
-    ecgGroupBox = new QGroupBox(tr("心电信号"),this);
-    diffGroupBox = new QGroupBox(tr("胸阻抗微分图"),this);
-    admitGroupBox = new QGroupBox(tr("胸阻抗血流图"),this);
+    ecgGroupBox = new QGroupBox(tr("心电信号(ECG)"),this);
+    diffGroupBox = new QGroupBox(tr("胸阻抗微分图(dZ/dt)"),this);
+    admitGroupBox = new QGroupBox(tr("胸阻抗血流图(ΔZ)"),this);
     ecgDraw = new DrawWaveforms(true);
     diffDraw = new DrawWaveforms;
     admitDraw = new DrawWaveforms(true);

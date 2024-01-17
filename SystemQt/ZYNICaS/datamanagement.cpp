@@ -303,11 +303,11 @@ void DataManagement::saveReport(QString position, bool record)
                 cList<<QString("c%1").arg(i,2,10,QLatin1Char('0'));
             }
             reportThread->addBatchMarks(cList, m_currentInfo.values);
-            reportThread->addMarks("ecgname", tr("心电信号(ECG)"));
+            // reportThread->addMarks("ecgname", tr("心电信号(ECG)"));
             reportThread->addPic("ecgimage",m_filePath.current_ecg());
-            reportThread->addMarks("dzdtname", tr("胸阻抗微分图(dZ/dt)"));
+            // reportThread->addMarks("dzdtname", tr("胸阻抗微分图(dZ/dt)"));
             reportThread->addPic("dzdtimage",m_filePath.current_dzdt());
-            reportThread->addMarks("dzname", tr("胸阻抗血流图(dZ)"));
+            // reportThread->addMarks("dzname", tr("胸阻抗血流图(ΔZ)"));
             reportThread->addPic("dzimage",m_filePath.current_dz());
             reportThread->addMarks("room" , m_pHospitalInfo->roomName);
 //        }
