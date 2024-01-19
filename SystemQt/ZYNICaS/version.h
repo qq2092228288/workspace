@@ -1,8 +1,8 @@
 #ifndef VERSION_H
 #define VERSION_H
 
-#define FILE_VERSION            4,5,3,1220
-#define FILE_VERSION_STR        "4.5.3.1220"
+#define FILE_VERSION            1,0,0,1
+#define FILE_VERSION_STR        "1.0.0.1"
 #define PRODUCT_VERSION         FILE_VERSION
 #define PRODUCT_VERSION_STR     FILE_VERSION_STR
 #define INTERNAL_NAME           "YZNICaS"
@@ -11,7 +11,7 @@
 #define ORGANIZATION_DOMAIN     "www.zeyaotebco.com"
 
 #ifdef _WIN32
-    #define APP_ID              "92FB908B-79F3-4B31-9499-5E57A7239285"
+    #define APP_ID              "65F60647-7D49-4181-AD4E-C00F0CE577B9"
 #elif linux
     #define APP_ID              "linux version app_id"
 #endif
