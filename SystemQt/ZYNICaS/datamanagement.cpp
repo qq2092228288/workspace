@@ -360,6 +360,9 @@ QString DataManagement::reportResult(const QJsonObject &json)
             m_pHospitalInfo->cMode == Check_Mode::PhysicalExamination) {
         result<<tr("连续无创血流动力学对高血压病靶向分析报告如下：");
     }
+    else if (m_pHospitalInfo->cMode == Check_Mode::Health) {
+        result<<tr("报告分析如下：");
+    }
     else {
         result<<tr("连续无创血流动力学分析报告如下：");
     }
@@ -378,6 +381,162 @@ QString DataManagement::reportResult(const QJsonObject &json)
         auto sdata = position.last().toObject().value(ReportDataName::ekey(ReportDataName::data)).toObject();
         auto smap = ReportDataJson::valueMap(info, sdata, QJsonArray(), parameters);
         if (m_pHospitalInfo->pType == Printer_Type::General) {
+            // 健康模式
+            if (m_pHospitalInfo->cMode == Check_Mode::Health) {
+                bool suggest = false;
+                bool sport = false;
+                int bmi = 0;
+                // 灌注
+                if (fmap.value(Type::CI) < 2.5) {
+                    result<<tr("1.灌注低；");
+                    suggest = true;
+                }
+                else if (fmap.value(Type::CI) >= 2.5 && fmap.value(Type::CI) <= 5) {
+                    result<<tr("1.灌注正常；");
+                }
+                else {
+                    if (fmap.value(Type::MAP) < map.value(min).toDouble()) {
+                        result<<tr("1.灌注正常，但MAP低；");
+                        suggest = true;
+                    }
+                    else if (fmap.value(Type::MAP) >= map.value(min).toDouble() &&
+                             fmap.value(Type::MAP) <= map.value(max).toDouble()) {
+                        result<<tr("1.灌注正常；");
+                    }
+                    else {
+                        result<<tr("1.灌注高；");
+                        suggest = true;
+                    }
+                }
+                // 前负荷
+                if (smap.value(Type::TFC) < fmap.value(Type::TFC)) {
+                    if (smap.value(Type::ISI) > fmap.value(Type::ISI)) {
+                        result<<tr("2.左右心前负荷均过饱和；");
+                        suggest = true;
+                    }
+                    else {
+                        result<<tr("2.右心前负荷过饱和；");
+                        sport = true;
+                    }
+                }
+                else {
+                    if (smap.value(Type::ISI) > fmap.value(Type::ISI)) {
+                        result<<tr("2.前负荷正常；");
+                    }
+                    else {
+                        result<<tr("2.前负荷过饱和；");
+                        sport = true;
+                    }
+                }
+                // 后负荷
+                if (fmap.value(Type::MAP) >= map.value(min).toDouble() &&
+                    fmap.value(Type::MAP) <= map.value(max).toDouble()) {
+                    if (fmap.value(Type::Vas) >= vas.value(min).toDouble() &&
+                        fmap.value(Type::Vas) <= vas.value(max).toDouble()) {
+                        result<<tr("3.后负荷正常；");
+                    }
+                    else {
+                        result<<tr("3.后负荷正常(因血压正常，后负荷有益代偿)；");
+                    }
+                }
+                else if (fmap.value(Type::MAP) > map.value(max).toDouble()) {
+                    if (fmap.value(Type::Vas) >= vas.value(min).toDouble() &&
+                        fmap.value(Type::Vas) <= vas.value(max).toDouble()) {
+                        result<<tr("3.后负荷正常；");
+                    }
+                    else if (fmap.value(Type::Vas) > vas.value(max).toDouble()) {
+                        result<<tr("3.后负荷偏高；");
+                    }
+                    suggest = true;
+                }
+                else if (fmap.value(Type::MAP) < map.value(min).toDouble()) {
+                    if (fmap.value(Type::Vas) <= vas.value(max).toDouble()) {
+                        result<<tr("3.后负荷偏低；");
+                    }
+                    suggest = true;
+                }
+                // 心肌收缩力
+                auto isiStr = tr("4.心肌收缩力");
+                if (fmap.value(Type::ISI) < isi.value(min).toDouble()) {
+                    if (smap.value(Type::ISI) >= isi.value(min).toDouble() &&
+                        smap.value(Type::ISI) <= isi.value(max).toDouble()) {
+                        isiStr += tr("偏低，建议多喝水");
+                    }
+                    else {
+                        isiStr += tr("偏低");
+                        suggest = true;
+                    }
+                }
+                else if (fmap.value(Type::ISI) >= isi.value(min).toDouble() &&
+                         fmap.value(Type::ISI) <= isi.value(max).toDouble()) {
+                    isiStr += tr("正常");
+                }
+                else {
+                    if (fmap.value(Type::MAP) > map.value(max).toDouble()) {
+                        isiStr += tr("偏高");
+                        suggest = true;
+                    }
+                    else {
+                        isiStr += tr("正常");
+                    }
+                }
+                if ((fmap.value(Type::ISI) - smap.value(Type::ISI)) / fmap.value(Type::ISI) >= 0.25) {
+                    isiStr += tr("（左心室收缩功能储备下降）");
+                }
+                result<<(isiStr + "；");
+                // BMI
+                if (fmap.value(Type::BMI) < 18.5) {
+                    result<<tr("5.BMI体型过瘦；");
+                    bmi = 1;
+                }
+                else if (fmap.value(Type::BMI) > 24) {
+                    result<<tr("5.BMI体型过胖；");
+                    bmi = 2;
+                }
+                else {
+                    result<<tr("5.BMI体型正常；");
+                }
+                if (suggest || sport || bmi != 0) {
+                    QString space("           ");
+                    result<<tr("\n小结：血流动力学异常；");
+                    if (sport) {
+                        result<<tr("%1减少钠摄入、多排汗、多喝水，根据自身情况增加运动量；").arg(space);
+                    }
+                    if (bmi != 0 && sport) {
+                        result<<tr("%1改善饮食、生活习惯；").arg(space);
+                    }
+                    else if (bmi == 2 && !sport) {
+                        result<<tr("%1改善饮食、生活习惯，根据自身情况增加运动量；").arg(space);
+                    }
+                    auto sv = ReportParameters::find(Type::SV);
+                    if (fmap.value(Type::SV) >= sv.value(min).toDouble() &&
+                        fmap.value(Type::SV) <= sv.value(max).toDouble() &&
+                        fmap.value(Type::CI) > 3.0 && fmap.value(Type::HR) > 90 && fmap.value(Type::HR) < 100) {
+                        if (sport || bmi == 2) {
+                            result<<tr("%1调整作息、睡眠时间；").arg(space);
+                        }
+                        else {
+                            result<<tr("%1适当运动，调整作息、睡眠时间；").arg(space);
+                        }
+                    }
+                    if (fmap.value(Type::TFC) > 0.046) {
+                        if (suggest) {
+                            result<<tr("%1请关注胸腔液体量过多；").arg(space);
+                        }
+                        else {
+                            result<<tr("%1请关注胸腔液体量过多，建议去专科医院做进一步检查；").arg(space);
+                        }
+                    }
+                    if (suggest) {
+                        result<<tr("%1建议去专科医院做进一步检查。").arg(space);
+                    }
+                }
+                else {
+                    result<<tr("\n小结：血流动力学正常。");
+                }
+                return result.join("\n");
+            }
+
             // 双体位常规打印机报告
             QString fstr = tr("前负荷(容量负荷)：");
             if (smap.value(Type::ISI) > fmap.value(Type::ISI)) {

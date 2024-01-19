@@ -41,7 +41,8 @@ enum Type {
     Dz = 38,
     Pos = 39,
     DO2 = 40,
-    SVV = 41
+    SVV = 41,
+    BMI = 42
 };
 
 //QString typeName(const uchar &type);

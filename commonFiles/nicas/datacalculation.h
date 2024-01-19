@@ -41,6 +41,7 @@ public:
     static qreal cVept   (const qreal &height, const qreal &weight, const qreal &sex);
     static qreal cIdealW (const qreal &height, const qreal &sex);
     static qreal cMap    (const qreal &sbp, const qreal &dbp);
+    static qreal cBmi    (const qreal &height, const qreal &weight);
     // hrv analyse rr = 60/hr
     static qreal cNnvgr  (const QVector<qreal> &hrList);
     static qreal cSdnn   (const QVector<qreal> &hrList);

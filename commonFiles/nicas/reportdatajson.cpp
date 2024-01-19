@@ -58,6 +58,7 @@ QMap<Type, qreal> ReportDataJson::valueMap(const QJsonObject &info, const QJsonO
     auto bsa = intercept(DatCa::cBsa(height, weight), 2);
     auto vept = intercept(DatCa::cVept(height, weight, sex), 0);
     auto map = intercept(DatCa::cMap(sbp, dbp), dMap.value(Type::MAP));
+    auto bmi = intercept(DatCa::cBmi(height, weight), 1);
 
     QMap<Type, qreal> vMap;
     vMap.insert(Type::Pos, data.value(QString::number(Type::Pos)).toInt());
@@ -66,6 +67,7 @@ QMap<Type, qreal> ReportDataJson::valueMap(const QJsonObject &info, const QJsonO
     vMap.insert(Type::LAP, lap);
     vMap.insert(Type::CVP, cvp);
     vMap.insert(Type::MAP, map);
+    vMap.insert(Type::BMI, bmi);
 
     auto lvet = intercept(DatCa::cVet(data.value(QString::number(Type::VET)).toInt()), dMap.value(Type::LVET));
     auto pep = intercept(DatCa::cPep(data.value(QString::number(Type::PEP)).toInt()), dMap.value(Type::PEP));

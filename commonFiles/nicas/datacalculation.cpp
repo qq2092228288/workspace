@@ -173,6 +173,11 @@ qreal DataCalculation::cMap(const qreal &sbp, const qreal &dbp)
     return ((sbp + dbp*2)/3);
 }
 
+qreal DataCalculation::cBmi(const qreal &height, const qreal &weight)
+{
+    return weight/qPow(height/100.0, 2);
+}
+
 qreal DataCalculation::cNnvgr(const QVector<qreal> &hrList)
 {
     if (hrList.count() == 0) return invalid();

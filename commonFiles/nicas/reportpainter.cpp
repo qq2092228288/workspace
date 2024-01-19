@@ -39,7 +39,7 @@ ReportPainter::ReportPainter(const ReportStruct &info, QPrinter *printer)
             trendChartPage(QVector<Type>{Type::LSWI, Type::LCW, Type::LCWI, Type::STR, Type::EPCI, Type::ISI, Type::Ino, Type::HR});
         }
         // PLR页
-        if (m_info.mode != Check_Mode::PhysicalExamination &&
+        if (m_info.mode != Check_Mode::PhysicalExamination && m_info.mode != Check_Mode::Health &&
                 !m_info.data.value(ekey(ReportDataName::position)).toArray()
                 .at(1).toObject().value(ekey(ReportDataName::reportTime)).toString().isEmpty()) {
             m_printer->newPage();

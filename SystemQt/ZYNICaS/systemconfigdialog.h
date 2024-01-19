@@ -90,6 +90,7 @@ private:
     QRadioButton *professionalModeRadio;
     QRadioButton *icuModeRadio;
     QRadioButton *healthCheckModeRadio;
+    QRadioButton *healthModeRadio;
     QGroupBox *systemInfoGroupBox;
     QLabel *serialPortLabel;
     QComboBox *serialPortComboBox;

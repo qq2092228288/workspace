@@ -100,6 +100,8 @@ public:
                 return topix(6);
             case Check_Mode::PhysicalExamination:
                 return topix(6.4);
+            case Check_Mode::Health:
+                return topix(8.9);
             }
             return -1;
         }

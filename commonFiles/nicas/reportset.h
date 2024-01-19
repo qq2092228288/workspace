@@ -19,7 +19,8 @@ enum Check_Mode
     Hypertension,           // 高血压模式
     InternalMedicine,       // 内科模式
     IntensiveCareUnit,      // 重症模式
-    PhysicalExamination     // 体检模式
+    PhysicalExamination,    // 体检模式
+    Health                  // 健康模式
 };
 
 class ReportParameters
@@ -40,6 +41,9 @@ public:
             break;
         case Check_Mode::PhysicalExamination:
             file.setFileName(":/physical_examination.json");
+            break;
+        case Check_Mode::Health:
+            file.setFileName(":/health_mode.json");
             break;
         }
         if (!file.open(QIODevice::ReadOnly)) {
