@@ -117,9 +117,9 @@ void ZyTebco::clearMap()
 
 void ZyTebco::writeF()
 {
-    // if (m_pSerial->isOpen()) {
-    //     m_pSerial->write("F");
-    // }
+    if (m_pSerial->isOpen()) {
+        m_pSerial->write("F");
+    }
 }
 
 void ZyTebco::handleSerialError(QSerialPort::SerialPortError error)

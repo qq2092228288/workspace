@@ -156,9 +156,9 @@ void MainWidget::enterBtnSlot()
                 DataManagement::getInstance().clearSlot();
                 enterSystemWidget->clearUiSlot();
             }
-            connect(&DataManagement::getInstance(), &DataManagement::startCheck,
-                    DataManagement::getInstance().getTebco(), &ZyTebco::startWriteF,
-                    Qt::ConnectionType(Qt::AutoConnection|Qt::UniqueConnection));
+            // connect(&DataManagement::getInstance(), &DataManagement::startCheck,
+            //         DataManagement::getInstance().getTebco(), &ZyTebco::startWriteF,
+            //         Qt::ConnectionType(Qt::AutoConnection|Qt::UniqueConnection));
             connect(&DataManagement::getInstance(), &DataManagement::startCheck,
                     DataManagement::getInstance().getTebco(), &ZyTebco::startCheckSlot,
                     Qt::ConnectionType(Qt::AutoConnection|Qt::UniqueConnection));
@@ -186,8 +186,8 @@ void MainWidget::demoBtnSlot()
         DataManagement::getInstance().clearSlot();
         enterSystemWidget->clearUiSlot();
     }
-    disconnect(&DataManagement::getInstance(), &DataManagement::startCheck,
-            DataManagement::getInstance().getTebco(), &ZyTebco::startWriteF);
+    // disconnect(&DataManagement::getInstance(), &DataManagement::startCheck,
+    //         DataManagement::getInstance().getTebco(), &ZyTebco::startWriteF);
     disconnect(enterSystemWidget, &EnterSystemWidget::createdReport, this, &MainWidget::createdReportSlot);
     this->close();
     enterSystemWidget->showMaximized();
