@@ -385,6 +385,7 @@ QString DataManagement::reportResult(const QJsonObject &json)
             if (m_pHospitalInfo->cMode == Check_Mode::Health) {
                 bool suggest = false;
                 bool sport = false;
+                bool drink = false;
                 int bmi = 0;
                 // 灌注
                 if (fmap.value(Type::CI) < 2.5) {
@@ -460,12 +461,12 @@ QString DataManagement::reportResult(const QJsonObject &json)
                 if (fmap.value(Type::ISI) < isi.value(min).toDouble()) {
                     if (smap.value(Type::ISI) >= isi.value(min).toDouble() &&
                         smap.value(Type::ISI) <= isi.value(max).toDouble()) {
-                        isiStr += tr("偏低，建议多喝水");
+                        drink = true;
                     }
                     else {
-                        isiStr += tr("偏低");
                         suggest = true;
                     }
+                    isiStr += tr("偏低");
                 }
                 else if (fmap.value(Type::ISI) >= isi.value(min).toDouble() &&
                          fmap.value(Type::ISI) <= isi.value(max).toDouble()) {
@@ -502,11 +503,14 @@ QString DataManagement::reportResult(const QJsonObject &json)
                     if (sport) {
                         result<<tr("%1减少钠摄入、多排汗、多喝水，根据自身情况增加运动量；").arg(space);
                     }
+                    if (drink && !sport) {
+                        result<<tr("%1建议多喝水；").arg(space);
+                    }
                     if (bmi != 0 && sport) {
-                        result<<tr("%1改善饮食、生活习惯；").arg(space);
+                        result<<tr("%1建议改善饮食、生活习惯；").arg(space);
                     }
                     else if (bmi == 2 && !sport) {
-                        result<<tr("%1改善饮食、生活习惯，根据自身情况增加运动量；").arg(space);
+                        result<<tr("%1建议改善饮食、生活习惯，根据自身情况增加运动量；").arg(space);
                     }
                     auto sv = ReportParameters::find(Type::SV);
                     if (fmap.value(Type::SV) >= sv.value(min).toDouble() &&
