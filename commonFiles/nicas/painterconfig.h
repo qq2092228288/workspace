@@ -2,6 +2,8 @@
 #define PAINTERCONFIG_H
 
 #include <QPainter>
+#include <QDateTime>
+#include <QJsonObject>
 
 struct HeaderMsg
 {

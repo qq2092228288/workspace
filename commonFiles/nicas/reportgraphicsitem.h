@@ -13,8 +13,9 @@ public:
     explicit ReportGraphicsItem(const QSize &size);
     QRectF boundingRect() const override;
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = 0) override;
-protected:
-    void timerEvent(QTimerEvent *event) override;
+public slots:
+    void startRecache();
+    void endRecache();
 private:
     const QSize &m_size;
 };

@@ -10,6 +10,7 @@ PainterConfig::PainterConfig(QPainter *painter, const int &width, const int &hei
     , m_height{height}
 {
     m_font.setFamily("Microsoft YaHei");
+    initPage();
 }
 
 PainterConfig::PainterConfig(QPainter *painter, const QSize &size)
@@ -124,7 +125,7 @@ void PainterConfig::paintMain(const double &hEnd, const QJsonObject &object)
     // 单双体位
     bool single = false;
     // 字体高度
-    constexpr double fh = 1.2;
+    constexpr double fh = 1.3;
     // 列头和行头字体
     painter()->setFont(font(fh, true));
     // 列宽
@@ -133,10 +134,10 @@ void PainterConfig::paintMain(const double &hEnd, const QJsonObject &object)
     QStringList columns { QString("参数"), QString("参数描述"), QString("第一体位") };
     if (!single) {
         columns<<QString("第二体位");
-        vectW<<16<<40<<9<<9<<18;
+        vectW<<19<<37<<9<<9<<18;
     }
     else {
-        vectW<<16<<40<<13<<23;
+        vectW<<19<<37<<13<<23;
     }
     columns<<QString("量规(单位)");
     // 起始x坐标
@@ -151,7 +152,7 @@ void PainterConfig::paintMain(const double &hEnd, const QJsonObject &object)
         painter()->drawText(colRect, Qt::AlignCenter, columns.at(i));
     }
     // 值字体
-    painter()->setFont(font(1.0, false));
+    painter()->setFont(font(fh, false));
     // 行高
     constexpr double rh = 4.5;
     // 组宽

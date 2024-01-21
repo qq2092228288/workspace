@@ -8,7 +8,6 @@
 
 #include "reportgraphicsitem.h"
 #include "printgraphicsview.h"
-#include <QGraphicsScene>
 #include <QPageSize>
 #include <QScreen>
 
@@ -25,20 +24,18 @@ int main(int argc, char *argv[])
         QCoreApplication::setApplicationVersion(QString::fromUtf8("2.1.0.1229"));
 
         QGraphicsScene scene;
-
-        // auto size = QGuiApplication::primaryScreen()->availableSize();
+        // scene.setSceneRect(0, 0, 0, 100);
+        auto view = new PrintGraphicsView(&scene);
         auto psize = QPageSize::sizePixels(QPageSize::A4, 96);
-        // scene.setSceneRect(0, -0.1*size.height(), psize.width(), psize.height() * 3);
         scene.setItemIndexMethod(QGraphicsScene::NoIndex);
-        for (int i = 0; i < 1; ++i) {
+        for (int i = 0; i < 3; ++i) {
             auto item = new ReportGraphicsItem(psize);
             item->setPos(0, i * (psize.height() + 20));
             scene.addItem(item);
+            QObject::connect(view, &PrintGraphicsView::startRecache, item, &ReportGraphicsItem::startRecache);
+            QObject::connect(view, &PrintGraphicsView::endRecache, item, &ReportGraphicsItem::endRecache);
         }
-
-        PrintGraphicsView view(&scene);
-
-        view.showMaximized();
+        view->showMaximized();
 
         // LoginDialog *dialog = new LoginDialog;
 

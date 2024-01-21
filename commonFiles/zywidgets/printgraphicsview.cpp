@@ -12,21 +12,34 @@
 #include <QDateTime>
 #include <QJsonObject>
 #include <QOpenGLWidget>
+#include <QMouseEvent>
+#include <QKeyEvent>
 
 #include "painterconfig.h"
 
 PrintGraphicsView::PrintGraphicsView(QGraphicsScene *scene, QWidget *parent)
     : QGraphicsView(scene, parent)
 {
-    viewport()->setAttribute(Qt::WA_AcceptTouchEvents);
-    setDragMode(ScrollHandDrag);
+    // 背景颜色
     setBackgroundBrush(QBrush(Qt::gray));
-    setRenderHint(QPainter::Antialiasing);
+    // 不保持painter状态
+    setOptimizationFlag(DontSavePainterState, true);
+    // 不调整消除混叠
+    setOptimizationFlag(DontAdjustForAntialiasing, true);
+    // 启用手势操作
+    viewport()->setAttribute(Qt::WA_AcceptTouchEvents);
+    // 滚动手动拖动
+    setDragMode(ScrollHandDrag);
+    // 抗锯齿
+    // setRenderHint(QPainter::Antialiasing);
     setCacheMode(QGraphicsView::CacheBackground);
-    setViewportUpdateMode(QGraphicsView::BoundingRectViewportUpdate);
-    // setViewport(new QOpenGLWidget());
-    button = new QPushButton(tr("打印"), this);
-    connect(button, &QPushButton::clicked, this, &PrintGraphicsView::buttonClicked);
+    // 只更新需要更新的图元
+    setViewportUpdateMode(QGraphicsView::MinimalViewportUpdate);
+    // 启用OpenGL
+    setViewport(new QOpenGLWidget());
+
+    // button = new QPushButton(tr("打印"), this);
+    // connect(button, &QPushButton::clicked, this, &PrintGraphicsView::buttonClicked);
 }
 
 bool PrintGraphicsView::viewportEvent(QEvent *event)
@@ -34,8 +47,8 @@ bool PrintGraphicsView::viewportEvent(QEvent *event)
     switch (event->type()) {
     case QEvent::TouchBegin:
     case QEvent::TouchUpdate:
-    case QEvent::TouchEnd:
     {
+        emit startRecache();
         QTouchEvent *touchEvent = static_cast<QTouchEvent *>(event);
         QList<QTouchEvent::TouchPoint> touchPoints = touchEvent->touchPoints();
         if (touchPoints.count() == 2) {
@@ -57,10 +70,42 @@ bool PrintGraphicsView::viewportEvent(QEvent *event)
         }
         return true;
     }
+    case QEvent::TouchEnd:
+        emit endRecache();
+        return true;
     default:
         break;
     }
     return QGraphicsView::viewportEvent(event);
+}
+
+void PrintGraphicsView::wheelEvent(QWheelEvent *event)
+{
+    if (event->modifiers() == Qt::ControlModifier) {
+        emit startRecache();
+        if (event->angleDelta().y() > 0) {
+            if (totalScaleFactor <= 3) {
+                totalScaleFactor += 0.25;
+                setTransform(QTransform::fromScale(totalScaleFactor, totalScaleFactor));
+            }
+
+        }
+        else {
+            if (totalScaleFactor >= 0.5) {
+                totalScaleFactor -= 0.25;
+                setTransform(QTransform::fromScale(totalScaleFactor, totalScaleFactor));
+            }
+        }
+    }
+    QGraphicsView::wheelEvent(event);
+}
+
+void PrintGraphicsView::keyReleaseEvent(QKeyEvent *event)
+{
+    if (event->key() == Qt::Key_Control) {
+        emit endRecache();
+    }
+    return QGraphicsView::keyReleaseEvent(event);
 }
 
 void PrintGraphicsView::buttonClicked()
