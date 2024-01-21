@@ -14,12 +14,17 @@
 #include <QOpenGLWidget>
 #include <QMouseEvent>
 #include <QKeyEvent>
+#include <QGroupBox>
+#include <QFile>
+#include <QComboBox>
 
 #include "painterconfig.h"
 
 PrintGraphicsView::PrintGraphicsView(QGraphicsScene *scene, QWidget *parent)
     : QGraphicsView(scene, parent)
 {
+    QFile qssFile(":/qss/printgraphicsviewui.qss");
+    if (qssFile.open(QIODevice::ReadOnly)) setStyleSheet(qssFile.readAll());
     // 背景颜色
     setBackgroundBrush(QBrush(Qt::gray));
     // 不保持painter状态
@@ -30,16 +35,44 @@ PrintGraphicsView::PrintGraphicsView(QGraphicsScene *scene, QWidget *parent)
     viewport()->setAttribute(Qt::WA_AcceptTouchEvents);
     // 滚动手动拖动
     setDragMode(ScrollHandDrag);
-    // 抗锯齿
-    // setRenderHint(QPainter::Antialiasing);
+    // 缓存背景
     setCacheMode(QGraphicsView::CacheBackground);
     // 只更新需要更新的图元
     setViewportUpdateMode(QGraphicsView::MinimalViewportUpdate);
-    // 启用OpenGL
-    setViewport(new QOpenGLWidget());
+    // 禁止滚动条
+    setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
-    // button = new QPushButton(tr("打印"), this);
-    // connect(button, &QPushButton::clicked, this, &PrintGraphicsView::buttonClicked);
+    auto mainLayout = new QVBoxLayout(this);
+    auto hLayout = new QHBoxLayout();
+    mainLayout->addLayout(hLayout);
+    mainLayout->setContentsMargins(100, 0, 100, 0);
+    mainLayout->addStretch();
+
+    hLayout->addStretch();
+    auto groupBox = new QGroupBox(this);
+    hLayout->addWidget(groupBox);
+    hLayout->addStretch();
+
+    auto boxLayout = new QHBoxLayout(groupBox);
+
+    auto defaultButton = new QPushButton(tr("默认"), groupBox);
+    auto scaleComboBox = new QComboBox(groupBox);
+    auto zoomInButton = new QPushButton(tr("缩小"), groupBox);
+    auto zoomOutButton = new QPushButton(tr("放大"), groupBox);
+    auto pageSetButton = new QPushButton(tr("页面设置"), groupBox);
+    auto printButton = new QPushButton(tr("打印"), groupBox);
+
+    boxLayout->addWidget(defaultButton);
+    boxLayout->addWidget(scaleComboBox);
+    boxLayout->addWidget(zoomInButton);
+    boxLayout->addWidget(zoomOutButton);
+    boxLayout->addStretch();
+    boxLayout->addWidget(pageSetButton);
+    boxLayout->addWidget(printButton);
+
+    zoomInButton->setIconSize(QSize(80, 80));
+    zoomInButton->setIcon(QIcon(":/images/zoomIn.svg"));
 }
 
 bool PrintGraphicsView::viewportEvent(QEvent *event)
@@ -48,7 +81,6 @@ bool PrintGraphicsView::viewportEvent(QEvent *event)
     case QEvent::TouchBegin:
     case QEvent::TouchUpdate:
     {
-        emit startRecache();
         QTouchEvent *touchEvent = static_cast<QTouchEvent *>(event);
         QList<QTouchEvent::TouchPoint> touchPoints = touchEvent->touchPoints();
         if (touchPoints.count() == 2) {
@@ -65,8 +97,17 @@ bool PrintGraphicsView::viewportEvent(QEvent *event)
                 totalScaleFactor *= currentScaleFactor;
                 currentScaleFactor = 1;
             }
-            setTransform(QTransform::fromScale(totalScaleFactor * currentScaleFactor,
-                                               totalScaleFactor * currentScaleFactor));
+            totalScaleFactor *= currentScaleFactor;
+            if (totalScaleFactor < minFactor) {
+                totalScaleFactor = minFactor;
+            }
+            else if (totalScaleFactor > maxFactor) {
+                totalScaleFactor = maxFactor;
+            }
+            else {
+                emit startRecache();
+            }
+            setTransform(QTransform::fromScale(totalScaleFactor, totalScaleFactor));
         }
         return true;
     }
@@ -82,20 +123,25 @@ bool PrintGraphicsView::viewportEvent(QEvent *event)
 void PrintGraphicsView::wheelEvent(QWheelEvent *event)
 {
     if (event->modifiers() == Qt::ControlModifier) {
-        emit startRecache();
         if (event->angleDelta().y() > 0) {
-            if (totalScaleFactor <= 3) {
-                totalScaleFactor += 0.25;
-                setTransform(QTransform::fromScale(totalScaleFactor, totalScaleFactor));
+            totalScaleFactor += 0.25;
+            if (totalScaleFactor > maxFactor) {
+                totalScaleFactor = maxFactor;
             }
-
+            else {
+                emit startRecache();
+            }
         }
         else {
-            if (totalScaleFactor >= 0.5) {
-                totalScaleFactor -= 0.25;
-                setTransform(QTransform::fromScale(totalScaleFactor, totalScaleFactor));
+            totalScaleFactor -= 0.25;
+            if (totalScaleFactor < minFactor) {
+                totalScaleFactor = minFactor;
+            }
+            else {
+                emit startRecache();
             }
         }
+        setTransform(QTransform::fromScale(totalScaleFactor, totalScaleFactor));
     }
     QGraphicsView::wheelEvent(event);
 }

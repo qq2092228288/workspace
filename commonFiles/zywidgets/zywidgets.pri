@@ -10,3 +10,6 @@ SOURCES += \
     $$PWD/printgraphicsview.cpp \
     $$PWD/scopecalendardialog.cpp \
     $$PWD/updateappdialog.cpp
+
+RESOURCES += \
+    $$PWD/style.qrc

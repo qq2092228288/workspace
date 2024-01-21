@@ -11,12 +11,11 @@ ReportGraphicsItem::ReportGraphicsItem(const QSize &size)
 
 QRectF ReportGraphicsItem::boundingRect() const
 {
-    return QRectF(-0.5, -40, m_size.width() + 1, m_size.height() + 40);
+    return QRectF(-0.5, -100, m_size.width() + 1, m_size.height() + 100);
 }
 
 void ReportGraphicsItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
 {
-    update();
     Q_UNUSED(option);
     Q_UNUSED(widget);
     PainterConfig config(painter, m_size);
