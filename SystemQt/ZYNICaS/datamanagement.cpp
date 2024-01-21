@@ -497,7 +497,7 @@ QString DataManagement::reportResult(const QJsonObject &json)
                 else {
                     result<<tr("5.BMI体型正常；");
                 }
-                if (suggest || sport || bmi != 0) {
+                if (suggest || sport || drink) {
                     QString space("           ");
                     result<<tr("\n小结：血流动力学异常；");
                     if (sport) {
