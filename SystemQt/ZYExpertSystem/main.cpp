@@ -6,10 +6,10 @@
 #include "mainwidget.h"
 #include "tcpclientsocket.h"
 
-#include "reportgraphicsitem.h"
-#include "printgraphicsview.h"
-#include <QPageSize>
-#include <QScreen>
+// #include "reportgraphicsitem.h"
+// #include "printgraphicsview.h"
+// #include <QPageSize>
+// #include <QScreen>
 
 int main(int argc, char *argv[])
 {
@@ -23,32 +23,32 @@ int main(int argc, char *argv[])
         QCoreApplication::setOrganizationDomain(QString::fromUtf8("www.zeyaotebco.com"));
         QCoreApplication::setApplicationVersion(QString::fromUtf8("2.1.0.1229"));
 
-        QGraphicsScene scene;
-        auto view = new PrintGraphicsView(&scene);
-        auto psize = QPageSize::sizePixels(QPageSize::A3, 96);
-        scene.setItemIndexMethod(QGraphicsScene::NoIndex);
-        for (int i = 0; i < 3; ++i) {
-            auto item = new ReportGraphicsItem(psize);
-            item->setPos(0, i * item->boundingRect().height() + 20);
-            scene.addItem(item);
-            QObject::connect(view, &PrintGraphicsView::startRecache, item, &ReportGraphicsItem::startRecache);
-            QObject::connect(view, &PrintGraphicsView::endRecache, item, &ReportGraphicsItem::endRecache);
-        }
-        view->showMaximized();
+        // QGraphicsScene scene;
+        // auto view = new PrintGraphicsView(&scene);
+        // auto psize = QPageSize::sizePixels(QPageSize::A3, 96);
+        // scene.setItemIndexMethod(QGraphicsScene::NoIndex);
+        // for (int i = 0; i < 1; ++i) {
+        //     auto item = new ReportGraphicsItem(psize);
+        //     item->setPos(0, i * item->boundingRect().height() + 20);
+        //     scene.addItem(item);
+        //     QObject::connect(view, &PrintGraphicsView::startRecache, item, &ReportGraphicsItem::startRecache);
+        //     QObject::connect(view, &PrintGraphicsView::endRecache, item, &ReportGraphicsItem::endRecache);
+        // }
+        // view->showMaximized();
 
-        // LoginDialog *dialog = new LoginDialog;
+        LoginDialog *dialog = new LoginDialog;
 
-        // MainWidget_PTR widget(new MainWidget);
-        // QObject::connect(dialog, &LoginDialog::successful, widget.get(), &MainWidget::showMaximized);
+        MainWidget_PTR widget(new MainWidget);
+        QObject::connect(dialog, &LoginDialog::successful, widget.get(), &MainWidget::showMaximized);
 
-        // TcpClientSocket::getInstance()->connectToServer();
+        TcpClientSocket::getInstance()->connectToServer();
 
-        // dialog->exec();
-        // delete dialog;
-        // dialog = nullptr;
+        dialog->exec();
+        delete dialog;
+        dialog = nullptr;
 
-        // if (widget->isHidden())
-        //     return 0;
+        if (widget->isHidden())
+            return 0;
         return a.exec();
     }
     else {

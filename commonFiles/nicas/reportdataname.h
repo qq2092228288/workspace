@@ -5,6 +5,9 @@
 #include <QJsonObject>
 #include <QJsonArray>
 #include <QMetaEnum>
+#include <QDateTime>
+
+#include "datatype.h"
 
 class ReportDataName : public QObject
 {
@@ -80,23 +83,50 @@ public:
         waveform
     };
     Q_ENUM(PositionStruct)
-    static QMap<int, int> digitMap(const QJsonArray &array)
-    {
-        QMap<int, int> map;
-        foreach (auto group, array) {
-            auto parameters = group.toObject().value("parameters").toArray();
-            foreach (auto value, parameters) {
-                auto parameter = value.toObject();
-                map.insert(parameter.value("type").toInt(), parameter.value("digit").toInt());
-            }
-        }
-        return map;
-    }
+    static QMap<int, int> digitMap(const QJsonArray &array);
     template <class T>
     static QString ekey(const T &t)
     {
         return QString(QMetaEnum::fromType<T>().valueToKey(static_cast<int>(t)));
     }
+};
+
+struct PatientInfo
+{
+    PatientInfo();
+    PatientInfo(const QJsonObject &object);
+    bool male;
+    int age;
+    int height;
+    int weight;
+    double hb;
+    double bsa;
+    QString medicalRecordNumber;
+    QString patientName;
+    QString sex;
+};
+
+struct Place
+{
+    Place();
+    Place(const QJsonObject &object);
+    QString consultationPlace;
+    QString inspector;
+    QString mac;
+    QString primaryPlace;
+    QString secondaryPlace;
+};
+
+struct Position
+{
+    Position();
+    Position(const QJsonObject &position, const QJsonObject &info);
+    int pos;
+    QJsonArray allData;
+    QJsonObject data;
+    QString reportTime;
+    QJsonArray waveform;
+    QMap<Type, qreal> valueMap;
 };
 
 #endif // REPORTDATANAME_H

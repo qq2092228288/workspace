@@ -2,7 +2,7 @@
 #define DATACALCULATION_H
 
 #include <QObject>
-#include <QDebug>
+
 class DataCalculation
 {
 public:

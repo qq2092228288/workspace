@@ -15,6 +15,7 @@ SOURCES		+= \
     $$PWD/datatype.cpp \
     $$PWD/painterconfig.cpp \
     $$PWD/reportdatajson.cpp \
+    $$PWD/reportdataname.cpp \
     $$PWD/reportgraphicsitem.cpp \
     $$PWD/reportpainter.cpp \
     $$PWD/reporttablemodel.cpp

@@ -3,5 +3,9 @@
         <file>images/zoomIn.svg</file>
         <file>images/zoomOut.svg</file>
         <file>qss/printgraphicsviewui.qss</file>
+        <file>images/printer.svg</file>
+        <file>images/pageSetting.svg</file>
+        <file>images/downArrow.svg</file>
+        <file>images/upArrow.svg</file>
     </qresource>
 </RCC>
