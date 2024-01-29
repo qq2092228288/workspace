@@ -9,10 +9,11 @@ class SubTcpServer : public QObject
 {
     Q_OBJECT
 public:
-    explicit SubTcpServer(QObject *parent = nullptr);
+    explicit SubTcpServer(const int index, QObject *parent = nullptr);
+    int index() const;
     int count() const;
 public slots:
-    void newSocketDescriptor(qintptr socketDescriptor);
+    void newSocketDescriptor(qintptr socketDescriptor, int index);
 signals:
     void writeReady(qintptr socketDescriptor, const QByteArray &data);
     void appendReports(qintptr socketDescriptor, const QJsonArray &reports);
@@ -24,6 +25,7 @@ private:
     template <class T>
     void clientWrite(qintptr socketDescriptor, TelegramType type, const T &json);
 private:
+    const int m_index;
     QSqlDatabase m_db;
     QList<TcpClientSocket *> m_clientList;
 };

@@ -18,7 +18,8 @@
         X_MACRO(NewReportData,          0x04)  \
         X_MACRO(ReportDataReady,        0x05)  \
         X_MACRO(ReportDataRequest,      0x06)  \
-        X_MACRO(InvalidType,    INT16_MAX)
+        X_MACRO(ServerFull,             0xFF)  \
+        X_MACRO(InvalidType,       INT16_MAX)
 /*! 报文类型枚举 */
 enum TelegramType : int16_t
 {

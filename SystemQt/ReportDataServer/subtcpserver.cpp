@@ -6,8 +6,9 @@
 
 using namespace DatabaseEnumNs;
 
-SubTcpServer::SubTcpServer(QObject *parent)
+SubTcpServer::SubTcpServer(const int index, QObject *parent)
     : QObject{parent}
+    , m_index{index}
 {
     qRegisterMetaType<qintptr>("qintptr");
     m_db = QSqlDatabase::addDatabase(Singleton::databaseType(), QUuid::createUuid().toString());
@@ -21,13 +22,19 @@ SubTcpServer::SubTcpServer(QObject *parent)
     }
 }
 
+int SubTcpServer::index() const
+{
+    return m_index;
+}
+
 int SubTcpServer::count() const
 {
     return m_clientList.count();
 }
 
-void SubTcpServer::newSocketDescriptor(qintptr socketDescriptor)
+void SubTcpServer::newSocketDescriptor(qintptr socketDescriptor, int index)
 {
+    if (index != m_index) return;
     auto client = new TcpClientSocket(socketDescriptor, this);
     connect(client, &TcpClientSocket::send, this, &SubTcpServer::received);
     connect(this, &SubTcpServer::writeReady, client, &TcpClientSocket::writeReady);

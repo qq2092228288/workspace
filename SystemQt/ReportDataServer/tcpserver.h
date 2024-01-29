@@ -13,7 +13,7 @@ public:
     explicit TcpServer(QObject *parent = nullptr);
     virtual ~TcpServer();
 signals:
-    void sendSocketDescriptor(qintptr socketDescriptor);
+    void sendSocketDescriptor(qintptr socketDescriptor, int index);
 private:
     void incomingConnection(qintptr socketDescriptor) override;
 private slots:
