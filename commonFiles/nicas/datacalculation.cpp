@@ -117,7 +117,7 @@ qreal DataCalculation::cCo(const qreal &ci, const qreal &bsa)
 
 qreal DataCalculation::cHrv(const qreal &ci)
 {
-    return percent(ci, 4.5);
+    return percent(ci, 3.5);
 }
 
 qreal DataCalculation::cSvr(const qreal &co, const qreal &map, const qreal &cvp)
