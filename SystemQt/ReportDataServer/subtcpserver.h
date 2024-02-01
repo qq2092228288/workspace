@@ -10,6 +10,7 @@ class SubTcpServer : public QObject
     Q_OBJECT
 public:
     explicit SubTcpServer(const int index, QObject *parent = nullptr);
+    virtual ~SubTcpServer();
     int index() const;
     int count() const;
 public slots:

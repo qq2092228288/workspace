@@ -17,6 +17,14 @@ SubTcpServer::SubTcpServer(const int index, QObject *parent)
     m_db.setDatabaseName(Singleton::databaseName());
     m_db.setUserName(Singleton::userName());
     m_db.setPassword(Singleton::password());
+    if (!m_db.open()) {
+        TIME_DEBUG()<<m_db.lastError();
+    }
+}
+
+SubTcpServer::~SubTcpServer()
+{
+    m_db.close();
 }
 
 int SubTcpServer::index() const
@@ -43,10 +51,6 @@ void SubTcpServer::newSocketDescriptor(qintptr socketDescriptor, int index)
 
 void SubTcpServer::received(qintptr socketDescriptor, TelegramType type, const QByteArray &data)
 {
-    if (!m_db.open()) {
-        TIME_DEBUG()<<m_db.lastError();
-        return;
-    }
     auto sqlQuery = new QSqlQuery(m_db);
     auto object = QJsonDocument::fromJson(data).object();
     switch (type) {
