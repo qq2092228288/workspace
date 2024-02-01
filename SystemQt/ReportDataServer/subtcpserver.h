@@ -16,8 +16,8 @@ public:
 public slots:
     void newSocketDescriptor(qintptr socketDescriptor, int index);
 signals:
-    void writeReady(qintptr socketDescriptor, const QByteArray &data);
-    void appendReports(qintptr socketDescriptor, const QJsonArray &reports);
+    void writeReady(qintptr socketDescriptor, QByteArray data);
+    void appendReports(qintptr socketDescriptor, QJsonArray reports);
 private slots:
     void received(qintptr socketDescriptor, TelegramType type, const QByteArray &data);
     void clientDeleted(QObject *client);
