@@ -165,7 +165,6 @@ void SubTcpServer::received(qintptr socketDescriptor, TelegramType type, const Q
     sqlQuery->finish();
     delete sqlQuery;
     sqlQuery = nullptr;
-    m_db.close();
 }
 
 void SubTcpServer::clientDeleted(QObject *client)
