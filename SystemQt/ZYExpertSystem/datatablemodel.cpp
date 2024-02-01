@@ -9,19 +9,7 @@
 
 using namespace DatabaseEnumNs;
 
-const auto REPORT_TIME_STR              = ReportDataName::ekey(ReportDataName::reportTime);
-const auto PRIMARY_PLACE_STR            = ReportDataName::ekey(ReportDataName::primaryPlace);
-const auto SECONDARY_PLACE_STR          = ReportDataName::ekey(ReportDataName::secondaryPlace);
-const auto PATIENT_NAME_STR             = ReportDataName::ekey(ReportDataName::patientName);
-const auto MEDICAL_RECORD_NUMBER_STR    = ReportDataName::ekey(ReportDataName::medicalRecordNumber);
-const auto SEX_STR                      = ReportDataName::ekey(ReportDataName::sex);
-const auto AGE_STR                      = ReportDataName::ekey(ReportDataName::age);
-const auto HEIGHT_STR                   = ReportDataName::ekey(ReportDataName::height);
-const auto WEIGHT_STR                   = ReportDataName::ekey(ReportDataName::weight);
-const auto DATA_STR                     = ReportDataName::ekey(ReportDataName::data);
-const auto PLACE_STR                    = ReportDataName::ekey(ReportDataName::place);
-const auto PATIENT_INFO_STR             = ReportDataName::ekey(ReportDataName::patientInfo);
-const auto POSITION_STR                 = ReportDataName::ekey(ReportDataName::position);
+#define ekey(evalue) ReportDataName::ekey(evalue)
 
 bool myfunction (ExeclData i, ExeclData j)
 {
@@ -40,14 +28,14 @@ ExeclData::ExeclData(const QString &id, const QJsonObject &place, const QJsonObj
         time = QDateTime::fromString(tstr, "yyyyMMddhhmmss");
     }
     deviceId = id;
-    primaryPlace = place.value(PRIMARY_PLACE_STR).toString();
-    secondaryPlace = place.value(SECONDARY_PLACE_STR).toString();
-    patientName = patientInfo.value(PATIENT_NAME_STR).toString().trimmed();
-    medicalRecordNumber = patientInfo.value(MEDICAL_RECORD_NUMBER_STR).toString().trimmed() + patientName;
-    sex = patientInfo.value(SEX_STR).toString();
-    age = patientInfo.value(AGE_STR).toString().toInt();
-    height = patientInfo.value(HEIGHT_STR).toString().toInt();
-    weight = patientInfo.value(WEIGHT_STR).toString().toInt();
+    primaryPlace = place.value(ekey(ReportDataName::primaryPlace)).toString();
+    secondaryPlace = place.value(ekey(ReportDataName::secondaryPlace)).toString();
+    patientName = patientInfo.value(ekey(ReportDataName::patientName)).toString().trimmed();
+    medicalRecordNumber = patientInfo.value(ekey(ReportDataName::medicalRecordNumber)).toString().trimmed() + patientName;
+    sex = patientInfo.value(ekey(ReportDataName::sex)).toString();
+    age = patientInfo.value(ekey(ReportDataName::age)).toString().toInt();
+    height = patientInfo.value(ekey(ReportDataName::height)).toString().toInt();
+    weight = patientInfo.value(ekey(ReportDataName::weight)).toString().toInt();
     bsa = (static_cast<int>(DatCa::cBsa(height, weight) * 100)) / 100.0;
     pos = pdata.value(QString::number(Type::Pos)).toInt();
     map = ReportDataJson::valueMap(patientInfo, pdata, QJsonArray(), parameters);
@@ -197,22 +185,22 @@ void DataTableModel::resetList()
     while (query.next()) {
         auto deviceId = query.value(0).toString();
         auto reportData = QJsonDocument::fromJson(query.value(1).toString().toUtf8()).object();
-        auto place = reportData.value(PLACE_STR).toObject();
-        auto patientInfo = reportData.value(PATIENT_INFO_STR).toObject();
-        auto position = reportData.value(POSITION_STR).toArray();
-        auto ststr = position.at(1).toObject().value(REPORT_TIME_STR).toString();
+        auto place = reportData.value(ekey(ReportDataName::place)).toObject();
+        auto patientInfo = reportData.value(ekey(ReportDataName::patientInfo)).toObject();
+        auto position = reportData.value(ekey(ReportDataName::position)).toArray();
+        auto ststr = position.at(1).toObject().value(ekey(ReportDataName::reportTime)).toString();
         if (!ststr.isEmpty()) {
             m_list.append(ExeclData(deviceId,
                                     place,
                                     patientInfo,
                                     ststr,
-                                    position.at(1).toObject().value(DATA_STR).toObject(),
+                                    position.at(1).toObject().value(ekey(ReportDataName::data)).toObject(),
                                     parameters,
                                     false));
         }
         m_list.append(ExeclData(deviceId, place, patientInfo,
-                                position.at(0).toObject().value(REPORT_TIME_STR).toString(),
-                                position.at(0).toObject().value(DATA_STR).toObject(),
+                                position.at(0).toObject().value(ekey(ReportDataName::reportTime)).toString(),
+                                position.at(0).toObject().value(ekey(ReportDataName::data)).toObject(),
                                 parameters,
                                 true));
     }

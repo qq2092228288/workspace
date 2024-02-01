@@ -11,7 +11,7 @@ QSqlDatabase &TcpClientSocket::db()
 
 void TcpClientSocket::connectToServer()
 {
-    connectToHost(Singleton::serverAddress(), 18080);
+    connectToHost(Singleton::hostname(), 18080);
 }
 
 void TcpClientSocket::getSoftwareInfo()
@@ -44,7 +44,7 @@ void TcpClientSocket::getNewReports()
 
 void TcpClientSocket::writeReady(const TelegramType &type, const QByteArray &data)
 {
-    write(TProfile(type, data).toByteArray());
+    write(TelegramProfile(type, data).toByteArray());
 }
 
 void TcpClientSocket::connectedSlot()
@@ -70,9 +70,9 @@ void TcpClientSocket::connectedSlot()
 void TcpClientSocket::dataReceived()
 {
     m_data.append(readAll());
-    auto info = TProfile::baseInfo(m_data);
+    auto info = TelegramProfile::baseInfo(m_data);
     if (info.index != -1 && info.length <= m_data.length()) {
-        auto tp = TProfile::fromUtf8(m_data.mid(info.index, info.length));
+        auto tp = TelegramProfile::fromUtf8(m_data.mid(info.index, info.length));
         m_data = m_data.mid(info.index + info.length);
         switch (tp.telegramType()) {
         case TelegramType::SoftwareInfomation:
@@ -139,7 +139,12 @@ TcpClientSocket::TcpClientSocket(QObject *parent)
 
 TcpClientSocket::~TcpClientSocket()
 {
-
+    if (m_db.isOpen()) {
+        m_db.close();
+    }
+    disconnect(this, &TcpClientSocket::connected, this, &TcpClientSocket::connectedSlot);
+    disconnect(this, &TcpClientSocket::readyRead, this, &TcpClientSocket::dataReceived);
+    disconnect(this, &TcpClientSocket::disconnected, this, &TcpClientSocket::connectToServer);
 }
 
 TcpClientSocket *TcpClientSocket::getInstance()

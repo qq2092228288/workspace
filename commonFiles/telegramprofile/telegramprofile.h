@@ -36,11 +36,12 @@ typedef struct TelegramBaseInfo
 }TBInfo;
 
 /*! 报文结构 */
-typedef class TelegramProfile
+class TelegramProfile
 {
 public:
     explicit TelegramProfile();
     explicit TelegramProfile(const TelegramType &type, const QByteArray &data);
+    virtual ~TelegramProfile();
 public:
     QByteArray toByteArray() const;
     int32_t startIdentifier() const;
@@ -70,7 +71,7 @@ private:
     QByteArray m_body_data;
 private:
     bool operator==(const TelegramProfile &tp);
-}TProfile;
+};
 QDebug operator<<(QDebug debug, const TelegramProfile &tp);
 
 #endif  // TELEGRAM_PROFILE_H

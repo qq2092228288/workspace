@@ -31,6 +31,13 @@ TelegramProfile::TelegramProfile(const TelegramType &type, const QByteArray &dat
     m_header_checksum = QCryptographicHash::hash(QString(header).toUtf8(), QCryptographicHash::Md5);
 }
 
+TelegramProfile::~TelegramProfile()
+{
+    m_data_checksum.clear();
+    m_header_checksum.clear();
+    m_body_data.clear();
+}
+
 QByteArray TelegramProfile::toByteArray() const
 {
     QByteArray bytes;

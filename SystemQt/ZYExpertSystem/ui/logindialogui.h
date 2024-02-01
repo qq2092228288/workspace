@@ -33,7 +33,7 @@ public:
     {
         if (Dialog->objectName().isEmpty())
             Dialog->setObjectName(QString::fromUtf8("Dialog"));
-        Dialog->resize(420, 330);
+        Dialog->setMinimumSize(420, 330);
         Dialog->setWindowFlag(Qt::WindowContextHelpButtonHint, false);
 
         QFile qssFile(":/qss/logindialogui.qss");

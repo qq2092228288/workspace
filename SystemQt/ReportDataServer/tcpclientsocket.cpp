@@ -12,6 +12,7 @@ TcpClientSocket::TcpClientSocket(qintptr socketDescriptor, QObject *parent)
 TcpClientSocket::~TcpClientSocket()
 {
     m_data.clear();
+    m_reportQueue.clear();
 }
 
 void TcpClientSocket::writeReady(qintptr socketDescriptor, const QByteArray &data)
@@ -31,16 +32,16 @@ void TcpClientSocket::appendReports(qintptr socketDescriptor, const QJsonArray &
 void TcpClientSocket::dataReceived()
 {
     m_data.append(readAll());
-    auto info = TProfile::baseInfo(m_data);
+    auto info = TelegramProfile::baseInfo(m_data);
     if (info.index != -1 && info.length <= m_data.length()) {
-        auto tp = TProfile::fromUtf8(m_data.mid(info.index, info.length));
+        auto tp = TelegramProfile::fromUtf8(m_data.mid(info.index, info.length));
         m_data = m_data.mid(info.index + info.length);
         if (tp.telegramType() == TelegramType::InvalidType) {   // 无效数据
             return;
         }
         else if (tp.telegramType() == TelegramType::ReportDataRequest) {   // 客户端响应
             if (!m_reportQueue.empty()) {
-                write(TProfile(TelegramType::ReportData,
+                write(TelegramProfile(TelegramType::ReportData,
                                Singleton::jsonToUtf8(m_reportQueue.dequeue())).toByteArray());
             }
         }
