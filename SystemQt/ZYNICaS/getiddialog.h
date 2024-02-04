@@ -33,9 +33,11 @@ private slots:
     void onlineGetSlot();
 private:
     QLabel *consumablesLabel;
+    QLabel *deviceIdLabel;
     QLabel *macLabel;
 //    QLabel *codeLabel;
     QLineEdit *consumablesEdit;
+    QLineEdit *deviceIdEdit;
     QLineEdit *macEdit;
 //    QLineEdit *codeEdit;
     QPushButton *copyBtn;

@@ -46,6 +46,7 @@ public:
     Q_ENUM(CountType)
     bool openDatabase();
     bool deviceInfoIsEmpty();
+    QString getDeviceId() const;
 public slots:
     void login(const QString &deviceId, const QString &password);
     void logout();

@@ -11,9 +11,11 @@ GetIdDialog::GetIdDialog(QWidget *parent)
     this->setWindowTitle(tr("有效验证码"));
     QGridLayout *mainLayout = new QGridLayout(this);
     consumablesLabel = new QLabel(tr("剩余有效验证码:"), this);
+    deviceIdLabel = new QLabel(tr("机身号:"));
     macLabel = new QLabel(tr("MAC地址:"), this);
 //    codeLabel = new QLabel(tr("离线获取:"), this);
     consumablesEdit = new QLineEdit(this);
+    deviceIdEdit = new QLineEdit(this);
     macEdit = new QLineEdit(this);
 //    codeEdit = new QLineEdit(this);
     copyBtn = new QPushButton(tr("复制"), this);
@@ -31,9 +33,11 @@ GetIdDialog::GetIdDialog(QWidget *parent)
 //    deviceLayout->addWidget(createDeviceBtn);
     mainLayout->addWidget(consumablesLabel, 0, 0);
     mainLayout->addWidget(consumablesEdit, 0, 1);
-    mainLayout->addWidget(macLabel, 1, 0);
-    mainLayout->addWidget(macEdit, 1, 1);
-    mainLayout->addWidget(copyBtn, 1, 2);
+    mainLayout->addWidget(deviceIdLabel, 1, 0);
+    mainLayout->addWidget(deviceIdEdit, 1, 1);
+    mainLayout->addWidget(macLabel, 2, 0);
+    mainLayout->addWidget(macEdit, 2, 1);
+    mainLayout->addWidget(copyBtn, 2, 2);
 //    mainLayout->addWidget(codeLabel, 2, 0);
 //    mainLayout->addWidget(codeEdit, 2, 1);
 //    mainLayout->addWidget(usedBtn, 2, 2);
@@ -44,9 +48,12 @@ GetIdDialog::GetIdDialog(QWidget *parent)
     consumablesEdit->setFixedWidth(100);
     consumablesEdit->setReadOnly(true);
     consumablesEdit->setAlignment(Qt::AlignCenter);
+    deviceIdEdit->setReadOnly(true);
+    deviceIdEdit->setAlignment(Qt::AlignCenter);
     macEdit->setReadOnly(true);
     macEdit->setAlignment(Qt::AlignCenter);
 
+    deviceIdEdit->setText(instance.mqttClient()->getDeviceId());
     macEdit->setText(instance.getMac());
 
     connect(copyBtn, &QPushButton::clicked, this, &GetIdDialog::copySlot);

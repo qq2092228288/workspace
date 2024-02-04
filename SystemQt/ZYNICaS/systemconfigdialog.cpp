@@ -13,7 +13,7 @@ SystemConfigDialog::SystemConfigDialog(QWidget *parent)
     //样式表
     this->setStyleSheet(instance.dialogQss(1.2));
 
-    hospitalInfoGroupBox = new QGroupBox(tr("信息配置"),this);
+    hospitalInfoGroupBox = new QGroupBox(tr("信息设置"),this);
     hospitalNameLabel = new QLabel(tr("医院"), this);
     roomNameLabel = new QLabel(instance.departmentName(), this);
     doctorNameLabel = new QLabel(tr("检查人员"), this);
@@ -22,7 +22,7 @@ SystemConfigDialog::SystemConfigDialog(QWidget *parent)
     roomNameLineEdit = new QLineEdit(this);
     doctorNameLineEdit = new QLineEdit(this);
     consultationHospitalLineEdit = new QLineEdit(this);
-    titleGroupBox = new QGroupBox(tr("名称配置"), this);
+    titleGroupBox = new QGroupBox(tr("名称设置"), this);
     roomButtonGroup = new QButtonGroup(this);
     roomRadio = new QRadioButton(tr("科室"), this);
     execRoomRadio = new QRadioButton(tr("执行科室"), this);
@@ -30,23 +30,23 @@ SystemConfigDialog::SystemConfigDialog(QWidget *parent)
     mNumRadio = new QRadioButton(tr("病历号"), this);
     oNumRadio = new QRadioButton(tr("门诊号"), this);
     idRadio = new QRadioButton(tr("编号"), this);
-    reportGroupBox = new QGroupBox(tr("报告配置"), this);
+    reportGroupBox = new QGroupBox(tr("报告设置"), this);
     printerButtonGroup = new QButtonGroup(this);
-    printerRadio = new QRadioButton(tr("常规打印机报告"), this);
-    xprinterRadio = new QRadioButton(tr("热敏打印机报告"), this);
+    printerRadio = new QRadioButton(tr("A4纸报告"), this);
+    xprinterRadio = new QRadioButton(tr("热敏纸报告"), this);
     tipCheckBox = new QCheckBox(tr("高风险人群提示"), this);
     samePageCheckBox = new QCheckBox(tr("双体位同页"), this);
     trendChartPageTitleLabel = new QLabel(tr("趋势图页标题"), this);
     trendChartPageTitleLineEdit = new QLineEdit(this);
     selectLogoBtn = new QPushButton(tr("选择logo"), this);
     logoLabel = new QLabel(this);
-    checkModeGroupBox = new QGroupBox(tr("模式配置"), this);
+    checkModeGroupBox = new QGroupBox(tr("模式设置"), this);
     modeButtonGroup = new QButtonGroup(this);
     generalModeRadio = new QRadioButton(tr("高血压模式"), this);
     professionalModeRadio = new QRadioButton(tr("内科模式"), this);
     icuModeRadio = new QRadioButton(tr("重症模式"), this);
     healthCheckModeRadio = new QRadioButton(tr("体检模式"), this);
-    systemInfoGroupBox = new QGroupBox(tr("系统配置"), this);
+    systemInfoGroupBox = new QGroupBox(tr("系统设置"), this);
     serialPortLabel = new QLabel(tr("串口设置"), this);
     serialPortComboBox = new QComboBox(this);
     getIDBtn = new QPushButton(tr("有效验证码"), this);

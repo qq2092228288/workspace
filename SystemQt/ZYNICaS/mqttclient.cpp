@@ -79,6 +79,11 @@ bool MqttClient::deviceInfoIsEmpty()
     return !sqlQuery.next();
 }
 
+QString MqttClient::getDeviceId() const
+{
+    return m_deviceId;
+}
+
 void MqttClient::login(const QString &deviceId, const QString &password)
 {
     if (m_client->state() == QMqttClient::Connected) {
