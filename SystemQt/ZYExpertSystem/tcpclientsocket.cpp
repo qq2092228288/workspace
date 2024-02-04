@@ -88,38 +88,55 @@ void TcpClientSocket::dataReceived()
             m_userInfo = tp.bodyData();
             emit userInfo(QJsonDocument::fromJson(tp.bodyData()).object());
             break;
-        case TelegramType::ReportData:
+        case TelegramType::ReportDataReady:
         {
-            auto array = QJsonDocument::fromJson(tp.bodyData()).array();
-            foreach (auto value, array) {
-                auto object = value.toObject();
-                QSqlQuery query(m_db);
-                query.prepare(QString("REPLACE INTO %1(%2) VALUES(:%3)")
-                                  .arg(Singleton::enumName<ReportInfo>(),
-                                       object.keys().join(", "),
-                                       object.keys().join(", :")));
-                for (auto it = object.constBegin(); it != object.constEnd(); ++it) {
-                    auto value = it.value();
-                    if (QJsonValue::Double == value.type()) {
-                        query.bindValue(":" + it.key(), value.toDouble());
-                    }
-                    else {
-                        query.bindValue(":" + it.key(), value.toString());
-                    }
-                }
-                query.exec();
+            auto array = Singleton::utf8ToJsonArray(tp.bodyData());
+            auto rstr = Singleton::enumValueToKey(ReportInfo::reportTime);
+            auto dstr = Singleton::enumValueToKey(ReportInfo::deviceId);
+            for (int i = 0; i < array.count(); ++i) {
+                auto value = array.at(i).toString();
+                auto index = value.indexOf("&");
+                m_queue.enqueue(Singleton::jsonToUtf8(QJsonObject {
+                    {rstr, value.mid(0, index)},
+                    {dstr, value.mid(index + 1)}
+                }));
             }
-            emit reportPulled();
-            writeReady(TelegramType::ReportDataRequest, QByteArray());
+            emit reportReady(array.count());
+            requestReport();
         }
             break;
-        case TelegramType::ReportDataReady:
-            writeReady(TelegramType::ReportDataRequest, QByteArray());
-            emit reportReady(Singleton::utf8ToJsonObject(tp.bodyData()).value("datacount").toInt());
+        case TelegramType::ReportSent:
+        {
+            auto object = Singleton::utf8ToJsonObject(tp.bodyData());
+            QSqlQuery query(m_db);
+            query.prepare(QString("REPLACE INTO %1(%2) VALUES(:%3)")
+                              .arg(Singleton::enumName<ReportInfo>(),
+                                   object.keys().join(", "),
+                                   object.keys().join(", :")));
+            for (auto it = object.constBegin(); it != object.constEnd(); ++it) {
+                auto value = it.value();
+                if (QJsonValue::Double == value.type()) {
+                    query.bindValue(":" + it.key(), value.toDouble());
+                }
+                else {
+                    query.bindValue(":" + it.key(), value.toString());
+                }
+            }
+            query.exec();
+            emit reportPulled();
+            requestReport();
+        }
             break;
         default:
             break;
         }
+    }
+}
+
+void TcpClientSocket::requestReport()
+{
+    if (!m_queue.isEmpty()) {
+        writeReady(TelegramType::ReportDataRequest, m_queue.dequeue());
     }
 }
 

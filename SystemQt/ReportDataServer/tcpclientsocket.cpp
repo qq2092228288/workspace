@@ -39,12 +39,6 @@ void TcpClientSocket::dataReceived()
         if (tp.telegramType() == TelegramType::InvalidType) {   // 无效数据
             return;
         }
-        else if (tp.telegramType() == TelegramType::ReportDataRequest) {   // 客户端响应
-            if (!m_reportQueue.empty()) {
-                write(TelegramProfile(TelegramType::ReportData,
-                               Singleton::jsonToUtf8(m_reportQueue.dequeue())).toByteArray());
-            }
-        }
         else {
             emit send(socketDescriptor(), tp.telegramType(), tp.bodyData());
         }

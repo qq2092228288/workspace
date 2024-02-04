@@ -26,6 +26,9 @@ private:
     void clientWrite(qintptr socketDescriptor, TelegramType type, const T &json);
 private:
     const int m_index;
+    const QString m_reportInfoStr;
+    const QString m_reportTimeStr;
+    const QString m_deviceIdStr;
     QSqlDatabase m_db;
     QList<TcpClientSocket *> m_clientList;
 };

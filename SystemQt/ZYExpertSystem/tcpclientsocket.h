@@ -9,6 +9,7 @@
 #include <QJsonArray>
 #include <QSqlDatabase>
 #include <QSqlQuery>
+#include <QQueue>
 #include "telegramprofile.h"
 
 class TcpClientSocket : public QTcpSocket
@@ -31,11 +32,13 @@ signals:
 private slots:
     void connectedSlot();
     void dataReceived();
+    void requestReport();
 private:
     const QString m_appId;
     QByteArray m_userInfo;
     QSqlDatabase m_db;
     QByteArray m_data;
+    QQueue<QByteArray> m_queue;
 private:
     explicit TcpClientSocket(QObject *parent = nullptr);
     virtual ~TcpClientSocket();

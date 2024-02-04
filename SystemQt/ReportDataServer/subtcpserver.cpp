@@ -1,6 +1,6 @@
 #include "subtcpserver.h"
 #include <QUuid>
-#include "config.h"
+
 #include "singleton.h"
 #include "databasens.h"
 
@@ -9,6 +9,9 @@ using namespace DatabaseEnumNs;
 SubTcpServer::SubTcpServer(const int index, QObject *parent)
     : QObject{parent}
     , m_index{index}
+    , m_reportInfoStr{Singleton::enumName<ReportInfo>()}
+    , m_reportTimeStr{Singleton::enumValueToKey(ReportInfo::reportTime)}
+    , m_deviceIdStr{Singleton::enumValueToKey(ReportInfo::deviceId)}
 {
     qRegisterMetaType<qintptr>("qintptr");
     m_db = QSqlDatabase::addDatabase(Singleton::databaseType(), QUuid::createUuid().toString());
@@ -17,7 +20,9 @@ SubTcpServer::SubTcpServer(const int index, QObject *parent)
     m_db.setDatabaseName(Singleton::databaseName());
     m_db.setUserName(Singleton::userName());
     m_db.setPassword(Singleton::password());
-
+    if (!m_db.open()) {
+        TIME_DEBUG()<<m_db.lastError();
+    }
 }
 
 SubTcpServer::~SubTcpServer()
@@ -49,12 +54,9 @@ void SubTcpServer::newSocketDescriptor(qintptr socketDescriptor, int index)
 
 void SubTcpServer::received(qintptr socketDescriptor, TelegramType type, const QByteArray &data)
 {
-    if (!m_db.open()) {
-        TIME_DEBUG()<<m_db.lastError();
-        return;
-    }
-    auto sqlQuery = new QSqlQuery(m_db);
-    sqlQuery->setForwardOnly(true);
+    // auto sqlQuery = new QSqlQuery(m_db);
+    QSqlQuery sqlQuery(m_db);
+    sqlQuery.setForwardOnly(true);
     auto object = QJsonDocument::fromJson(data).object();
     switch (type) {
     case TelegramType::SoftwareInfomation:
@@ -62,12 +64,12 @@ void SubTcpServer::received(qintptr socketDescriptor, TelegramType type, const Q
         auto appIdString = Singleton::enumValueToKey(SoftwareManagement::appId);
         auto appId = object.value(appIdString);
         if (appId.type() != QJsonValue::Undefined) {
-            sqlQuery->prepare(QString("SELECT * FROM %1 WHERE %2 = :%2")
+            sqlQuery.prepare(QString("SELECT * FROM %1 WHERE %2 = :%2")
                                   .arg(Singleton::enumName<SoftwareManagement>(), appIdString));
-            sqlQuery->addBindValue(appId.toString());
-            sqlQuery->exec();
-            if (sqlQuery->next()) {
-                clientWrite(socketDescriptor, TelegramType::SoftwareInfomation, Singleton::getJsonObject(*sqlQuery));
+            sqlQuery.addBindValue(appId.toString());
+            sqlQuery.exec();
+            if (sqlQuery.next()) {
+                clientWrite(socketDescriptor, TelegramType::SoftwareInfomation, Singleton::getJsonObject(sqlQuery));
             }
         }
     }
@@ -79,16 +81,16 @@ void SubTcpServer::received(qintptr socketDescriptor, TelegramType type, const Q
         auto adminId = object.value(astr);
         auto password = object.value(pstr);
         if (adminId.type() != QJsonValue::Undefined && password.type() != QJsonValue::Undefined) {
-            sqlQuery->prepare(QString("SELECT %1 FROM %2 WHERE %3 = :%3 AND %4 = :%4")
+            sqlQuery.prepare(QString("SELECT %1 FROM %2 WHERE %3 = :%3 AND %4 = :%4")
                                   .arg(Singleton::enumValueToKey(AdministratorInfo::deviceIds),
                                        Singleton::enumName<AdministratorInfo>(), astr, pstr));
-            sqlQuery->addBindValue(adminId.toString());
-            sqlQuery->addBindValue(password.toString());
-            sqlQuery->exec();
-            if (sqlQuery->next()) {
+            sqlQuery.addBindValue(adminId.toString());
+            sqlQuery.addBindValue(password.toString());
+            sqlQuery.exec();
+            if (sqlQuery.next()) {
                 QJsonObject json {
                     { Singleton::enumName<UserStatus>(), Singleton::enumValueToKey(UserStatus::passwordCorrect) },
-                    { Singleton::enumValueToKey(ReportInfo::deviceId), sqlQuery->value(0).toString() }
+                    { Singleton::enumValueToKey(ReportInfo::deviceId), sqlQuery.value(0).toString() }
                 };
                 clientWrite(socketDescriptor, TelegramType::UserInfomation, json);
             }
@@ -110,67 +112,59 @@ void SubTcpServer::received(qintptr socketDescriptor, TelegramType type, const Q
     case TelegramType::ReportData:
     case TelegramType::NewReportData:
     {
-        auto deviceId = object.value(Singleton::enumValueToKey(ReportInfo::deviceId))
-                            .toString().replace("{", "'").replace("}", "'");
+        auto deviceId = object.value(m_deviceIdStr).toString().replace("{", "'").replace("}", "'");
         if (!deviceId.isEmpty()) {
-            auto tableName = Singleton::enumName<ReportInfo>();
-            auto distr = Singleton::enumValueToKey(ReportInfo::deviceId);
-            auto rtstr = Singleton::enumValueToKey(ReportInfo::reportTime);
             if (TelegramType::NewReportData == type) {
                 auto time = QDateTime::currentDateTime().addDays(-1).toString("yyyy-MM-dd hh:mm:ss.zzz");
                 if ("*" == deviceId) {
-                    sqlQuery->prepare(QString("SELECT * FROM %1 WHERE %2 > :%2 ORDER BY %2 DESC").arg(tableName, rtstr));
-                    sqlQuery->addBindValue(time);
+                    sqlQuery.prepare(QString("SELECT %1, %2 FROM %3 WHERE %1 > :%1 ORDER BY %1 DESC")
+                                          .arg(m_reportTimeStr, m_deviceIdStr, m_reportInfoStr));
+                    sqlQuery.addBindValue(time);
                 }
                 else {
-                    sqlQuery->prepare(QString("SELECT * FROM %1 WHERE %2 IN (%3) AND %4 > :%4 ORDER BY %4 DESC")
-                                          .arg(tableName, distr, deviceId, rtstr));
-                    sqlQuery->addBindValue(time);
+                    sqlQuery.prepare(QString("SELECT %1, %2 FROM %3 WHERE %2 IN (%4) AND %1 > :%1 ORDER BY %1 DESC")
+                                          .arg(m_reportTimeStr, m_deviceIdStr, m_reportInfoStr, deviceId));
+                    sqlQuery.addBindValue(time);
                 }
             }
             else {
                 if ("*" == deviceId) {
-                    sqlQuery->prepare(QString("SELECT * FROM %1 ORDER BY %2 DESC").arg(tableName, rtstr));
+                    sqlQuery.prepare(QString("SELECT %1, %2 FROM %3 ORDER BY %1 DESC")
+                                          .arg(m_reportTimeStr, m_deviceIdStr, m_reportInfoStr));
                 }
                 else {
-                    sqlQuery->prepare(QString("SELECT * FROM %1 WHERE %2 IN (%3) ORDER BY %4 DESC")
-                                          .arg(tableName, distr, deviceId, rtstr));
+                    sqlQuery.prepare(QString("SELECT %1, %2 FROM %3 WHERE %2 IN (%4) ORDER BY %1 DESC")
+                                          .arg(m_reportTimeStr, m_deviceIdStr, m_reportInfoStr, deviceId));
                 }
             }
-            sqlQuery->exec();
-            int dataCount = 0;
-            QJsonArray array;
-            while (sqlQuery->next()) {
-                auto json = Singleton::getJsonObject(*sqlQuery);
-                auto temp = array;
-                temp.append(json);
-                if (Singleton::jsonToUtf8(temp).length() > MAX_DATA_LENGTH) {
-                    emit appendReports(socketDescriptor, array);
-                    array = QJsonArray();
-                    ++dataCount;
-                }
-                if (Singleton::jsonToUtf8(json).length() < MAX_DATA_LENGTH) {
-                    array.append(json);
-                }
+            sqlQuery.exec();
+            QJsonArray reportArray;
+            while (sqlQuery.next()) {
+                reportArray.append(QString("%1&%2").arg(sqlQuery.value(0).toDateTime()
+                                                            .toString("yyyy-MM-dd hh:mm:ss.zzz"),
+                                                        sqlQuery.value(1).toString()));
             }
-            if (!array.isEmpty()) {
-                emit appendReports(socketDescriptor, array);
-                ++dataCount;
-            }
-            array = QJsonArray();
-            clientWrite(socketDescriptor, TelegramType::ReportDataReady,
-                        QJsonObject{ { "datacount" , dataCount } });
+            clientWrite(socketDescriptor, TelegramType::ReportDataReady, reportArray);
         }
     }
+        break;
+    case TelegramType::ReportDataRequest:
+        sqlQuery.prepare(QString("SELECT * FROM %1 WHERE %2 = :%2 AND %3 = :%3")
+                          .arg(m_reportInfoStr, m_reportTimeStr, m_deviceIdStr));
+        sqlQuery.addBindValue(object.value(m_reportTimeStr).toString());
+        sqlQuery.addBindValue(object.value(m_deviceIdStr).toString());
+        sqlQuery.exec();
+        if (sqlQuery.next()) {
+            clientWrite(socketDescriptor, TelegramType::ReportSent, Singleton::getJsonObject(sqlQuery));
+        }
         break;
     default:
         break;
     }
-    sqlQuery->clear();
-    sqlQuery->finish();
-    delete sqlQuery;
-    sqlQuery = nullptr;
-    m_db.close();
+    sqlQuery.clear();
+    sqlQuery.finish();
+    // delete sqlQuery;
+    // sqlQuery = nullptr;
 }
 
 void SubTcpServer::clientDeleted(QObject *client)
