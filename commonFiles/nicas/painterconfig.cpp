@@ -757,23 +757,25 @@ void PainterConfig::paintIsiSvChart(const QRectF &rectf)
     auto center = QPointF(rectArc.topLeft().x() + r, rectArc.topLeft().y() + r);
     auto fIsi = m_fp.valueMap.value(Type::ISI);
     auto sIsi = m_sp.valueMap.value(Type::ISI);
+    auto fSv = m_fp.valueMap.value(Type::SV);
+    auto sSv = m_sp.valueMap.value(Type::SV);
 
     QPoint p1, p2;
-    if (sIsi / fIsi >= 1.05) {
+    if (sIsi / fIsi >= 1.05 && sSv >= fSv) {  // 上升
         p1.setY(origin.y() - 40);
         p1.setX(circleX(p1.y(), r, center.x(), center.y(), true));
         p2.setY(center.y() - r);
         p2.setX(center.x());
         paintArrow(QPointF(p1.x() + 10, p1.y() - 5), QPointF(p2.x() - 10, p2.y() + 5));
     }
-    else if (fIsi == sIsi || fIsi < sIsi) {
+    else if (sIsi / fIsi >= 1.05 || (sIsi >= fIsi && sSv >= fSv)) { // 不变
         p1.setY(origin.y() - 60);
         p1.setX(circleX(p1.y(), r, center.x(), center.y(), true));
         p2.setY(origin.y() - 60);
         p2.setX(circleX(p2.y(), r, center.x(), center.y(), false));
         paintArrow(QPointF(p1.x() + 10, p1.y()), QPointF(p2.x() - 10, p2.y()));
     }
-    else {
+    else {  // 下降
         p1.setY(center.y() - r);
         p1.setX(center.x());
         p2.setY(origin.y() - 40);
@@ -795,8 +797,7 @@ void PainterConfig::paintIsiSvChart(const QRectF &rectf)
         evaluate += QString("心肌力增加小于5%，容量平台期");
     }
     else {
-        evaluate += QString("泵力%1，搏排量%2").arg(compare(fIsi, sIsi),
-                        compare(m_fp.valueMap.value(Type::SV), m_sp.valueMap.value(Type::SV)));
+        evaluate += QString("泵力%1，搏排量%2").arg(compare(fIsi, sIsi), compare(fSv, sSv));
     }
     painter()->drawText(rectf, Qt::AlignHCenter | Qt::AlignBottom, evaluate);
     initPaint();

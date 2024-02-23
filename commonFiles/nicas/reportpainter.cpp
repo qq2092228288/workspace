@@ -859,21 +859,21 @@ void ReportPainter::drawIsiAndSv(QRectF rect, int fPos, qreal fIsi, qreal fSv, i
     auto center = QPointF(rectArc.topLeft().x() + r, rectArc.topLeft().y() + r);
 
     QPoint p1, p2;
-    if (sIsi / fIsi >= 1.05) {
+    if (sIsi / fIsi >= 1.05 && sSv >= fSv) {  // 上升
         p1.setY(origin.y() - 40);
         p1.setX(circleX(p1.y(), r, center.x(), center.y(), true));
         p2.setY(center.y() - r);
         p2.setX(center.x());
         drawArrow(QPointF(p1.x() + scale(10), p1.y() - scale(5)), QPointF(p2.x() - scale(10), p2.y() + scale(5)));
     }
-    else if (fIsi == sIsi || fIsi < sIsi) {
+    else if (sIsi / fIsi >= 1.05 || (sIsi >= fIsi && sSv >= fSv)) {    // 不变
         p1.setY(origin.y() - 60);
         p1.setX(circleX(p1.y(), r, center.x(), center.y(), true));
         p2.setY(origin.y() - 60);
         p2.setX(circleX(p2.y(), r, center.x(), center.y(), false));
         drawArrow(QPointF(p1.x() + scale(10), p1.y()), QPointF(p2.x() - scale(10), p2.y()));
     }
-    else {
+    else {  // 下降
         p1.setY(center.y() - r);
         p1.setX(center.x());
         p2.setY(origin.y() - 40);
