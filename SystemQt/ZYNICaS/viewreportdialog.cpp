@@ -175,45 +175,46 @@ void ViewReportDialog::tableDoubleCilicked(const QModelIndex &index)
     auto object = getReportJson(index);
     if (!object.isEmpty()) {
         // 报告预览
-        // QPrinter printer(QPrinter::ScreenResolution);
-        // ReportPreviewDialog dialog(object, DataManagement::getInstance().getHospitalInfo(), &printer);
-        // dialog.exec();
-        auto samepage = DataManagement::getInstance().getHospitalInfo()->samePage;
-        QDialog dialog(this);
-        dialog.resize(screen()->availableSize());
-        dialog.setWindowFlags(Qt::Dialog | Qt::WindowMinimizeButtonHint |
-                              Qt::WindowMaximizeButtonHint | Qt::WindowCloseButtonHint);
-        QGraphicsScene scene;
-        auto view = new PrintGraphicsView(samepage, object, &scene, &dialog);
-        auto psize = QPageSize::sizePixels(QPageSize::A4, screen()->logicalDotsPerInch());
-        scene.setItemIndexMethod(QGraphicsScene::NoIndex);
-        if (!samepage && object.value(ReportDataName::ekey(ReportDataName::position)).toArray().size() > 1) {
-            // 分页
-            auto item0 = new ReportGraphicsItem(psize, object, samepage, PageType::MainPage_0);
-            auto item1 = new ReportGraphicsItem(psize, object, samepage, PageType::MainPage_1);
-            auto imagePage = new ReportGraphicsItem(psize, object, samepage, PageType::ImagePage);
-            item1->setPos(0, item0->boundingRect().height());
-            imagePage->setPos(0, item0->boundingRect().height() * 2);
-            scene.addItem(item0);
-            scene.addItem(item1);
-            scene.addItem(imagePage);
-        }
-        else {
-            // 不分页
-            auto item = new ReportGraphicsItem(psize, object, samepage, PageType::MainPage_0);
-            auto imagePage = new ReportGraphicsItem(psize, object, samepage, PageType::ImagePage);
-            imagePage->setPos(0, item->boundingRect().height());
-            scene.addItem(item);
-            scene.addItem(imagePage);
-        }
-        foreach (auto item, scene.items()) {
-            auto ritem = dynamic_cast<ReportGraphicsItem *>(item);
-            connect(view, &PrintGraphicsView::startRecache, ritem, &ReportGraphicsItem::startRecache);
-            connect(view, &PrintGraphicsView::endRecache, ritem, &ReportGraphicsItem::endRecache);
-        }
-        view->resize(screen()->availableSize());
-        dialog.showMaximized();
+        QPrinter printer(QPrinter::ScreenResolution);
+        ReportPreviewDialog dialog(object, DataManagement::getInstance().getHospitalInfo(), &printer);
         dialog.exec();
+
+        // auto samepage = DataManagement::getInstance().getHospitalInfo()->samePage;
+        // QDialog dialog(this);
+        // dialog.resize(screen()->availableSize());
+        // dialog.setWindowFlags(Qt::Dialog | Qt::WindowMinimizeButtonHint |
+        //                       Qt::WindowMaximizeButtonHint | Qt::WindowCloseButtonHint);
+        // QGraphicsScene scene;
+        // auto view = new PrintGraphicsView(samepage, object, &scene, &dialog);
+        // auto psize = QPageSize::sizePixels(QPageSize::A4, screen()->logicalDotsPerInch());
+        // scene.setItemIndexMethod(QGraphicsScene::NoIndex);
+        // if (!samepage && object.value(ReportDataName::ekey(ReportDataName::position)).toArray().size() > 1) {
+        //     // 分页
+        //     auto item0 = new ReportGraphicsItem(psize, object, samepage, PageType::MainPage_0);
+        //     auto item1 = new ReportGraphicsItem(psize, object, samepage, PageType::MainPage_1);
+        //     auto imagePage = new ReportGraphicsItem(psize, object, samepage, PageType::ImagePage);
+        //     item1->setPos(0, item0->boundingRect().height());
+        //     imagePage->setPos(0, item0->boundingRect().height() * 2);
+        //     scene.addItem(item0);
+        //     scene.addItem(item1);
+        //     scene.addItem(imagePage);
+        // }
+        // else {
+        //     // 不分页
+        //     auto item = new ReportGraphicsItem(psize, object, samepage, PageType::MainPage_0);
+        //     auto imagePage = new ReportGraphicsItem(psize, object, samepage, PageType::ImagePage);
+        //     imagePage->setPos(0, item->boundingRect().height());
+        //     scene.addItem(item);
+        //     scene.addItem(imagePage);
+        // }
+        // foreach (auto item, scene.items()) {
+        //     auto ritem = dynamic_cast<ReportGraphicsItem *>(item);
+        //     connect(view, &PrintGraphicsView::startRecache, ritem, &ReportGraphicsItem::startRecache);
+        //     connect(view, &PrintGraphicsView::endRecache, ritem, &ReportGraphicsItem::endRecache);
+        // }
+        // view->resize(screen()->availableSize());
+        // dialog.showMaximized();
+        // dialog.exec();
     }
     else {
         QMessageBox::warning(this, "警告", "报告不存在！");
@@ -278,49 +279,49 @@ QString ViewReportDialog::createdPdf(const QModelIndex &index)
             }
             printer.setFullPage(true);
             printer.setPageMargins(QMarginsF(0, 0, 0, 0));
-            // auto &instance = DataManagement::getInstance();
-            // ReportStruct temp(info->pType, info->cMode, !info->samePage, instance.getPaths().hospitalLogo(),
-            //                   instance.getHospitalInfo()->trendChartTitle, object);
-            // temp.departmentName = instance.departmentName();
-            // temp.idName = instance.idName();
-            // ReportPainter painter(temp, &printer);
+            auto &instance = DataManagement::getInstance();
+            ReportStruct temp(info->pType, info->cMode, !info->samePage, instance.getPaths().hospitalLogo(),
+                              instance.getHospitalInfo()->trendChartTitle, object);
+            temp.departmentName = instance.departmentName();
+            temp.idName = instance.idName();
+            ReportPainter painter(temp, &printer);
 
-            QPainter painter(&printer);
-            painter.setRenderHint(QPainter::Antialiasing);
-            QGraphicsScene scene;
-            auto psize = QPageSize::sizePixels(QPageSize::A4, screen()->logicalDotsPerInch());
-            scene.setItemIndexMethod(QGraphicsScene::NoIndex);
-            if (!info->samePage && object.value(ReportDataName::ekey(ReportDataName::position)).toArray().size() > 1) {
-                // 分页
-                auto item0 = new ReportGraphicsItem(psize, object, info->samePage, PageType::MainPage_0);
-                auto item1 = new ReportGraphicsItem(psize, object, info->samePage, PageType::MainPage_1);
-                auto imagePage = new ReportGraphicsItem(psize, object, info->samePage, PageType::ImagePage);
-                item1->setPos(0, item0->boundingRect().height());
-                imagePage->setPos(0, item0->boundingRect().height() * 2);
-                scene.addItem(item0);
-                scene.addItem(item1);
-                scene.addItem(imagePage);
-            }
-            else {
-                // 不分页
-                auto item = new ReportGraphicsItem(psize, object, info->samePage, PageType::MainPage_0);
-                auto imagePage = new ReportGraphicsItem(psize, object, info->samePage, PageType::ImagePage);
-                imagePage->setPos(0, item->boundingRect().height());
-                scene.addItem(item);
-                scene.addItem(imagePage);
-            }
-            auto items = scene.items();
-            for (int i = 0; i < items.size(); ++i) {
-                auto item = dynamic_cast<ReportGraphicsItem *>(items.at(i));
-                if (item != nullptr) {
-                    PainterConfig config(&painter, psize, object, info->samePage);
-                    config.paintPage(item->pageType());
-                    if (i + 1 != items.size()) {
-                        printer.newPage();
-                    }
-                }
-            }
-            painter.end();
+            // QPainter painter(&printer);
+            // painter.setRenderHint(QPainter::Antialiasing);
+            // QGraphicsScene scene;
+            // auto psize = QPageSize::sizePixels(QPageSize::A4, screen()->logicalDotsPerInch());
+            // scene.setItemIndexMethod(QGraphicsScene::NoIndex);
+            // if (!info->samePage && object.value(ReportDataName::ekey(ReportDataName::position)).toArray().size() > 1) {
+            //     // 分页
+            //     auto item0 = new ReportGraphicsItem(psize, object, info->samePage, PageType::MainPage_0);
+            //     auto item1 = new ReportGraphicsItem(psize, object, info->samePage, PageType::MainPage_1);
+            //     auto imagePage = new ReportGraphicsItem(psize, object, info->samePage, PageType::ImagePage);
+            //     item1->setPos(0, item0->boundingRect().height());
+            //     imagePage->setPos(0, item0->boundingRect().height() * 2);
+            //     scene.addItem(item0);
+            //     scene.addItem(item1);
+            //     scene.addItem(imagePage);
+            // }
+            // else {
+            //     // 不分页
+            //     auto item = new ReportGraphicsItem(psize, object, info->samePage, PageType::MainPage_0);
+            //     auto imagePage = new ReportGraphicsItem(psize, object, info->samePage, PageType::ImagePage);
+            //     imagePage->setPos(0, item->boundingRect().height());
+            //     scene.addItem(item);
+            //     scene.addItem(imagePage);
+            // }
+            // auto items = scene.items();
+            // for (int i = 0; i < items.size(); ++i) {
+            //     auto item = dynamic_cast<ReportGraphicsItem *>(items.at(i));
+            //     if (item != nullptr) {
+            //         PainterConfig config(&painter, psize, object, info->samePage);
+            //         config.paintPage(item->pageType());
+            //         if (i + 1 != items.size()) {
+            //             printer.newPage();
+            //         }
+            //     }
+            // }
+            // painter.end();
             return fileName;
         }
     }
