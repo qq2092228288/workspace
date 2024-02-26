@@ -793,7 +793,7 @@ void PainterConfig::paintIsiSvChart(const QRectF &rectf)
     painter()->setFont(cfont);
     // 评价
     QString evaluate("回心血量增加后，");
-    if (fIsi < sIsi && sIsi / fIsi < 1.05) {
+    if ((sIsi > fIsi && sIsi / fIsi < 1.05) || (sIsi / fIsi >= 1.05 && sSv < fSv)) {
         evaluate += QString("心肌力增加小于5%，容量平台期");
     }
     else {
@@ -940,13 +940,13 @@ QString PainterConfig::waveformCn(const WaveformType &type) const
 {
     switch (type) {
     case WaveformType::Electrocardiogram:
-        return QString::fromUtf8("心电信号(ECG)");
+        return QString::fromUtf8("阻抗心电图");
         break;
     case WaveformType::Differential:
-        return QString::fromUtf8("胸阻抗微分图(dZ/dt)");
+        return QString::fromUtf8("心血流图");
         break;
     case WaveformType::Impedance:
-        return QString::fromUtf8("胸阻抗血流图(ΔZ)");
+        return QString::fromUtf8("心阻抗图");
         break;
     case WaveformType::Resp:
         return QString::fromUtf8("(ΔZ/Δt)");

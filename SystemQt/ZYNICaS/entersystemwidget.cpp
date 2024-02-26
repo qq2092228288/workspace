@@ -620,46 +620,47 @@ void EnterSystemWidget::createReport()
                                         info->consultationHospitalName, instance.getMac());
         emit createdReport(curTime.toMSecsSinceEpoch(), QString(QJsonDocument(object).toJson(QJsonDocument::Compact)));
         // 报告预览
+#if  USE_ORIGINAL_REPORT_TEMPLATE
         QPrinter printer(QPrinter::ScreenResolution);
         ReportPreviewDialog dialog(object, instance.getHospitalInfo(), &printer);
         dialog.exec();
-
-        // QDialog dialog(this);
-        // dialog.resize(screen()->availableSize());
-        // dialog.setWindowFlags(Qt::Dialog | Qt::WindowMinimizeButtonHint |
-        //                       Qt::WindowMaximizeButtonHint | Qt::WindowCloseButtonHint);
-        // QGraphicsScene scene;
-        // auto view = new PrintGraphicsView(info->samePage, object, &scene, &dialog);
-        // auto psize = QPageSize::sizePixels(QPageSize::A4, screen()->logicalDotsPerInch());
-        // scene.setItemIndexMethod(QGraphicsScene::NoIndex);
-        // if (!info->samePage && object.value(ReportDataName::ekey(ReportDataName::position)).toArray().size() > 1) {
-        //     // 分页
-        //     auto item0 = new ReportGraphicsItem(psize, object, info->samePage, PageType::MainPage_0);
-        //     auto item1 = new ReportGraphicsItem(psize, object, info->samePage, PageType::MainPage_1);
-        //     auto imagePage = new ReportGraphicsItem(psize, object, info->samePage, PageType::ImagePage);
-        //     item1->setPos(0, item0->boundingRect().height());
-        //     imagePage->setPos(0, item0->boundingRect().height() * 2);
-        //     scene.addItem(item0);
-        //     scene.addItem(item1);
-        //     scene.addItem(imagePage);
-        // }
-        // else {
-        //     // 不分页
-        //     auto item = new ReportGraphicsItem(psize, object, info->samePage, PageType::MainPage_0);
-        //     auto imagePage = new ReportGraphicsItem(psize, object, info->samePage, PageType::ImagePage);
-        //     imagePage->setPos(0, item->boundingRect().height());
-        //     scene.addItem(item);
-        //     scene.addItem(imagePage);
-        // }
-        // foreach (auto item, scene.items()) {
-        //     auto ritem = dynamic_cast<ReportGraphicsItem *>(item);
-        //     connect(view, &PrintGraphicsView::startRecache, ritem, &ReportGraphicsItem::startRecache);
-        //     connect(view, &PrintGraphicsView::endRecache, ritem, &ReportGraphicsItem::endRecache);
-        // }
-        // view->resize(screen()->availableSize());
-        // dialog.showMaximized();
-        // dialog.exec();
-
+#else
+        QDialog dialog(this);
+        dialog.resize(screen()->availableSize());
+        dialog.setWindowFlags(Qt::Dialog | Qt::WindowMinimizeButtonHint |
+                              Qt::WindowMaximizeButtonHint | Qt::WindowCloseButtonHint);
+        QGraphicsScene scene;
+        auto view = new PrintGraphicsView(info->samePage, object, &scene, &dialog);
+        auto psize = QPageSize::sizePixels(QPageSize::A4, screen()->logicalDotsPerInch());
+        scene.setItemIndexMethod(QGraphicsScene::NoIndex);
+        if (!info->samePage && object.value(ReportDataName::ekey(ReportDataName::position)).toArray().size() > 1) {
+            // 分页
+            auto item0 = new ReportGraphicsItem(psize, object, info->samePage, PageType::MainPage_0);
+            auto item1 = new ReportGraphicsItem(psize, object, info->samePage, PageType::MainPage_1);
+            auto imagePage = new ReportGraphicsItem(psize, object, info->samePage, PageType::ImagePage);
+            item1->setPos(0, item0->boundingRect().height());
+            imagePage->setPos(0, item0->boundingRect().height() * 2);
+            scene.addItem(item0);
+            scene.addItem(item1);
+            scene.addItem(imagePage);
+        }
+        else {
+            // 不分页
+            auto item = new ReportGraphicsItem(psize, object, info->samePage, PageType::MainPage_0);
+            auto imagePage = new ReportGraphicsItem(psize, object, info->samePage, PageType::ImagePage);
+            imagePage->setPos(0, item->boundingRect().height());
+            scene.addItem(item);
+            scene.addItem(imagePage);
+        }
+        foreach (auto item, scene.items()) {
+            auto ritem = dynamic_cast<ReportGraphicsItem *>(item);
+            connect(view, &PrintGraphicsView::startRecache, ritem, &ReportGraphicsItem::startRecache);
+            connect(view, &PrintGraphicsView::endRecache, ritem, &ReportGraphicsItem::endRecache);
+        }
+        view->resize(screen()->availableSize());
+        dialog.showMaximized();
+        dialog.exec();
+#endif
         reportJson->clear();
         clearUiSlot();
         if (manyBtn->isChecked()) {

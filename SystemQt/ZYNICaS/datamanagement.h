@@ -15,6 +15,9 @@
 #include "zytebco.h"
 #include "mqttclient.h"
 
+
+#define USE_ORIGINAL_REPORT_TEMPLATE 0
+
 // 文件路径
 class MyFilePath
 {
