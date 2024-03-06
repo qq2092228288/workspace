@@ -11,7 +11,7 @@ QSqlDatabase &TcpClientSocket::db()
 
 void TcpClientSocket::connectToServer()
 {
-    connectToHost(Singleton::hostname(), 18080);
+    connectToHost(Singleton::serverAddress(), 18080);
 }
 
 void TcpClientSocket::getSoftwareInfo()

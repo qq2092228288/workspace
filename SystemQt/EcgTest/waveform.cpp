@@ -7,7 +7,7 @@ bool pred(QPointF f, QPointF s)
 
 Waveform::Waveform(const QString &title, QWidget *parent)
     : QChartView{parent},
-      vqueue{VQueue<QPointF>(500)},
+      vqueue{VQueue<QPointF>(1000)},
       speed{100}
 {
     xAxis = new QValueAxis(this);
@@ -33,9 +33,9 @@ Waveform::Waveform(const QString &title, QWidget *parent)
     xAxis->setMinorTickCount(4);
     xAxis->setMinorGridLinePen(QPen(Qt::red, 0.3, Qt::SolidLine));
 
-    yAxis->setLabelFormat("%.1f mV");
-    yAxis->setRange(-1000, 1000);
-    yAxis->setTickCount(4);
+    yAxis->setLabelFormat("%d mV");
+    yAxis->setRange(-1, 1);
+    yAxis->setTickCount(3);
     yAxis->setGridLinePen(QPen(Qt::red, 0.6, Qt::SolidLine));
     yAxis->setMinorTickCount(4);
     yAxis->setMinorGridLinePen(QPen(Qt::red, 0.3, Qt::SolidLine));
@@ -55,8 +55,23 @@ void Waveform::append(double value)
         auto pair = std::minmax_element(vqueue.begin(), vqueue.end(), pred);
 //        auto offset = abs((pair.second->y() - pair.first->y()) / 3);
 //        yAxis->setRange(pair.first->y() - offset, pair.second->y() + offset);
+#if 0
         yAxis->setRange(pair.first->y(), pair.second->y());
         series->replace(vqueue);
+#else
+        auto average = (pair.first->y() + pair.second->y()) / 2.0;
+        yAxis->setRange(average - 2, average + 2);
+        series->replace(vqueue);
+        // if (average != std::floor(pair.second->y())) {
+        //     average += 1;
+        // }
+        // auto average = std::floor(pair.second->y());
+        // QList<QPointF> points;
+        // foreach (auto point, vqueue) {
+        //     points.append(QPointF(point.x(), point.y() - average));
+        // }
+        // series->replace(points);
+#endif
     }
 }
 
