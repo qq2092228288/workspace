@@ -9,12 +9,13 @@
 #include <QtMath>
 
 PainterConfig::PainterConfig(QPainter *painter, const int &width, const int &height,
-                             const QJsonObject &object, bool samepage)
+                             const QJsonObject &object, bool samepage, const QPixmap &logo)
     : m_painter{painter}
     , m_width{width}
     , m_height{height}
     , m_object{object}
     , m_samepage{samepage}
+    , m_logo{logo}
     , m_info{PatientInfo(object)}
     , m_place{Place(object)}
 {
@@ -32,8 +33,9 @@ PainterConfig::PainterConfig(QPainter *painter, const int &width, const int &hei
     m_plrVect = QVector<Type>{Type::Pos, Type::HR, Type::SI, Type::CI, Type::SV, Type::CO, Type::TFC, Type::ISI};
 }
 
-PainterConfig::PainterConfig(QPainter *painter, const QSize &size, const QJsonObject &object, bool samepage)
-    : PainterConfig{painter, size.width(), size.height(), object, samepage}
+PainterConfig::PainterConfig(QPainter *painter, const QSize &size, const QJsonObject &object,
+                             bool samepage, const QPixmap &logo)
+    : PainterConfig{painter, size.width(), size.height(), object, samepage, logo}
 {
 
 }
@@ -402,7 +404,6 @@ double PainterConfig::paintHeader(const QString &title)
     painter()->drawText(rect(min, sh, tsize), Qt::AlignCenter, m_place.primaryPlace);
     // 标题
     painter()->drawText(rect(min, sh + tfh, tsize), Qt::AlignCenter, title);
-
     // 信息高度
     constexpr double ih = 1.5;
     // 水平起始起始位置
@@ -439,7 +440,12 @@ double PainterConfig::paintHeader(const QString &title)
     constexpr double hEnd = ipy2 + ifh + 0.3;
     // 分割线
     painter()->drawLine(line(3, hEnd, 97, hEnd));
-
+    // LOGO
+    if (!m_logo.isNull()) {
+        auto pline = line(3, 1.5, 3, ipy1 - 0.2);
+        painter()->drawPixmap(QRectF(pline.p1(), QSizeF(pline.y2() - pline.y1(), pline.y2() - pline.y1())),
+                              m_logo, QRectF());
+    }
     return hEnd + 0.5;
 }
 
@@ -829,6 +835,12 @@ void PainterConfig::paintMaceChart(const QRectF &rectf)
     paintArrow(origin, cRect.bottomRight());
     painter()->drawLine(QLineF(topLeftRect.bottomLeft(), bottomRightRect.topRight()));
     painter()->drawLine(QLineF(bottomLeftRect.bottomRight(), topRightRect.topLeft()));
+
+    auto fCi = m_fp.valueMap.value(Type::CI);
+    auto fIsi = m_fp.valueMap.value(Type::ISI);
+    constexpr qreal cCi = 2.5;
+    constexpr qreal cIsi = 0.9;
+#if 0
     painter()->drawText(QRectF(origin, QSizeF(topLeftRect.width() * 2, topLeftRect.height())),
                         Qt::AlignHCenter | Qt::AlignTop,
                         ReportParameters::find(Type::ISI).value(ReportDataName::ekey(ReportDataName::en)).toString());
@@ -836,10 +848,6 @@ void PainterConfig::paintMaceChart(const QRectF &rectf)
                                painter()->font().pixelSize(), topLeftRect.height() * 2),
                         Qt::AlignVCenter | Qt::AlignLeft,
                         ReportParameters::find(Type::CI).value(ReportDataName::ekey(ReportDataName::en)).toString());
-    auto fCi = m_fp.valueMap.value(Type::CI);
-    auto fIsi = m_fp.valueMap.value(Type::ISI);
-    constexpr qreal cCi = 2.5;
-    constexpr qreal cIsi = 0.9;
     if (fCi >= cCi && fIsi < cIsi) {
         painter()->drawText(topLeftRect, Qt::AlignCenter, QString::fromUtf8("中风险"));
     }
@@ -852,6 +860,32 @@ void PainterConfig::paintMaceChart(const QRectF &rectf)
     else {
         painter()->drawText(topRightRect, Qt::AlignCenter, QString::fromUtf8("低风险"));
     }
+#else
+    auto fMap = m_fp.valueMap.value(Type::MAP);
+    auto map = ReportParameters::find(Type::MAP);
+    auto minMap = map.value(ReportDataName::ekey(ReportDataName::min)).toInt();
+    auto maxMap = map.value(ReportDataName::ekey(ReportDataName::max)).toInt();
+    painter()->drawText(QRectF(origin, QSizeF(topLeftRect.width() * 2, topLeftRect.height())),
+                        Qt::AlignHCenter | Qt::AlignTop, QString::fromUtf8("心脏泵力"));
+    painter()->drawText(QRectF(topLeftRect.x() - painter()->font().pixelSize() * 1.1, topLeftRect.y(),
+                               painter()->font().pixelSize(), topLeftRect.height() * 2),
+                        Qt::AlignCenter | Qt::TextSingleLine | Qt::TextWordWrap, QString::fromUtf8("灌注"));
+    if ((fIsi < cIsi && fCi < cCi) || (fCi < cCi && fMap < minMap)) {
+        painter()->drawText(bottomLeftRect, Qt::AlignCenter, QString::fromUtf8("高风险"));
+    }
+    else if (fIsi >= cIsi && fCi >= cCi && fMap >= minMap && fMap <= maxMap) {
+        painter()->drawText(topRightRect, Qt::AlignCenter, QString::fromUtf8("低风险"));
+    }
+    else {
+        if (fIsi < cIsi) {
+            painter()->drawText(bottomRightRect, Qt::AlignCenter, QString::fromUtf8("中风险"));
+        }
+        else {
+            painter()->drawText(topLeftRect, Qt::AlignCenter, QString::fromUtf8("中风险"));
+        }
+    }
+#endif
+
 }
 
 void PainterConfig::paintClt(const QRectF &rectf)

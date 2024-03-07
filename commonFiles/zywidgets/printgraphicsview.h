@@ -16,7 +16,8 @@ class PrintGraphicsView : public QGraphicsView
     Q_OBJECT
 
 public:
-    PrintGraphicsView(const bool &samepage, const QJsonObject &object, QGraphicsScene *scene, QWidget *parent = nullptr);
+    PrintGraphicsView(const bool &samepage, const QPixmap &logo, const QJsonObject &object,
+                      QGraphicsScene *scene, QWidget *parent = nullptr);
 signals:
     void startRecache();
     void endRecache();
@@ -35,6 +36,7 @@ private:
     QSize pageSize() const;
 private:
     const bool &m_samepage;
+    const QPixmap m_logo;
     const QJsonObject &m_object;
 private:
     const QStringList itemList;

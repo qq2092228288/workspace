@@ -3,10 +3,11 @@
 #include <QJsonObject>
 
 ReportGraphicsItem::ReportGraphicsItem(const QSize &size, const QJsonObject &object, const bool &samepage,
-                                       const PageType &ptype)
+                                       const QPixmap &logo, const PageType &ptype)
     : m_size{size}
     , m_object{object}
     , m_samepage{samepage}
+    , m_logo{logo}
     , m_ptype{ptype}
 {
     setCacheMode(QGraphicsItem::DeviceCoordinateCache);
@@ -33,7 +34,7 @@ void ReportGraphicsItem::paint(QPainter *painter, const QStyleOptionGraphicsItem
 {
     Q_UNUSED(option);
     Q_UNUSED(widget);
-    PainterConfig config(painter, m_size, m_object, m_samepage);
+    PainterConfig config(painter, m_size, m_object, m_samepage, m_logo);
     config.paintPage(m_ptype);
 }
 

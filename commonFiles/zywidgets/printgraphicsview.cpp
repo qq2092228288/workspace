@@ -25,10 +25,11 @@
 #include "painterconfig.h"
 #include "reportgraphicsitem.h"
 
-PrintGraphicsView::PrintGraphicsView(const bool &samepage, const QJsonObject &object,
+PrintGraphicsView::PrintGraphicsView(const bool &samepage, const QPixmap &logo, const QJsonObject &object,
                                      QGraphicsScene *scene, QWidget *parent)
     : QGraphicsView{scene, parent}
     , m_samepage{samepage}
+    , m_logo{logo}
     , m_object{object}
     , itemList{QStringList {"50%", "75%", "100%", "125%", "150%", "200%",
                             "300%", "400%", "500%", "600%", "800%", "1000%"}}
@@ -248,7 +249,7 @@ void PrintGraphicsView::printerButtonClicked()
         for (int i = 0; i < items.size(); ++i) {
             auto item = dynamic_cast<ReportGraphicsItem *>(items.at(i));
             if (item != nullptr) {
-                PainterConfig config(&painter, pageSize(), m_object, m_samepage);
+                PainterConfig config(&painter, pageSize(), m_object, m_samepage, m_logo);
                 config.paintPage(item->pageType());
                 if (i + 1 != items.size()) {
                     m_printer.newPage();

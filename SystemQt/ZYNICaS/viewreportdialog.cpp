@@ -180,20 +180,22 @@ void ViewReportDialog::tableDoubleCilicked(const QModelIndex &index)
         ReportPreviewDialog dialog(object, DataManagement::getInstance().getHospitalInfo(), &printer);
         dialog.exec();
 #else
-        auto samepage = DataManagement::getInstance().getHospitalInfo()->samePage;
+        auto &instance = DataManagement::getInstance();
+        auto samepage = instance.getHospitalInfo()->samePage;
+        QPixmap logo(instance.getPaths().hospitalLogo());
         QDialog dialog(this);
         dialog.resize(screen()->availableSize());
         dialog.setWindowFlags(Qt::Dialog | Qt::WindowMinimizeButtonHint |
                               Qt::WindowMaximizeButtonHint | Qt::WindowCloseButtonHint);
         QGraphicsScene scene;
-        auto view = new PrintGraphicsView(samepage, object, &scene, &dialog);
+        auto view = new PrintGraphicsView(samepage, logo, object, &scene, &dialog);
         auto psize = QPageSize::sizePixels(QPageSize::A4, screen()->logicalDotsPerInch());
         scene.setItemIndexMethod(QGraphicsScene::NoIndex);
         if (!samepage && object.value(ReportDataName::ekey(ReportDataName::position)).toArray().size() > 1) {
             // 分页
-            auto item0 = new ReportGraphicsItem(psize, object, samepage, PageType::MainPage_0);
-            auto item1 = new ReportGraphicsItem(psize, object, samepage, PageType::MainPage_1);
-            auto imagePage = new ReportGraphicsItem(psize, object, samepage, PageType::ImagePage);
+            auto item0 = new ReportGraphicsItem(psize, object, samepage, logo, PageType::MainPage_0);
+            auto item1 = new ReportGraphicsItem(psize, object, samepage, logo, PageType::MainPage_1);
+            auto imagePage = new ReportGraphicsItem(psize, object, samepage, logo, PageType::ImagePage);
             item1->setPos(0, item0->boundingRect().height());
             imagePage->setPos(0, item0->boundingRect().height() * 2);
             scene.addItem(item0);
@@ -202,8 +204,8 @@ void ViewReportDialog::tableDoubleCilicked(const QModelIndex &index)
         }
         else {
             // 不分页
-            auto item = new ReportGraphicsItem(psize, object, samepage, PageType::MainPage_0);
-            auto imagePage = new ReportGraphicsItem(psize, object, samepage, PageType::ImagePage);
+            auto item = new ReportGraphicsItem(psize, object, samepage, logo, PageType::MainPage_0);
+            auto imagePage = new ReportGraphicsItem(psize, object, samepage, logo, PageType::ImagePage);
             imagePage->setPos(0, item->boundingRect().height());
             scene.addItem(item);
             scene.addItem(imagePage);
@@ -289,6 +291,7 @@ QString ViewReportDialog::createdPdf(const QModelIndex &index)
             temp.idName = instance.idName();
             ReportPainter painter(temp, &printer);
 #else
+            QPixmap logo(DataManagement::getInstance().getPaths().hospitalLogo());
             QPainter painter(&printer);
             painter.setRenderHint(QPainter::Antialiasing);
             QGraphicsScene scene;
@@ -296,9 +299,9 @@ QString ViewReportDialog::createdPdf(const QModelIndex &index)
             scene.setItemIndexMethod(QGraphicsScene::NoIndex);
             if (!info->samePage && object.value(ReportDataName::ekey(ReportDataName::position)).toArray().size() > 1) {
                 // 分页
-                auto item0 = new ReportGraphicsItem(psize, object, info->samePage, PageType::MainPage_0);
-                auto item1 = new ReportGraphicsItem(psize, object, info->samePage, PageType::MainPage_1);
-                auto imagePage = new ReportGraphicsItem(psize, object, info->samePage, PageType::ImagePage);
+                auto item0 = new ReportGraphicsItem(psize, object, info->samePage, logo, PageType::MainPage_0);
+                auto item1 = new ReportGraphicsItem(psize, object, info->samePage, logo, PageType::MainPage_1);
+                auto imagePage = new ReportGraphicsItem(psize, object, info->samePage, logo, PageType::ImagePage);
                 item1->setPos(0, item0->boundingRect().height());
                 imagePage->setPos(0, item0->boundingRect().height() * 2);
                 scene.addItem(item0);
@@ -307,8 +310,8 @@ QString ViewReportDialog::createdPdf(const QModelIndex &index)
             }
             else {
                 // 不分页
-                auto item = new ReportGraphicsItem(psize, object, info->samePage, PageType::MainPage_0);
-                auto imagePage = new ReportGraphicsItem(psize, object, info->samePage, PageType::ImagePage);
+                auto item = new ReportGraphicsItem(psize, object, info->samePage, logo, PageType::MainPage_0);
+                auto imagePage = new ReportGraphicsItem(psize, object, info->samePage, logo, PageType::ImagePage);
                 imagePage->setPos(0, item->boundingRect().height());
                 scene.addItem(item);
                 scene.addItem(imagePage);
@@ -317,7 +320,7 @@ QString ViewReportDialog::createdPdf(const QModelIndex &index)
             for (int i = 0; i < items.size(); ++i) {
                 auto item = dynamic_cast<ReportGraphicsItem *>(items.at(i));
                 if (item != nullptr) {
-                    PainterConfig config(&painter, psize, object, info->samePage);
+                    PainterConfig config(&painter, psize, object, info->samePage, logo);
                     config.paintPage(item->pageType());
                     if (i + 1 != items.size()) {
                         printer.newPage();

@@ -18,8 +18,9 @@ class PainterConfig
 {
 public:
     explicit PainterConfig(QPainter *painter, const int &width, const int &height,
-                           const QJsonObject &object, bool samepage);
-    explicit PainterConfig(QPainter *painter, const QSize &size, const QJsonObject &object, bool samepage);
+                           const QJsonObject &object, bool samepage, const QPixmap &logo);
+    explicit PainterConfig(QPainter *painter, const QSize &size, const QJsonObject &object,
+                           bool samepage, const QPixmap &logo);
 
     enum Arrow
     {
@@ -84,6 +85,7 @@ private:
     const int m_height;
     const QJsonObject &m_object;
     const bool m_samepage;
+    const QPixmap m_logo;
     QFont m_font;
 private:
     const PatientInfo m_info;

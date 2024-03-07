@@ -1,8 +1,8 @@
 #ifndef VERSION_H
 #define VERSION_H
 
-#define FILE_VERSION            4,6,0,226
-#define FILE_VERSION_STR        "4.6.0.226"
+#define FILE_VERSION            4,6,0,307
+#define FILE_VERSION_STR        "4.6.0.307"
 #define PRODUCT_VERSION         FILE_VERSION
 #define PRODUCT_VERSION_STR     FILE_VERSION_STR
 #define INTERNAL_NAME           "YZNICaS"
