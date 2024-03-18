@@ -161,9 +161,11 @@ void ReportDialog::reportTableViewDoubleClicked(const QModelIndex &index)
     auto object = getReportJson(index);
     if (!object.isEmpty()) {
         // 报告预览
-        // QPrinter printer(QPrinter::ScreenResolution);
-        // PrintPreviewDialog dialog(m_config, object, &printer, this);
-        // dialog.exec();
+#if 1
+        QPrinter printer(QPrinter::ScreenResolution);
+        PrintPreviewDialog dialog(m_config, object, &printer, this);
+        dialog.exec();
+#else
         QDialog dialog(this);
         dialog.resize(screen()->availableSize());
         dialog.setWindowFlags(Qt::Dialog | Qt::WindowMinimizeButtonHint |
@@ -199,6 +201,7 @@ void ReportDialog::reportTableViewDoubleClicked(const QModelIndex &index)
         view->resize(screen()->availableSize());
         dialog.showMaximized();
         dialog.exec();
+#endif
     }
     else {
         QMessageBox::warning(this, "警告", "报告不存在！");

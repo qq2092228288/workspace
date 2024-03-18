@@ -16,7 +16,7 @@
 #include "mqttclient.h"
 
 
-#define USE_ORIGINAL_REPORT_TEMPLATE 0
+#define USE_ORIGINAL_REPORT_TEMPLATE 1
 
 // 文件路径
 class MyFilePath

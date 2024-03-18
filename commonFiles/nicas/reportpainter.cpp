@@ -887,12 +887,21 @@ void ReportPainter::drawIsiAndSv(QRectF rect, int fPos, qreal fIsi, qreal fSv, i
     drawText(QPoint(p2.x() - scale(7), p2.y() + scale(14)), positionCn(sPos));
     // 评价
     QString evaluate("回心血量增加后，");
+#if 0
     if ((sIsi > fIsi && sIsi / fIsi < 1.05) || (sIsi / fIsi >= 1.05 && sSv < fSv)) {
         evaluate += QString("心肌力增加小于5%，容量平台期");
     }
     else {
         evaluate += QString("泵力%1，搏排量%2").arg(compare(fIsi, sIsi), compare(fSv, sSv));
     }
+#else
+    if (sIsi > fIsi && sIsi / fIsi < 1.1) {
+        evaluate += QString("心肌力增加小于10%，容量平台期");
+    }
+    else {
+        evaluate += QString("泵力%1，搏排量%2").arg(compare(fIsi, sIsi), compare(fSv, sSv));
+    }
+#endif
     drawText(QRectF(QPointF(origin.x(), origin.y() + scale(10)), QSizeF(rect.width(), scale(10))),
              Qt::AlignCenter, evaluate);
     setPen(QPen(QColor(Qt::black), 1));
