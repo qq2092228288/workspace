@@ -379,22 +379,29 @@ QString DataManagement::reportResult(const QJsonObject &json)
         auto smap = ReportDataJson::valueMap(info, sdata, QJsonArray(), parameters);
         if (m_pHospitalInfo->pType == Printer_Type::General) {
             // 双体位常规打印机报告
-            QString fstr = tr("前负荷(容量负荷)：");
+            QString fstr = tr("变力状态指数(ISI)%1，").arg(compare(Type::ISI));
             if (smap.value(Type::ISI) > fmap.value(Type::ISI)) {
                 if (smap.value(Type::ISI) / fmap.value(Type::ISI) >= 1.1) {
                     if (smap.value(Type::TFC) < fmap.value(Type::TFC)) {
-                        fstr += tr("正常(增加容量后，TFC下降，请关注容量)；");
+                        fstr += tr("容量正常(增加容量后，TFC下降，请关注容量)；");
                     }
                     else {
-                        fstr += tr("正常；");
+                        fstr += tr("容量正常；");
                     }
                 }
                 else {
                     fstr += tr("容量平台期(请结合临床)；");
                 }
             }
+            else if (smap.value(Type::ISI) <= fmap.value(Type::ISI) &&
+                       fmap.value(Type::ISI) >= isi.value(min).toDouble() &&
+                       fmap.value(Type::ISI) <= isi.value(max).toDouble() &&
+                       smap.value(Type::ISI) >= isi.value(min).toDouble() &&
+                       smap.value(Type::ISI) <= isi.value(max).toDouble()) {
+                fstr += tr("但在正常值范围内，容量平台期(请结合临床)；");
+            }
             else {
-                fstr += tr("偏高(建议使用：减少钠盐摄入，使用利尿剂)，请结合临床分析；");
+                fstr += tr("容量过负荷(建议使用：减少钠盐摄入，使用利尿剂)，请结合临床分析；");
             }
             QString tstr = tr("后负荷(张力负荷)：");
             if (fmap.value(Type::MAP) >= map.value(min).toDouble() && fmap.value(Type::MAP) <= map.value(max).toDouble()) {
@@ -414,10 +421,16 @@ QString DataManagement::reportResult(const QJsonObject &json)
                 else if (fmap.value(Type::Vas) > vas.value(max).toDouble()) {
                     tstr += tr("偏高(建议使用：ACEI，ARB)，请结合临床分析；");
                 }
+                else {
+                    tstr += tr("异常；");
+                }
             }
-            else if (fmap.value(Type::MAP) < map.value(min).toDouble()) {
+            else {
                 if (fmap.value(Type::Vas) <= vas.value(max).toDouble()) {
                     tstr += tr("偏低；");
+                }
+                else {
+                    tstr += tr("异常；");
                 }
             }
             QString sstr = tr("心肌力(心脏泵力)：");
@@ -446,37 +459,22 @@ QString DataManagement::reportResult(const QJsonObject &json)
                 hstr += tr("正常；");
             }
 
-            if (m_pHospitalInfo->cMode == Check_Mode::Hypertension) {
-                // 高血压模式
+            if (m_pHospitalInfo->cMode == Check_Mode::Hypertension ||
+                m_pHospitalInfo->cMode == Check_Mode::PhysicalExamination) {
+                // 高血压模式、体检模式
                 result<<fstr<<tstr<<sstr<<hstr;
             }
-            else if (m_pHospitalInfo->cMode == Check_Mode::InternalMedicine) {
+            else if (m_pHospitalInfo->cMode == Check_Mode::InternalMedicine ||
+                     m_pHospitalInfo->cMode == Check_Mode::IntensiveCareUnit) {
                 // 内科模式
                 result<<tr("第一体位：心输出量(CO)%1，心脏指数(CI)%2，搏排量(SV)%3，心搏指数(SI)%4，"
                             "心率(HR)%5，血管顺应性(Vas)%6，血管容量(Vol)%7，收缩变力性(Ino)%8，"
-                            "收缩压(SBP)%9，舒张压(DBP)%10，胸液传导性(TFC)%11；")
+                            "收缩压(SBP)%9，舒张压(DBP)%10，胸液传导性(TFC)%11；%12")
                         .arg(pevl(Type::CO), pevl(Type::CI), pevl(Type::SV), pevl(Type::SI), pevl(Type::HR),
                              pevl(Type::Vas), pevl(Type::Vol), pevl(Type::Ino), pevl(Type::SBP))
-                        .arg(pevl(Type::DBP), pevl(Type::TFC));
-                result<<tr("第二体位增加容量负荷实验后：搏排量(SV)%1，变力状态指数(ISI)%2，%3；")
-                        .arg(compare(Type::SV), compare(Type::ISI), preload());
-                result<<tr("%1%2%3%4").arg(fstr, tstr, sstr, hstr);
-            }
-            else if (m_pHospitalInfo->cMode == Check_Mode::IntensiveCareUnit) {
-                // 重症模式
-                result<<tr("第一体位：心输出量(CO)%1，心脏指数(CI)%2，搏排量(SV)%3，心搏指数(SI)%4，"
-                            "心率(HR)%5，血管顺应性(Vas)%6，血管容量(Vol)%7，收缩变力性(Ino)%8，"
-                            "收缩压(SBP)%9，舒张压(DBP)%10，胸液传导性(TFC)%11；")
-                        .arg(pevl(Type::CO), pevl(Type::CI), pevl(Type::SV), pevl(Type::SI), pevl(Type::HR),
-                             pevl(Type::Vas), pevl(Type::Vol), pevl(Type::Ino), pevl(Type::SBP))
-                        .arg(pevl(Type::DBP), pevl(Type::TFC));
-                result<<tr("第二体位增加容量负荷实验后：搏排量(SV)%1，变力状态指数(ISI)%2，%3；")
-                        .arg(compare(Type::SV), compare(Type::ISI), preload());
-                result<<tr("%1%2%3%4").arg(fstr, tstr, sstr, hstr);
-            }
-            else if (m_pHospitalInfo->cMode == Check_Mode::PhysicalExamination) {
-                // 体检模式
-                result<<fstr<<tstr<<sstr<<hstr;
+                        .arg(pevl(Type::DBP), pevl(Type::TFC), tstr);
+                result<<tr("第二体位增加容量负荷实验后：搏排量(SV)%1；%2%3%4")
+                        .arg(compare(Type::SV), sstr, hstr, fstr);
             }
         }
         else if (m_pHospitalInfo->pType == Printer_Type::Thermal) {
@@ -702,29 +700,23 @@ QString DataManagement::preload()
 
     if (rsv < csv) {
         if (risi < cisi) {
-//            strSv = "正常";
             strIsi = "正常";
         }
         else if (risi == cisi) {
-//            strSv = "正常";
             strIsi = "下降";
         }
         else {
-//            strSv = "饱和";
             strIsi = "下降，疑似瓣膜反流";
         }
     }
     else {
         if (risi < cisi) {
-//            strSv = "正常，疑似瓣膜反流";
             strIsi = "正常";
         }
         else if (risi == cisi) {
-//            strSv = "饱和";
             strIsi = "下降";
         }
         else {
-//            strSv = "饱和";
             strIsi = "下降";
         }
     }

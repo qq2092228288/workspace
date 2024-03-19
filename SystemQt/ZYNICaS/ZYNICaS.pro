@@ -34,14 +34,18 @@ SOURCES += \
     drawwaveforms.cpp \
     entersystemwidget.cpp \
     getiddialog.cpp \
+    homewidget.cpp \
     infoeditdialog.cpp \
     isicurvewidget.cpp \
     logindialog.cpp \
     main.cpp \
+    mainpagewidget.cpp \
     mainwidget.cpp \
     mqttclient.cpp \
+    parameterwidget.cpp \
     personalinfodialog.cpp \
     plrttablewidget.cpp \
+    plrwidget.cpp \
     reportdialog.cpp \
     reportpreviewdialog.cpp \
     selectitemdialog.cpp \
@@ -50,7 +54,8 @@ SOURCES += \
     trendchart.cpp \
     trendchartswidget.cpp \
     viewreportdialog.cpp \
-    waitingdialog.cpp
+    waitingdialog.cpp \
+    waveform.cpp
 
 HEADERS += \
     anothersetdialog.h \
@@ -63,13 +68,17 @@ HEADERS += \
     drawwaveforms.h \
     entersystemwidget.h \
     getiddialog.h \
+    homewidget.h \
     infoeditdialog.h \
     isicurvewidget.h \
     logindialog.h \
+    mainpagewidget.h \
     mainwidget.h \
     mqttclient.h \
+    parameterwidget.h \
     personalinfodialog.h \
     plrttablewidget.h \
+    plrwidget.h \
     reportdialog.h \
     reportpreviewdialog.h \
     selectitemdialog.h \
@@ -79,7 +88,8 @@ HEADERS += \
     trendchartswidget.h \
     version.h \
     viewreportdialog.h \
-    waitingdialog.h
+    waitingdialog.h \
+    waveform.h
 
 include(../../commonFiles/config.pri)
 include(../../commonFiles/qt-solutions/qtsingleapplication/src/qtsingleapplication.pri)
@@ -104,4 +114,5 @@ else:unix: LIBS += -L$$[QT_INSTALL_LIBS] -lQt5Mqtt
 
 RESOURCES += \
     images.qrc \
+    qss.qrc \
     version.qrc

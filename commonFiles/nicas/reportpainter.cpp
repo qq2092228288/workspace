@@ -831,7 +831,8 @@ void ReportPainter::drawSudoku(QRectF rect, QMap<Type, qreal> fMap, QMap<Type, q
     }
 }
 
-void ReportPainter::drawIsiAndSv(QRectF rect, int fPos, qreal fIsi, qreal fSv, int sPos, qreal sIsi, qreal sSv)
+void ReportPainter::drawIsiAndSv(QRectF rect, int fPos, qreal fIsi, qreal fSv,
+                                 int sPos, qreal sIsi, qreal sSv)
 {
     // 字体
     setFontSize(8);
@@ -857,16 +858,18 @@ void ReportPainter::drawIsiAndSv(QRectF rect, int fPos, qreal fIsi, qreal fSv, i
     auto r = rectArc.width() / 2;
     // 圆心
     auto center = QPointF(rectArc.topLeft().x() + r, rectArc.topLeft().y() + r);
-
+    auto min = ReportParameters::find(Type::ISI).value(ekey(ReportDataName::min)).toDouble();
+    auto max = ReportParameters::find(Type::ISI).value(ekey(ReportDataName::max)).toDouble();
     QPoint p1, p2;
-    if (sIsi / fIsi >= 1.05 && sSv >= fSv) {  // 上升
+    if (sIsi / fIsi >= 1.1) {  // 上升
         p1.setY(origin.y() - 40);
         p1.setX(circleX(p1.y(), r, center.x(), center.y(), true));
         p2.setY(center.y() - r);
         p2.setX(center.x());
         drawArrow(QPointF(p1.x() + scale(10), p1.y() - scale(5)), QPointF(p2.x() - scale(10), p2.y() + scale(5)));
     }
-    else if (sIsi / fIsi >= 1.05 || (sIsi >= fIsi && sSv >= fSv)) {    // 不变
+    else if ((sIsi > fIsi && sIsi / fIsi < 1.1) ||
+             (sIsi <= fIsi && fIsi >= min && fIsi <= max && sIsi >= min && sIsi <= max)) {    // 不变
         p1.setY(origin.y() - 60);
         p1.setX(circleX(p1.y(), r, center.x(), center.y(), true));
         p2.setY(origin.y() - 60);
@@ -895,11 +898,12 @@ void ReportPainter::drawIsiAndSv(QRectF rect, int fPos, qreal fIsi, qreal fSv, i
         evaluate += QString("泵力%1，搏排量%2").arg(compare(fIsi, sIsi), compare(fSv, sSv));
     }
 #else
-    if (sIsi > fIsi && sIsi / fIsi < 1.1) {
+    if ((sIsi > fIsi && sIsi / fIsi < 1.1) ||
+        (sIsi <= fIsi && fIsi >= min && fIsi <= max && sIsi >= min && sIsi <= max)) {
         evaluate += QString("心肌力增加小于10%，容量平台期");
     }
     else {
-        evaluate += QString("泵力%1，搏排量%2").arg(compare(fIsi, sIsi), compare(fSv, sSv));
+        evaluate += QString("泵力%1").arg(compare(fIsi, sIsi));
     }
 #endif
     drawText(QRectF(QPointF(origin.x(), origin.y() + scale(10)), QSizeF(rect.width(), scale(10))),

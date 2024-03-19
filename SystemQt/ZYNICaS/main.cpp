@@ -10,6 +10,8 @@
 #include "logindialog.h"
 #include "version.h"
 
+#include "homewidget.h"
+
 DataManagement DataManagement::instance;
 
 int main(int argc, char *argv[])
@@ -24,6 +26,7 @@ int main(int argc, char *argv[])
         QApplication::setApplicationName(INTERNAL_NAME);
         QApplication::setOrganizationName(ORGANIZATION_NAME);
         QApplication::setOrganizationDomain(ORGANIZATION_DOMAIN);
+#if 1
         // data management instance
         auto &ins = DataManagement::getInstance();
         ins.getArgs().init();
@@ -74,7 +77,11 @@ int main(int argc, char *argv[])
         QObject::connect(widget.get(), &MainWidget::destroyed, ins.getTebco(), &ZyTebco::stopTimer);
 
         widget->showMaximized();
+#else
+        HomeWidget widget;
+        widget.showMaximized();
 
+#endif
         return a.exec();
     }
     else {

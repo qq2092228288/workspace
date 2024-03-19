@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/">
+        <file>homepagestyle/mainpageui.qss</file>
+    </qresource>
+</RCC>
