@@ -67,6 +67,7 @@ QMap<Type, qreal> ReportDataJson::valueMap(const QJsonObject &info, const QJsonO
     vMap.insert(Type::CVP, cvp);
     vMap.insert(Type::MAP, map);
 
+    auto hr = intercept(DatCa::cHr(data.value(QString::number(Type::HR)).toInt()), dMap.value(Type::HR));
     auto lvet = intercept(DatCa::cVet(data.value(QString::number(Type::VET)).toInt()), dMap.value(Type::LVET));
     auto pep = intercept(DatCa::cPep(data.value(QString::number(Type::PEP)).toInt()), dMap.value(Type::PEP));
     auto isi = intercept(DatCa::cIsi(data.value(QString::number(Type::ISI)).toInt()), dMap.value(Type::ISI));
@@ -76,7 +77,11 @@ QMap<Type, qreal> ReportDataJson::valueMap(const QJsonObject &info, const QJsonO
     auto sv = intercept(DatCa::cSv(si, bsa), dMap.value(Type::SV));
     auto lswi = intercept(DatCa::cLswi(si, map, lap), dMap.value(Type::LSWI));
     auto ssvri = intercept(DatCa::cSsvri(si, map, cvp), dMap.value(Type::SSVRI));
+#if CI_USED_OLD_FORMULA
     auto ci = intercept(DatCa::cCi(data.value(QString::number(Type::CI)).toInt(), bsa, vept), dMap.value(Type::CI));
+#else
+    auto ci = intercept(DatCa::cCi(hr, si), dMap.value(Type::CI));
+#endif
     auto co = intercept(DatCa::cCo(ci, bsa), dMap.value(Type::CO));
     QVector<qreal> svs;
     auto osis = allValue(Type::SI, alldata);
@@ -87,7 +92,7 @@ QMap<Type, qreal> ReportDataJson::valueMap(const QJsonObject &info, const QJsonO
         svs<<(vept * value / 3400);
     }
 
-    vMap.insert(Type::HR, intercept(DatCa::cHr(data.value(QString::number(Type::HR)).toInt()), dMap.value(Type::HR)));
+    vMap.insert(Type::HR, hr);
     vMap.insert(Type::LVET, lvet);
     vMap.insert(Type::PEP, pep);
     vMap.insert(Type::STR, intercept(DatCa::cStr(pep, lvet), dMap.value(Type::STR)));

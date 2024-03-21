@@ -3,6 +3,8 @@
 
 #include <QObject>
 
+#define CI_USED_OLD_FORMULA     0
+
 class DataCalculation
 {
 public:
@@ -27,7 +29,11 @@ public:
     static qreal cSsvri  (const qreal &si, const qreal &map, const qreal &cvp);
     static qreal cVas    (const qreal &ssvri);
     static qreal cSvv    (const qreal &sv, QVector<qreal> svList);
+#if CI_USED_OLD_FORMULA
     static qreal cCi     (const qreal &value, const qreal &bsa, const qreal &vept);
+#else
+    static qreal cCi     (const qreal &hr, const qreal &si);
+#endif
     static qreal cCo     (const qreal &ci, const qreal &bsa);
     static qreal cHrv    (const qreal &ci);
     static qreal cSvr    (const qreal &co, const qreal &map, const qreal &cvp);

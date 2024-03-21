@@ -494,8 +494,25 @@ void EnterSystemWidget::setData(const uchar &type, const short &value)
         if (svValues.size() > 25) {
             svValues.removeFirst();
         }
+#if !CI_USED_OLD_FORMULA
+        double ci = DatCa::cCi(regulator->getCustomCtrl(Type::HR)->getCurrentValue(), si);
+        setCtrlValue(Type::CI, ci);
+        double co = DatCa::cCo(ci, bodyValue.BSA());
+        setCtrlValue(Type::CO, co);
+        setCtrlValue(Type::HRV, DatCa::cHrv(ci));
+        if(bodyValue.SBP != 0 && bodyValue.DBP != 0) {
+            setCtrlValue(Type::SVR, DatCa::cSvr(co, bodyValue.MAP(), bodyValue.CVP));
+            setCtrlValue(Type::SVRI, DatCa::cSvri(ci, bodyValue.MAP(), bodyValue.CVP));
+            setCtrlValue(Type::LCW, DatCa::cLcw(co, bodyValue.MAP(), bodyValue.LAP));
+            setCtrlValue(Type::LCWI, DatCa::cLcwi(ci, bodyValue.MAP(), bodyValue.LAP));
+        }
+        if (bodyValue.hb != 0) {
+            setCtrlValue(Type::DO2, DatCa::cDo2(co, bodyValue.hb));
+        }
+#endif
     }
         break;
+#if CI_USED_OLD_FORMULA
     case Type::CI:
     {
         double ci = DatCa::cCi(value, bodyValue.BSA(), bodyValue.VEPT());
@@ -514,6 +531,7 @@ void EnterSystemWidget::setData(const uchar &type, const short &value)
         }
     }
         break;
+#endif
     case Type::RR:
 //        setCtrlValue(Type::RR,DatCa::cRr(value));
         break;

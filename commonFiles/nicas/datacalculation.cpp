@@ -104,12 +104,17 @@ qreal DataCalculation::cSvv(const qreal &sv, QVector<qreal> svList)
     qreal svAvg = std::accumulate(svList.begin(), svList.end(), 0.0)/svList.size();
     return qAbs(sv - svAvg)/svAvg;
 }
-
+#if CI_USED_OLD_FORMULA
 qreal DataCalculation::cCi(const qreal &value, const qreal &bsa, const qreal &vept)
 {
     return (isInvalid(value, bsa) ? invalid() : 2/bsa*vept/6800*(value/10.0));
 }
-
+#else
+qreal DataCalculation::cCi(const qreal &hr, const qreal &si)
+{
+    return (isInvalid(hr, si) ? invalid() : si*hr/1000.0);
+}
+#endif
 qreal DataCalculation::cCo(const qreal &ci, const qreal &bsa)
 {
     return (isInvalid(ci, bsa) ? invalid() : ci*bsa);
