@@ -12,6 +12,8 @@ SubTcpServer::SubTcpServer(const int index, QObject *parent)
     , m_reportInfoStr{Singleton::enumName<ReportInfo>()}
     , m_reportTimeStr{Singleton::enumValueToKey(ReportInfo::reportTime)}
     , m_deviceIdStr{Singleton::enumValueToKey(ReportInfo::deviceId)}
+    , m_modifyStr{Singleton::enumValueToKey(ReportInfo::modify)}
+    , m_reportDataStr{Singleton::enumValueToKey(ReportInfo::reportData)}
 {
     qRegisterMetaType<qintptr>("qintptr");
     m_db = QSqlDatabase::addDatabase(Singleton::databaseType(), QUuid::createUuid().toString());
@@ -149,8 +151,8 @@ void SubTcpServer::received(qintptr socketDescriptor, TelegramType type, const Q
     }
         break;
     case TelegramType::ReportDataRequest:
-        sqlQuery.prepare(QString("SELECT * FROM %1 WHERE %2 = :%2 AND %3 = :%3")
-                          .arg(m_reportInfoStr, m_reportTimeStr, m_deviceIdStr));
+        sqlQuery.prepare(QString("SELECT %1, %2, %3, %4 FROM %5 WHERE %1 = :%1 AND %2 = :%2")
+                            .arg(m_reportTimeStr, m_deviceIdStr, m_modifyStr, m_reportDataStr, m_reportInfoStr));
         sqlQuery.addBindValue(object.value(m_reportTimeStr).toString());
         sqlQuery.addBindValue(object.value(m_deviceIdStr).toString());
         sqlQuery.exec();

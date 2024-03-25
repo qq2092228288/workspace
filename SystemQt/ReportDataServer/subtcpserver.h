@@ -29,6 +29,8 @@ private:
     const QString m_reportInfoStr;
     const QString m_reportTimeStr;
     const QString m_deviceIdStr;
+    const QString m_modifyStr;
+    const QString m_reportDataStr;
     QSqlDatabase m_db;
     QList<TcpClientSocket *> m_clientList;
 };
